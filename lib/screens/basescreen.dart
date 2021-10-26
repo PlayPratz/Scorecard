@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/styles/colorstyles.dart';
 
 class BaseScreen extends StatelessWidget {
   final Widget child;
@@ -7,6 +8,11 @@ class BaseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: child);
+    return SafeArea(
+      child: Material(
+        color: ColorStyles.background,
+        child: child,
+      ),
+    );
   }
 }

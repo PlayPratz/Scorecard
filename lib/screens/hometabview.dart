@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/player.dart';
 import 'package:scorecard/screens/basescreen.dart';
 import 'package:scorecard/screens/matchlist.dart';
 import 'package:scorecard/screens/playerlist.dart';
+import 'package:scorecard/screens/teamlist.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/styles/strings.dart';
+import 'package:scorecard/util/utils.dart';
 
 class HomeTabView extends StatefulWidget {
   const HomeTabView({Key? key}) : super(key: key);
@@ -18,8 +21,11 @@ class _HomeTabViewState extends State<HomeTabView> {
   final List<Widget> test = [
     MatchList(),
     const Text("Tourney"),
-    const Text("Teams"),
-    PlayerList(),
+    TeamList(),
+    PlayerList(
+      playerList: Utils.getAllPlayers(),
+      showAddButton: true,
+    ),
     const Text("Settings"),
   ];
   @override
@@ -27,7 +33,12 @@ class _HomeTabViewState extends State<HomeTabView> {
     return BaseScreen(
       child: Column(
         children: [
-          Expanded(child: test[_index]),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: test[_index],
+            ),
+          ),
           // const Divider(),
           BottomNavigationBar(
             currentIndex: _index,

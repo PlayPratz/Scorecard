@@ -1,66 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/screens/createplayer.dart';
+import 'package:scorecard/screens/widgets/itemlist.dart';
 import 'package:scorecard/screens/widgets/playertile.dart';
+import 'package:scorecard/styles/strings.dart';
 
 class PlayerList extends StatelessWidget {
-  final List<Player> players = [
-    Player.withPhoto(
-      id: 1,
-      name: "Pratik",
-      imagePath: "assets/images/pratik.png",
-      batArm: Arm.right,
-      bowlArm: Arm.right,
-      bowlStyle: BowlStyle.spin,
-    ),
-    Player.withPhoto(
-      id: 2,
-      name: "Chaitanya",
-      imagePath: "assets/images/chaitanya.jpg",
-      batArm: Arm.right,
-      bowlArm: Arm.right,
-      bowlStyle: BowlStyle.spin,
-    ),
-    Player.withPhoto(
-      id: 3,
-      name: "Rutash",
-      imagePath: "assets/images/rutash.png",
-      batArm: Arm.right,
-      bowlArm: Arm.right,
-      bowlStyle: BowlStyle.fast,
-    ),
-    Player.withPhoto(
-      id: 4,
-      name: "Calden",
-      imagePath: "assets/images/calden.jpg",
-      batArm: Arm.right,
-      bowlArm: Arm.right,
-      bowlStyle: BowlStyle.spin,
-    ),
-    Player.withPhoto(
-      id: 5,
-      name: "Noah",
-      imagePath: "assets/images/noah.jpg",
-      batArm: Arm.right,
-      bowlArm: Arm.right,
-      bowlStyle: BowlStyle.spin,
-    ),
-    Player.withPhoto(
-      id: 6,
-      name: "Roshan",
-      imagePath: "assets/images/roshan.jpg",
-      batArm: Arm.right,
-      bowlArm: Arm.right,
-      bowlStyle: BowlStyle.spin,
-    ),
-  ];
+  final List<Player> playerList;
+  final bool showAddButton;
+  final Function(Player player)? onSelectPlayer;
+  final Icon? trailingIcon;
 
-  PlayerList({Key? key}) : super(key: key);
+  const PlayerList({
+    Key? key,
+    required this.playerList,
+    required this.showAddButton,
+    this.onSelectPlayer,
+    this.trailingIcon,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: (context, index) => PlayerTile(players[index]),
-      itemCount: players.length,
+    if (showAddButton) {
+      return ItemList(
+        itemList: getPlayerList(),
+        createItemPage: CreatePlayerForm(),
+        createItemString: Strings.addNewPlayer,
+      );
+    }
+
+    return ItemList(
+      itemList: getPlayerList(),
     );
+  }
+
+  List<Widget> getPlayerList() {
+    List<PlayerTile> playerTiles = [];
+    for (Player player in playerList) {
+      playerTiles.add(PlayerTile(
+        player,
+        onSelect: onSelectPlayer,
+        trailingIcon: trailingIcon,
+      ));
+    }
+    return playerTiles;
   }
 }

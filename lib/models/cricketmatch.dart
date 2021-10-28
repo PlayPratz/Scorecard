@@ -66,12 +66,14 @@ class CricketMatch {
 
   void startFirstInnings() {
     _matchState = MatchState.firstInnings;
+    firstInnings.isInPlay = true;
   }
 
   void finishFirstInnings() {
     firstInnings._isCompleted = true;
     secondInnings.target = firstInnings.runs + 1;
     _matchState = MatchState.secondInnings;
+    secondInnings.isInPlay = true;
   }
 
   Result generateResult() {
@@ -129,6 +131,7 @@ class Innings {
   int _runs = 0;
   int _wickets = 0;
 
+  bool _isInPlay = false;
   bool _isCompleted = false;
 
   Innings({
@@ -167,20 +170,29 @@ class Innings {
   int get ballsRemaining => Constants.ballsPerOver * maxOvers - ballsBowled;
 
   String get oversBowled {
+    if (_overs.isEmpty) {
+      return "0.0";
+    }
     String numOfBallsLeft =
         _overs.last.isCompleted ? "0" : _overs.last.numOfLegalBalls.toString();
     return oversCompleted.toString() + "." + numOfBallsLeft;
   }
 
-  bool get isInPlay => _overs.isNotEmpty && !isCompleted;
-  bool get isCompleted => _isCompleted || oversCompleted == maxOvers;
+  set isInPlay(bool isInPlay) => _isInPlay = isInPlay;
+  bool get isInPlay => (_isInPlay || _overs.isNotEmpty) && !isCompleted;
+  bool get isCompleted => _isCompleted ||
+          oversCompleted == maxOvers ||
+          wicketsRemaining == 0 ||
+          target != null
+      ? runsRequired <= 0
+      : false;
 
   double get runRatePerOver => Constants.ballsPerOver * runs / ballsBowled;
   int get runsProjected => (maxOvers * runRatePerOver).floor();
 
   int get runsRequired {
     if (target == null) {
-      // Exception
+      // TODO Exception
       return -1;
     }
     return target! - runs;

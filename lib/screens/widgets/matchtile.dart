@@ -11,27 +11,24 @@ class MatchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Container(
-        // height: 120,
-        decoration: BoxDecoration(
-          color: ColorStyles.card,
-          borderRadius: BorderRadius.circular(12),
-          // border: Border.all(color: Colors.indigoAccent, width: 2)
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              getMatchDetails(),
-              const Divider(),
-              _InningsTile(match.homeInnings),
-              _InningsTile(match.awayInnings),
-              const Divider(),
-              getSummary()
-            ],
-          ),
+    return Container(
+      // height: 120,
+      decoration: BoxDecoration(
+        color: ColorStyles.card,
+        borderRadius: BorderRadius.circular(12),
+        // border: Border.all(color: Colors.indigoAccent, width: 2)
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            getMatchDetails(),
+            const Divider(),
+            _InningsTile(match.homeInnings),
+            _InningsTile(match.awayInnings),
+            const Divider(),
+            getSummary()
+          ],
         ),
       ),
     );
@@ -57,6 +54,17 @@ class MatchTile extends StatelessWidget {
         ];
         break;
       case MatchState.firstInnings:
+        if (match.firstInnings.ballsBowled == 0) {
+          textSpan = [
+            TextSpan(
+              text: match.toss!.winningTeam.shortName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const TextSpan(text: Strings.scoreWonToss),
+            TextSpan(text: Strings.getTossChoice(match.toss!.choice)),
+          ];
+          break;
+        }
         // Projected score
         textSpan = [
           TextSpan(
@@ -181,6 +189,7 @@ class MatchTile extends StatelessWidget {
             children: textSpan,
             style: const TextStyle(
               fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w300,
             ),
           )),
     );

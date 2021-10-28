@@ -2,6 +2,8 @@ import 'package:scorecard/models/cricketmatch.dart';
 import 'package:scorecard/models/player.dart';
 
 class Strings {
+  Strings._();
+
   // Bottom Navigation Bar
   static const String navbarMatches = "Matches";
   static const String navbarTournaments = "Tourneys";
@@ -36,6 +38,11 @@ class Strings {
 
   static const String playerBatter = " Bat";
   // static const String playerBowler = " Bowl";
+
+  // Match List
+  static const String matchlistCreateNewMatch = "Create new match";
+  static const String addNewPlayer = "Add new player";
+  static const String createNewTeam = "Create new team";
 
   static String getTossChoice(TossChoice tossChoice) {
     switch (tossChoice) {

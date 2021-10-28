@@ -1,29 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/styles/strings.dart';
+import 'package:scorecard/util/elements.dart';
 
 class PlayerTile extends StatelessWidget {
   final Player player;
+  final Function(Player player)? onSelect;
+  final Icon? trailingIcon;
 
-  const PlayerTile(this.player, {Key? key}) : super(key: key);
+  const PlayerTile(this.player,
+      {Key? key, this.onSelect, this.trailingIcon = Elements.forwardIcon})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: player.imagePath != null
-            ? CircleAvatar(
-                foregroundImage: AssetImage(player.imagePath!),
-                radius: 24,
-              )
-            : const Icon(Icons.person_outline),
-        title: Text(player.name),
-        subtitle: getBatBowlStyle(context),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {},
-      ),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: player.imagePath != null
+          ? CircleAvatar(
+              foregroundImage: AssetImage(player.imagePath!),
+              radius: 24,
+            )
+          : const Icon(Icons.person_outline),
+      title: Text(player.name),
+      subtitle: getBatBowlStyle(context),
+      trailing: trailingIcon,
+      onTap: () {
+        if (onSelect != null) {
+          onSelect!(player);
+        }
+      },
     );
   }
 

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ColorStyles {
-  static final background = Colors.grey[900];
+  static const background = Color(0xFF121212);
+  static const elevated = Color(0xFF242424);
+  static const card = Color(0xFF000041);
+  static const selected = Color(0xFF0a84ff);
   static final text = Colors.white;
 
-  static final highlight = Colors.yellowAccent;
+  static const highlight = Color(0xFFFF8000);
 
   static const currentlyBatting = Color(0xFF30D158);
 

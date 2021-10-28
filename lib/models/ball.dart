@@ -43,6 +43,7 @@ class Over {
   int get numOfLegalBalls => legalBalls.length;
   int get numOfBowlingExtras => bowlingExtraBalls.length;
   int get numOfBallsLeft => Constants.ballsPerOver - numOfLegalBalls;
+  int get numOfBallsBowled => legalBalls.length;
   bool get isCompleted => numOfBallsLeft == 0;
   int get totalRuns => statistics.runsConceded;
 

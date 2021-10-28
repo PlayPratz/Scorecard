@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/basescreen.dart';
 import 'package:scorecard/screens/matchlist.dart';
+import 'package:scorecard/screens/playerlist.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/styles/strings.dart';
 
@@ -16,9 +17,10 @@ class _HomeTabViewState extends State<HomeTabView> {
 
   final List<Widget> test = [
     MatchList(),
-    const Text("Friend"),
-    const Text("Tourn"),
-    const Text("Player"),
+    const Text("Tourney"),
+    const Text("Teams"),
+    PlayerList(),
+    const Text("Settings"),
   ];
   @override
   Widget build(BuildContext context) {
@@ -26,10 +28,10 @@ class _HomeTabViewState extends State<HomeTabView> {
       child: Column(
         children: [
           Expanded(child: test[_index]),
-          const Divider(),
+          // const Divider(),
           BottomNavigationBar(
             currentIndex: _index,
-            backgroundColor: ColorStyles.background,
+            backgroundColor: ColorStyles.elevated,
             type: BottomNavigationBarType.fixed,
             items: const [
               BottomNavigationBarItem(
@@ -37,16 +39,20 @@ class _HomeTabViewState extends State<HomeTabView> {
                 label: Strings.navbarMatches,
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.thumbs_up_down),
-                label: Strings.navbarFriendlies,
-              ),
-              BottomNavigationBarItem(
                 icon: Icon(Icons.emoji_events),
                 label: Strings.navbarTournaments,
               ),
               BottomNavigationBarItem(
+                icon: Icon(Icons.thumbs_up_down),
+                label: Strings.navbarTeams,
+              ),
+              BottomNavigationBarItem(
                 icon: Icon(Icons.people),
                 label: Strings.navbarPlayers,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: Strings.navbarSettings,
               ),
             ],
             onTap: (selectedIndex) => setState(() {

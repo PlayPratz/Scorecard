@@ -31,13 +31,13 @@ class MyApp extends StatelessWidget {
           // Notice that the counter didn't reset back to zero; the application
           // is not restarted.
           colorScheme: const ColorScheme.dark().copyWith(
-            secondary: Colors.blueAccent,
+            secondary: ColorStyles.selected,
             background: ColorStyles.background,
             surface: ColorStyles.background,
           ),
           backgroundColor: ColorStyles.background,
           dividerTheme: const DividerThemeData(
-            // color: ColorStyles.highlight,
+            color: ColorStyles.highlight,
             thickness: 2,
             space: 2,
           ),

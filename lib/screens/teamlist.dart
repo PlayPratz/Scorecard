@@ -5,18 +5,17 @@ import 'package:scorecard/screens/widgets/itemlist.dart';
 import 'package:scorecard/screens/widgets/teamtile.dart';
 
 class TeamList extends StatelessWidget {
-  final List<Team> teamList = [
-    Team("Mumbai Indians", "MI", []),
-    Team("Chennai Super Kings", "CSK", [])
-  ];
+  final List<Team> teamList;
+  final Function(Team)? onSelect;
 
-  TeamList({Key? key}) : super(key: key);
+  const TeamList({Key? key, required this.teamList, this.onSelect})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ItemList(
       itemList: getTeamList(),
-      createItemPage: CreateTeamForm(),
+      createItemPage: const CreateTeamForm(),
       createItemString: "Create new team",
     );
   }
@@ -24,7 +23,10 @@ class TeamList extends StatelessWidget {
   List<Widget> getTeamList() {
     List<TeamTile> teamTileList = [];
     for (Team team in teamList) {
-      teamTileList.add(TeamTile(team: team));
+      teamTileList.add(TeamTile(
+        team: team,
+        onSelect: onSelect,
+      ));
     }
     return teamTileList;
   }

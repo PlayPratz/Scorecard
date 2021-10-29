@@ -21,7 +21,9 @@ class _HomeTabViewState extends State<HomeTabView> {
   final List<Widget> test = [
     MatchList(),
     const Text("Tourney"),
-    TeamList(),
+    TeamList(
+      teamList: Utils.getAllTeams(),
+    ),
     PlayerList(
       playerList: Utils.getAllPlayers(),
       showAddButton: true,

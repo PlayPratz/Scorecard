@@ -17,4 +17,20 @@ class Elements {
   static const Icon forwardIcon = Icon(
     Icons.chevron_right,
   );
+
+  static Widget getConfirmButton(
+      {required String text, Function()? onPressed}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: OutlinedButton(
+            onPressed: onPressed,
+            child: Text(
+              text,
+            )),
+      ),
+    );
+  }
 }

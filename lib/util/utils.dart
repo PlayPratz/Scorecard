@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/team.dart';
 
 class Utils {
   Utils._(); // Private constructor
@@ -16,9 +17,21 @@ class Utils {
   static List<Player> getAllPlayers() {
     return [..._playerList];
   }
+
+  static void addPlayer(Player player) {
+    _playerList.add(player);
+  }
+
+  static List<Team> getAllTeams() {
+    return [..._teamList];
+  }
+
+  static void addTeam(Team team) {
+    _teamList.add(team);
+  }
 }
 
-List<Player> _playerList = [
+final List<Player> _playerList = [
   Player.withPhoto(
     id: 1,
     name: "Pratik",
@@ -67,4 +80,9 @@ List<Player> _playerList = [
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,
   ),
+];
+
+final List<Team> _teamList = [
+  Team("Mumbai Indians", "MI", []),
+  Team("Chennai Super Kings", "CSK", [])
 ];

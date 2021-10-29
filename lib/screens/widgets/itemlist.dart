@@ -19,7 +19,7 @@ class ItemList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      // padding: const EdgeInsets.symmetric(horizontal: 12),
       children: [
         createItemPage != null && createItemString != null
             ? Padding(

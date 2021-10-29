@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/basescreen.dart';
 import 'package:scorecard/screens/playerlist.dart';
 import 'package:scorecard/screens/titledpage.dart';
@@ -18,8 +19,11 @@ class CreateTeamForm extends StatefulWidget {
 
 class _CreateTeamFormState extends State<CreateTeamForm> {
   Player? _selectedCaptain;
-
   final List<Player> _selectedPlayerList = [];
+
+  final TextEditingController _teamNameController = TextEditingController();
+  final TextEditingController _shortTeamNameController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -28,22 +32,41 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
       child: Form(
         child: Column(
           children: [
-            TextFormField(
-              decoration: const InputDecoration(label: Text("Team Name")),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: TextFormField(
+                    controller: _teamNameController,
+                    maxLength: 25,
+                    decoration: const InputDecoration(label: Text("Team Name")),
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  child: TextFormField(
+                    controller: _shortTeamNameController,
+                    textCapitalization: TextCapitalization.characters,
+                    maxLength: 4,
+                    decoration:
+                        const InputDecoration(label: Text("Short Name")),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
             _selectedCaptain == null
                 ? ListTile(
-                    leading: CircleAvatar(
+                    leading: const CircleAvatar(
                       child: Icon(Icons.person),
                     ),
-                    title: Text("Select a captain"),
+                    title: const Text("Select a captain"),
                     isThreeLine: true,
-                    subtitle: Text(
+                    subtitle: const Text(
                       "A good captain can make a bad team good, and a bad captain can make a good team bad.",
                     ),
-                    trailing: Icon(Icons.chevron_right),
-                    onTap: chooseCaptain,
+                    trailing: Elements.forwardIcon,
+                    onTap: _chooseCaptain,
                   )
                 : Column(
                     children: [
@@ -56,7 +79,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                       ),
                       PlayerTile(
                         _selectedCaptain!,
-                        onSelect: (Player player) => chooseCaptain(),
+                        onSelect: (Player player) => _chooseCaptain(),
                       ),
                     ],
                   ),
@@ -84,7 +107,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                             filteredPlayerList.removeWhere((player) =>
                                 _selectedPlayerList.contains(player));
                             filteredPlayerList.remove(_selectedCaptain);
-                            Player? player = await getPlayerFromList(
+                            Player? player = await _getPlayerFromList(
                                 filteredPlayerList, context);
                             if (player != null) {
                               setState(() {
@@ -110,14 +133,32 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                 ),
               ),
             ),
-            OutlinedButton(onPressed: () {}, child: Text("Confirm"))
+            Elements.getConfirmButton(
+                text: "Create",
+                onPressed: _validateForm() ? _submitTeam : null),
           ],
         ),
       ),
     );
   }
 
-  Future<Player?> getPlayerFromList(
+  void _submitTeam() {
+    Utils.addTeam(Team(
+      _teamNameController.text,
+      _shortTeamNameController.text,
+      [_selectedCaptain!, ..._selectedPlayerList],
+    ));
+    Utils.goBack(context);
+  }
+
+  bool _validateForm() {
+    if (_selectedCaptain == null) {
+      return false;
+    }
+    return true;
+  }
+
+  Future<Player?> _getPlayerFromList(
       List<Player> playerList, BuildContext context) async {
     Player? player = await Utils.goToPage(
         TitledPage(
@@ -134,9 +175,9 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     return player;
   }
 
-  void chooseCaptain() async {
+  void _chooseCaptain() async {
     Player? chosenCaptain =
-        await getPlayerFromList(Utils.getAllPlayers(), context);
+        await _getPlayerFromList(Utils.getAllPlayers(), context);
     if (chosenCaptain != null) {
       if (_selectedPlayerList.contains(chosenCaptain)) {
         _selectedPlayerList.remove(chosenCaptain);

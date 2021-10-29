@@ -39,7 +39,8 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                   child: TextFormField(
                     controller: _teamNameController,
                     maxLength: 25,
-                    decoration: const InputDecoration(label: Text("Team Name")),
+                    decoration: const InputDecoration(
+                        label: Text(Strings.createTeamTeamName)),
                   ),
                 ),
                 const SizedBox(width: 24),
@@ -48,8 +49,8 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                     controller: _shortTeamNameController,
                     textCapitalization: TextCapitalization.characters,
                     maxLength: 4,
-                    decoration:
-                        const InputDecoration(label: Text("Short Name")),
+                    decoration: const InputDecoration(
+                        label: Text(Strings.createTeamShortName)),
                   ),
                 ),
               ],
@@ -60,10 +61,10 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                     leading: const CircleAvatar(
                       child: Icon(Icons.person),
                     ),
-                    title: const Text("Select a captain"),
+                    title: const Text(Strings.createTeamSelectCaptain),
                     isThreeLine: true,
                     subtitle: const Text(
-                      "A good captain can make a bad team good, and a bad captain can make a good team bad.",
+                      Strings.createTeamCaptainHint,
                     ),
                     trailing: Elements.forwardIcon,
                     onTap: _chooseCaptain,
@@ -72,9 +73,9 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                     children: [
                       Container(
                         alignment: Alignment.centerLeft,
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          "Captain",
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: const Text(
+                          Strings.captain,
                         ),
                       ),
                       PlayerTile(
@@ -96,9 +97,9 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: ListTile(
                           leading: const Icon(Icons.people),
-                          title: const Text("Squad"),
+                          title: const Text(Strings.squad),
                           subtitle: const Text(
-                            "Your captain is already in the squad. You can change the captian later.",
+                            Strings.createTeamSquadHint,
                           ),
                           trailing: Elements.addIcon,
                           onTap: () async {
@@ -134,7 +135,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
               ),
             ),
             Elements.getConfirmButton(
-                text: "Create",
+                text: Strings.createTeamCreate,
                 onPressed: _validateForm() ? _submitTeam : null),
           ],
         ),
@@ -162,7 +163,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
       List<Player> playerList, BuildContext context) async {
     Player? player = await Utils.goToPage(
         TitledPage(
-          title: "Choose a player",
+          title: Strings.choosePlayer,
           child: PlayerList(
             playerList: playerList,
             showAddButton: true,

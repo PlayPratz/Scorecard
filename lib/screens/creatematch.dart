@@ -33,8 +33,8 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
                       onSelect: (Team team) => _chooseHomeTeam(),
                     )
                   : _getSelectTeamWidget(
-                      "Select Home Team",
-                      "The crowd cheers more for them",
+                      Strings.createMatchSelectHomeTeam,
+                      Strings.createMatchHomeTeamHint,
                       ColorStyles.homeTeam,
                       _chooseHomeTeam),
               _selectedAwayTeam != null
@@ -43,12 +43,13 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
                       onSelect: (Team team) => _chooseAwayTeam(),
                     )
                   : _getSelectTeamWidget(
-                      "Select Away Team",
-                      "People always love the underdogs",
+                      Strings.createMatchSelectAwayTeam,
+                      Strings.createMatchAwayTeamHint,
                       ColorStyles.awayTeam,
                       _chooseAwayTeam),
               const Spacer(),
-              Elements.getConfirmButton(text: "Start Match", onPressed: () {}),
+              Elements.getConfirmButton(
+                  text: Strings.createMatchStartMatch, onPressed: () {}),
             ],
           ),
         ));
@@ -88,7 +89,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   void _chooseTeam(Function(Team) callInsideSetState) async {
     Team? chosenTeam = await Utils.goToPage(
       TitledPage(
-        title: "Choose a team",
+        title: Strings.chooseTeam,
         child: TeamList(
           teamList: Utils.getAllTeams(),
           onSelect: (Team chosenTeam) => Utils.goBack(context, chosenTeam),

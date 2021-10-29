@@ -3,6 +3,7 @@ import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/createteam.dart';
 import 'package:scorecard/screens/widgets/itemlist.dart';
 import 'package:scorecard/screens/widgets/teamtile.dart';
+import 'package:scorecard/styles/strings.dart';
 
 class TeamList extends StatelessWidget {
   final List<Team> teamList;
@@ -16,7 +17,7 @@ class TeamList extends StatelessWidget {
     return ItemList(
       itemList: getTeamList(),
       createItemPage: const CreateTeamForm(),
-      createItemString: "Create new team",
+      createItemString: Strings.createNewTeam,
     );
   }
 

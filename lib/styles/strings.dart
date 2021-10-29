@@ -39,10 +39,37 @@ class Strings {
   static const String playerBatter = " Bat";
   // static const String playerBowler = " Bowl";
 
-  // Match List
+  // Creation
   static const String matchlistCreateNewMatch = "Create new match";
   static const String addNewPlayer = "Add new player";
   static const String createNewTeam = "Create new team";
+
+  // Others
+  static const String captain = "Captain";
+  static const String squad = "Squad";
+
+  // Create Team
+  static const String createTeamSelectCaptain = "Select a captain";
+  static const String createTeamCaptainHint =
+      "A good captain can make a bad team good, and a bad captain can make a good team bad.";
+  static const String createTeamSquadHint =
+      "Your captain is already in the squad. You can change the captian later.";
+  static const String createTeamTeamName = "Team Name";
+  static const String createTeamShortName = "Short Name";
+  static const String createTeamCreate = "Create Team";
+
+  // Create Match
+  static const String createMatchSelectHomeTeam = "Select Home Team";
+  static const String createMatchHomeTeamHint =
+      "The crowd cheers more for them";
+  static const String createMatchSelectAwayTeam = "Select Away Team";
+  static const String createMatchAwayTeamHint =
+      "People always love the underdogs";
+  static const String createMatchStartMatch = "Start Match";
+
+  // Choose
+  static const String choosePlayer = "Choose a player";
+  static const String chooseTeam = "Choose a team";
 
   static String getTossChoice(TossChoice tossChoice) {
     switch (tossChoice) {

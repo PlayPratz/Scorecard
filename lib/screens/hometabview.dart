@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/screens/basescreen.dart';
+import 'package:scorecard/screens/createteam.dart';
 import 'package:scorecard/screens/matchlist.dart';
 import 'package:scorecard/screens/playerlist.dart';
 import 'package:scorecard/screens/teamlist.dart';
@@ -18,20 +19,21 @@ class HomeTabView extends StatefulWidget {
 class _HomeTabViewState extends State<HomeTabView> {
   int _index = 0;
 
-  final List<Widget> test = [
-    MatchList(),
-    const Text("Tourney"),
-    TeamList(
-      teamList: Utils.getAllTeams(),
-    ),
-    PlayerList(
-      playerList: Utils.getAllPlayers(),
-      showAddButton: true,
-    ),
-    const Text("Settings"),
-  ];
   @override
   Widget build(BuildContext context) {
+    final List<Widget> test = [
+      MatchList(),
+      const Text("Tourney"),
+      // TeamList(
+      //   teamList: Utils.getAllTeams(),
+      //   onSelect: (team) => Utils.goToPage(CreateTeamForm(team: team), context),
+      // ),
+      PlayerList(
+        playerList: Utils.getAllPlayers(),
+        showAddButton: true,
+      ),
+      const Text("Settings"),
+    ];
     return BaseScreen(
       child: Column(
         children: [
@@ -55,10 +57,10 @@ class _HomeTabViewState extends State<HomeTabView> {
                 icon: Icon(Icons.emoji_events),
                 label: Strings.navbarTournaments,
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.thumbs_up_down),
-                label: Strings.navbarTeams,
-              ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.thumbs_up_down),
+              //   label: Strings.navbarTeams,
+              // ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.people),
                 label: Strings.navbarPlayers,

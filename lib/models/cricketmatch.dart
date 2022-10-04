@@ -22,12 +22,9 @@ class CricketMatch {
   CricketMatch(
       {required this.homeTeam,
       required this.awayTeam,
-      required this.maxOvers,
-      maxWickets}) {
-    _homeInnings = Innings(
-        battingTeam: homeTeam, maxOvers: maxOvers, maxWickets: maxWickets);
-    _awayInnings = Innings(
-        battingTeam: awayTeam, maxOvers: maxOvers, maxWickets: maxWickets);
+      required this.maxOvers}) {
+    _homeInnings = Innings(battingTeam: homeTeam, maxOvers: maxOvers);
+    _awayInnings = Innings(battingTeam: awayTeam, maxOvers: maxOvers);
   }
 
   bool get isTossCompleted => toss != null;
@@ -111,7 +108,10 @@ class CricketMatch {
       throw UnimplementedError();
     }
     _superOver = CricketMatch(
-        homeTeam: homeTeam, awayTeam: awayTeam, maxOvers: 1, maxWickets: 2);
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      maxOvers: 1,
+    );
 
     _superOver?.startMatch(Toss(
         homeTeam,
@@ -126,7 +126,7 @@ class Innings {
   Team battingTeam;
   int? target;
   final int maxOvers;
-  final int maxWickets;
+
   final List<Over> _overs = [];
   int _runs = 0;
   int _wickets = 0;
@@ -137,8 +137,9 @@ class Innings {
   Innings({
     required this.battingTeam,
     required this.maxOvers,
-    required this.maxWickets,
   });
+
+  int get maxWickets => battingTeam.squadSize;
 
   int get runs => _runs;
   int get wickets => _wickets;

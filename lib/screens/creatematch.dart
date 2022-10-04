@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/cricketmatch.dart';
 import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/teamlist.dart';
+import 'package:scorecard/screens/createteam.dart';
+import 'package:scorecard/screens/matchscreen.dart';
 import 'package:scorecard/screens/titledpage.dart';
-import 'package:scorecard/screens/widgets/teamtile.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/styles/strings.dart';
 import 'package:scorecard/util/elements.dart';
@@ -28,28 +29,33 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
           child: Column(
             children: [
               _selectedHomeTeam != null
-                  ? TeamTile(
-                      team: _selectedHomeTeam!,
-                      onSelect: (Team team) => _chooseHomeTeam(),
-                    )
+                  ? _getSelectTeamWidget(
+                      _selectedHomeTeam!.name,
+                      _selectedHomeTeam!.shortName,
+                      ColorStyles.homeTeam,
+                      _chooseHomeTeam)
                   : _getSelectTeamWidget(
                       Strings.createMatchSelectHomeTeam,
                       Strings.createMatchHomeTeamHint,
                       ColorStyles.homeTeam,
                       _chooseHomeTeam),
               _selectedAwayTeam != null
-                  ? TeamTile(
-                      team: _selectedAwayTeam!,
-                      onSelect: (Team team) => _chooseAwayTeam(),
-                    )
+                  ? _getSelectTeamWidget(
+                      _selectedAwayTeam!.name,
+                      _selectedAwayTeam!.shortName,
+                      ColorStyles.awayTeam,
+                      _chooseHomeTeam)
                   : _getSelectTeamWidget(
                       Strings.createMatchSelectAwayTeam,
                       Strings.createMatchAwayTeamHint,
                       ColorStyles.awayTeam,
                       _chooseAwayTeam),
               const Spacer(),
+              _getSelectOversWidget(),
+              const Spacer(),
               Elements.getConfirmButton(
-                  text: Strings.createMatchStartMatch, onPressed: () {}),
+                  text: Strings.createMatchStartMatch,
+                  onPressed: () => _createMatch()),
             ],
           ),
         ));
@@ -68,32 +74,32 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     );
   }
 
+  Widget _getSelectOversWidget() {
+    return const ListTile(
+      title: Text("Overs"),
+      subtitle: Text("Default: 20 for now"),
+    );
+  }
+
   void _chooseHomeTeam() {
-    _chooseTeam((chosenTeam) {
-      if (chosenTeam == _selectedAwayTeam) {
-        _selectedAwayTeam = null;
-      }
+    _chooseTeam(_selectedHomeTeam, (chosenTeam) {
       _selectedHomeTeam = chosenTeam;
     });
   }
 
   void _chooseAwayTeam() {
-    _chooseTeam((chosenTeam) {
-      if (chosenTeam == _selectedHomeTeam) {
-        _selectedHomeTeam = null;
-      }
+    _chooseTeam(_selectedAwayTeam, (chosenTeam) {
       _selectedAwayTeam = chosenTeam;
     });
   }
 
-  void _chooseTeam(Function(Team) callInsideSetState) async {
+  void _chooseTeam(
+    Team? selectedTeam,
+    Function(Team) callInsideSetState,
+  ) async {
     Team? chosenTeam = await Utils.goToPage(
-      TitledPage(
-        title: Strings.chooseTeam,
-        child: TeamList(
-          teamList: Utils.getAllTeams(),
-          onSelect: (Team chosenTeam) => Utils.goBack(context, chosenTeam),
-        ),
+      CreateTeamForm(
+        team: selectedTeam,
       ),
       context,
     );
@@ -101,6 +107,20 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
       setState(() {
         callInsideSetState(chosenTeam);
       });
+    }
+  }
+
+  void _createMatch() {
+    if (_selectedHomeTeam != null && _selectedAwayTeam != null) {
+      Utils.goToPage(
+          MatchScreen(
+            match: CricketMatch(
+              homeTeam: _selectedHomeTeam!,
+              awayTeam: _selectedAwayTeam!,
+              maxOvers: 20,
+            ),
+          ),
+          context);
     }
   }
 }

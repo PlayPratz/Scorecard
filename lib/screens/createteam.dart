@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/basescreen.dart';
 import 'package:scorecard/screens/playerlist.dart';
 import 'package:scorecard/screens/titledpage.dart';
 import 'package:scorecard/screens/widgets/playertile.dart';
@@ -11,7 +10,9 @@ import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/utils.dart';
 
 class CreateTeamForm extends StatefulWidget {
-  const CreateTeamForm({Key? key}) : super(key: key);
+  final Team? team;
+
+  const CreateTeamForm({Key? key, this.team}) : super(key: key);
 
   @override
   State<CreateTeamForm> createState() => _CreateTeamFormState();
@@ -24,6 +25,19 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   final TextEditingController _teamNameController = TextEditingController();
   final TextEditingController _shortTeamNameController =
       TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.team != null) {
+      Team team = widget.team!;
+      _teamNameController.text = team.name;
+      _shortTeamNameController.text = team.shortName;
+      _selectedCaptain = team.squad[0];
+      _selectedPlayerList.addAll(team.squad.sublist(1));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,12 +158,13 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   }
 
   void _submitTeam() {
-    Utils.addTeam(Team(
-      _teamNameController.text,
-      _shortTeamNameController.text,
-      [_selectedCaptain!, ..._selectedPlayerList],
-    ));
-    Utils.goBack(context);
+    Utils.goBack(
+        context,
+        Team(
+          _teamNameController.text,
+          _shortTeamNameController.text,
+          [_selectedCaptain!, ..._selectedPlayerList],
+        ));
   }
 
   bool _validateForm() {

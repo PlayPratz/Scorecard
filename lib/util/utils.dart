@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/cricketmatch.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
 
@@ -28,6 +29,10 @@ class Utils {
 
   static void addTeam(Team team) {
     _teamList.add(team);
+  }
+
+  static List<CricketMatch> getAllMatches() {
+    return [];
   }
 }
 
@@ -82,7 +87,4 @@ final List<Player> _playerList = [
   ),
 ];
 
-final List<Team> _teamList = [
-  Team("Mumbai Indians", "MI", []),
-  Team("Chennai Super Kings", "CSK", [])
-];
+final List<Team> _teamList = [];

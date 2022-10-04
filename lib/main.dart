@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/statistics.dart';
-import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/screens/hometabview.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/styles/textstyles.dart';

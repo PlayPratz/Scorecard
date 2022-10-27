@@ -26,10 +26,11 @@ class Elements {
         width: double.infinity,
         height: 56,
         child: OutlinedButton(
-            onPressed: onPressed,
-            child: Text(
-              text,
-            )),
+          onPressed: onPressed,
+          child: Text(
+            text,
+          ),
+        ),
       ),
     );
   }

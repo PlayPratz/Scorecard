@@ -4,15 +4,13 @@ import 'package:scorecard/util/utils.dart';
 
 class ItemList extends StatelessWidget {
   final List<Widget> itemList;
-  final Widget? createItemPage;
-  final String? createItemString;
+  final CreateItemEntry? createItem;
   final Icon? trailingIcon;
 
   const ItemList({
     Key? key,
     required this.itemList,
-    this.createItemPage,
-    this.createItemString,
+    this.createItem,
     this.trailingIcon = const Icon(Icons.chevron_right),
   }) : super(key: key);
 
@@ -20,16 +18,17 @@ class ItemList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       // padding: const EdgeInsets.symmetric(horizontal: 12),
+
       children: [
-        createItemPage != null && createItemString != null
+        createItem != null
             ? Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: ListTile(
-                    title: Text(createItemString!),
+                    title: Text(createItem!.string),
                     leading: Elements.addIcon,
                     trailing: trailingIcon,
                     onTap: () {
-                      Utils.goToPage(createItemPage!, context);
+                      Utils.goToPage(createItem!.page, context);
                     }),
               )
             : Container(),
@@ -37,4 +36,11 @@ class ItemList extends StatelessWidget {
       ],
     );
   }
+}
+
+class CreateItemEntry {
+  final Widget page;
+  final String string;
+
+  CreateItemEntry({required this.page, required this.string});
 }

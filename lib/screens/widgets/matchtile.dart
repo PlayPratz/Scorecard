@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/cricketmatch.dart';
+import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/styles/strings.dart';
@@ -22,19 +23,19 @@ class MatchTile extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            getMatchDetails(),
+            _wMatchDetails(),
             const Divider(),
             _InningsTile(match.homeInnings),
             _InningsTile(match.awayInnings),
             const Divider(),
-            getSummary()
+            _wSummary()
           ],
         ),
       ),
     );
   }
 
-  Widget getSummary() {
+  Widget _wSummary() {
     List<TextSpan> textSpan;
     switch (match.matchState) {
       case MatchState.notStarted:
@@ -195,7 +196,7 @@ class MatchTile extends StatelessWidget {
     );
   }
 
-  Widget getMatchDetails() {
+  Widget _wMatchDetails() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -237,10 +238,10 @@ class _InningsTile extends StatelessWidget {
               .subtitle1
               ?.merge(const TextStyle(fontWeight: FontWeight.bold)),
         ),
-        trailing: getScore(context));
+        trailing: _wScoreDisplay(context));
   }
 
-  Widget getScore(BuildContext context) {
+  Widget _wScoreDisplay(BuildContext context) {
     if (innings.isInPlay || innings.isCompleted) {
       String score = innings.runs.toString() + "/" + innings.wickets.toString();
       TextTheme textTheme = Theme.of(context).textTheme;

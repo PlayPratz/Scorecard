@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/team.dart';
+import 'package:scorecard/screens/widgets/teamdummytile.dart';
 
 class TeamTile extends StatelessWidget {
   final Team team;
@@ -10,7 +11,7 @@ class TeamTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    /* return ListTile(
       title: Text(team.name),
       subtitle: Text(team.shortName),
       leading: const Icon(Icons.people),
@@ -20,6 +21,19 @@ class TeamTile extends StatelessWidget {
           onSelect!(team);
         }
       },
+    ); */
+
+    return InkWell(
+      onTap: () {
+        if (onSelect != null) {
+          onSelect!(team);
+        }
+      },
+      child: TeamDummyTile(
+        primaryHint: team.name,
+        secondaryHint: team.shortName,
+        isHomeTeam: true,
+      ),
     );
   }
 }

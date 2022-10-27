@@ -11,10 +11,11 @@ class MatchList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ItemList(
-      itemList: getMatchList(),
-      createItemPage: CreateMatchForm(),
-      createItemString: Strings.matchlistCreateNewMatch,
-    );
+        itemList: getMatchList(),
+        createItem: CreateItemEntry(
+          page: CreateMatchForm(),
+          string: Strings.matchlistCreateNewMatch,
+        ));
   }
 
   List<Widget> getMatchList() {

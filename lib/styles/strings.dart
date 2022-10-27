@@ -1,5 +1,6 @@
 import 'package:scorecard/models/cricketmatch.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/wicket.dart';
 
 class Strings {
   Strings._();
@@ -71,12 +72,17 @@ class Strings {
   static const String choosePlayer = "Choose a player";
   static const String chooseTeam = "Choose a team";
 
+  // Match Screen
+  static const String addWicket = "Add Wicket";
+  static const String addWicketHint =
+      "Specify which unfortunate player lost their wicket and how.";
+
   static String getTossChoice(TossChoice tossChoice) {
     switch (tossChoice) {
       case TossChoice.bat:
-        return "bat";
+        return "Bat";
       case TossChoice.bowl:
-        return "field";
+        return "Field";
     }
   }
 
@@ -97,5 +103,35 @@ class Strings {
       case BowlStyle.fast:
         return " Fast";
     }
+  }
+
+  static String getDismissalName(Dismissal dismissal) {
+    switch (dismissal) {
+      case Dismissal.bowled:
+        return "Bowled";
+      case Dismissal.caught:
+        return "Caught";
+      case Dismissal.lbw:
+        return "LBW";
+      case Dismissal.hitWicket:
+        return "Hit Wicket";
+      case Dismissal.stumped:
+        return "Stumped";
+      case Dismissal.runout:
+        return "Run Out";
+
+      case Dismissal.retired:
+        return "Retired";
+      case Dismissal.hitTwice:
+        return "Hit Twice";
+      case Dismissal.obstructingField:
+        return "Obstructing The Field";
+      case Dismissal.timedOut:
+        return "Timed Out";
+    }
+  }
+
+  static String getRunText(int run) {
+    return run.toString();
   }
 }

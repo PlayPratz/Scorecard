@@ -23,10 +23,11 @@ class PlayerList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (showAddButton) {
       return ItemList(
-        itemList: getPlayerList(),
-        createItemPage: CreatePlayerForm(),
-        createItemString: Strings.addNewPlayer,
-      );
+          itemList: getPlayerList(),
+          createItem: CreateItemEntry(
+            page: CreatePlayerForm(),
+            string: Strings.addNewPlayer,
+          ));
     }
 
     return ItemList(

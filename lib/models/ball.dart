@@ -4,25 +4,30 @@ import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/constants.dart';
 
 class Ball {
-  int legalRuns;
+  int battingRuns;
   Wicket? wicket;
   BowlingExtra? bowlingExtra;
+  BattingExtra? battingExtra;
 
-  Ball(this.legalRuns);
+  Player playedBy;
+
+  Ball(this.battingRuns, this.playedBy);
 
   /// Creates a ball that is a wicket of type [wicket] with the specified number of [runs].
-  Ball.wicket(this.legalRuns, this.wicket);
+  Ball.wicket(this.battingRuns, this.playedBy, this.wicket);
 
   /// Creates a ball that is a bowling extra of type [bowlingExtra] with the specified number of [runs].
   ///
   /// DO NOT specify the number of runs due to the extra. That will be added automatically.
-  Ball.bowlingExtra(this.legalRuns, this.bowlingExtra);
+  Ball.bowlingExtra(this.battingRuns, this.playedBy, this.bowlingExtra);
 
-  int get totalRuns => legalRuns + bowlingExtraRuns;
+  int get totalRuns => battingRuns + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;
+  int get batterRuns => isBattingExtra ? 0 : battingRuns;
 
   bool get isWicket => wicket != null;
   bool get isBowlingExtra => bowlingExtra != null;
+  bool get isBattingExtra => battingExtra != null;
 }
 
 class Over {
@@ -63,11 +68,10 @@ class Over {
   }
 }
 
-// enum LegalDelivery {
-//   normal,
-//   bye,
-//   legBye,
-// }
+enum BattingExtra {
+  bye,
+  legBye,
+}
 
 enum BowlingExtra {
   noBall,

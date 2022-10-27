@@ -3,6 +3,8 @@ import 'package:scorecard/models/result.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/util/constants.dart';
 
+import 'innings.dart';
+
 class CricketMatch {
   Team homeTeam;
   Team awayTeam;
@@ -67,7 +69,7 @@ class CricketMatch {
   }
 
   void finishFirstInnings() {
-    firstInnings._isCompleted = true;
+    // firstInnings.isCompleted = true;
     secondInnings.target = firstInnings.runs + 1;
     _matchState = MatchState.secondInnings;
     secondInnings.isInPlay = true;
@@ -119,120 +121,6 @@ class CricketMatch {
             ? TossChoice.bowl
             : TossChoice
                 .bat)); // This ensures that the order of innings is swapped.
-  }
-}
-
-class Innings {
-  Team battingTeam;
-  int? target;
-  final int maxOvers;
-
-  final List<Over> _overs = [];
-  int _runs = 0;
-  int _wickets = 0;
-
-  bool _isInPlay = false;
-  bool _isCompleted = false;
-
-  Innings({
-    required this.battingTeam,
-    required this.maxOvers,
-  });
-
-  int get maxWickets => battingTeam.squadSize;
-
-  int get runs => _runs;
-  int get wickets => _wickets;
-
-  int get wicketsRemaining => maxWickets - wickets;
-
-  int get oversCompleted {
-    if (_overs.isEmpty) {
-      return 0;
-    }
-    int bowledOvers = _overs.length;
-    if (!_overs.last.isCompleted) {
-      bowledOvers--;
-    }
-    return bowledOvers;
-  }
-
-  int get ballsBowled {
-    if (_overs.isEmpty) {
-      return 0;
-    }
-    if (_overs.last.isCompleted) {
-      return Constants.ballsPerOver * oversCompleted;
-    }
-    return Constants.ballsPerOver * oversCompleted +
-        _overs.last.numOfBallsBowled;
-  }
-
-  int get ballsRemaining => Constants.ballsPerOver * maxOvers - ballsBowled;
-
-  String get oversBowled {
-    if (_overs.isEmpty) {
-      return "0.0";
-    }
-    String numOfBallsLeft =
-        _overs.last.isCompleted ? "0" : _overs.last.numOfLegalBalls.toString();
-    return oversCompleted.toString() + "." + numOfBallsLeft;
-  }
-
-  set isInPlay(bool isInPlay) => _isInPlay = isInPlay;
-  bool get isInPlay => (_isInPlay || _overs.isNotEmpty) && !isCompleted;
-  bool get isCompleted => _isCompleted ||
-          oversCompleted == maxOvers ||
-          wicketsRemaining == 0 ||
-          target != null
-      ? runsRequired <= 0
-      : false;
-
-  double get runRatePerOver => Constants.ballsPerOver * runs / ballsBowled;
-  int get runsProjected => (maxOvers * runRatePerOver).floor();
-
-  int get runsRequired {
-    if (target == null) {
-      // TODO Exception
-      return -1;
-    }
-    return target! - runs;
-  }
-
-  double get runRateRequired {
-    if (target == null) {
-      // Exception
-      return -1;
-    }
-    return Constants.ballsPerOver * runsRequired / ballsRemaining;
-  }
-
-  void addBall(Ball ball) {
-    if (isCompleted) {
-      //Exception
-      return;
-    }
-    _overs.last.addBall(ball);
-
-    _runs += ball.totalRuns;
-    if (ball.isWicket) {
-      _wickets++;
-    }
-
-    if ((wicketsRemaining == 0) || // The batting team is all down
-        (ballsRemaining == 0) || // All overs have been bowled
-        (target != null && target! <= _runs)) {
-      // The batting team has chased its target
-      _isCompleted = true;
-    }
-  }
-
-  void addOver(Over over) {
-    if (isCompleted || (_overs.isNotEmpty && !_overs.last.isCompleted)) {
-      // Exception
-      return;
-    }
-    _overs.add(over);
   }
 }
 

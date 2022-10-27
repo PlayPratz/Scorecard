@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/cricketmatch.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/createteam.dart';
-import 'package:scorecard/screens/matchscreen.dart';
+import 'package:scorecard/screens/matchscreen/matchscreen.dart';
 import 'package:scorecard/screens/titledpage.dart';
+import 'package:scorecard/screens/widgets/teamdummytile.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/styles/strings.dart';
 import 'package:scorecard/util/elements.dart';
@@ -29,29 +30,23 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
           child: Column(
             children: [
               _selectedHomeTeam != null
-                  ? _getSelectTeamWidget(
-                      _selectedHomeTeam!.name,
-                      _selectedHomeTeam!.shortName,
-                      ColorStyles.homeTeam,
-                      _chooseHomeTeam)
-                  : _getSelectTeamWidget(
+                  ? _wSelectTeam(_selectedHomeTeam!.name,
+                      _selectedHomeTeam!.shortName, ColorStyles.homeTeam, true)
+                  : _wSelectTeam(
                       Strings.createMatchSelectHomeTeam,
                       Strings.createMatchHomeTeamHint,
                       ColorStyles.homeTeam,
-                      _chooseHomeTeam),
+                      true),
               _selectedAwayTeam != null
-                  ? _getSelectTeamWidget(
-                      _selectedAwayTeam!.name,
-                      _selectedAwayTeam!.shortName,
-                      ColorStyles.awayTeam,
-                      _chooseHomeTeam)
-                  : _getSelectTeamWidget(
+                  ? _wSelectTeam(_selectedAwayTeam!.name,
+                      _selectedAwayTeam!.shortName, ColorStyles.awayTeam, false)
+                  : _wSelectTeam(
                       Strings.createMatchSelectAwayTeam,
                       Strings.createMatchAwayTeamHint,
                       ColorStyles.awayTeam,
-                      _chooseAwayTeam),
+                      false),
               const Spacer(),
-              _getSelectOversWidget(),
+              _wSelectOvers(),
               const Spacer(),
               Elements.getConfirmButton(
                   text: Strings.createMatchStartMatch,
@@ -61,20 +56,17 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
         ));
   }
 
-  Widget _getSelectTeamWidget(String primaryHint, String secondaryHint,
-      Color iconColor, Function onTap) {
-    return InkWell(
-      onTap: () => onTap(),
-      child: ListTile(
-        title: Text(primaryHint),
-        subtitle: Text(secondaryHint),
-        leading: Icon(Icons.people, color: iconColor),
-        trailing: const Icon(Icons.chevron_right),
-      ),
+  Widget _wSelectTeam(String primaryHint, String secondaryHint, Color iconColor,
+      bool isHomeTeam) {
+    return TeamDummyTile(
+      primaryHint: primaryHint,
+      secondaryHint: secondaryHint,
+      isHomeTeam: isHomeTeam,
+      onSelect: isHomeTeam ? _chooseHomeTeam : _chooseAwayTeam,
     );
   }
 
-  Widget _getSelectOversWidget() {
+  Widget _wSelectOvers() {
     return const ListTile(
       title: Text("Overs"),
       subtitle: Text("Default: 20 for now"),

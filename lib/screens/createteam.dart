@@ -46,108 +46,11 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
       child: Form(
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: TextFormField(
-                    controller: _teamNameController,
-                    maxLength: 25,
-                    decoration: const InputDecoration(
-                        label: Text(Strings.createTeamTeamName)),
-                  ),
-                ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: TextFormField(
-                    controller: _shortTeamNameController,
-                    textCapitalization: TextCapitalization.characters,
-                    maxLength: 4,
-                    decoration: const InputDecoration(
-                        label: Text(Strings.createTeamShortName)),
-                  ),
-                ),
-              ],
-            ),
+            _wTeamNameChooser(),
             const SizedBox(height: 16),
-            _selectedCaptain == null
-                ? ListTile(
-                    leading: const CircleAvatar(
-                      child: Icon(Icons.person),
-                    ),
-                    title: const Text(Strings.createTeamSelectCaptain),
-                    isThreeLine: true,
-                    subtitle: const Text(
-                      Strings.createTeamCaptainHint,
-                    ),
-                    trailing: Elements.forwardIcon,
-                    onTap: _chooseCaptain,
-                  )
-                : Column(
-                    children: [
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: const Text(
-                          Strings.captain,
-                        ),
-                      ),
-                      PlayerTile(
-                        _selectedCaptain!,
-                        onSelect: (Player player) => _chooseCaptain(),
-                      ),
-                    ],
-                  ),
+            _wCaptainChooser(),
             const SizedBox(height: 16),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: ColorStyles.highlight),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: ListTile(
-                          leading: const Icon(Icons.people),
-                          title: const Text(Strings.squad),
-                          subtitle: const Text(
-                            Strings.createTeamSquadHint,
-                          ),
-                          trailing: Elements.addIcon,
-                          onTap: () async {
-                            List<Player> filteredPlayerList =
-                                Utils.getAllPlayers();
-                            filteredPlayerList.removeWhere((player) =>
-                                _selectedPlayerList.contains(player));
-                            filteredPlayerList.remove(_selectedCaptain);
-                            Player? player = await _getPlayerFromList(
-                                filteredPlayerList, context);
-                            if (player != null) {
-                              setState(() {
-                                _selectedPlayerList.add(player);
-                              });
-                            }
-                          }),
-                    ),
-                    const Divider(thickness: 1),
-                    Expanded(
-                      child: PlayerList(
-                        playerList: _selectedPlayerList,
-                        showAddButton: false,
-                        trailingIcon: Elements.removeIcon,
-                        onSelectPlayer: (Player player) {
-                          setState(() {
-                            _selectedPlayerList.remove(player);
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _wSquadChooser(),
             Elements.getConfirmButton(
                 text: Strings.createTeamCreate,
                 onPressed: _validateForm() ? _submitTeam : null),
@@ -205,5 +108,113 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
         _selectedCaptain = chosenCaptain;
       });
     }
+  }
+
+  Widget _wTeamNameChooser() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: TextFormField(
+            controller: _teamNameController,
+            maxLength: 25,
+            decoration:
+                const InputDecoration(label: Text(Strings.createTeamTeamName)),
+          ),
+        ),
+        const SizedBox(width: 24),
+        Expanded(
+          child: TextFormField(
+            controller: _shortTeamNameController,
+            textCapitalization: TextCapitalization.characters,
+            maxLength: 4,
+            decoration:
+                const InputDecoration(label: Text(Strings.createTeamShortName)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _wCaptainChooser() {
+    return _selectedCaptain == null
+        ? ListTile(
+            leading: const CircleAvatar(
+              child: Icon(Icons.person),
+            ),
+            title: const Text(Strings.createTeamSelectCaptain),
+            isThreeLine: true,
+            subtitle: const Text(
+              Strings.createTeamCaptainHint,
+            ),
+            trailing: Elements.forwardIcon,
+            onTap: _chooseCaptain,
+          )
+        : Column(
+            children: [
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: const Text(
+                  Strings.captain,
+                ),
+              ),
+              PlayerTile(
+                _selectedCaptain!,
+                onSelect: (Player player) => _chooseCaptain(),
+              ),
+            ],
+          );
+  }
+
+  Widget _wSquadChooser() {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: ColorStyles.highlight),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: ListTile(
+                  leading: const Icon(Icons.people),
+                  title: const Text(Strings.squad),
+                  subtitle: const Text(
+                    Strings.createTeamSquadHint,
+                  ),
+                  trailing: Elements.addIcon,
+                  onTap: () async {
+                    List<Player> filteredPlayerList = Utils.getAllPlayers();
+                    filteredPlayerList.removeWhere(
+                        (player) => _selectedPlayerList.contains(player));
+                    filteredPlayerList.remove(_selectedCaptain);
+                    Player? player =
+                        await _getPlayerFromList(filteredPlayerList, context);
+                    if (player != null) {
+                      setState(() {
+                        _selectedPlayerList.add(player);
+                      });
+                    }
+                  }),
+            ),
+            const Divider(thickness: 1),
+            Expanded(
+              child: PlayerList(
+                playerList: _selectedPlayerList,
+                showAddButton: false,
+                trailingIcon: Elements.removeIcon,
+                onSelectPlayer: (Player player) {
+                  setState(() {
+                    _selectedPlayerList.remove(player);
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -75,7 +75,7 @@ class Strings {
   // Match Screen
   static const String addWicket = "Add Wicket";
   static const String addWicketHint =
-      "Specify which unfortunate player lost their wicket and how.";
+      "Specify how an unfortunate batter lost their wicket";
 
   static String getTossChoice(TossChoice tossChoice) {
     switch (tossChoice) {

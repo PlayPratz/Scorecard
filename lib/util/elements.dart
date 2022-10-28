@@ -18,6 +18,20 @@ class Elements {
     Icons.chevron_right,
   );
 
+  static const Icon onlineIcon = Icon(
+    Icons.fiber_manual_record,
+    size: 12,
+    color: ColorStyles.currentlyBatting,
+  );
+
+  static Widget getOnlineIndicator(bool isOnline) {
+    return SizedBox(
+      height: 18,
+      width: 18,
+      child: isOnline ? Elements.onlineIcon : null,
+    );
+  }
+
   static Widget getConfirmButton(
       {required String text, Function()? onPressed}) {
     return Padding(

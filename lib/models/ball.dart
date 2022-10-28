@@ -1,5 +1,4 @@
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/statistics.dart';
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/constants.dart';
 
@@ -23,6 +22,8 @@ class Ball {
   /// The batter who faced the delivery
   Player batter;
 
+  bool _shouldCountBall = true;
+
   Ball(
       {required this.bowler,
       required this.batter,
@@ -44,24 +45,34 @@ class Ball {
       this.bowlingExtra,
       this.battingExtra});
 
+  /// Creates a ball that is not bowled, but a runout is recorded
+  Ball.RunoutBeforeDelivery({
+    required this.bowler,
+    required this.batter,
+  })  : runsScored = 0,
+        wicket = RunoutWicket(batter, bowler),
+        _shouldCountBall = false;
+
   int get totalRuns => runsScored + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;
   int get batterRuns => isBattingExtra ? 0 : runsScored;
 
   bool get isWicket => wicket != null;
+  bool get isBowlerWicket =>
+      (isWicket && BowlerDismissals.contains(wicket!.dismissal));
   bool get isBowlingExtra => bowlingExtra != null;
   bool get isBattingExtra => battingExtra != null;
+  bool get shouldCount => _shouldCountBall && !isBowlingExtra;
 }
 
 class Over {
   Player bowler;
   List<Ball> balls = [];
-  BowlingStatistics statistics = BowlingStatistics();
+  // BowlingStatistics statistics = BowlingStatistics();
 
   Over(this.bowler);
 
-  List<Ball> get legalBalls =>
-      balls.where((ball) => !ball.isBowlingExtra).toList();
+  List<Ball> get legalBalls => balls.where((ball) => ball.shouldCount).toList();
 
   List<Ball> get bowlingExtraBalls =>
       balls.where((ball) => ball.isBowlingExtra).toList();
@@ -74,7 +85,9 @@ class Over {
   int get numOfBallsBowled => legalBalls.length;
   bool get isCompleted => numOfBallsLeft == 0;
 
-  int get totalRuns => statistics.runsConceded;
+  // int get totalRuns => statistics.runsConceded;
+  int get totalRuns => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
+  int get bowlerWickets => balls.where((ball) => ball.isBowlerWicket).length;
   int get totalWickets => wicketBalls.length;
 
   void addBall(Ball ball) {
@@ -83,13 +96,6 @@ class Over {
       return;
     }
     balls.add(ball);
-
-    // Statistics
-    statistics.ballsBowled++;
-    statistics.runsConceded += ball.totalRuns;
-    if (ball.isWicket) {
-      statistics.wicketsTaken++;
-    }
   }
 }
 

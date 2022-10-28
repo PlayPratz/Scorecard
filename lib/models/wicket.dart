@@ -45,8 +45,9 @@ class HitWicket extends _BowlerWicket {
   Dismissal get dismissal => Dismissal.hitWicket;
 }
 
-class StumpedWicket extends _BowlerWicket {
-  StumpedWicket(Player batsman, Player bowler) : super(batsman, bowler);
+class StumpedWicket extends CatchWicket {
+  StumpedWicket(Player batsman, Player bowler, Player stumper)
+      : super(batsman, bowler, stumper);
 
   @override
   Dismissal get dismissal => Dismissal.stumped;
@@ -76,11 +77,14 @@ class ObstructingFieldWicket extends Wicket {
 }
 
 enum Dismissal {
+  // Bowler Wickets
   bowled,
   caught,
   lbw,
   hitWicket,
   stumped,
+
+  // Team Wickets
   runout,
   // uncommon dimissals
   retired,
@@ -88,3 +92,11 @@ enum Dismissal {
   obstructingField,
   timedOut
 }
+
+const BowlerDismissals = [
+  Dismissal.bowled,
+  Dismissal.caught,
+  Dismissal.lbw,
+  Dismissal.hitWicket,
+  Dismissal.stumped
+];

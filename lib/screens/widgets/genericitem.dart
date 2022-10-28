@@ -5,16 +5,20 @@ import 'package:flutter/material.dart';
 class GenericItem extends StatefulWidget {
   final String primaryHint;
   final String secondaryHint;
-  final Icon? leading;
+  final Widget? leading;
   final Function? onSelect;
+  final _GenericItemVariant variant;
+  final Widget trailing;
 
-  const GenericItem({
-    Key? key,
-    required this.primaryHint,
-    required this.secondaryHint,
-    this.leading,
-    this.onSelect,
-  }) : super(key: key);
+  const GenericItem(
+      {Key? key,
+      required this.primaryHint,
+      required this.secondaryHint,
+      this.leading,
+      this.onSelect,
+      this.variant = _GenericItemVariant.normal,
+      this.trailing = const Icon(Icons.chevron_right)})
+      : super(key: key);
 
   @override
   State<GenericItem> createState() => _GenericItemState();
@@ -24,10 +28,15 @@ class _GenericItemState extends State<GenericItem> {
   @override
   Widget build(BuildContext context) {
     final teamDummyTile = ListTile(
-      title: Text(widget.primaryHint),
+      title: FittedBox(
+          alignment: Alignment.centerLeft,
+          fit: BoxFit.scaleDown,
+          child: Text(
+            widget.primaryHint,
+          )),
       subtitle: Text(widget.secondaryHint),
       leading: widget.leading,
-      trailing: const Icon(Icons.chevron_right),
+      trailing: widget.trailing,
     );
 
     if (widget.onSelect == null) {
@@ -41,3 +50,5 @@ class _GenericItemState extends State<GenericItem> {
         child: teamDummyTile);
   }
 }
+
+enum _GenericItemVariant { normal, small }

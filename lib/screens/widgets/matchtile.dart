@@ -4,6 +4,7 @@ import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/styles/strings.dart';
+import 'package:scorecard/util/elements.dart';
 
 class MatchTile extends StatelessWidget {
   final CricketMatch match;
@@ -78,7 +79,7 @@ class MatchTile extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold)),
           const TextSpan(text: Strings.scoreRunsAtCurrentRate),
           TextSpan(
-              text: match.firstInnings.runRatePerOver.toString(),
+              text: match.firstInnings.runRatePerOver.toStringAsFixed(2),
               style: const TextStyle(fontWeight: FontWeight.bold)),
           const TextSpan(text: Strings.scoreRunsPerOver),
         ];
@@ -221,16 +222,7 @@ class _InningsTile extends StatelessWidget {
         minVerticalPadding: 0,
         minLeadingWidth: 0,
         dense: true,
-        leading: Container(
-          height: 10,
-          width: 10,
-          decoration: innings.isInPlay
-              ? const BoxDecoration(
-                  color: ColorStyles.currentlyBatting,
-                  shape: BoxShape.circle,
-                )
-              : null,
-        ),
+        leading: Elements.getOnlineIndicator(innings.isInPlay),
         title: Text(
           innings.battingTeam.name,
           style: Theme.of(context)

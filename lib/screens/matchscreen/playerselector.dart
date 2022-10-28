@@ -8,34 +8,36 @@ import 'package:scorecard/screens/widgets/playertile.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/utils.dart';
 
-class BatterSelector extends StatefulWidget {
+class PlayerSelector extends StatefulWidget {
   // final int numOfBatters;
 
   final Team team;
-  final Function(Player) onBatterSelect;
-  const BatterSelector(
-      {Key? key, required this.team, required this.onBatterSelect})
-      : super(key: key);
+  final String selectionHeading;
+  final Function(Player) onPlayerSelect;
+  const PlayerSelector({
+    Key? key,
+    required this.team,
+    required this.onPlayerSelect,
+    required this.selectionHeading,
+  }) : super(key: key);
 
   @override
-  State<BatterSelector> createState() => _BatterSelectorState();
+  State<PlayerSelector> createState() => _PlayerSelectorState();
 }
 
-class _BatterSelectorState extends State<BatterSelector> {
+class _PlayerSelectorState extends State<PlayerSelector> {
   // final List<Player> selectedBatters = [];
-  Player? _batterSelection;
+  Player? _playerSelection;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text("Select Batter"),
-        _wBatterSelection(_batterSelection),
+        Text(widget.selectionHeading),
+        _wBatterSelection(_playerSelection),
         Spacer(),
         Elements.getConfirmButton(
-            text: "Select",
-            onPressed: () =>
-                validate() ? widget.onBatterSelect(_batterSelection!) : null),
+            text: "Select", onPressed: () => validate() ? _process() : null),
       ],
     );
   }
@@ -43,18 +45,18 @@ class _BatterSelectorState extends State<BatterSelector> {
   Widget _wBatterSelection(Player? batter) {
     if (batter == null) {
       return GenericItem(
-        primaryHint: "Choose a batter",
-        secondaryHint: "Hopefully they score enough runs",
+        primaryHint: "Choose a player",
+        secondaryHint: "Hopefully they perform well",
         onSelect: () {
           Utils.goToPage(
               TitledPage(
-                  title: "Pick a batter",
+                  title: "Pick a player",
                   child: PlayerList(
                     playerList: widget.team.squad,
                     showAddButton: false,
                     onSelectPlayer: (player) {
                       setState(() {
-                        _batterSelection = player;
+                        _playerSelection = player;
                       });
                       Utils.goBack(context);
                     },
@@ -66,5 +68,10 @@ class _BatterSelectorState extends State<BatterSelector> {
     return PlayerTile(batter);
   }
 
-  bool validate() => _batterSelection != null;
+  void _process() {
+    widget.onPlayerSelect(_playerSelection!);
+    _playerSelection = null;
+  }
+
+  bool validate() => _playerSelection != null;
 }

@@ -23,8 +23,10 @@ class CricketMatch {
       {required this.homeTeam,
       required this.awayTeam,
       required this.maxOvers}) {
-    _homeInnings = Innings(battingTeam: homeTeam, maxOvers: maxOvers);
-    _awayInnings = Innings(battingTeam: awayTeam, maxOvers: maxOvers);
+    _homeInnings = Innings(
+        battingTeam: homeTeam, bowlingTeam: awayTeam, maxOvers: maxOvers);
+    _awayInnings = Innings(
+        battingTeam: awayTeam, bowlingTeam: homeTeam, maxOvers: maxOvers);
   }
 
   bool get isTossCompleted => toss != null;

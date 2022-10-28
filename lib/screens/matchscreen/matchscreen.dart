@@ -52,7 +52,10 @@ class _MatchScreenState extends State<MatchScreen> {
         );
 
       case MatchState.tossCompleted:
-        return BatterSelector();
+        return BatterSelector(
+          onBatterSelect: (batter) {},
+          team: widget.match.currentInnings.battingTeam,
+        );
 
       default:
         return BallSelector();

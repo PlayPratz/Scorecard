@@ -9,4 +9,5 @@ class Team {
   Team(this.name, this.shortName, this.squad);
 
   int get squadSize => squad.length;
+  Player get captain => squad.first;
 }

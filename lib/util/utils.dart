@@ -85,6 +85,28 @@ final List<Player> _playerList = [
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,
   ),
+  Player.withPhoto(
+    id: 7,
+    name: "Kyle",
+    imagePath: "assets/images/roshan.jpg",
+    batArm: Arm.right,
+    bowlArm: Arm.right,
+    bowlStyle: BowlStyle.spin,
+  ),
+  Player(
+    id: 8,
+    name: "Darren",
+    batArm: Arm.right,
+    bowlArm: Arm.right,
+    bowlStyle: BowlStyle.spin,
+  ),
+  Player(
+    id: 9,
+    name: "arjun",
+    batArm: Arm.right,
+    bowlArm: Arm.right,
+    bowlStyle: BowlStyle.spin,
+  ),
 ];
 
 final List<Team> _teamList = [];

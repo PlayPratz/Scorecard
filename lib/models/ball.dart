@@ -4,26 +4,49 @@ import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/constants.dart';
 
 class Ball {
-  int battingRuns;
+  /// Runs awarded to the batting team by facing this [Ball].
+  /// <br/> Note: Do not specify the runs due to a bowling extra.
+  int runsScored;
+
+  /// The [Wicket], if any, which was taken on this [Ball]
   Wicket? wicket;
+
+  /// The type of [BowlingExtra] if applicable
   BowlingExtra? bowlingExtra;
+
+  /// The type of [BattingExtra] if applicable
   BattingExtra? battingExtra;
 
-  Player playedBy;
+  /// The bowler who bowled the delivery
+  Player bowler;
 
-  Ball(this.battingRuns, this.playedBy);
+  /// The batter who faced the delivery
+  Player batter;
 
-  /// Creates a ball that is a wicket of type [wicket] with the specified number of [runs].
-  Ball.wicket(this.battingRuns, this.playedBy, this.wicket);
+  Ball(
+      {required this.bowler,
+      required this.batter,
+      required this.runsScored,
+      this.wicket,
+      this.battingExtra,
+      this.bowlingExtra});
 
-  /// Creates a ball that is a bowling extra of type [bowlingExtra] with the specified number of [runs].
-  ///
-  /// DO NOT specify the number of runs due to the extra. That will be added automatically.
-  Ball.bowlingExtra(this.battingRuns, this.playedBy, this.bowlingExtra);
+  /// Creates a ball that does not constitute a wicket and is not an extra of any kind
+  Ball.runs(
+      {required this.bowler, required this.batter, required this.runsScored});
 
-  int get totalRuns => battingRuns + bowlingExtraRuns;
+  /// Creates a ball that is a wicket of type [Wicket] with the specified number of [runsScored].
+  Ball.wicket(
+      {required this.bowler,
+      required this.batter,
+      this.runsScored = 0,
+      required this.wicket,
+      this.bowlingExtra,
+      this.battingExtra});
+
+  int get totalRuns => runsScored + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;
-  int get batterRuns => isBattingExtra ? 0 : battingRuns;
+  int get batterRuns => isBattingExtra ? 0 : runsScored;
 
   bool get isWicket => wicket != null;
   bool get isBowlingExtra => bowlingExtra != null;
@@ -50,7 +73,9 @@ class Over {
   int get numOfBallsLeft => Constants.ballsPerOver - numOfLegalBalls;
   int get numOfBallsBowled => legalBalls.length;
   bool get isCompleted => numOfBallsLeft == 0;
+
   int get totalRuns => statistics.runsConceded;
+  int get totalWickets => wicketBalls.length;
 
   void addBall(Ball ball) {
     if (isCompleted) {
@@ -68,11 +93,13 @@ class Over {
   }
 }
 
+/// Possible types of extras by the batting team
 enum BattingExtra {
   bye,
   legBye,
 }
 
+/// Possible types of extras by the bowling team
 enum BowlingExtra {
   noBall,
   wide,

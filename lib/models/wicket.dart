@@ -1,9 +1,9 @@
 import 'package:scorecard/models/player.dart';
 
 abstract class Wicket {
-  Player batsman;
+  Player batter;
 
-  Wicket(this.batsman);
+  Wicket(this.batter);
 
   Dismissal get dismissal;
 }

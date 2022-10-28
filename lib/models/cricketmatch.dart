@@ -1,7 +1,5 @@
-import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/models/team.dart';
-import 'package:scorecard/util/constants.dart';
 
 import 'innings.dart';
 
@@ -115,12 +113,9 @@ class CricketMatch {
       maxOvers: 1,
     );
 
-    _superOver?.startMatch(Toss(
-        homeTeam,
-        _isHomeInningsFirst
-            ? TossChoice.bowl
-            : TossChoice
-                .bat)); // This ensures that the order of innings is swapped.
+    _superOver?.startMatch(
+      Toss(homeTeam, _isHomeInningsFirst ? TossChoice.bowl : TossChoice.bat),
+    ); // This ensures that the order of innings is swapped.
   }
 }
 

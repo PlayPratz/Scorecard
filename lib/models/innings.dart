@@ -17,18 +17,17 @@ class Innings {
   });
 
   final List<Over> _overs = [];
-  int _runs = 0;
-  int _wickets = 0;
+  final List<_BatterInnings> _battingTeamInnings = [];
+  final List<_BowlerInnings> _bowlerTeamInnings = [];
 
   bool _isInPlay = false;
   bool _isCompleted = false;
 
-  List<_BatterInnings> _battingTeamInnings = [];
-
   int get maxWickets => battingTeam.squadSize;
 
-  int get runs => _runs;
-  int get wickets => _wickets;
+  int get runs => _overs.fold(0, (runs, over) => runs + over.totalRuns);
+  int get wickets =>
+      _overs.fold(0, (wickets, over) => wickets + over.totalWickets);
 
   int get wicketsRemaining => maxWickets - wickets;
 
@@ -80,7 +79,7 @@ class Innings {
   int get runsRequired {
     if (target == null) {
       // TODO Exception
-      return -1;
+      throw UnimplementedError();
     }
     return target! - runs;
   }
@@ -96,20 +95,43 @@ class Innings {
   void addBall(Ball ball) {
     if (isCompleted) {
       //TODO Exception
-      return;
+      throw UnimplementedError();
     }
+
+    if (_overs.last.isCompleted) {
+      // Add new over
+      Over newOver = Over(ball.bowler);
+      _overs.add(newOver);
+
+      // Add current over to BowlerInnings
+      _bowlerTeamInnings.firstWhere(
+        (bowlerInnings) => bowlerInnings.bowler == ball.bowler,
+        orElse: () {
+          // No such bowler exists in the current BowlerInnings list.
+          // Add to list
+          _BowlerInnings newBowlerInnings = _BowlerInnings(bowler: ball.bowler);
+          _bowlerTeamInnings.add(newBowlerInnings);
+          return newBowlerInnings;
+        },
+      ).bowl(_overs.last);
+    }
+
     _overs.last.addBall(ball);
 
-    _battingTeamInnings.firstWhere((batterInning) => batterInning.batter == ball.playedBy)
-
-    _runs += ball.totalRuns;
-    if (ball.isWicket) {
-      _wickets++;
-    }
+    _battingTeamInnings.lastWhere(
+      (batterInnings) => batterInnings.batter == ball.batter,
+      orElse: () {
+        // No such batter exists in the current BowlerInnings list.
+        // Add to list
+        _BatterInnings newBatter = _BatterInnings(batter: ball.batter);
+        _battingTeamInnings.add(newBatter);
+        return newBatter;
+      },
+    ).play(ball);
 
     if ((wicketsRemaining == 0) || // The batting team is all down
         (ballsRemaining == 0) || // All overs have been bowled
-        (target != null && target! <= _runs)) {
+        (target != null && target! <= runs)) {
       // The batting team has chased its target
       _isCompleted = true;
     }
@@ -117,8 +139,7 @@ class Innings {
 
   void addOver(Over over) {
     if (isCompleted || (_overs.isNotEmpty && !_overs.last.isCompleted)) {
-      // Exception
-      return;
+      throw UnimplementedError();
     }
     _overs.add(over);
   }
@@ -131,12 +152,14 @@ class _BatterInnings {
   final List<Ball> _ballsFaced = [];
   Wicket? wicket;
 
-  int get runs =>
+  int get runsScored =>
       _ballsFaced.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
-  int get balls => _ballsFaced.where((ball) => !ball.isBowlingExtra).length;
+  int get ballsFaced =>
+      _ballsFaced.where((ball) => !ball.isBowlingExtra).length;
 
-  // int get fours => _ballsFaced.where((ball) => ball.legalRuns == 4).length;
-  // int get sixes => _ballsFaced.where((ball) => ball.legalRuns == 6).length;
+  double get strikeRate => 100 * runsScored / ballsFaced;
+
+  bool get isOut => wicket != null;
 
   void play(Ball ball) {
     _ballsFaced.add(ball);
@@ -144,5 +167,31 @@ class _BatterInnings {
       // TODO Do we even need this "if"?
       wicket = ball.wicket;
     }
+  }
+}
+
+class _BowlerInnings {
+  Player bowler;
+  _BowlerInnings({required this.bowler});
+
+  final List<Over> _overs = [];
+
+  int get runsConceded =>
+      _overs.fold(0, (runsConceded, over) => runsConceded + over.totalRuns);
+
+  int get maidensBowled => _overs.where((over) => over.totalRuns == 0).length;
+
+  int get ballsBowled =>
+      _overs.fold(0, (ballsBowled, over) => ballsBowled + over.numOfLegalBalls);
+
+  String get oversBowled {
+    int balls = ballsBowled;
+    return (balls / 6).toString() + '.' + (balls % 6).toString();
+  }
+
+  double get economy => Constants.ballsPerOver * runsConceded / ballsBowled;
+
+  void bowl(Over over) {
+    _overs.add(over);
   }
 }

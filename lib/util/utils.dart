@@ -88,7 +88,7 @@ final List<Player> _playerList = [
   Player.withPhoto(
     id: 7,
     name: "Kyle",
-    imagePath: "assets/images/roshan.jpg",
+    imagePath: "assets/images/kyle.jpg",
     batArm: Arm.right,
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,

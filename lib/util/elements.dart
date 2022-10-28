@@ -11,7 +11,7 @@ class Elements {
 
   static const Icon removeIcon = Icon(
     Icons.remove_circle,
-    color: Colors.redAccent,
+    color: ColorStyles.remove,
   );
 
   static const Icon forwardIcon = Icon(
@@ -48,4 +48,22 @@ class Elements {
       ),
     );
   }
+
+  static Widget noBallIndicator = Icon(
+    Icons.fiber_manual_record,
+    size: 12,
+    color: ColorStyles.ballNoBall,
+  );
+
+  static Widget wideBallIndicator = Icon(
+    Icons.fiber_manual_record,
+    size: 12,
+    color: ColorStyles.ballWide,
+  );
+
+  static const Widget blankIndicator = Icon(
+    Icons.fiber_manual_record,
+    size: 12,
+    color: Colors.transparent,
+  );
 }

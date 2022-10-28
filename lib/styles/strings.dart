@@ -1,3 +1,4 @@
+import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/cricketmatch.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/wicket.dart';
@@ -23,10 +24,10 @@ class Strings {
   static const String scoreBalls = " balls";
   static const String scoreAt = "\nat ";
   static const String scoreBallSingle = " ball";
-  static const String scoreRunsPerOver = " runs per over";
-  static const String scoreRunsPerOverSingle = " run per over";
+  static const String scoreRunsPerOver = " RPO";
+  static const String scoreRunsPerOverSingle = " RPO";
   static const String scoreWillScore = " will score ";
-  static const String scoreRunsAtCurrentRate = " runs at the current rate of ";
+  static const String scoreRunsAtCurrentRate = " runs at ";
   static const String scoreOvers = " overs";
   static const String scoreWinBy = " win by ";
   static const String scoreWinByWickets = " wickets with ";
@@ -128,6 +129,28 @@ class Strings {
         return "Obstructing The Field";
       case Dismissal.timedOut:
         return "Timed Out";
+    }
+  }
+
+  static String getBowlingExtra(BowlingExtra bowlingExtra) {
+    switch (bowlingExtra) {
+      case BowlingExtra.noBall:
+        return "No Ball";
+      case BowlingExtra.wide:
+        return "Wide";
+      default:
+        return "Bowling Extra";
+    }
+  }
+
+  static String getBattingExtra(BattingExtra battingExtra) {
+    switch (battingExtra) {
+      case BattingExtra.bye:
+        return "Bye";
+      case BattingExtra.legBye:
+        return "Leg Bye";
+      default:
+        return "Bowling Extra";
     }
   }
 

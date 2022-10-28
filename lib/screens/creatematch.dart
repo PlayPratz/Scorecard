@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:scorecard/models/cricketmatch.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/createteam.dart';
+import 'package:scorecard/screens/matchscreen/matchinitscreen.dart';
 import 'package:scorecard/screens/matchscreen/matchscreen.dart';
 import 'package:scorecard/screens/titledpage.dart';
 import 'package:scorecard/screens/widgets/teamdummytile.dart';
@@ -20,6 +22,8 @@ class CreateMatchForm extends StatefulWidget {
 class _CreateMatchFormState extends State<CreateMatchForm> {
   Team? _selectedHomeTeam;
   Team? _selectedAwayTeam;
+
+  int _overs = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +71,11 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   }
 
   Widget _wSelectOvers() {
-    return const ListTile(
+    return ListTile(
       title: Text("Overs"),
-      subtitle: Text("Default: 20 for now"),
+      subtitle: TextField(
+          keyboardType: TextInputType.number,
+          onChanged: (value) => _overs = int.parse(value)),
     );
   }
 
@@ -105,11 +111,11 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   void _createMatch() {
     if (_selectedHomeTeam != null && _selectedAwayTeam != null) {
       Utils.goToPage(
-          MatchScreen(
+          MatchInitScreen(
             match: CricketMatch(
               homeTeam: _selectedHomeTeam!,
               awayTeam: _selectedAwayTeam!,
-              maxOvers: 20,
+              maxOvers: _overs,
             ),
           ),
           context);

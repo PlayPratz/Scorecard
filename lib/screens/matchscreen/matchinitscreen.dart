@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/cricketmatch.dart';
 import 'package:scorecard/models/team.dart';
+import 'package:scorecard/screens/matchscreen/inningsinitscreen.dart';
 import 'package:scorecard/screens/teamlist.dart';
 import 'package:scorecard/screens/titledpage.dart';
 import 'package:scorecard/screens/widgets/genericitem.dart';
@@ -11,35 +12,31 @@ import 'package:scorecard/styles/strings.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/utils.dart';
 
-class TossSelector extends StatefulWidget {
+class MatchInitScreen extends StatefulWidget {
   final CricketMatch match;
-  final Function(Toss) onCompleteToss;
-
-  const TossSelector({
-    Key? key,
-    required this.match,
-    required this.onCompleteToss,
-  }) : super(key: key);
+  const MatchInitScreen({Key? key, required this.match}) : super(key: key);
 
   @override
-  State<TossSelector> createState() => _TossSelectorState();
+  State<MatchInitScreen> createState() => _MatchInitScreenState();
 }
 
-class _TossSelectorState extends State<TossSelector> {
+class _MatchInitScreenState extends State<MatchInitScreen> {
   Team? _tossWinner;
   TossChoice? _tossChoice;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text("Toss"),
-        _wTossWinningTeam(),
-        _wWinningTeamChoice(),
-        const Spacer(),
-        _wConfirmButton(),
-      ],
-    );
+    return TitledPage(
+        title: "Match Init",
+        child: Column(
+          children: [
+            Text("Toss"),
+            _wTossWinningTeam(),
+            _wWinningTeamChoice(),
+            const Spacer(),
+            _wConfirmButton(),
+          ],
+        ));
   }
 
   Widget _wTossWinningTeam() {
@@ -116,9 +113,8 @@ class _TossSelectorState extends State<TossSelector> {
       text: "Start Match",
       onPressed: _canCreateMatch
           ? () {
-              setState(() {
-                widget.onCompleteToss(Toss(_tossWinner!, _tossChoice!));
-              });
+              widget.match.startMatch(Toss(_tossWinner!, _tossChoice!));
+              Utils.goToPage(InningsInitScreen(match: widget.match), context);
             }
           : null,
     );

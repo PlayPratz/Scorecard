@@ -24,12 +24,10 @@ class MatchTile extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(child: _InningsTile(match.homeInnings)),
-                Expanded(child: _InningsTile(match.awayInnings)),
-              ],
-            ),
+            _wMatchDetails(),
+            const Divider(),
+            _InningsTile(match.homeInnings),
+            _InningsTile(match.awayInnings),
             const Divider(),
             _wSummary()
           ],
@@ -186,20 +184,16 @@ class MatchTile extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 12.0, right: 4, left: 4),
-      child: FittedBox(
-        fit: BoxFit.contain,
-        child: RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              children: textSpan,
-              style: const TextStyle(
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w300,
-                fontSize: 16,
-              ),
-            )),
-      ),
+      padding: const EdgeInsets.only(top: 12.0, right: 8, left: 8),
+      child: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            children: textSpan,
+            style: const TextStyle(
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w300,
+            ),
+          )),
     );
   }
 
@@ -236,7 +230,7 @@ class _InningsTile extends StatelessWidget {
               .subtitle1
               ?.merge(const TextStyle(fontWeight: FontWeight.bold)),
         ),
-        subtitle: _wScoreDisplay(context));
+        trailing: _wScoreDisplay(context));
   }
 
   Widget _wScoreDisplay(BuildContext context) {
@@ -249,10 +243,6 @@ class _InningsTile extends StatelessWidget {
           TextSpan(text: score, style: textTheme.subtitle1),
           TextSpan(text: Strings.scoreIn, style: textTheme.caption),
           TextSpan(text: innings.oversBowled, style: textTheme.subtitle1),
-          TextSpan(text: " (", style: textTheme.subtitle1),
-          TextSpan(
-              text: innings.maxOvers.toString(), style: textTheme.subtitle1),
-          TextSpan(text: ")", style: textTheme.subtitle1),
         ]),
       );
     } else {

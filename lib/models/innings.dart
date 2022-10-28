@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/constants.dart';
@@ -45,8 +47,8 @@ class Innings {
   }
 
   Over get currentOver => _overs.last;
-  List<_BatterInnings> get currentBattingInnings =>
-      _battingTeamInnings.sublist(_battingTeamInnings.length - 2);
+  List<_BatterInnings> get allBattingInnings => _battingTeamInnings;
+  List<_BowlerInnings> get allBowlingInnings => _bowlerTeamInnings;
 
   _BowlerInnings get currentBowlerInnings => _bowlerTeamInnings.firstWhere(
       (bowlerInnings) => bowlerInnings.bowler == currentOver.bowler);
@@ -63,6 +65,25 @@ class Innings {
     }
     return Constants.ballsPerOver * oversCompleted +
         currentOver.numOfBallsBowled;
+  }
+
+  List<Ball> getLastBalls(int count) {
+    List<Ball> ballList = [];
+    for (Over over in _overs.reversed) {
+      ballList.insertAll(0, over.balls);
+      if (ballList.length > count) {
+        break;
+      }
+    }
+    return ballList.sublist(ballList.length - min(count, ballList.length));
+  }
+
+  List<Ball> get allBalls {
+    List<Ball> ballList = [];
+    for (Over over in _overs) {
+      ballList.addAll(over.balls);
+    }
+    return ballList;
   }
 
   int get ballsRemaining => Constants.ballsPerOver * maxOvers - ballsBowled;
@@ -90,8 +111,7 @@ class Innings {
 
   int get runsRequired {
     if (target == null) {
-      // TODO Exception
-      throw UnimplementedError();
+      return -1;
     }
     return target! - runs;
   }
@@ -135,6 +155,23 @@ class Innings {
       // The batting team has chased its target
       _isCompleted = true;
     }
+  }
+
+  void undoBall() {
+    if (currentOver.numOfBallsBowled == 0) {
+      // Cancel this over
+      _overs.removeLast();
+      return;
+    }
+    Ball removedBall = currentOver.balls.removeLast();
+    _battingTeamInnings
+        .lastWhere(
+            (battingInnings) => battingInnings.batter == removedBall.batter)
+        ._ballsFaced
+        .remove(removedBall);
+
+    // No need to handle seperately for bowlerInnings
+    // as it uses the same Over object as Innings._overs
   }
 
   @Deprecated("Use [addBall] instead")

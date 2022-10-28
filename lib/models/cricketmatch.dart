@@ -1,8 +1,10 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/models/team.dart';
 
 import 'innings.dart';
 
+@JsonSerializable()
 class CricketMatch {
   Team homeTeam;
   Team awayTeam;
@@ -68,7 +70,7 @@ class CricketMatch {
     firstInnings.isInPlay = true;
   }
 
-  void finishFirstInnings() {
+  void startSecondInnings() {
     // firstInnings.isCompleted = true;
     secondInnings.target = firstInnings.runs + 1;
     _matchState = MatchState.secondInnings;

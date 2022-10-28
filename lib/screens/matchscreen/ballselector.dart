@@ -7,7 +7,8 @@ import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/utils.dart';
 
 class BallSelector extends StatefulWidget {
-  final Function(int runs, Wicket? _wicket) onSelectBall;
+  final Function(int runs, Wicket? wicket, BowlingExtra? bowlingExtra,
+      BattingExtra? battingExtra) onSelectBall;
   const BallSelector({Key? key, required this.onSelectBall}) : super(key: key);
 
   @override
@@ -15,20 +16,45 @@ class BallSelector extends StatefulWidget {
 }
 
 class _BallSelectorState extends State<BallSelector> {
-  final _RunSelection _runSelection = _RunSelection();
+  _RunSelection _runSelection = _RunSelection();
+  _SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
+      _SingleToggleSelection(
+          dataList: BowlingExtra.values, stringifier: Strings.getBowlingExtra);
+  _SingleToggleSelection<BattingExtra> _battingExtraSelection =
+      _SingleToggleSelection(
+    dataList: BattingExtra.values,
+    stringifier: Strings.getBattingExtra,
+  );
   Wicket? _wicketSelection;
 
-  BowlingExtra? _bowlingExtra;
-  BattingExtra? _battingExtra;
+  // BattingExtra? _battingExtra;
+
+  @override
+  void didUpdateWidget(covariant BallSelector oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+
+    _wicketSelection = null;
+
+    _runSelection = _RunSelection();
+
+    _bowlingExtraSelection = _SingleToggleSelection(
+        dataList: BowlingExtra.values, stringifier: Strings.getBowlingExtra);
+
+    _battingExtraSelection = _SingleToggleSelection(
+      dataList: BattingExtra.values,
+      stringifier: Strings.getBattingExtra,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         _wExtraChooser(),
+        const SizedBox(height: 16),
         _wWicketChooser(),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         _wRunChooser(),
         Elements.getConfirmButton(
             text: "Next", onPressed: _validate() ? _processBall : null)
@@ -37,18 +63,37 @@ class _BallSelectorState extends State<BallSelector> {
   }
 
   Widget _wExtraChooser() {
-    // return Row(
-    //   children: [
-    //     DropdownButton(
-    //       // value: ,
-    //       // hint: Text("Bowling Extra"),
-    //       items: [1, 2,],
-    //       onChanged: (selectedItem) {},
-    //     )
-    //   ],
-    // );
-
-    return Container();
+    return Row(children: [
+      ToggleButtons(
+          onPressed: (index) => setState(() {
+                if (index == _battingExtraSelection.index) {
+                  _battingExtraSelection.clear();
+                } else {
+                  _battingExtraSelection.index = index;
+                }
+              }),
+          children: _battingExtraSelection.widgets,
+          isSelected: _battingExtraSelection.booleans,
+          constraints: const BoxConstraints(
+            minHeight: 40.0,
+            minWidth: 80.0,
+          )),
+      Spacer(),
+      ToggleButtons(
+          onPressed: (index) => setState(() {
+                if (index == _bowlingExtraSelection.index) {
+                  _bowlingExtraSelection.clear();
+                } else {
+                  _bowlingExtraSelection.index = index;
+                }
+              }),
+          children: _bowlingExtraSelection.widgets,
+          isSelected: _bowlingExtraSelection.booleans,
+          constraints: const BoxConstraints(
+            minHeight: 40.0,
+            minWidth: 80.0,
+          )),
+    ]);
   }
 
   Widget _wRunChooser() {
@@ -57,12 +102,10 @@ class _BallSelectorState extends State<BallSelector> {
         Text("Runs"),
         SizedBox(height: 12),
         ToggleButtons(
-          onPressed: (int index) {
-            setState(() {
-              // The button that is tapped is set to true, and the others to false.
-              _runSelection.runIndex = index;
-            });
-          },
+          onPressed: (int index) => setState(() {
+            // The button that is tapped is set to true, and the others to false.
+            _runSelection.runIndex = index;
+          }),
           borderRadius: const BorderRadius.all(Radius.circular(8)),
           selectedBorderColor: Colors.green[700],
           selectedColor: Colors.white,
@@ -112,7 +155,12 @@ class _BallSelectorState extends State<BallSelector> {
   }
 
   void _processBall() {
-    widget.onSelectBall(_runSelection.runs, _wicketSelection);
+    widget.onSelectBall(
+      _runSelection.runs,
+      _wicketSelection,
+      _bowlingExtraSelection.selection,
+      _battingExtraSelection.selection,
+    );
   }
 
   bool _validate() {
@@ -132,4 +180,24 @@ class _RunSelection {
 
   int get runs => _selectedRuns;
   set runIndex(int index) => _selectedRuns = runList[index];
+}
+
+class _SingleToggleSelection<T> {
+  final List<T> dataList;
+  final String Function(T) stringifier;
+
+  _SingleToggleSelection({required this.dataList, required this.stringifier});
+
+  int index = -1;
+
+  T? get selection => index == -1 ? null : dataList[index];
+
+  List<Widget> get widgets =>
+      dataList.map((data) => Text(stringifier(data))).toList();
+
+  List<bool> get booleans => dataList.map((data) => data == selection).toList();
+
+  void clear() {
+    index = -1;
+  }
 }

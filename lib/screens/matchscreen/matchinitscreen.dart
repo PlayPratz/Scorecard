@@ -27,7 +27,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
   @override
   Widget build(BuildContext context) {
     return TitledPage(
-        title: "Match Init",
+        title: "The Fun Begins",
         child: Column(
           children: [
             Text("Toss"),

@@ -156,11 +156,9 @@ class _MatchScreenState extends State<MatchScreen> {
       text = "End Innings";
       onPressed = _doEndInnings;
     } else if (_shouldChooseBatter) {
-      _shouldChooseBatter = false;
       text = "Choose Batter";
       onPressed = _chooseBatter;
     } else if (_shouldChooseBowler) {
-      _shouldChooseBowler = false;
       text = "Choose Bowler";
       onPressed = _chooseBowler;
     }
@@ -234,7 +232,7 @@ class _MatchScreenState extends State<MatchScreen> {
       children: [
         Expanded(
           child: ListTile(
-            // leading: Elements.getOnlineIndicator(_nonStrikeRunout != null),
+            leading: Elements.getOnlineIndicator(_nonStrikeRunout != null),
             title: const Text("Non Strike Runout"),
             isThreeLine: false,
             // subtitle: const Text(
@@ -242,8 +240,13 @@ class _MatchScreenState extends State<MatchScreen> {
             // ),
             trailing: Elements.forwardIcon,
             onTap: () {
-              _processBall(Ball.RunoutBeforeDelivery(
-                  bowler: _bowler, batter: _nonStriker));
+              setState(() {
+                if (_nonStrikeRunout != null) {
+                  _nonStrikeRunout = null;
+                } else {
+                  _nonStrikeRunout = RunoutWicket(_nonStriker, _bowler);
+                }
+              });
             },
           ),
         ),
@@ -358,20 +361,22 @@ class _MatchScreenState extends State<MatchScreen> {
     );
   }
 
-  void _processBall([Ball? ball]) {
+  void _processBall() {
+    Ball ball = _nonStrikeRunout == null
+        ? Ball(
+            bowler: _bowler,
+            batter: _striker,
+            runsScored: _runSelection.runs,
+            wicket: _wicketSelection,
+            bowlingExtra: _bowlingExtraSelection.selection,
+            battingExtra: _battingExtraSelection.selection,
+          )
+        : Ball.RunoutBeforeDelivery(bowler: _bowler, batter: _nonStriker);
+    ;
+
     setState(() {
       Innings currentInnings = widget.match.currentInnings;
-
-      ball ??= Ball(
-        bowler: _bowler,
-        batter: _striker,
-        runsScored: _runSelection.runs,
-        wicket: _wicketSelection,
-        bowlingExtra: _bowlingExtraSelection.selection,
-        battingExtra: _battingExtraSelection.selection,
-      );
-
-      currentInnings.addBall(ball!);
+      currentInnings.addBall(ball);
 
       if (currentInnings.isCompleted) {
         _shouldEndInnings = true;
@@ -413,6 +418,7 @@ class _MatchScreenState extends State<MatchScreen> {
     _choosePlayer(
         widget.match.currentInnings.battingTeam.squad,
         (batter) => setState(() {
+              _shouldChooseBatter = false;
               widget.match.currentInnings.addBatter(batter);
               _batters.add(batter);
               if (_batters.length == 1) {
@@ -427,6 +433,7 @@ class _MatchScreenState extends State<MatchScreen> {
     _choosePlayer(
         widget.match.currentInnings.bowlingTeam.squad,
         (bowler) => setState(() {
+              _shouldChooseBowler = false;
               widget.match.currentInnings.addOver(Over(bowler));
               _bowler = bowler;
             }));
@@ -479,6 +486,7 @@ class _MatchScreenState extends State<MatchScreen> {
     _battingExtraSelection.clear();
     _bowlingExtraSelection.clear();
     _runSelection.clear();
+    _wicketSelection = null;
   }
 
   bool _validateBallParams() {

@@ -17,10 +17,8 @@ import 'package:scorecard/util/utils.dart';
 
 class MatchScreen extends StatefulWidget {
   final CricketMatch match;
-  final InningInitData initData;
 
-  const MatchScreen({Key? key, required this.match, required this.initData})
-      : super(key: key);
+  const MatchScreen({Key? key, required this.match}) : super(key: key);
 
   @override
   State<MatchScreen> createState() => _MatchScreenState();
@@ -37,28 +35,31 @@ class _MatchScreenState extends State<MatchScreen> {
 
   bool _shouldEndInnings = false;
 
-  /// A player that is batting
-  late final List<Player> _batters;
+  List<BatterInnings> get onPitchBatters =>
+      widget.match.currentInnings.onPitchBatters;
 
-  /// The player on strike. Will always be in [_batters].
-  late Player _striker;
+  /// The player on strike. Will always be in [onPitchBatters].
+  late BatterInnings _striker;
 
-  Player get _nonStriker =>
-      _striker == _batters.first ? _batters.last : _batters.first;
+  BatterInnings get _nonStriker => _striker == onPitchBatters.first
+      ? onPitchBatters.last
+      : onPitchBatters.first;
 
   /// The player that is bowling the current over
-  late Player _bowler;
+  Player get _bowler => widget.match.currentInnings.currentOver.bowler;
 
-  _RunSelection _runSelection = _RunSelection();
-  _SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
+  final _RunSelection _runSelection = _RunSelection();
+  final _SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
       _SingleToggleSelection(
           dataList: BowlingExtra.values, stringifier: Strings.getBowlingExtra);
-  _SingleToggleSelection<BattingExtra> _battingExtraSelection =
+  final _SingleToggleSelection<BattingExtra> _battingExtraSelection =
       _SingleToggleSelection(
     dataList: BattingExtra.values,
     stringifier: Strings.getBattingExtra,
   );
+
   Wicket? _wicketSelection;
+
   // TODO temporary
   RunoutWicket? _nonStrikeRunout;
 
@@ -66,9 +67,7 @@ class _MatchScreenState extends State<MatchScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _bowler = widget.initData.bowler;
-    _batters = widget.initData.batters;
-    _striker = _batters.first;
+    _striker = onPitchBatters.first;
   }
 
   @override
@@ -89,7 +88,12 @@ class _MatchScreenState extends State<MatchScreen> {
           _wExtraChooser(),
           _wWicketChooser(),
           _wRunChooser(),
-          _wConfirmButton(),
+          Row(
+            children: [
+              Expanded(child: _wUndoButton()),
+              Expanded(flex: 2, child: _wConfirmButton())
+            ],
+          )
         ],
       ),
     );
@@ -105,45 +109,56 @@ class _MatchScreenState extends State<MatchScreen> {
       children: [
         Expanded(
           child: Column(children: [
-            ..._batters.map((batter) => InkWell(
+            ...onPitchBatters.map((batterInnings) => InkWell(
                   onTap: () => setState(() {
-                    _striker = batter;
+                    _striker = batterInnings;
                   }),
                   child: PlayerScoreTile(
-                    player: batter,
-                    score: widget.match.currentInnings
-                        .batterInningsOfPlayer(batter)
-                        .score,
-                    isOnStrike: _striker == batter,
+                    player: batterInnings.batter,
+                    score: batterInnings.score,
+                    isOnStrike: _striker == batterInnings,
                   ),
                 ))
           ]),
         ),
         Expanded(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PlayerScoreTile(
                   player: _bowler,
                   score:
                       widget.match.currentInnings.currentBowlerInnings.score),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                child: OutlinedButton.icon(
-                  onPressed: widget.match.currentInnings.ballsBowled > 0
-                      ? _undoBall
-                      : null,
-                  style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
-                  icon: Icon(Icons.undo),
-                  label: Text("Undo"),
-                ),
-              ),
+              SizedBox(height: 18),
+              _wEndInningsButton()
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _wEndInningsButton() {
+    return OutlinedButton.icon(
+      onPressed: null,
+      onLongPress: _doEndInnings,
+      style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
+      icon: Icon(Icons.cancel),
+      label: Text("End Innings"),
+    );
+  }
+
+  Widget _wUndoButton() {
+    return Padding(
+      padding: EdgeInsets.only(right: 12),
+      child: OutlinedButton.icon(
+        onPressed:
+            widget.match.currentInnings.ballsBowled > 0 ? _undoMove : null,
+        style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
+        icon: Icon(Icons.undo),
+        label: Text("Undo"),
+      ),
     );
   }
 
@@ -244,7 +259,8 @@ class _MatchScreenState extends State<MatchScreen> {
                 if (_nonStrikeRunout != null) {
                   _nonStrikeRunout = null;
                 } else {
-                  _nonStrikeRunout = RunoutWicket(_nonStriker, _bowler);
+                  _wicketSelection = null;
+                  _nonStrikeRunout = RunoutWicket(_nonStriker.batter, _bowler);
                 }
               });
             },
@@ -264,7 +280,8 @@ class _MatchScreenState extends State<MatchScreen> {
                 if (_wicketSelection != null) {
                   _wicketSelection = null;
                 } else {
-                  _wicketSelection = BowledWicket(_striker, _bowler);
+                  _nonStrikeRunout = null;
+                  _wicketSelection = BowledWicket(_striker.batter, _bowler);
                 }
               });
             },
@@ -304,6 +321,7 @@ class _MatchScreenState extends State<MatchScreen> {
       } else if (currentBall.isWicket) {
         currentWidget = CircleAvatar(
           backgroundColor: ColorStyles.wicket,
+          foregroundColor: Colors.white,
           child: Text(currentBall.runsScored.toString()),
         );
       } else {
@@ -335,26 +353,30 @@ class _MatchScreenState extends State<MatchScreen> {
       ));
     }
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.yellow),
-        // color: Colors.red,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          reverse: true,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ...displayWidgets.map((widget) => Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-                    child: widget,
-                  )),
-            ],
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.yellow),
+          // color: Colors.red,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            reverse: true,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ...displayWidgets.map((widget) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 2, vertical: 4),
+                      child: widget,
+                    )),
+              ],
+            ),
           ),
         ),
       ),
@@ -365,13 +387,14 @@ class _MatchScreenState extends State<MatchScreen> {
     Ball ball = _nonStrikeRunout == null
         ? Ball(
             bowler: _bowler,
-            batter: _striker,
+            batter: _striker.batter,
             runsScored: _runSelection.runs,
             wicket: _wicketSelection,
             bowlingExtra: _bowlingExtraSelection.selection,
             battingExtra: _battingExtraSelection.selection,
           )
-        : Ball.RunoutBeforeDelivery(bowler: _bowler, batter: _nonStriker);
+        : Ball.RunoutBeforeDelivery(
+            bowler: _bowler, batter: _nonStriker.batter);
     ;
 
     setState(() {
@@ -407,9 +430,14 @@ class _MatchScreenState extends State<MatchScreen> {
         _shouldChooseBowler = true;
         _swapStrike();
       }
-      if (currentInnings.currentOver.balls.last.isWicket) {
+
+      if (currentInnings.currentOver.balls.isEmpty) {
+        _shouldChooseBowler = true;
+      }
+
+      if (currentInnings.currentOver.balls.isNotEmpty &&
+          currentInnings.currentOver.balls.last.isWicket) {
         _shouldChooseBatter = true;
-        _batters.remove(currentInnings.currentOver.balls.last.wicket!.batter);
       }
     }
   }
@@ -420,12 +448,7 @@ class _MatchScreenState extends State<MatchScreen> {
         (batter) => setState(() {
               _shouldChooseBatter = false;
               widget.match.currentInnings.addBatter(batter);
-              _batters.add(batter);
-              if (_batters.length == 1) {
-                _striker = _batters.single;
-              } else if (!_batters.any((batter) => _striker == batter)) {
-                _striker = batter;
-              }
+              _striker = onPitchBatters.last;
             }));
   }
 
@@ -435,7 +458,6 @@ class _MatchScreenState extends State<MatchScreen> {
         (bowler) => setState(() {
               _shouldChooseBowler = false;
               widget.match.currentInnings.addOver(Over(bowler));
-              _bowler = bowler;
             }));
   }
 
@@ -457,10 +479,10 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   void _swapStrike() {
-    if (_striker == _batters.first) {
-      _striker = _batters.last;
+    if (_striker == onPitchBatters.first) {
+      _striker = onPitchBatters.last;
     } else {
-      _striker = _batters.first;
+      _striker = onPitchBatters.first;
     }
   }
 
@@ -474,12 +496,19 @@ class _MatchScreenState extends State<MatchScreen> {
     }
   }
 
-  void _undoBall() {
-    setState(() {
-      widget.match.currentInnings.undoBall();
-      _shouldEndInnings = false;
-      _populateFlags();
-    });
+  void _undoMove() {
+    if (widget.match.currentInnings.currentOver.numOfBallsBowled == 0) {
+      setState(() {
+        widget.match.currentInnings.undoOver();
+        _shouldChooseBowler = true;
+      });
+    } else {
+      setState(() {
+        widget.match.currentInnings.undoBall();
+        _shouldEndInnings = false;
+        _populateFlags();
+      });
+    }
   }
 
   void _clearSelections() {
@@ -487,6 +516,7 @@ class _MatchScreenState extends State<MatchScreen> {
     _bowlingExtraSelection.clear();
     _runSelection.clear();
     _wicketSelection = null;
+    _nonStrikeRunout = null;
   }
 
   bool _validateBallParams() {
@@ -530,14 +560,4 @@ class _SingleToggleSelection<T> {
   void clear() {
     index = -1;
   }
-}
-
-class InningInitData {
-  /// A player that is batting
-  final List<Player> batters;
-
-  /// The player that is bowling the current over
-  final Player bowler;
-
-  InningInitData({required this.batters, required this.bowler});
 }

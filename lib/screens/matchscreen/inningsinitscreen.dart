@@ -108,13 +108,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
               widget.match.currentInnings.addBatter(_batterOne!);
               widget.match.currentInnings.addBatter(_batterTwo!);
               widget.match.currentInnings.addOver(Over(_bowler!));
-              Utils.goToPage(
-                  MatchScreen(
-                    match: widget.match,
-                    initData: InningInitData(
-                        batters: [_batterOne!, _batterTwo!], bowler: _bowler!),
-                  ),
-                  context);
+              Utils.goToPage(MatchScreen(match: widget.match), context);
             }
           : null,
     );

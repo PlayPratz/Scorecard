@@ -21,8 +21,8 @@ class Innings {
   });
 
   final List<Over> _overs = [];
-  final List<_BatterInnings> _battingTeamInnings = [];
-  final List<_BowlerInnings> _bowlerTeamInnings = [];
+  final List<BatterInnings> _battingTeamInnings = [];
+  final Map<Player, BowlerInnings> _bowlerTeamInnings = {};
 
   bool _isInPlay = false;
   bool _isCompleted = false;
@@ -47,14 +47,19 @@ class Innings {
   }
 
   Over get currentOver => _overs.last;
-  List<_BatterInnings> get allBattingInnings => _battingTeamInnings;
-  List<_BowlerInnings> get allBowlingInnings => _bowlerTeamInnings;
+  List<BatterInnings> get onPitchBatters => _battingTeamInnings
+      .where((battingInnings) => !battingInnings.isOut)
+      .take(2)
+      .toList();
+  List<BatterInnings> get allBattingInnings => _battingTeamInnings;
+  List<BowlerInnings> get allBowlingInnings =>
+      _bowlerTeamInnings.values.toList();
 
-  _BowlerInnings get currentBowlerInnings => _bowlerTeamInnings.firstWhere(
-      (bowlerInnings) => bowlerInnings.bowler == currentOver.bowler);
+  BowlerInnings get currentBowlerInnings =>
+      _bowlerTeamInnings[currentOver.bowler]!;
 
-  _BatterInnings batterInningsOfPlayer(Player player) => _battingTeamInnings
-      .lastWhere((batterInnings) => batterInnings.batter == player);
+  // BatterInnings batterInningsOfPlayer(Player player) => _battingTeamInnings
+  //     .lastWhere((batterInnings) => batterInnings.batter == player);
 
   int get ballsBowled {
     if (_overs.isEmpty) {
@@ -64,7 +69,7 @@ class Innings {
       return Constants.ballsPerOver * oversCompleted;
     }
     return Constants.ballsPerOver * oversCompleted +
-        currentOver.numOfBallsBowled;
+        currentOver.numOfLegalBalls;
   }
 
   List<Ball> getLastBalls(int count) {
@@ -99,12 +104,11 @@ class Innings {
 
   set isInPlay(bool isInPlay) => _isInPlay = isInPlay;
   bool get isInPlay => (_isInPlay || _overs.isNotEmpty) && !isCompleted;
-  bool get isCompleted => _isCompleted ||
-          oversCompleted == maxOvers ||
-          wicketsRemaining == 0 ||
-          target != null
-      ? runsRequired <= 0
-      : false;
+  bool get isCompleted =>
+      _isCompleted ||
+      oversCompleted == maxOvers ||
+      // wicketsRemaining == 0 ||
+      runsRequired > 0;
 
   double get runRatePerOver => Constants.ballsPerOver * runs / ballsBowled;
   int get runsProjected => (maxOvers * runRatePerOver).floor();
@@ -143,40 +147,68 @@ class Innings {
       orElse: () {
         // No such batter exists in the current BowlerInnings list.
         // Add to list
-        _BatterInnings newBatter = _BatterInnings(batter: ball.batter);
+        BatterInnings newBatter = BatterInnings(batter: ball.batter);
         _battingTeamInnings.add(newBatter);
         return newBatter;
       },
     ).play(ball);
 
-    if ((wicketsRemaining == 0) || // The batting team is all down
+    _battingTeamInnings.forEach(
+        (i) => print(i.batter.name + " :: " + i.runsScored.toString()));
+
+    if (
+        // (wicketsRemaining == 0) || // The batting team is all down
         (ballsRemaining == 0) || // All overs have been bowled
-        (target != null && target! <= runs)) {
+            (target != null && target! <= runs)) {
       // The batting team has chased its target
       _isCompleted = true;
     }
   }
 
-  void undoBall() {
-    if (currentOver.numOfBallsBowled == 0) {
-      // Cancel this over
-      _overs.removeLast();
-      return;
+  Ball undoBall() {
+    if (_overs.isEmpty) {
+      throw UnimplementedError();
     }
+
     Ball removedBall = currentOver.balls.removeLast();
     _battingTeamInnings
         .lastWhere(
             (battingInnings) => battingInnings.batter == removedBall.batter)
-        ._ballsFaced
+        .ballsFaced
         .remove(removedBall);
+
+    if (removedBall.isWicket) {
+      _battingTeamInnings
+          .lastWhere((battingInnings) =>
+              battingInnings.batter == removedBall.wicket!.batter)
+          .wicket = null;
+    }
 
     // No need to handle seperately for bowlerInnings
     // as it uses the same Over object as Innings._overs
+
+    return removedBall;
+  }
+
+  Over undoOver() {
+    // if (currentOver.numOfBallsBowled == 0)
+    // Cancel this over
+    Over removedOver = _overs.removeLast();
+    _bowlerTeamInnings[removedOver.bowler]?.overs.remove(removedOver);
+
+    if (_bowlerTeamInnings[removedOver.bowler]!.overs.isEmpty) {
+      _bowlerTeamInnings.remove(removedOver.bowler);
+    }
+    return removedOver;
   }
 
   @Deprecated("Use [addBall] instead")
   void addBatter(Player batter) {
-    _battingTeamInnings.add(_BatterInnings(batter: batter));
+    if (!_battingTeamInnings.any((batterInnings) =>
+        batterInnings.batter == batter && !batterInnings.isOut)) {
+      // Add only if a not-out innings of the same batter DOES NOT exist
+      _battingTeamInnings.add(BatterInnings(batter: batter));
+    }
   }
 
   @Deprecated("Use [addBall] instead")
@@ -187,61 +219,55 @@ class Innings {
     _overs.add(over);
 
     // Add current over to BowlerInnings
-    _bowlerTeamInnings.firstWhere(
-      (bowlerInnings) => bowlerInnings.bowler == over.bowler,
-      orElse: () {
-        // No such bowler exists in the current BowlerInnings list.
-        // Add to list
-        _BowlerInnings newBowlerInnings = _BowlerInnings(bowler: over.bowler);
-        _bowlerTeamInnings.add(newBowlerInnings);
-        return newBowlerInnings;
-      },
-    ).bowl(currentOver);
+    _bowlerTeamInnings.putIfAbsent(
+        over.bowler, () => BowlerInnings(bowler: over.bowler));
+
+    _bowlerTeamInnings[over.bowler]!.bowl(over);
   }
 }
 
-class _BatterInnings {
+class BatterInnings {
   Player batter;
-  _BatterInnings({required this.batter});
+  BatterInnings({required this.batter});
 
-  final List<Ball> _ballsFaced = [];
+  final List<Ball> ballsFaced = [];
   Wicket? wicket;
 
   int get runsScored =>
-      _ballsFaced.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
-  int get ballsFaced => _ballsFaced.where((ball) => ball.shouldCount).length;
+      ballsFaced.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
+  int get numBallsFaced => ballsFaced.where((ball) => ball.shouldCount).length;
 
-  double get strikeRate => 100 * runsScored / ballsFaced;
+  double get strikeRate => 100 * runsScored / numBallsFaced;
 
   bool get isOut => wicket != null;
 
-  String get score => runsScored.toString() + " in " + ballsFaced.toString();
+  String get score => runsScored.toString() + " in " + numBallsFaced.toString();
 
   void play(Ball ball) {
-    _ballsFaced.add(ball);
-    if (ball.isWicket) {
+    ballsFaced.add(ball);
+    if (ball.isWicket && ball.wicket?.batter == batter) {
       // TODO Do we even need this "if"?
       wicket = ball.wicket;
     }
   }
 }
 
-class _BowlerInnings {
+class BowlerInnings {
   Player bowler;
-  _BowlerInnings({required this.bowler});
+  BowlerInnings({required this.bowler});
 
-  final List<Over> _overs = [];
+  final List<Over> overs = [];
 
   int get runsConceded =>
-      _overs.fold(0, (runsConceded, over) => runsConceded + over.totalRuns);
+      overs.fold(0, (runsConceded, over) => runsConceded + over.totalRuns);
 
   int get wicketsTaken =>
-      _overs.fold(0, (wicketsTaken, over) => wicketsTaken + over.bowlerWickets);
+      overs.fold(0, (wicketsTaken, over) => wicketsTaken + over.bowlerWickets);
 
-  int get maidensBowled => _overs.where((over) => over.totalRuns == 0).length;
+  int get maidensBowled => overs.where((over) => over.totalRuns == 0).length;
 
   int get ballsBowled =>
-      _overs.fold(0, (ballsBowled, over) => ballsBowled + over.numOfLegalBalls);
+      overs.fold(0, (ballsBowled, over) => ballsBowled + over.numOfLegalBalls);
 
   String get oversBowled {
     int balls = ballsBowled;
@@ -258,6 +284,6 @@ class _BowlerInnings {
       oversBowled;
 
   void bowl(Over over) {
-    _overs.add(over);
+    overs.add(over);
   }
 }

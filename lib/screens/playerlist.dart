@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../models/player.dart';
+import '../styles/strings.dart';
 import 'createplayer.dart';
 import 'widgets/itemlist.dart';
 import 'widgets/playertile.dart';
-import '../styles/strings.dart';
 
 class PlayerList extends StatelessWidget {
   final List<Player> playerList;
@@ -25,7 +26,7 @@ class PlayerList extends StatelessWidget {
       return ItemList(
           itemList: getPlayerList(),
           createItem: CreateItemEntry(
-            page: CreatePlayerForm(),
+            page: const CreatePlayerForm(),
             string: Strings.addNewPlayer,
           ));
     }
@@ -41,7 +42,7 @@ class PlayerList extends StatelessWidget {
       playerTiles.add(PlayerTile(
         player,
         onSelect: onSelectPlayer,
-        trailingIcon: trailingIcon,
+        trailing: trailingIcon,
       ));
     }
     return playerTiles;

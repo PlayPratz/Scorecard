@@ -1,17 +1,16 @@
-import 'package:json_annotation/json_annotation.dart';
+import '../util/utils.dart';
+import 'innings.dart';
 import 'result.dart';
 import 'team.dart';
 
-import 'innings.dart';
-
-@JsonSerializable()
 class CricketMatch {
+  final String id;
   Team homeTeam;
   Team awayTeam;
   int maxOvers;
 
-  late Innings _homeInnings;
-  late Innings _awayInnings;
+  final Innings _homeInnings;
+  final Innings _awayInnings;
 
   MatchState _matchState = MatchState.notStarted;
   bool _isHomeInningsFirst = true;
@@ -21,15 +20,22 @@ class CricketMatch {
 
   Toss? toss;
 
+  CricketMatch.create({required homeTeam, required awayTeam, required maxOvers})
+      : this(
+            id: Utils.generateUniqueId(),
+            homeTeam: homeTeam,
+            awayTeam: awayTeam,
+            maxOvers: maxOvers);
+
   CricketMatch(
-      {required this.homeTeam,
+      {required this.id,
+      required this.homeTeam,
       required this.awayTeam,
-      required this.maxOvers}) {
-    _homeInnings = Innings(
-        battingTeam: homeTeam, bowlingTeam: awayTeam, maxOvers: maxOvers);
-    _awayInnings = Innings(
-        battingTeam: awayTeam, bowlingTeam: homeTeam, maxOvers: maxOvers);
-  }
+      required this.maxOvers})
+      : _homeInnings = Innings(
+            battingTeam: homeTeam, bowlingTeam: awayTeam, maxOvers: maxOvers),
+        _awayInnings = Innings(
+            battingTeam: awayTeam, bowlingTeam: homeTeam, maxOvers: maxOvers);
 
   bool get isTossCompleted => toss != null;
 
@@ -111,7 +117,7 @@ class CricketMatch {
       // TODO Exception
       throw UnimplementedError();
     }
-    _superOver = CricketMatch(
+    _superOver = CricketMatch.create(
       homeTeam: homeTeam,
       awayTeam: awayTeam,
       maxOvers: 1,

@@ -50,10 +50,11 @@ class Elements {
     );
   }
 
-  static Widget getTextInput(
-      String label, String hint, void Function(String value) onChangeValue) {
-    return TextField(
+  static Widget getTextInput(String label, String hint, String? initialValue,
+      void Function(String value) onChangeValue) {
+    return TextFormField(
       decoration: InputDecoration(labelText: label, hintText: hint),
+      initialValue: initialValue,
       onChanged: onChangeValue,
     );
   }

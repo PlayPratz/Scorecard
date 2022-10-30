@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../models/player.dart';
 import '../../styles/strings.dart';
 import '../../util/elements.dart';
@@ -6,10 +7,14 @@ import '../../util/elements.dart';
 class PlayerTile extends StatelessWidget {
   final Player player;
   final Function(Player player)? onSelect;
-  final Icon? trailingIcon;
+  final String? detail;
+  final Widget? trailing;
 
   const PlayerTile(this.player,
-      {Key? key, this.onSelect, this.trailingIcon = Elements.forwardIcon})
+      {Key? key,
+      this.onSelect,
+      this.detail,
+      this.trailing = Elements.forwardIcon})
       : super(key: key);
 
   @override
@@ -24,7 +29,7 @@ class PlayerTile extends StatelessWidget {
           : const Icon(Icons.person_outline),
       title: Text(player.name),
       subtitle: getBatBowlStyle(context),
-      trailing: trailingIcon,
+      trailing: trailing,
       onTap: () {
         if (onSelect != null) {
           onSelect!(player);
@@ -35,12 +40,9 @@ class PlayerTile extends StatelessWidget {
 
   Widget getBatBowlStyle(BuildContext context) {
     String batStyle = Strings.getArm(player.batArm) + Strings.playerBatter;
-    String bowlStyle = player.bowlStyle != null
-        ? "/" +
-            Strings.getArm(player.bowlArm!) +
-            Strings.getBowlStyle(player.bowlStyle!)
-        // Strings.playerBowler
-        : "";
+    String bowlStyle = '/' +
+        Strings.getArm(player.bowlArm) +
+        Strings.getBowlStyle(player.bowlStyle);
     return Text(batStyle + bowlStyle,
         style: Theme.of(context).textTheme.caption);
   }

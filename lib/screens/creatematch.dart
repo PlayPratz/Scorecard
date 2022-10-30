@@ -70,7 +70,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   }
 
   Widget _wSelectOvers() {
-    return Elements.getTextInput("Overs", "How many overs? 5? 10? 20?",
+    return Elements.getTextInput("Overs", "How many overs? 5? 10? 20?", null,
         (value) => _overs = int.parse(value));
   }
 
@@ -105,7 +105,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
 
   void _createMatch() {
     if (_selectedHomeTeam != null && _selectedAwayTeam != null) {
-      CricketMatch match = CricketMatch(
+      CricketMatch match = CricketMatch.create(
         homeTeam: _selectedHomeTeam!,
         awayTeam: _selectedAwayTeam!,
         maxOvers: _overs,

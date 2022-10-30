@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
+
 import '../models/cricketmatch.dart';
 import '../models/player.dart';
 import '../models/team.dart';
 
 class Utils {
   Utils._(); // Private constructor
+
+  static const _uuid = Uuid();
+
+  static String generateUniqueId() => _uuid.v1();
 
   static Future<dynamic> goToPage(Widget page, BuildContext context) {
     return Navigator.push(
@@ -20,7 +26,7 @@ class Utils {
   }
 
   static void addPlayer(Player player) {
-    _playerList.add(player);
+    if (!_playerList.contains(player)) _playerList.add(player);
   }
 
   static List<Team> getAllTeams() {
@@ -28,7 +34,7 @@ class Utils {
   }
 
   static void addTeam(Team team) {
-    _teamList.add(team);
+    if (!_teamList.contains(team)) _teamList.add(team);
   }
 
   static List<CricketMatch> getAllMatches() {
@@ -45,56 +51,56 @@ class Utils {
 }
 
 final List<Player> _playerList = [
-  Player.withPhoto(
-    id: 1,
+  Player(
+    id: '1',
     name: "Pratik",
     imagePath: "assets/images/pratik.png",
     batArm: Arm.right,
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,
   ),
-  Player.withPhoto(
-    id: 2,
+  Player(
+    id: '2',
     name: "Chaitanya",
     imagePath: "assets/images/chaitanya.jpg",
     batArm: Arm.right,
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,
   ),
-  Player.withPhoto(
-    id: 3,
+  Player(
+    id: '3',
     name: "Rutash",
     imagePath: "assets/images/rutash.png",
     batArm: Arm.right,
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.fast,
   ),
-  Player.withPhoto(
-    id: 4,
+  Player(
+    id: '4',
     name: "Calden",
     imagePath: "assets/images/calden.jpg",
     batArm: Arm.right,
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,
   ),
-  Player.withPhoto(
-    id: 5,
+  Player(
+    id: '5',
     name: "Noah",
     imagePath: "assets/images/noah.jpg",
     batArm: Arm.right,
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,
   ),
-  Player.withPhoto(
-    id: 6,
+  Player(
+    id: '6',
     name: "Roshan",
     imagePath: "assets/images/roshan.jpg",
     batArm: Arm.right,
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,
   ),
-  Player.withPhoto(
-    id: 7,
+  Player(
+    id: '7',
     name: "Kyle",
     imagePath: "assets/images/kyle.jpg",
     batArm: Arm.right,
@@ -102,14 +108,14 @@ final List<Player> _playerList = [
     bowlStyle: BowlStyle.spin,
   ),
   Player(
-    id: 8,
+    id: '8',
     name: "Darren",
     batArm: Arm.right,
     bowlArm: Arm.right,
     bowlStyle: BowlStyle.spin,
   ),
   Player(
-    id: 9,
+    id: '9',
     name: "arjun",
     batArm: Arm.right,
     bowlArm: Arm.right,

@@ -46,7 +46,7 @@ class Ball {
       this.battingExtra});
 
   /// Creates a ball that is not bowled, but a runout is recorded
-  Ball.RunoutBeforeDelivery({
+  Ball.runoutBeforeDelivery({
     required this.bowler,
     required this.batter,
   })  : runsScored = 0,

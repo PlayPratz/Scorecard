@@ -7,7 +7,7 @@ class GenericItem extends StatefulWidget {
   final String secondaryHint;
   final Widget? leading;
   final Function? onSelect;
-  final _GenericItemVariant variant;
+  final GenericItemVariant variant;
   final Widget trailing;
 
   const GenericItem(
@@ -16,7 +16,7 @@ class GenericItem extends StatefulWidget {
       required this.secondaryHint,
       this.leading,
       this.onSelect,
-      this.variant = _GenericItemVariant.normal,
+      this.variant = GenericItemVariant.normal,
       this.trailing = const Icon(Icons.chevron_right)})
       : super(key: key);
 
@@ -51,4 +51,4 @@ class _GenericItemState extends State<GenericItem> {
   }
 }
 
-enum _GenericItemVariant { normal, small }
+enum GenericItemVariant { normal, small }

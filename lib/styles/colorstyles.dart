@@ -7,7 +7,7 @@ class ColorStyles {
   static const card = Color(0xFF1E1E1E);
   // static const selected = Color(0xFF0a84ff);
   static const selected = Colors.blue;
-  static final text = Colors.white;
+  static const text = Colors.white;
 
   static const remove = Colors.redAccent;
 

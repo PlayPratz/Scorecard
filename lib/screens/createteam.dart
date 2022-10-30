@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+
 import '../models/player.dart';
 import '../models/team.dart';
-import 'playerlist.dart';
-import 'titledpage.dart';
-import 'widgets/playertile.dart';
 import '../styles/colorstyles.dart';
 import '../styles/strings.dart';
 import '../util/elements.dart';
 import '../util/utils.dart';
+import 'playerlist.dart';
+import 'titledpage.dart';
+import 'widgets/playertile.dart';
 
 class CreateTeamForm extends StatefulWidget {
   final Team? team;
@@ -63,10 +64,10 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   void _submitTeam() {
     Utils.goBack(
         context,
-        Team(
-          _teamNameController.text,
-          _shortTeamNameController.text,
-          [_selectedCaptain!, ..._selectedPlayerList],
+        Team.create(
+          name: _teamNameController.text,
+          shortName: _shortTeamNameController.text,
+          squad: [_selectedCaptain!, ..._selectedPlayerList],
         ));
   }
 

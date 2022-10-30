@@ -18,6 +18,8 @@ class SingleToggleSelection<T> {
   }
 
   T? get selection => index == -1 ? null : dataList[index];
+  set selection(T? value) =>
+      value != null ? index = dataList.indexOf(value) : -1;
 
   List<Widget> get widgets =>
       dataList.map((data) => Text(stringifier(data))).toList();

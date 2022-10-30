@@ -17,25 +17,37 @@ class CreatePlayerForm extends StatefulWidget {
 class _CreatePlayerFormState extends State<CreatePlayerForm> {
   String? _name;
 
-  SingleToggleSelection<Arm> _batArm = SingleToggleSelection(
+  final SingleToggleSelection<Arm> _batArm = SingleToggleSelection(
       dataList: Arm.values,
       stringifier: Strings.getArm,
       allowNoSelection: false);
 
-  SingleToggleSelection<Arm> _bowlArm = SingleToggleSelection(
+  final SingleToggleSelection<Arm> _bowlArm = SingleToggleSelection(
       dataList: Arm.values,
       stringifier: Strings.getArm,
       allowNoSelection: false);
 
-  SingleToggleSelection<BowlStyle> _bowlStyle = SingleToggleSelection(
+  final SingleToggleSelection<BowlStyle> _bowlStyle = SingleToggleSelection(
       dataList: BowlStyle.values,
       stringifier: Strings.getBowlStyle,
       allowNoSelection: false);
 
   @override
+  void initState() {
+    super.initState();
+
+    if (widget.player != null) {
+      Player player = widget.player!;
+      _batArm.selection = player.batArm;
+      _bowlArm.selection = player.bowlArm;
+      _bowlStyle.selection = player.bowlStyle;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TitledPage(
-        title: "Create a Player",
+        title: "Player Details",
         child: Column(
           children: [
             Expanded(
@@ -43,8 +55,8 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
                 child: Column(
                   children: [
                     Elements.getTextInput("Name", "A future superstar?",
-                        (value) => _name = value),
-                    SizedBox(height: 32),
+                        widget.player?.name, (value) => _name = value),
+                    const SizedBox(height: 32),
                     _wToggleButtonWithLabel(_batArm, "Bat Arm"),
                     _wToggleButtonWithLabel(_bowlArm, "Bowl Arm"),
                     _wToggleButtonWithLabel(_bowlStyle, "Bowl Style"),
@@ -52,7 +64,8 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
                 ),
               ),
             ),
-            Elements.getConfirmButton(text: "Create Player"),
+            Elements.getConfirmButton(
+                text: "Create Player", onPressed: _onCreatePlayer),
           ],
         ));
   }
@@ -87,5 +100,5 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
 
   void _onCreatePlayer() {}
 
-  bool get canCreatePlayer => false;
+  bool get canCreatePlayer => _name != null;
 }

@@ -67,7 +67,6 @@ class _MatchScreenState extends State<MatchScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _striker = onPitchBatters.first;
   }
@@ -136,7 +135,7 @@ class _MatchScreenState extends State<MatchScreen> {
                   player: _bowler,
                   score:
                       widget.match.currentInnings.currentBowlerInnings.score),
-              SizedBox(height: 18),
+              const SizedBox(height: 18),
               _wEndInningsButton()
             ],
           ),
@@ -150,19 +149,19 @@ class _MatchScreenState extends State<MatchScreen> {
       onPressed: null,
       onLongPress: _doEndInnings,
       style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
-      icon: Icon(Icons.cancel),
+      icon: const Icon(Icons.cancel),
       label: Text("End Innings"),
     );
   }
 
   Widget _wUndoButton() {
     return Padding(
-      padding: EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.only(right: 12),
       child: OutlinedButton.icon(
         onPressed:
             widget.match.currentInnings.ballsBowled > 0 ? _undoMove : null,
         style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
-        icon: Icon(Icons.undo),
+        icon: const Icon(Icons.undo),
         label: Text("Undo"),
       ),
     );
@@ -204,7 +203,7 @@ class _MatchScreenState extends State<MatchScreen> {
             minHeight: 40.0,
             minWidth: 80.0,
           )),
-      Spacer(),
+      const Spacer(),
       ToggleButtons(
           onPressed: (index) => setState(() {
                 if (index == _bowlingExtraSelection.index) {
@@ -306,7 +305,7 @@ class _MatchScreenState extends State<MatchScreen> {
         // Add pipe
         displayWidgets.add(const SizedBox(
           height: 32,
-          child: const VerticalDivider(color: Colors.amber),
+          child: VerticalDivider(color: Colors.amber),
         ));
       }
 
@@ -399,9 +398,8 @@ class _MatchScreenState extends State<MatchScreen> {
             bowlingExtra: _bowlingExtraSelection.selection,
             battingExtra: _battingExtraSelection.selection,
           )
-        : Ball.RunoutBeforeDelivery(
+        : Ball.runoutBeforeDelivery(
             bowler: _bowler, batter: _nonStriker.batter);
-    ;
 
     setState(() {
       Innings currentInnings = widget.match.currentInnings;

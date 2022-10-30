@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/util/utils.dart';
+import '../../util/elements.dart';
+import '../../util/utils.dart';
 
 class ItemList extends StatelessWidget {
   final List<Widget> itemList;

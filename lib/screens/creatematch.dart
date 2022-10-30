@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/createteam.dart';
-import 'package:scorecard/screens/matchscreen/matchinitscreen.dart';
-import 'package:scorecard/screens/matchscreen/matchscreen.dart';
-import 'package:scorecard/screens/titledpage.dart';
-import 'package:scorecard/screens/widgets/teamdummytile.dart';
-import 'package:scorecard/styles/colorstyles.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/util/utils.dart';
+import '../models/cricketmatch.dart';
+import '../models/team.dart';
+import 'createteam.dart';
+import 'matchscreen/matchinitscreen.dart';
+import 'matchscreen/matchscreen.dart';
+import 'titledpage.dart';
+import 'widgets/teamdummytile.dart';
+import '../styles/colorstyles.dart';
+import '../styles/strings.dart';
+import '../util/elements.dart';
+import '../util/utils.dart';
 
 class CreateMatchForm extends StatefulWidget {
   const CreateMatchForm({Key? key}) : super(key: key);
@@ -110,15 +110,13 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
 
   void _createMatch() {
     if (_selectedHomeTeam != null && _selectedAwayTeam != null) {
-      Utils.goToPage(
-          MatchInitScreen(
-            match: CricketMatch(
-              homeTeam: _selectedHomeTeam!,
-              awayTeam: _selectedAwayTeam!,
-              maxOvers: _overs,
-            ),
-          ),
-          context);
+      CricketMatch match = CricketMatch(
+        homeTeam: _selectedHomeTeam!,
+        awayTeam: _selectedAwayTeam!,
+        maxOvers: _overs,
+      );
+      Utils.saveMatch(match);
+      Utils.goToPage(MatchInitScreen(match: match), context);
     }
   }
 }

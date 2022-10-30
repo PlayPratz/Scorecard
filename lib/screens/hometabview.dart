@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/basescreen.dart';
-import 'package:scorecard/screens/matchlist.dart';
-import 'package:scorecard/screens/playerlist.dart';
-import 'package:scorecard/styles/colorstyles.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/utils.dart';
+import 'basescreen.dart';
+import 'matchlist.dart';
+import 'playerlist.dart';
+import '../styles/colorstyles.dart';
+import '../styles/strings.dart';
+import '../util/utils.dart';
 
 class HomeTabView extends StatefulWidget {
   const HomeTabView({Key? key}) : super(key: key);

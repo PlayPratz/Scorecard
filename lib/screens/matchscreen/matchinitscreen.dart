@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/matchscreen/inningsinitscreen.dart';
-import 'package:scorecard/screens/teamlist.dart';
-import 'package:scorecard/screens/titledpage.dart';
-import 'package:scorecard/screens/widgets/genericitem.dart';
-import 'package:scorecard/screens/widgets/itemlist.dart';
-import 'package:scorecard/screens/widgets/teamdummytile.dart';
-import 'package:scorecard/screens/widgets/teamtile.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/util/utils.dart';
+import '../../models/cricketmatch.dart';
+import '../../models/team.dart';
+import 'inningsinitscreen.dart';
+import '../teamlist.dart';
+import '../titledpage.dart';
+import '../widgets/genericitem.dart';
+import '../widgets/itemlist.dart';
+import '../widgets/teamdummytile.dart';
+import '../widgets/teamtile.dart';
+import '../../styles/strings.dart';
+import '../../util/elements.dart';
+import '../../util/utils.dart';
 
 class MatchInitScreen extends StatefulWidget {
   final CricketMatch match;

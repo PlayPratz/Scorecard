@@ -1,7 +1,7 @@
-import 'package:scorecard/models/ball.dart';
-import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/wicket.dart';
+import '../models/ball.dart';
+import '../models/cricketmatch.dart';
+import '../models/player.dart';
+import '../models/wicket.dart';
 
 class Strings {
   Strings._();

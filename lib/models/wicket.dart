@@ -1,4 +1,4 @@
-import 'package:scorecard/models/player.dart';
+import 'player.dart';
 
 abstract class Wicket {
   Player batter;

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/ball.dart';
-import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/screens/matchscreen/matchscreen.dart';
-import 'package:scorecard/screens/playerlist.dart';
-import 'package:scorecard/screens/titledpage.dart';
-import 'package:scorecard/screens/widgets/genericitem.dart';
-import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/util/utils.dart';
+import '../../models/ball.dart';
+import '../../models/cricketmatch.dart';
+import '../../models/player.dart';
+import 'matchscreen.dart';
+import '../playerlist.dart';
+import '../titledpage.dart';
+import '../widgets/genericitem.dart';
+import '../../util/elements.dart';
+import '../../util/utils.dart';
 
 import '../widgets/playertile.dart';
 

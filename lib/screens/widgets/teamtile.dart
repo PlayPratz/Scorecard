@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/widgets/teamdummytile.dart';
+import '../../models/team.dart';
+import 'teamdummytile.dart';
 
 class TeamTile extends StatelessWidget {
   final Team team;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/screens/createplayer.dart';
-import 'package:scorecard/screens/widgets/itemlist.dart';
-import 'package:scorecard/screens/widgets/playertile.dart';
-import 'package:scorecard/styles/strings.dart';
+import '../models/player.dart';
+import 'createplayer.dart';
+import 'widgets/itemlist.dart';
+import 'widgets/playertile.dart';
+import '../styles/strings.dart';
 
 class PlayerList extends StatelessWidget {
   final List<Player> playerList;

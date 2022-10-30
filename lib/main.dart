@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/hometabview.dart';
-import 'package:scorecard/styles/colorstyles.dart';
-import 'package:scorecard/styles/textstyles.dart';
+
+import 'screens/hometabview.dart';
+import 'styles/colorstyles.dart';
+import 'styles/textstyles.dart';
 
 void main() {
   runApp(const MyApp());

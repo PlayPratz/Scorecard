@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/models/innings.dart';
-import 'package:scorecard/models/result.dart';
-import 'package:scorecard/styles/colorstyles.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/elements.dart';
+import '../../models/cricketmatch.dart';
+import '../../models/innings.dart';
+import '../../models/result.dart';
+import '../../styles/colorstyles.dart';
+import '../../styles/strings.dart';
+import '../../util/elements.dart';
 
 class MatchTile extends StatelessWidget {
   final CricketMatch match;

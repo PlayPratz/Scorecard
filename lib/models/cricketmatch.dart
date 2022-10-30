@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:scorecard/models/result.dart';
-import 'package:scorecard/models/team.dart';
+import 'result.dart';
+import 'team.dart';
 
 import 'innings.dart';
 

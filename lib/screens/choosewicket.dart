@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/wicket.dart';
-import 'package:scorecard/screens/titledpage.dart';
-import 'package:scorecard/screens/widgets/genericitem.dart';
-import 'package:scorecard/screens/widgets/itemlist.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/utils.dart';
+import '../models/wicket.dart';
+import 'titledpage.dart';
+import 'widgets/genericitem.dart';
+import 'widgets/itemlist.dart';
+import '../styles/strings.dart';
+import '../util/utils.dart';
 
 class ChooseWicket extends StatefulWidget {
   const ChooseWicket({Key? key}) : super(key: key);

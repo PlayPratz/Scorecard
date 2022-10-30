@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/team.dart';
+import '../models/cricketmatch.dart';
+import '../models/player.dart';
+import '../models/team.dart';
 
 class Utils {
   Utils._(); // Private constructor
@@ -32,7 +32,15 @@ class Utils {
   }
 
   static List<CricketMatch> getAllMatches() {
-    return [];
+    return _matchList;
+  }
+
+  static void saveMatch(CricketMatch match) {
+    // Check whether match exists in storage
+    // If yes, update
+    // Else, add to list
+    _matchList.remove(match);
+    _matchList.insert(0, match);
   }
 }
 
@@ -110,3 +118,5 @@ final List<Player> _playerList = [
 ];
 
 final List<Team> _teamList = [];
+
+final List<CricketMatch> _matchList = [];

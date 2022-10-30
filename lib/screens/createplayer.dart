@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'titledpage.dart';
 
 class CreatePlayerForm extends StatefulWidget {
   const CreatePlayerForm({Key? key}) : super(key: key);
@@ -10,8 +11,12 @@ class CreatePlayerForm extends StatefulWidget {
 class _CreatePlayerFormState extends State<CreatePlayerForm> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [],
-    );
+    return TitledPage(
+        title: "Create a Player",
+        child: SingleChildScrollView(
+          child: Column(
+            children: [],
+          ),
+        ));
   }
 }

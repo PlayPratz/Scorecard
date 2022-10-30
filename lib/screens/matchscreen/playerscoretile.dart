@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/screens/widgets/genericitem.dart';
-import 'package:scorecard/util/elements.dart';
+import '../../models/player.dart';
+import '../widgets/genericitem.dart';
+import '../../util/elements.dart';
 
 class PlayerScoreTile extends StatelessWidget {
   final Player player;

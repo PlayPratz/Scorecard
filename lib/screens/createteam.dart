@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/playerlist.dart';
-import 'package:scorecard/screens/titledpage.dart';
-import 'package:scorecard/screens/widgets/playertile.dart';
-import 'package:scorecard/styles/colorstyles.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/util/utils.dart';
+import '../models/player.dart';
+import '../models/team.dart';
+import 'playerlist.dart';
+import 'titledpage.dart';
+import 'widgets/playertile.dart';
+import '../styles/colorstyles.dart';
+import '../styles/strings.dart';
+import '../util/elements.dart';
+import '../util/utils.dart';
 
 class CreateTeamForm extends StatefulWidget {
   final Team? team;

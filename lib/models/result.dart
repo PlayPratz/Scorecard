@@ -1,4 +1,4 @@
-import 'package:scorecard/models/team.dart';
+import 'team.dart';
 
 abstract class Result {
   VictoryType getVictoryType();

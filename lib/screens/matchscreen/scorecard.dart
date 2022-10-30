@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/models/innings.dart';
-import 'package:scorecard/models/wicket.dart';
-import 'package:scorecard/screens/titledpage.dart';
-import 'package:scorecard/screens/widgets/genericitem.dart';
-import 'package:scorecard/screens/widgets/matchtile.dart';
+import '../../models/cricketmatch.dart';
+import '../../models/innings.dart';
+import '../../models/wicket.dart';
+import '../titledpage.dart';
+import '../widgets/genericitem.dart';
+import '../widgets/matchtile.dart';
 
 class Scorecard extends StatelessWidget {
   final CricketMatch match;

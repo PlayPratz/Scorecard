@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/ball.dart';
-import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/models/innings.dart';
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/wicket.dart';
-import 'package:scorecard/screens/matchscreen/inningsinitscreen.dart';
-import 'package:scorecard/screens/matchscreen/playerscoretile.dart';
-import 'package:scorecard/screens/matchscreen/scorecard.dart';
-import 'package:scorecard/screens/playerlist.dart';
-import 'package:scorecard/screens/titledpage.dart';
-import 'package:scorecard/screens/widgets/matchtile.dart';
-import 'package:scorecard/styles/colorstyles.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/util/utils.dart';
+import '../../models/ball.dart';
+import '../../models/cricketmatch.dart';
+import '../../models/innings.dart';
+import '../../models/player.dart';
+import '../../models/wicket.dart';
+import 'inningsinitscreen.dart';
+import 'playerscoretile.dart';
+import 'scorecard.dart';
+import '../playerlist.dart';
+import '../titledpage.dart';
+import '../widgets/matchtile.dart';
+import '../../styles/colorstyles.dart';
+import '../../styles/strings.dart';
+import '../../util/elements.dart';
+import '../../util/utils.dart';
 
 class MatchScreen extends StatefulWidget {
   final CricketMatch match;
@@ -81,7 +81,11 @@ class _MatchScreenState extends State<MatchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          MatchTile(match: widget.match),
+          InkWell(
+            // TODO Inkwell not looking good
+            onTap: _goToScoreCard,
+            child: MatchTile(match: widget.match),
+          ),
           _wNowPlaying(),
           _wRecentBalls(),
           // Elements.getConfirmButton()
@@ -492,8 +496,12 @@ class _MatchScreenState extends State<MatchScreen> {
       Utils.goToPage(InningsInitScreen(match: widget.match), context);
     } else if (widget.match.matchState == MatchState.secondInnings) {
       widget.match.generateResult();
-      Utils.goToPage(Scorecard(match: widget.match), context);
+      _goToScoreCard();
     }
+  }
+
+  void _goToScoreCard() {
+    Utils.goToPage(Scorecard(match: widget.match), context);
   }
 
   void _undoMove() {

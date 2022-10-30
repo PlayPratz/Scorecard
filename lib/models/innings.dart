@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/wicket.dart';
-import 'package:scorecard/util/constants.dart';
+import 'player.dart';
+import 'wicket.dart';
+import '../util/constants.dart';
 
 import 'ball.dart';
 import 'team.dart';
@@ -108,14 +108,14 @@ class Innings {
       _isCompleted ||
       oversCompleted == maxOvers ||
       // wicketsRemaining == 0 ||
-      runsRequired > 0;
+      (target != null && runsRequired <= 0);
 
   double get runRatePerOver => Constants.ballsPerOver * runs / ballsBowled;
   int get runsProjected => (maxOvers * runRatePerOver).floor();
 
   int get runsRequired {
     if (target == null) {
-      return -1;
+      throw UnimplementedError();
     }
     return target! - runs;
   }

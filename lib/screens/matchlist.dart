@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/creatematch.dart';
-import 'package:scorecard/screens/widgets/itemlist.dart';
-import 'package:scorecard/screens/widgets/matchtile.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/utils.dart';
+import 'creatematch.dart';
+import 'widgets/itemlist.dart';
+import 'widgets/matchtile.dart';
+import '../styles/strings.dart';
+import '../util/utils.dart';
 
 class MatchList extends StatelessWidget {
   MatchList({Key? key}) : super(key: key);
@@ -13,7 +13,7 @@ class MatchList extends StatelessWidget {
     return ItemList(
         itemList: getMatchList(),
         createItem: CreateItemEntry(
-          page: CreateMatchForm(),
+          page: const CreateMatchForm(),
           string: Strings.matchlistCreateNewMatch,
         ));
   }

@@ -54,7 +54,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             _wSquadChooser(),
             Elements.getConfirmButton(
                 text: Strings.createTeamCreate,
-                onPressed: _validateForm() ? _submitTeam : null),
+                onPressed: _canSubmitTeam ? _submitTeam : null),
           ],
         ),
       ),
@@ -62,21 +62,24 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   }
 
   void _submitTeam() {
-    Utils.goBack(
-        context,
-        Team.create(
-          name: _teamNameController.text,
-          shortName: _shortTeamNameController.text,
-          squad: [_selectedCaptain!, ..._selectedPlayerList],
-        ));
+    Team team;
+    if (widget.team != null) {
+      team = widget.team!;
+      team.name = _teamNameController.text;
+      team.shortName = _shortTeamNameController.text;
+      team.squad = [_selectedCaptain!, ..._selectedPlayerList];
+    } else {
+      team = Team.create(
+        name: _teamNameController.text,
+        shortName: _shortTeamNameController.text,
+        squad: [_selectedCaptain!, ..._selectedPlayerList],
+      );
+    }
+    Utils.saveTeam(team);
+    Utils.goBack(context, team);
   }
 
-  bool _validateForm() {
-    if (_selectedCaptain == null) {
-      return false;
-    }
-    return true;
-  }
+  bool get _canSubmitTeam => _selectedCaptain != null;
 
   Future<Player?> _getPlayerFromList(
       List<Player> playerList, BuildContext context) async {

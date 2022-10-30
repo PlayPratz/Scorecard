@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../util/elements.dart';
 import '../../util/utils.dart';
 
@@ -24,12 +25,11 @@ class ItemList extends StatelessWidget {
             ? Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: ListTile(
-                    title: Text(createItem!.string),
-                    leading: Elements.addIcon,
-                    trailing: trailingIcon,
-                    onTap: () {
-                      Utils.goToPage(createItem!.page, context);
-                    }),
+                  title: Text(createItem!.string),
+                  leading: Elements.addIcon,
+                  trailing: trailingIcon,
+                  onTap: () => Utils.goToPage(createItem!.page, context),
+                ),
               )
             : Container(),
         ...itemList

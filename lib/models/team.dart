@@ -6,7 +6,7 @@ class Team {
 
   String name;
   String shortName;
-  final List<Player> squad;
+  List<Player> squad;
 
   Team(
       {required this.id,

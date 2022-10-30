@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/player.dart';
 
 import '../styles/colorstyles.dart';
 
@@ -7,7 +8,7 @@ class Elements {
 
   static const Icon addIcon = Icon(
     Icons.add_circle,
-    color: ColorStyles.currentlyBatting,
+    color: ColorStyles.online,
   );
 
   static const Icon removeIcon = Icon(
@@ -22,7 +23,7 @@ class Elements {
   static const Icon onlineIcon = Icon(
     Icons.fiber_manual_record,
     size: 12,
-    color: ColorStyles.currentlyBatting,
+    color: ColorStyles.online,
   );
 
   static Widget getOnlineIndicator(bool isOnline) {
@@ -56,6 +57,22 @@ class Elements {
       decoration: InputDecoration(labelText: label, hintText: hint),
       initialValue: initialValue,
       onChanged: onChangeValue,
+    );
+  }
+
+  static Widget getPlayerIcon(Player player, double size) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: player.imagePath != null
+          ? CircleAvatar(
+              foregroundImage: AssetImage(player.imagePath!),
+              radius: size,
+            )
+          : Icon(
+              Icons.person_outline,
+              size: size,
+            ),
     );
   }
 

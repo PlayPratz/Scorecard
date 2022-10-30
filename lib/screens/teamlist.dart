@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/createteam.dart';
 import '../models/team.dart';
 import 'widgets/itemlist.dart';
 import 'widgets/teamtile.dart';
@@ -14,6 +15,8 @@ class TeamList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ItemList(
       itemList: _getTeamList(),
+      createItem:
+          CreateItemEntry(page: CreateTeamForm(), string: "Create Team"),
     );
   }
 

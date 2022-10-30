@@ -8,31 +8,35 @@ import '../../util/elements.dart';
 
 class MatchTile extends StatelessWidget {
   final CricketMatch match;
+  final Function(CricketMatch)? onSelectMatch;
 
-  const MatchTile({required this.match, Key? key}) : super(key: key);
+  const MatchTile({required this.match, this.onSelectMatch, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // height: 120,
+    return Ink(
       decoration: BoxDecoration(
         color: ColorStyles.card,
-        borderRadius: BorderRadius.circular(12),
-        // border: Border.all(color: Colors.indigoAccent, width: 2)
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(child: _InningsTile(match.homeInnings)),
-                Expanded(child: _InningsTile(match.awayInnings)),
-              ],
-            ),
-            const Divider(),
-            _wSummary()
-          ],
+      child: InkWell(
+        onTap: onSelectMatch != null ? () => onSelectMatch!(match) : null,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: _InningsTile(match.homeInnings)),
+                  Expanded(child: _InningsTile(match.awayInnings)),
+                ],
+              ),
+              const Divider(),
+              _wSummary()
+            ],
+          ),
         ),
       ),
     );
@@ -224,7 +228,7 @@ class _InningsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0),
         minVerticalPadding: 0,
         minLeadingWidth: 0,
         dense: true,

@@ -26,7 +26,7 @@ class TitledPage extends StatelessWidget {
           elevation: 0,
         ),
         body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: child,
         ),
       ),

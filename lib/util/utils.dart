@@ -25,7 +25,7 @@ class Utils {
     return [..._playerList];
   }
 
-  static void addPlayer(Player player) {
+  static void savePlayer(Player player) {
     if (!_playerList.contains(player)) _playerList.add(player);
   }
 
@@ -33,12 +33,12 @@ class Utils {
     return [..._teamList];
   }
 
-  static void addTeam(Team team) {
+  static void saveTeam(Team team) {
     if (!_teamList.contains(team)) _teamList.add(team);
   }
 
   static List<CricketMatch> getAllMatches() {
-    return _matchList;
+    return [..._matchList];
   }
 
   static void saveMatch(CricketMatch match) {

@@ -21,12 +21,7 @@ class PlayerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: player.imagePath != null
-          ? CircleAvatar(
-              foregroundImage: AssetImage(player.imagePath!),
-              radius: 24,
-            )
-          : const Icon(Icons.person_outline),
+      leading: Elements.getPlayerIcon(player, 48),
       title: Text(player.name),
       subtitle: getBatBowlStyle(context),
       trailing: trailing,

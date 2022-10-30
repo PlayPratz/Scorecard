@@ -4,6 +4,7 @@ import '../models/player.dart';
 import '../styles/strings.dart';
 import '../util/elements.dart';
 import '../util/helpers.dart';
+import '../util/utils.dart';
 import 'titledpage.dart';
 
 class CreatePlayerForm extends StatefulWidget {
@@ -98,7 +99,24 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
     );
   }
 
-  void _onCreatePlayer() {}
+  void _onCreatePlayer() {
+    Player player;
+    if (widget.player != null) {
+      player = widget.player!;
+      player.name = _name!;
+      player.batArm = _batArm.selection!;
+      player.bowlArm = _bowlArm.selection!;
+      player.bowlStyle = _bowlStyle.selection!;
+    } else {
+      player = Player.create(
+          name: _name!,
+          batArm: _batArm.selection!,
+          bowlArm: _bowlArm.selection!,
+          bowlStyle: _bowlStyle.selection!);
+    }
+    Utils.savePlayer(player);
+    Utils.goBack(context);
+  }
 
   bool get canCreatePlayer => _name != null;
 }

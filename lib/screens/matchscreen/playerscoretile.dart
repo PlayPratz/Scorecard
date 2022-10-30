@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/styles/colorstyles.dart';
 import '../../models/player.dart';
 import '../widgets/genericitem.dart';
 import '../../util/elements.dart';
@@ -6,26 +7,29 @@ import '../../util/elements.dart';
 class PlayerScoreTile extends StatelessWidget {
   final Player player;
   final String score;
-  final bool isOnStrike;
+  final bool isOnline;
   const PlayerScoreTile(
       {Key? key,
       required this.player,
       required this.score,
-      this.isOnStrike = false})
+      this.isOnline = false})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GenericItem(
-      leading: player.imagePath != null
-          ? CircleAvatar(
-              foregroundImage: AssetImage(player.imagePath!),
-              radius: 24,
-            )
-          : const Icon(Icons.person_outline),
-      primaryHint: player.name,
-      secondaryHint: score,
-      trailing: Elements.getOnlineIndicator(isOnStrike),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: isOnline ? ColorStyles.online : Colors.transparent,
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: GenericItem(
+        leading: Elements.getPlayerIcon(player, 24),
+        primaryHint: player.name,
+        secondaryHint: score,
+        trailing: null,
+      ),
     );
   }
 }

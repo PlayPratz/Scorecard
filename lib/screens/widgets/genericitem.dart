@@ -8,7 +8,7 @@ class GenericItem extends StatefulWidget {
   final Widget? leading;
   final Function? onSelect;
   final GenericItemVariant variant;
-  final Widget trailing;
+  final Widget? trailing;
 
   const GenericItem(
       {Key? key,
@@ -27,27 +27,33 @@ class GenericItem extends StatefulWidget {
 class _GenericItemState extends State<GenericItem> {
   @override
   Widget build(BuildContext context) {
-    final teamDummyTile = ListTile(
+    final genericTile = ListTile(
+      // TODO Minleadingwidth?
+      minLeadingWidth: 0,
       title: FittedBox(
           alignment: Alignment.centerLeft,
           fit: BoxFit.scaleDown,
           child: Text(
             widget.primaryHint,
           )),
-      subtitle: Text(widget.secondaryHint),
+      subtitle: Text(
+        widget.secondaryHint,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       leading: widget.leading,
       trailing: widget.trailing,
     );
 
     if (widget.onSelect == null) {
-      return teamDummyTile;
+      return genericTile;
     }
 
     return InkWell(
         onTap: () {
           widget.onSelect!();
         },
-        child: teamDummyTile);
+        child: genericTile);
   }
 }
 

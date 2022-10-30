@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/util/elements.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/innings.dart';
 import '../../models/wicket.dart';
@@ -23,7 +24,7 @@ class Scorecard extends StatelessWidget {
               Text("Batting"),
               ..._wbBattingPanel(match.firstInnings),
               Text("Bowling"),
-              ..._wBowlingPanel(match.secondInnings),
+              ..._wBowlingPanel(match.firstInnings),
               Text("SECOND INNINGS"),
               Text("Batting"),
               ..._wbBattingPanel(match.secondInnings),
@@ -38,17 +39,7 @@ class Scorecard extends StatelessWidget {
     return [
       ...innings.allBattingInnings.map(
         (battingInnings) => GenericItem(
-          leading: SizedBox(
-            height: 48,
-            width: 48,
-            child: battingInnings.batter.imagePath != null
-                ? CircleAvatar(
-                    foregroundImage:
-                        AssetImage(battingInnings.batter.imagePath!),
-                    radius: 24,
-                  )
-                : const Icon(Icons.person_outline),
-          ),
+          leading: Elements.getPlayerIcon(battingInnings.batter, 36),
           primaryHint: battingInnings.batter.name,
           secondaryHint: _getWicket(battingInnings.wicket),
           trailing: Text(battingInnings.score),
@@ -61,19 +52,10 @@ class Scorecard extends StatelessWidget {
     return [
       ...innings.allBowlingInnings.map(
         (bowlingInnings) => GenericItem(
-          leading: SizedBox(
-            height: 48,
-            width: 48,
-            child: bowlingInnings.bowler.imagePath != null
-                ? CircleAvatar(
-                    foregroundImage:
-                        AssetImage(bowlingInnings.bowler.imagePath!),
-                    radius: 24,
-                  )
-                : const Icon(Icons.person_outline),
-          ),
+          leading: Elements.getPlayerIcon(bowlingInnings.bowler, 36),
           primaryHint: bowlingInnings.bowler.name,
-          secondaryHint: bowlingInnings.economy.toStringAsFixed(2),
+          secondaryHint:
+              "Economy: " + bowlingInnings.economy.toStringAsFixed(2),
           trailing: Text(bowlingInnings.score),
         ),
       )

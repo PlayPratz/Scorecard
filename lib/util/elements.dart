@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../styles/colorstyles.dart';
 
 class Elements {
@@ -33,7 +34,7 @@ class Elements {
   }
 
   static Widget getConfirmButton(
-      {required String text, Function()? onPressed}) {
+      {required String text, void Function()? onPressed}) {
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: SizedBox(
@@ -46,6 +47,14 @@ class Elements {
           ),
         ),
       ),
+    );
+  }
+
+  static Widget getTextInput(
+      String label, String hint, void Function(String value) onChangeValue) {
+    return TextField(
+      decoration: InputDecoration(labelText: label, hintText: hint),
+      onChanged: onChangeValue,
     );
   }
 

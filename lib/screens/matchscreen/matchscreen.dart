@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+
 import '../../models/ball.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/innings.dart';
 import '../../models/player.dart';
 import '../../models/wicket.dart';
-import 'inningsinitscreen.dart';
-import 'playerscoretile.dart';
-import 'scorecard.dart';
-import '../playerlist.dart';
-import '../titledpage.dart';
-import '../widgets/matchtile.dart';
 import '../../styles/colorstyles.dart';
 import '../../styles/strings.dart';
 import '../../util/elements.dart';
+import '../../util/helpers.dart';
 import '../../util/utils.dart';
+import '../playerlist.dart';
+import '../titledpage.dart';
+import '../widgets/matchtile.dart';
+import 'inningsinitscreen.dart';
+import 'playerscoretile.dart';
+import 'scorecard.dart';
 
 class MatchScreen extends StatefulWidget {
   final CricketMatch match;
@@ -49,11 +51,11 @@ class _MatchScreenState extends State<MatchScreen> {
   Player get _bowler => widget.match.currentInnings.currentOver.bowler;
 
   final _RunSelection _runSelection = _RunSelection();
-  final _SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
-      _SingleToggleSelection(
+  final SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
+      SingleToggleSelection(
           dataList: BowlingExtra.values, stringifier: Strings.getBowlingExtra);
-  final _SingleToggleSelection<BattingExtra> _battingExtraSelection =
-      _SingleToggleSelection(
+  final SingleToggleSelection<BattingExtra> _battingExtraSelection =
+      SingleToggleSelection(
     dataList: BattingExtra.values,
     stringifier: Strings.getBattingExtra,
   );
@@ -547,25 +549,5 @@ class _RunSelection {
 
   void clear() {
     _selectedRuns = 0;
-  }
-}
-
-class _SingleToggleSelection<T> {
-  final List<T> dataList;
-  final String Function(T) stringifier;
-
-  _SingleToggleSelection({required this.dataList, required this.stringifier});
-
-  int index = -1;
-
-  T? get selection => index == -1 ? null : dataList[index];
-
-  List<Widget> get widgets =>
-      dataList.map((data) => Text(stringifier(data))).toList();
-
-  List<bool> get booleans => dataList.map((data) => data == selection).toList();
-
-  void clear() {
-    index = -1;
   }
 }

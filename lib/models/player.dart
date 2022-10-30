@@ -13,6 +13,7 @@ class Player {
       required this.batArm,
       this.bowlArm,
       this.bowlStyle});
+
   Player.withPhoto(
       {required this.id,
       required this.name,
@@ -23,8 +24,8 @@ class Player {
 }
 
 enum Arm {
-  right,
   left,
+  right,
 }
 
 enum BowlStyle {

@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import '../models/cricketmatch.dart';
 import '../models/team.dart';
-import 'createteam.dart';
-import 'matchscreen/matchinitscreen.dart';
-import 'matchscreen/matchscreen.dart';
-import 'titledpage.dart';
-import 'widgets/teamdummytile.dart';
 import '../styles/colorstyles.dart';
 import '../styles/strings.dart';
 import '../util/elements.dart';
 import '../util/utils.dart';
+import 'createteam.dart';
+import 'matchscreen/matchinitscreen.dart';
+import 'titledpage.dart';
+import 'widgets/teamdummytile.dart';
 
 class CreateMatchForm extends StatefulWidget {
   const CreateMatchForm({Key? key}) : super(key: key);
@@ -71,12 +70,8 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   }
 
   Widget _wSelectOvers() {
-    return ListTile(
-      title: Text("Overs"),
-      subtitle: TextField(
-          keyboardType: TextInputType.number,
-          onChanged: (value) => _overs = int.parse(value)),
-    );
+    return Elements.getTextInput("Overs", "How many overs? 5? 10? 20?",
+        (value) => _overs = int.parse(value));
   }
 
   void _chooseHomeTeam() {

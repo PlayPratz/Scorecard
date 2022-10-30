@@ -1,5 +1,5 @@
-import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/wicket.dart';
+import 'player.dart';
+import 'wicket.dart';
 import 'package:scorecard/util/constants.dart';
 
 class Ball {

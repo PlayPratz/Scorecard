@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/ball.dart';
-import 'package:scorecard/models/wicket.dart';
-import 'package:scorecard/screens/choosewicket.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/elements.dart';
+import '../../models/ball.dart';
+import '../../models/wicket.dart';
+import '../choosewicket.dart';
+import '../../styles/strings.dart';
+import '../../util/elements.dart';
 import 'package:scorecard/util/utils.dart';
 
 class BallSelector extends StatefulWidget {

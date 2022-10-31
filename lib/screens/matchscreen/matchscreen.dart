@@ -81,7 +81,7 @@ class _MatchScreenState extends State<MatchScreen> {
   @override
   Widget build(BuildContext context) {
     String title = widget.match.homeTeam.shortName +
-        " v " +
+        Strings.seperatorVersus +
         widget.match.awayTeam.shortName;
 
     return TitledPage(
@@ -162,7 +162,7 @@ class _MatchScreenState extends State<MatchScreen> {
           onLongPress: _doEndInnings,
           style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
           icon: const Icon(Icons.cancel),
-          label: Text("End Innings"),
+          label: const Text(Strings.matchScreenEndInnings),
         ),
       ),
     );
@@ -176,24 +176,24 @@ class _MatchScreenState extends State<MatchScreen> {
             widget.match.currentInnings.ballsBowled > 0 ? _undoMove : null,
         style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
         icon: const Icon(Icons.undo),
-        label: Text("Undo"),
+        label: const Text(Strings.matchScreenUndo),
       ),
     );
   }
 
   Widget _wConfirmButton() {
-    String text = "Next";
+    String text = Strings.buttonNext;
     bool canClick = _validateBallParams();
     Function() onPressed = _processBall;
 
     if (_shouldEndInnings) {
-      text = "End Innings";
+      text = Strings.matchScreenEndInnings;
       onPressed = _doEndInnings;
     } else if (_shouldChooseBatter) {
-      text = "Choose Batter";
+      text = Strings.matchScreenChooseBatter;
       onPressed = _chooseBatter;
     } else if (_shouldChooseBowler) {
-      text = "Choose Bowler";
+      text = Strings.matchScreenChooseBowler;
       onPressed = _chooseBowler;
     }
 
@@ -238,7 +238,6 @@ class _MatchScreenState extends State<MatchScreen> {
   Widget _wRunChooser() {
     return Column(
       children: [
-        // Text("Runs"),
         // SizedBox(height: 12),
         ToggleButtons(
           onPressed: (int index) => setState(() {
@@ -264,8 +263,8 @@ class _MatchScreenState extends State<MatchScreen> {
   Widget _wWicketChooser() {
     return GenericItem(
       leading: Elements.getOnlineIndicator(_wicketSelection != null),
-      primaryHint: Strings.addWicket,
-      secondaryHint: Strings.addWicketHint,
+      primaryHint: Strings.matchScreenAddWicket,
+      secondaryHint: Strings.matchScreenAddWicketHint,
       trailing: Elements.forwardIcon,
       onSelect: () {
         setState(() {
@@ -448,7 +447,7 @@ class _MatchScreenState extends State<MatchScreen> {
   void _choosePlayer(List<Player> squad, Function(Player) onSelectPlayer) {
     Utils.goToPage(
         TitledPage(
-          title: "Pick a Player",
+          title: Strings.choosePlayer,
           child: PlayerList(
               playerList: squad,
               showAddButton: false,

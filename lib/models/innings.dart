@@ -105,6 +105,7 @@ class Innings {
   }
 
   set isInPlay(bool isInPlay) => _isInPlay = isInPlay;
+  bool get hasStarted => isInPlay || isCompleted;
   bool get isInPlay => (_isInPlay || _overs.isNotEmpty) && !isCompleted;
   bool get isCompleted =>
       _isCompleted ||

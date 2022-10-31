@@ -51,12 +51,14 @@ class Elements {
     );
   }
 
-  static Widget getTextInput(String label, String hint, String? initialValue,
-      void Function(String value) onChangeValue) {
+  static Widget getTextInput(
+      String label, String hint, void Function(String value) onChangeValue,
+      [String? initialValue, TextInputType? textInputType]) {
     return TextFormField(
       decoration: InputDecoration(labelText: label, hintText: hint),
       initialValue: initialValue,
       onChanged: onChangeValue,
+      keyboardType: textInputType,
     );
   }
 
@@ -76,13 +78,13 @@ class Elements {
     );
   }
 
-  static Widget noBallIndicator = Icon(
+  static const Widget noBallIndicator = Icon(
     Icons.fiber_manual_record,
     size: 12,
     color: ColorStyles.ballNoBall,
   );
 
-  static Widget wideBallIndicator = Icon(
+  static const Widget wideBallIndicator = Icon(
     Icons.fiber_manual_record,
     size: 12,
     color: ColorStyles.ballWide,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/teamlist.dart';
 
 import '../models/cricketmatch.dart';
 import '../models/team.dart';
@@ -6,7 +7,6 @@ import '../styles/colorstyles.dart';
 import '../styles/strings.dart';
 import '../util/elements.dart';
 import '../util/utils.dart';
-import 'createteam.dart';
 import 'matchscreen/matchinitscreen.dart';
 import 'titledpage.dart';
 import 'widgets/teamdummytile.dart';
@@ -21,8 +21,7 @@ class CreateMatchForm extends StatefulWidget {
 class _CreateMatchFormState extends State<CreateMatchForm> {
   Team? _selectedHomeTeam;
   Team? _selectedAwayTeam;
-
-  int _overs = 10;
+  int _overs = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +52,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
               const Spacer(),
               Elements.getConfirmButton(
                   text: Strings.createMatchStartMatch,
-                  onPressed: () => _createMatch()),
+                  onPressed: _canCreateMatch ? () => _createMatch() : null),
             ],
           ),
         ));
@@ -64,57 +63,72 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     return TeamDummyTile(
       primaryHint: primaryHint,
       secondaryHint: secondaryHint,
-      isHomeTeam: isHomeTeam,
+      color: isHomeTeam ? ColorStyles.homeTeam : ColorStyles.awayTeam,
       onSelect: isHomeTeam ? _chooseHomeTeam : _chooseAwayTeam,
     );
   }
 
   Widget _wSelectOvers() {
     return Elements.getTextInput(
-        Strings.createMatchOvers,
-        Strings.createMatchOversHint,
-        null,
-        (value) => _overs = int.parse(value));
+      Strings.createMatchOvers,
+      Strings.createMatchOversHint,
+      (value) {
+        setState(() {
+          if (value.isNotEmpty) {
+            _overs = int.parse(value);
+          } else {
+            _overs = -1;
+          }
+        });
+      },
+      _overs.toString(),
+      TextInputType.number,
+    );
   }
 
   void _chooseHomeTeam() {
-    _chooseTeam(_selectedHomeTeam, (chosenTeam) {
+    _chooseTeam((chosenTeam) {
       _selectedHomeTeam = chosenTeam;
     });
   }
 
   void _chooseAwayTeam() {
-    _chooseTeam(_selectedAwayTeam, (chosenTeam) {
+    _chooseTeam((chosenTeam) {
+      chosenTeam.color = ColorStyles.awayTeam;
       _selectedAwayTeam = chosenTeam;
     });
   }
 
   void _chooseTeam(
-    Team? selectedTeam,
-    Function(Team) callInsideSetState,
+    Function(Team) onSelectTeam,
   ) async {
     Team? chosenTeam = await Utils.goToPage(
-      CreateTeamForm(
-        team: selectedTeam,
+      TitledPage(
+        title: Strings.chooseTeam,
+        child: TeamList(
+          teamList: Utils.getAllTeams(),
+          onSelectTeam: (team) => Utils.goBack(context, team),
+        ),
       ),
       context,
     );
     if (chosenTeam != null) {
       setState(() {
-        callInsideSetState(chosenTeam);
+        onSelectTeam(chosenTeam);
       });
     }
   }
 
   void _createMatch() {
-    if (_selectedHomeTeam != null && _selectedAwayTeam != null) {
-      CricketMatch match = CricketMatch.create(
-        homeTeam: _selectedHomeTeam!,
-        awayTeam: _selectedAwayTeam!,
-        maxOvers: _overs,
-      );
-      Utils.saveMatch(match);
-      Utils.goToPage(MatchInitScreen(match: match), context);
-    }
+    CricketMatch match = CricketMatch.create(
+      homeTeam: _selectedHomeTeam!,
+      awayTeam: _selectedAwayTeam!,
+      maxOvers: _overs,
+    );
+    Utils.saveMatch(match);
+    Utils.goToReplacementPage(MatchInitScreen(match: match), context);
   }
+
+  bool get _canCreateMatch =>
+      _selectedHomeTeam != null && _selectedAwayTeam != null && _overs > 0;
 }

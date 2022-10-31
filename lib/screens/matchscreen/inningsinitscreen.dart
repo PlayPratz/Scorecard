@@ -37,18 +37,12 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
             const SizedBox(height: 24),
             _wBatterSelection(_batter1, ((p) {
               _batter1 = p;
-              if (_batter2 == p) {
-                _batter2 = null;
-              }
             })),
             const Spacer(),
             const Text(Strings.initInningsBatter2),
             const SizedBox(height: 24),
             _wBatterSelection(_batter2, ((p) {
               _batter2 = p;
-              if (_batter1 == p) {
-                _batter1 = null;
-              }
             })),
             const Spacer(),
             const Text(Strings.initInningsBowler),
@@ -109,7 +103,8 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
               widget.match.currentInnings.addBatter(_batter1!);
               widget.match.currentInnings.addBatter(_batter2!);
               widget.match.currentInnings.addOver(Over(_bowler!));
-              Utils.goToPage(MatchScreen(match: widget.match), context);
+              Utils.goToReplacementPage(
+                  MatchScreen(match: widget.match), context);
             }
           : null,
     );

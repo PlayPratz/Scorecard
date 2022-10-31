@@ -56,10 +56,11 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
                 child: Column(
                   children: [
                     Elements.getTextInput(
-                        Strings.createPlayerName,
-                        Strings.createPlayerNameHint,
-                        widget.player?.name,
-                        (value) => _name = value),
+                      Strings.createPlayerName,
+                      Strings.createPlayerNameHint,
+                      (value) => _name = value,
+                      widget.player?.name,
+                    ),
                     const SizedBox(height: 32),
                     _wToggleButtonWithLabel(
                         _batArm, Strings.createPlayerBatArm),

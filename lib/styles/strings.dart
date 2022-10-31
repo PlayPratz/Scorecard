@@ -105,11 +105,9 @@ class Strings {
   static const String initInningsBatter2 = "Batter Two";
   static const String initInningsBowler = "Bowler";
   static const String initInningsChooseBatter = "Choose a Batter";
-  static const String initInningsChooseBatterHint =
-      "Someone who can score many runs, hopefully";
-  static const String initInningsChooseBowler = "Choose a Batter";
-  static const String initInningsChooseBowlerHint =
-      "Someone who can take many wickets, hopefully";
+  static const String initInningsChooseBatterHint = "It's scorin' time!";
+  static const String initInningsChooseBowler = "Choose a Bowler";
+  static const String initInningsChooseBowlerHint = "It's wicketin' time!";
   static const String initInningsStartInnings = "Start Innings";
 
   // Scorecard
@@ -117,6 +115,7 @@ class Strings {
   static const String scorecardSecondInnings = "Second Innings";
   static const String scorecardBatting = "Batting";
   static const String scorecardBowling = "Bowling";
+  static const String scorecardInningsWithSpace = " Innings";
 
   // Choose
   static const String choosePlayer = "Choose a Player";
@@ -124,6 +123,11 @@ class Strings {
 
   // Wickets
   static const String chooseWicket = "Choose a Wicket";
+  static const String wicketBowled = "b ";
+  static const String wicketCaught = "c ";
+  static const String wicketCaughtAndBowled = "c&b ";
+  static const String wicketRunout = "run-out ";
+  static const String wicketStumped = "st";
 
   // Match Screen
   static const String matchScreenAddWicket = "Add Wicket";

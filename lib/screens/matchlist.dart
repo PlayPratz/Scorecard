@@ -25,23 +25,26 @@ class MatchList extends StatelessWidget {
 
   List<Widget> getMatchList(BuildContext context) {
     return Utils.getAllMatches()
-        .map((match) => MatchTile(
-              match: match,
-              onSelectMatch: (match) {
-                switch (match.matchState) {
-                  case MatchState.notStarted:
-                    Utils.goToPage(MatchInitScreen(match: match), context);
-                    return;
-                  case MatchState.tossCompleted:
-                    Utils.goToPage(InningsInitScreen(match: match), context);
-                    return;
-                  case MatchState.completed:
-                    Utils.goToPage(Scorecard(match: match), context);
-                    return;
-                  default:
-                    Utils.goToPage(MatchScreen(match: match), context);
-                }
-              },
+        .map((match) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: MatchTile(
+                match: match,
+                onSelectMatch: (match) {
+                  switch (match.matchState) {
+                    case MatchState.notStarted:
+                      Utils.goToPage(MatchInitScreen(match: match), context);
+                      return;
+                    case MatchState.tossCompleted:
+                      Utils.goToPage(InningsInitScreen(match: match), context);
+                      return;
+                    case MatchState.completed:
+                      Utils.goToPage(Scorecard(match: match), context);
+                      return;
+                    default:
+                      Utils.goToPage(MatchScreen(match: match), context);
+                  }
+                },
+              ),
             ))
         .toList();
   }

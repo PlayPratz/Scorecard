@@ -1,79 +1,27 @@
 import 'player.dart';
 
-abstract class Wicket {
-  Player batter;
+class Wicket {
+  final Player batter;
+  final Player? bowler;
+  final Player? fielder;
+  final Dismissal dismissal;
 
-  Wicket(this.batter);
+  // Wicket({required this.batter});
+  Wicket.bowled({required this.batter, required this.bowler})
+      : dismissal = Dismissal.bowled,
+        fielder = null;
 
-  Dismissal get dismissal;
-}
+  Wicket.caught(
+      {required this.batter, required this.bowler, required this.fielder})
+      : dismissal = Dismissal.caught;
 
-abstract class _BowlerWicket extends Wicket {
-  Player bowler;
+  Wicket.stumped(
+      {required this.batter, required this.bowler, required this.fielder})
+      : dismissal = Dismissal.stumped;
 
-  _BowlerWicket(Player batsman, this.bowler) : super(batsman);
-}
-
-class BowledWicket extends _BowlerWicket {
-  BowledWicket(Player batsman, Player bowler) : super(batsman, bowler);
-
-  @override
-  Dismissal get dismissal => Dismissal.bowled;
-}
-
-class CatchWicket extends _BowlerWicket {
-  Player catcher;
-
-  CatchWicket(Player batsman, Player bowler, this.catcher)
-      : super(batsman, bowler);
-
-  @override
-  Dismissal get dismissal => Dismissal.caught;
-}
-
-class LbwWicket extends _BowlerWicket {
-  LbwWicket(Player batsman, Player bowler) : super(batsman, bowler);
-
-  @override
-  Dismissal get dismissal => Dismissal.lbw;
-}
-
-class HitWicket extends _BowlerWicket {
-  HitWicket(Player batsman, Player bowler) : super(batsman, bowler);
-
-  @override
-  Dismissal get dismissal => Dismissal.hitWicket;
-}
-
-class StumpedWicket extends CatchWicket {
-  StumpedWicket(Player batsman, Player bowler, Player stumper)
-      : super(batsman, bowler, stumper);
-
-  @override
-  Dismissal get dismissal => Dismissal.stumped;
-}
-
-class RunoutWicket extends Wicket {
-  Player fielder;
-
-  RunoutWicket(Player batsman, this.fielder) : super(batsman);
-
-  @override
-  Dismissal get dismissal => Dismissal.runout;
-}
-
-class RetiredWicket extends Wicket {
-  RetiredWicket(Player batsman) : super(batsman);
-
-  @override
-  Dismissal get dismissal => Dismissal.retired;
-}
-
-class ObstructingFieldWicket extends Wicket {
-  ObstructingFieldWicket(Player batsman) : super(batsman);
-
-  @override
-  Dismissal get dismissal => Dismissal.obstructingField;
+  Wicket.runout({required this.batter, required this.fielder})
+      : dismissal = Dismissal.runout,
+        bowler = null;
 }
 
 enum Dismissal {

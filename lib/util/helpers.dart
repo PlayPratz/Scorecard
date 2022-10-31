@@ -6,14 +6,24 @@ class Helpers {
 
 class SingleToggleSelection<T> {
   final List<T> dataList;
-  final String Function(T) stringifier;
   final bool allowNoSelection;
+  final String Function(T data)? stringifier;
+  final Widget Function(T data, T? selection) widgetifier;
   int index = -1;
 
-  SingleToggleSelection(
+  SingleToggleSelection({
+    required this.dataList,
+    required this.stringifier,
+    this.allowNoSelection = true,
+  }) : widgetifier = ((data, selection) => Text(stringifier!(data))) {
+    clear();
+  }
+
+  SingleToggleSelection.withWidgetifier(
       {required this.dataList,
-      required this.stringifier,
-      this.allowNoSelection = true}) {
+      this.allowNoSelection = true,
+      required this.widgetifier})
+      : stringifier = null {
     clear();
   }
 
@@ -21,10 +31,9 @@ class SingleToggleSelection<T> {
   set selection(T? value) =>
       value != null ? index = dataList.indexOf(value) : -1;
 
-  List<Widget> get widgets =>
-      dataList.map((data) => Text(stringifier(data))).toList();
-
   List<bool> get booleans => dataList.map((data) => data == selection).toList();
+  List<Widget> get widgets =>
+      dataList.map((data) => widgetifier(data, selection)).toList();
 
   void clear() {
     index = allowNoSelection ? -1 : 0;

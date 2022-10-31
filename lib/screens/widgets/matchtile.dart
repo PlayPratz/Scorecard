@@ -29,8 +29,12 @@ class MatchTile extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: _InningsTile(match.homeInnings)),
-                  Expanded(child: _InningsTile(match.awayInnings)),
+                  Expanded(
+                    child: _InningsTile(match.homeInnings),
+                  ),
+                  Expanded(
+                    child: _InningsTile(match.awayInnings),
+                  ),
                 ],
               ),
               const Divider(),
@@ -235,10 +239,10 @@ class _InningsTile extends StatelessWidget {
         leading: Elements.getOnlineIndicator(innings.isInPlay),
         title: Text(
           innings.battingTeam.name,
-          style: Theme.of(context)
-              .textTheme
-              .subtitle1
-              ?.merge(const TextStyle(fontWeight: FontWeight.bold)),
+          style: Theme.of(context).textTheme.subtitle1?.merge(TextStyle(
+                fontWeight: FontWeight.bold,
+                color: innings.battingTeam.color,
+              )),
         ),
         subtitle: _wScoreDisplay(context));
   }

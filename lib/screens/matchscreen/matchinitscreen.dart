@@ -30,9 +30,13 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
         title: Strings.initMatchTitle,
         child: Column(
           children: [
+            const Spacer(),
             Text(Strings.initMatchHeadingToss),
+            const SizedBox(height: 32),
             _wTossWinningTeam(),
+            const SizedBox(height: 32),
             _wWinningTeamChoice(),
+            const SizedBox(height: 128),
             const Spacer(),
             _wConfirmButton(),
           ],
@@ -69,6 +73,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
           title: Strings.chooseTeam,
           child: TeamList(
             teamList: [widget.match.homeTeam, widget.match.awayTeam],
+            allowCreateTeam: false,
             onSelectTeam: (Team selectedTeam) {
               setState(() {
                 _tossWinner = selectedTeam;
@@ -114,7 +119,8 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
       onPressed: _canCreateMatch
           ? () {
               widget.match.startMatch(Toss(_tossWinner!, _tossChoice!));
-              Utils.goToPage(InningsInitScreen(match: widget.match), context);
+              Utils.goToReplacementPage(
+                  InningsInitScreen(match: widget.match), context);
             }
           : null,
     );

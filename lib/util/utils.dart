@@ -17,6 +17,12 @@ class Utils {
         context, MaterialPageRoute(builder: (context) => page));
   }
 
+  static Future<dynamic> goToReplacementPage(
+      Widget page, BuildContext context) {
+    return Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => page));
+  }
+
   static void goBack(BuildContext context, [result]) {
     Navigator.pop(context, result);
   }

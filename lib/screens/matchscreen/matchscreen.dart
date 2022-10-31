@@ -53,8 +53,20 @@ class _MatchScreenState extends State<MatchScreen> {
 
   final _RunSelection _runSelection = _RunSelection();
   final SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
-      SingleToggleSelection(
-          dataList: BowlingExtra.values, stringifier: Strings.getBowlingExtra);
+      SingleToggleSelection.withWidgetifier(
+          dataList: BowlingExtra.values,
+          widgetifier: (bowlingExtra, selection) {
+            Color color = ColorStyles.ballWide;
+            if (bowlingExtra == selection) {
+              color = Colors.black;
+            } else if (bowlingExtra == BowlingExtra.noBall) {
+              color = ColorStyles.ballNoBall;
+            }
+            return Text(
+              Strings.getBowlingExtra(bowlingExtra),
+              style: TextStyle(color: color),
+            );
+          });
   final SingleToggleSelection<BattingExtra> _battingExtraSelection =
       SingleToggleSelection(
     dataList: BattingExtra.values,
@@ -83,7 +95,6 @@ class _MatchScreenState extends State<MatchScreen> {
     String title = widget.match.homeTeam.shortName +
         Strings.seperatorVersus +
         widget.match.awayTeam.shortName;
-
     return TitledPage(
       title: title,
       child: Column(
@@ -118,26 +129,36 @@ class _MatchScreenState extends State<MatchScreen> {
     List<Widget> nowPlayingWidgets = [
       Expanded(
         child: Column(children: [
-          ...onPitchBatters.map((batterInnings) => InkWell(
-                onTap: () => setState(() {
-                  _striker = batterInnings;
-                }),
-                child: PlayerScoreTile(
-                  player: batterInnings.batter,
-                  score: batterInnings.score,
-                  isOnline: _striker == batterInnings,
+          ...onPitchBatters.map((batterInnings) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: InkWell(
+                  onTap: () => setState(() {
+                    _striker = batterInnings;
+                  }),
+                  child: PlayerScoreTile(
+                    player: batterInnings.batter,
+                    score: batterInnings.score,
+                    teamColor: widget.match.currentInnings.battingTeam.color,
+                    isOnline: _striker == batterInnings,
+                  ),
                 ),
               ))
         ]),
       ),
+      const SizedBox(width: 4),
       Expanded(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            PlayerScoreTile(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
+              child: PlayerScoreTile(
                 player: _bowler,
-                score: widget.match.currentInnings.currentBowlerInnings.score),
+                teamColor: widget.match.currentInnings.bowlingTeam.color,
+                score: widget.match.currentInnings.currentBowlerInnings.score,
+              ),
+            ),
             const SizedBox(height: 8),
             _wEndInningsButton()
           ],
@@ -228,6 +249,10 @@ class _MatchScreenState extends State<MatchScreen> {
               }),
           children: _bowlingExtraSelection.widgets,
           isSelected: _bowlingExtraSelection.booleans,
+          fillColor: _bowlingExtraSelection.selection != null
+              ? ColorStyles.getBowlingExtraColour(
+                  _bowlingExtraSelection.selection!)
+              : null,
           constraints: const BoxConstraints(
             minHeight: 40.0,
             minWidth: 80.0,
@@ -245,14 +270,11 @@ class _MatchScreenState extends State<MatchScreen> {
             _runSelection.runIndex = index;
           }),
           borderRadius: const BorderRadius.all(Radius.circular(8)),
-          selectedBorderColor: Colors.green[700],
-          selectedColor: Colors.white,
-          fillColor: Colors.green[200],
-          // color: Colors.red[400],
-          // constraints: const BoxConstraints(
-          //   minHeight: 40.0,
-          //   minWidth: 80.0,
-          // ),
+          fillColor: _runSelection.runs == 4
+              ? ColorStyles.ballFour
+              : _runSelection.runs == 6
+                  ? ColorStyles.ballSix
+                  : ColorStyles.highlight,
           isSelected: _runSelection.booleans,
           children: _runSelection.widgets,
         ),
@@ -271,7 +293,8 @@ class _MatchScreenState extends State<MatchScreen> {
           if (_wicketSelection != null) {
             _wicketSelection = null;
           } else {
-            _wicketSelection = BowledWicket(_striker.batter, _bowler);
+            _wicketSelection =
+                Wicket.bowled(batter: _striker.batter, bowler: _bowler);
           }
         });
       },
@@ -297,6 +320,7 @@ class _MatchScreenState extends State<MatchScreen> {
       if (currentBall.runsScored == 4) {
         currentWidget = CircleAvatar(
           backgroundColor: ColorStyles.ballFour,
+          foregroundColor: Colors.white,
           child: Text(currentBall.runsScored.toString()),
         );
       } else if (currentBall.runsScored == 6) {
@@ -332,8 +356,8 @@ class _MatchScreenState extends State<MatchScreen> {
       displayWidgets.add(Column(
         children: [
           SizedBox(
+            height: 36,
             child: currentWidget,
-            height: 28,
           ),
           indicator
         ],
@@ -342,7 +366,7 @@ class _MatchScreenState extends State<MatchScreen> {
 
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: 56,
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
@@ -517,8 +541,24 @@ class _RunSelection {
   List<bool> get booleans =>
       runList.map((run) => run == _selectedRuns).toList();
 
-  List<Widget> get widgets =>
-      runList.map((run) => Text(Strings.getRunText(run))).toList();
+  List<Widget> get widgets => runList.map((run) {
+        Color color = Colors.white;
+        if (_selectedRuns == run) {
+          if (_selectedRuns == 4 || _selectedRuns == 6) {
+            color = Colors.white;
+          } else {
+            color = Colors.black;
+          }
+        } else if (run == 4) {
+          color = ColorStyles.ballFour;
+        } else if (run == 6) {
+          color = ColorStyles.ballSix;
+        }
+        return Text(
+          Strings.getRunText(run),
+          style: TextStyle(color: color),
+        );
+      }).toList();
 
   int get runs => _selectedRuns;
   set runIndex(int index) => _selectedRuns = runList[index];

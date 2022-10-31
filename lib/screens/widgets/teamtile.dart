@@ -32,7 +32,7 @@ class TeamTile extends StatelessWidget {
       child: TeamDummyTile(
         primaryHint: team.name,
         secondaryHint: team.shortName,
-        isHomeTeam: true,
+        color: team.color,
       ),
     );
   }

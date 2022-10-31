@@ -8,10 +8,13 @@ class PlayerScoreTile extends StatelessWidget {
   final Player player;
   final String score;
   final bool isOnline;
+  final Color teamColor;
+
   const PlayerScoreTile(
       {Key? key,
       required this.player,
       required this.score,
+      required this.teamColor,
       this.isOnline = false})
       : super(key: key);
 
@@ -19,8 +22,10 @@ class PlayerScoreTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
+        color: teamColor.withOpacity(0.6),
         border: Border.all(
           color: isOnline ? ColorStyles.online : Colors.transparent,
+          width: 3,
         ),
         borderRadius: BorderRadius.circular(18),
       ),

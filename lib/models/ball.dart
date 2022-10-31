@@ -50,7 +50,7 @@ class Ball {
     required this.bowler,
     required this.batter,
   })  : runsScored = 0,
-        wicket = RunoutWicket(batter, bowler),
+        wicket = Wicket.runout(batter: batter, fielder: bowler),
         _shouldCountBall = false;
 
   int get totalRuns => runsScored + bowlingExtraRuns;

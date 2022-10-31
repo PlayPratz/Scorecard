@@ -5,15 +5,15 @@ class TeamDummyTile extends StatefulWidget {
   final String primaryHint;
   final String secondaryHint;
   final Function? onSelect;
-  final bool isHomeTeam;
   // final Widget? teamIcon;
+  final Color color;
 
   const TeamDummyTile({
     Key? key,
     required this.primaryHint,
     required this.secondaryHint,
     this.onSelect,
-    this.isHomeTeam = true,
+    this.color = ColorStyles.homeTeam,
   }) : super(key: key);
 
   @override
@@ -28,7 +28,7 @@ class _TeamDummyTileState extends State<TeamDummyTile> {
       subtitle: Text(widget.secondaryHint),
       leading: Icon(
         Icons.people,
-        color: widget.isHomeTeam ? ColorStyles.homeTeam : ColorStyles.awayTeam,
+        color: widget.color,
       ),
       trailing: const Icon(Icons.chevron_right),
     );

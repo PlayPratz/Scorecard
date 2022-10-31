@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/team.dart';
 
 import '../../util/elements.dart';
 import '../../util/utils.dart';
@@ -43,10 +44,10 @@ class ItemList extends StatelessWidget {
   }
 }
 
-class CreateItemEntry<T> {
+class CreateItemEntry {
   final Widget page;
   final String string;
-  final Function(T item)? onCreateItem;
+  final void Function(dynamic item)? onCreateItem;
 
   CreateItemEntry(
       {required this.page, required this.string, this.onCreateItem});

@@ -22,8 +22,8 @@ class ColorStyles {
   // static const highlight = Color(0xFFFF8000);
   static const highlight = Colors.greenAccent;
   static const online = Color(0xFF30D158);
-  static const homeTeam = Colors.blue;
-  static const awayTeam = Colors.orange;
+  // static const homeTeam = Colors.blue;
+  // static const awayTeam = Colors.orange;
   static const List<Color> teamColors = [
     Colors.blue,
     Colors.orange,

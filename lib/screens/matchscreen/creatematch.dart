@@ -32,21 +32,21 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
           child: Column(
             children: [
               _selectedHomeTeam != null
-                  ? _wSelectTeam(_selectedHomeTeam!.name,
-                      _selectedHomeTeam!.shortName, ColorStyles.homeTeam, true)
-                  : _wSelectTeam(
-                      Strings.createMatchSelectHomeTeam,
-                      Strings.createMatchHomeTeamHint,
-                      ColorStyles.homeTeam,
-                      true),
+                  ? _wSelectTeam(
+                      _selectedHomeTeam!.name,
+                      _selectedHomeTeam!.shortName,
+                      true,
+                    )
+                  : _wSelectTeam(Strings.createMatchSelectHomeTeam,
+                      Strings.createMatchHomeTeamHint, true),
               _selectedAwayTeam != null
-                  ? _wSelectTeam(_selectedAwayTeam!.name,
-                      _selectedAwayTeam!.shortName, ColorStyles.awayTeam, false)
-                  : _wSelectTeam(
-                      Strings.createMatchSelectAwayTeam,
-                      Strings.createMatchAwayTeamHint,
-                      ColorStyles.awayTeam,
-                      false),
+                  ? _wSelectTeam(
+                      _selectedAwayTeam!.name,
+                      _selectedAwayTeam!.shortName,
+                      false,
+                    )
+                  : _wSelectTeam(Strings.createMatchSelectAwayTeam,
+                      Strings.createMatchAwayTeamHint, false),
               const Spacer(),
               _wSelectOvers(),
               const Spacer(),
@@ -58,12 +58,12 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
         ));
   }
 
-  Widget _wSelectTeam(String primaryHint, String secondaryHint, Color iconColor,
-      bool isHomeTeam) {
+  Widget _wSelectTeam(
+      String primaryHint, String secondaryHint, bool isHomeTeam) {
     return TeamDummyTile(
       primaryHint: primaryHint,
       secondaryHint: secondaryHint,
-      color: isHomeTeam ? ColorStyles.homeTeam : ColorStyles.awayTeam,
+      color: Colors.white,
       onSelect: isHomeTeam ? _chooseHomeTeam : _chooseAwayTeam,
     );
   }

@@ -19,13 +19,13 @@ class Team {
       required this.name,
       required this.shortName,
       required this.squad,
-      this.color = ColorStyles.homeTeam});
+      required this.color});
 
   Team.create(
       {required this.name,
       required this.shortName,
       required this.squad,
-      this.color = ColorStyles.homeTeam})
+      required this.color})
       : id = Utils.generateUniqueId();
 
   factory Team.generate() {

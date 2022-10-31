@@ -8,7 +8,7 @@ import 'teamtile.dart';
 class TeamList extends StatelessWidget {
   final List<Team> teamList;
   final void Function(Team team)? onSelectTeam;
-  final void Function(Team team)? onCreateTeam;
+  final void Function(Team? team)? onCreateTeam;
 
   const TeamList(
       {Key? key, required this.teamList, this.onSelectTeam, this.onCreateTeam})
@@ -19,10 +19,11 @@ class TeamList extends StatelessWidget {
     return ItemList(
       itemList: _getTeamList(),
       createItem: onCreateTeam != null
-          ? CreateItemEntry<Team>(
+          ? CreateItemEntry(
               page: CreateTeamForm(),
               string: Strings.createTeamCreate,
-              onCreateItem: onCreateTeam,
+              onCreateItem:
+                  onCreateTeam != null ? (item) => onCreateTeam!(item) : null,
             )
           : null,
     );

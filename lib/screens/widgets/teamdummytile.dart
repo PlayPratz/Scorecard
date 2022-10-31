@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/widgets/genericitem.dart';
 import '../../styles/colorstyles.dart';
 
 class TeamDummyTile extends StatefulWidget {
@@ -23,9 +24,9 @@ class TeamDummyTile extends StatefulWidget {
 class _TeamDummyTileState extends State<TeamDummyTile> {
   @override
   Widget build(BuildContext context) {
-    final teamDummyTile = ListTile(
-      title: Text(widget.primaryHint),
-      subtitle: Text(widget.secondaryHint),
+    final teamDummyTile = GenericItemTile(
+      primaryHint: widget.primaryHint,
+      secondaryHint: widget.secondaryHint,
       leading: Icon(
         Icons.people,
         color: widget.color,
@@ -38,9 +39,10 @@ class _TeamDummyTileState extends State<TeamDummyTile> {
     }
 
     return InkWell(
-        onTap: () {
-          widget.onSelect!();
-        },
-        child: teamDummyTile);
+      onTap: () {
+        widget.onSelect!();
+      },
+      child: teamDummyTile,
+    );
   }
 }

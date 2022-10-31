@@ -376,18 +376,6 @@ class MatchTile extends StatelessWidget {
       ),
     );
   }
-
-  Widget _wMatchDetails() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          const Spacer(),
-          Text(match.maxOvers.toString() + Strings.scoreOvers)
-        ],
-      ),
-    );
-  }
 }
 
 class _InningsTile extends StatelessWidget {
@@ -398,7 +386,7 @@ class _InningsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         minVerticalPadding: 0,
         minLeadingWidth: 0,
         dense: true,

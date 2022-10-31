@@ -13,7 +13,7 @@ import '../../util/helpers.dart';
 import '../../util/utils.dart';
 import '../player/playerlist.dart';
 import '../templates/titledpage.dart';
-import '../widgets/matchtile.dart';
+import 'matchtile.dart';
 import 'inningsinitscreen.dart';
 import 'playerscoretile.dart';
 import 'scorecard.dart';
@@ -283,7 +283,7 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Widget _wWicketChooser() {
-    return GenericItem(
+    return GenericItemTile(
       leading: Elements.getOnlineIndicator(_wicketSelection != null),
       primaryHint: Strings.matchScreenAddWicket,
       secondaryHint: Strings.matchScreenAddWicketHint,

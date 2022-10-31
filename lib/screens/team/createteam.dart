@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/widgets/genericitem.dart';
 
 import '../../models/player.dart';
 import '../../models/team.dart';
@@ -149,17 +150,12 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
 
   Widget _wCaptainChooser() {
     return _selectedCaptain == null
-        ? ListTile(
-            leading: const CircleAvatar(
-              child: Icon(Icons.person),
-            ),
-            title: const Text(Strings.createTeamSelectCaptain),
-            isThreeLine: true,
-            subtitle: const Text(
-              Strings.createTeamCaptainHint,
-            ),
+        ? GenericItemTile(
+            leading: const Icon(Icons.person),
+            primaryHint: Strings.createTeamSelectCaptain,
+            secondaryHint: Strings.createTeamCaptainHint,
             trailing: Elements.forwardIcon,
-            onTap: _chooseCaptain,
+            onSelect: _chooseCaptain,
           )
         : Column(
             children: [
@@ -188,15 +184,13 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: ListTile(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+              child: GenericItemTile(
                   leading: const Icon(Icons.people),
-                  title: const Text(Strings.squad),
-                  subtitle: const Text(
-                    Strings.createTeamSquadHint,
-                  ),
+                  primaryHint: Strings.squad,
+                  secondaryHint: Strings.createTeamSquadHint,
                   trailing: Elements.addIcon,
-                  onTap: () async {
+                  onSelect: () async {
                     List<Player> filteredPlayerList = Utils.getAllPlayers();
                     filteredPlayerList.removeWhere(
                         (player) => _selectedPlayerList.contains(player));

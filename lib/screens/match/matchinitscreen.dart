@@ -57,10 +57,10 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
 
   Widget _wWinningTeamChoice() {
     if (_tossChoice == null) {
-      return GenericItem(
+      return GenericItemTile(
         primaryHint: Strings.initMatchTossChoicePrimary,
         secondaryHint: Strings.initMatchTossChoiceHint,
-        leading: Icon(Icons.casino),
+        leading: const Icon(Icons.casino),
         onSelect: _chooseTossChoice,
       );
     }
@@ -85,7 +85,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
   }
 
   Widget _wTossChoiceInner(TossChoice tossChoice, Function onSelect) {
-    return GenericItem(
+    return GenericItemTile(
       primaryHint: Strings.getTossChoice(tossChoice),
       secondaryHint: Strings.empty,
       onSelect: onSelect,

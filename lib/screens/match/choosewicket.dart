@@ -20,7 +20,7 @@ class _ChooseWicketState extends State<ChooseWicket> {
       title: Strings.chooseWicket,
       child: ItemList(
         itemList: Dismissal.values
-            .map((dismissal) => GenericItem(
+            .map((dismissal) => GenericItemTile(
                   primaryHint: Strings.getDismissalName(dismissal),
                   secondaryHint: Strings.empty,
                   onSelect: () => _processDismissal(dismissal),

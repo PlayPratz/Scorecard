@@ -77,7 +77,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
   Widget _wPlayerSelection(Player? player, Function(Player) onSelectPlayer,
       String primary, String secondary, String title, List<Player> squad) {
     if (player == null) {
-      return GenericItem(
+      return GenericItemTile(
           primaryHint: primary,
           secondaryHint: secondary,
           onSelect: () => onTapPlayer(onSelectPlayer, title, squad));

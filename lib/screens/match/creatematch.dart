@@ -3,13 +3,12 @@ import 'package:scorecard/screens/team/teamlist.dart';
 
 import '../../models/cricketmatch.dart';
 import '../../models/team.dart';
-import '../../styles/colorstyles.dart';
-import '../../util/strings.dart';
 import '../../util/elements.dart';
+import '../../util/strings.dart';
 import '../../util/utils.dart';
-import 'matchinitscreen.dart';
 import '../templates/titledpage.dart';
 import '../widgets/teamdummytile.dart';
+import 'matchinitscreen.dart';
 
 class CreateMatchForm extends StatefulWidget {
   const CreateMatchForm({Key? key}) : super(key: key);
@@ -31,23 +30,35 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
           autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             children: [
+              const Spacer(),
               _selectedHomeTeam != null
                   ? _wSelectTeam(
                       _selectedHomeTeam!.name,
                       _selectedHomeTeam!.shortName,
+                      _selectedHomeTeam!.color,
                       true,
                     )
-                  : _wSelectTeam(Strings.createMatchSelectHomeTeam,
-                      Strings.createMatchHomeTeamHint, true),
+                  : _wSelectTeam(
+                      Strings.createMatchSelectHomeTeam,
+                      Strings.createMatchHomeTeamHint,
+                      Colors.white,
+                      true,
+                    ),
+              const SizedBox(height: 32),
               _selectedAwayTeam != null
                   ? _wSelectTeam(
                       _selectedAwayTeam!.name,
                       _selectedAwayTeam!.shortName,
+                      _selectedAwayTeam!.color,
                       false,
                     )
-                  : _wSelectTeam(Strings.createMatchSelectAwayTeam,
-                      Strings.createMatchAwayTeamHint, false),
-              const Spacer(),
+                  : _wSelectTeam(
+                      Strings.createMatchSelectAwayTeam,
+                      Strings.createMatchAwayTeamHint,
+                      Colors.white,
+                      false,
+                    ),
+              const SizedBox(height: 64),
               _wSelectOvers(),
               const Spacer(),
               Elements.getConfirmButton(
@@ -58,12 +69,12 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
         ));
   }
 
-  Widget _wSelectTeam(
-      String primaryHint, String secondaryHint, bool isHomeTeam) {
+  Widget _wSelectTeam(String primaryHint, String secondaryHint, Color iconColor,
+      bool isHomeTeam) {
     return TeamDummyTile(
       primaryHint: primaryHint,
       secondaryHint: secondaryHint,
-      color: Colors.white,
+      color: iconColor,
       onSelect: isHomeTeam ? _chooseHomeTeam : _chooseAwayTeam,
     );
   }
@@ -107,6 +118,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
         child: TeamList(
           teamList: Utils.getAllTeams(),
           onSelectTeam: (team) => Utils.goBack(context, team),
+          onCreateTeam: (team) => Utils.goBack(context, team),
         ),
       ),
       context,

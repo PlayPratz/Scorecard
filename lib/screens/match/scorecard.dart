@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/widgets/matchtile.dart';
+import 'package:scorecard/screens/match/matchtile.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/elements.dart';
@@ -18,7 +18,7 @@ class Scorecard extends StatefulWidget {
 }
 
 class _ScorecardState extends State<Scorecard> {
-  List<bool> _isInningsPanelOpen = [true, false];
+  final List<bool> _isInningsPanelOpen = [false, false];
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +32,9 @@ class _ScorecardState extends State<Scorecard> {
         child: Column(
           children: [
             MatchTile(match: widget.match),
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
             ExpansionPanelList(
+              expandedHeaderPadding: const EdgeInsets.all(0),
               dividerColor: Colors.transparent,
               children: [
                 _wInningsPanel(
@@ -81,7 +82,7 @@ class _ScorecardState extends State<Scorecard> {
         Strings.scorecardBowling,
         innings.bowlingTeam.color,
         innings.allBowlingInnings
-            .map((bowlInn) => GenericItem(
+            .map((bowlInn) => GenericItemTile(
                   leading: Elements.getPlayerIcon(bowlInn.bowler, 36),
                   primaryHint: bowlInn.bowler.name,
                   secondaryHint:
@@ -97,7 +98,7 @@ class _ScorecardState extends State<Scorecard> {
         innings.battingTeam.color,
         innings.allBattingInnings
             .map(
-              (batInn) => GenericItem(
+              (batInn) => GenericItemTile(
                 leading: Elements.getPlayerIcon(batInn.batter, 36),
                 primaryHint: batInn.batter.name,
                 secondaryHint: _getWicket(batInn.wicket),

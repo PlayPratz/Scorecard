@@ -28,11 +28,11 @@ class ColorStyles {
     Colors.blue,
     Colors.orange,
     Colors.amber,
-    Colors.green,
+    // Colors.green,
     Colors.cyan,
     Colors.brown,
     Colors.deepOrange,
-    Colors.purple,
+    // Colors.purple,
     // Colors.deepPurple,
   ];
 

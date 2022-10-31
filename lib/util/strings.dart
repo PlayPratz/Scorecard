@@ -48,7 +48,7 @@ class Strings {
 
   // Others
   static const String captain = "Captain";
-  static const String squad = "Squad";
+  static const String squad = "Add to Squad";
 
   // Hacks
   static const String empty = "";

@@ -7,7 +7,7 @@ import '../styles/colorstyles.dart';
 import '../util/strings.dart';
 import '../util/utils.dart';
 import 'templates/basescreen.dart';
-import 'matchscreen/matchlist.dart';
+import 'match/matchlist.dart';
 import 'player/playerlist.dart';
 
 class HomeTabView extends StatefulWidget {

@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/createteam.dart';
-import 'package:scorecard/styles/strings.dart';
-import 'package:scorecard/util/utils.dart';
-import '../models/team.dart';
-import 'widgets/itemlist.dart';
-import 'widgets/teamtile.dart';
+import 'package:scorecard/screens/team/createteam.dart';
+import 'package:scorecard/util/strings.dart';
+import '../../models/team.dart';
+import '../templates/itemlist.dart';
+import 'teamtile.dart';
 
 class TeamList extends StatelessWidget {
   final List<Team> teamList;
-  final Function(Team team)? onSelectTeam;
-  final bool allowCreateTeam;
+  final void Function(Team team)? onSelectTeam;
+  final void Function(Team team)? onCreateTeam;
 
   const TeamList(
-      {Key? key,
-      required this.teamList,
-      this.onSelectTeam,
-      this.allowCreateTeam = true})
+      {Key? key, required this.teamList, this.onSelectTeam, this.onCreateTeam})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ItemList(
       itemList: _getTeamList(),
-      createItem: allowCreateTeam
-          ? CreateItemEntry(
+      createItem: onCreateTeam != null
+          ? CreateItemEntry<Team>(
               page: CreateTeamForm(),
               string: Strings.createTeamCreate,
+              onCreateItem: onCreateTeam,
             )
           : null,
     );

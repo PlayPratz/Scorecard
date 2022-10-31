@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/styles/strings.dart';
+import 'package:scorecard/util/strings.dart';
 import '../../models/ball.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/player.dart';
 import 'matchscreen.dart';
-import '../playerlist.dart';
-import '../titledpage.dart';
+import '../player/playerlist.dart';
+import '../templates/titledpage.dart';
 import '../widgets/genericitem.dart';
 import '../../util/elements.dart';
 import '../../util/utils.dart';
 
-import '../widgets/playertile.dart';
+import '../player/playertile.dart';
 
 class InningsInitScreen extends StatefulWidget {
   final CricketMatch match;

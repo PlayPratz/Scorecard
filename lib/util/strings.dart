@@ -61,12 +61,13 @@ class Strings {
   // Create Team
   static const String createTeamSelectCaptain = "Select a captain";
   static const String createTeamCaptainHint =
-      "A good captain can make a bad team good, and a bad captain can make a good team bad.";
+      "A good captain can make a bad team good. But a bad captain can make a good team bad.";
   static const String createTeamSquadHint =
       "Your captain is already in the squad. You can change the captian later.";
   static const String createTeamTeamName = "Team Name";
   static const String createTeamShortName = "Short Name";
-  static const String createTeamCreate = "Create Team";
+  static const String createTeamCreate = "Create new team";
+  static const String createTeamSave = "Save Team";
 
   // Create Player
   static const String createPlayerTitle = "Player Details";

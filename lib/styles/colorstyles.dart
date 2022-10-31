@@ -24,6 +24,17 @@ class ColorStyles {
   static const online = Color(0xFF30D158);
   static const homeTeam = Colors.blue;
   static const awayTeam = Colors.orange;
+  static const List<Color> teamColors = [
+    Colors.blue,
+    Colors.orange,
+    Colors.amber,
+    Colors.green,
+    Colors.cyan,
+    Colors.brown,
+    Colors.deepOrange,
+    Colors.purple,
+    // Colors.deepPurple,
+  ];
 
   static Color getBowlingExtraColour(BowlingExtra bowlingExtra) {
     if (bowlingExtra == BowlingExtra.noBall) {

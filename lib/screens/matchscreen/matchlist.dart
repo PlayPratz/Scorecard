@@ -5,10 +5,10 @@ import 'package:scorecard/screens/matchscreen/matchinitscreen.dart';
 import 'package:scorecard/screens/matchscreen/matchscreen.dart';
 import 'package:scorecard/screens/matchscreen/scorecard.dart';
 import 'creatematch.dart';
-import 'widgets/itemlist.dart';
-import 'widgets/matchtile.dart';
-import '../styles/strings.dart';
-import '../util/utils.dart';
+import '../templates/itemlist.dart';
+import '../widgets/matchtile.dart';
+import '../../util/strings.dart';
+import '../../util/utils.dart';
 
 class MatchList extends StatelessWidget {
   MatchList({Key? key}) : super(key: key);

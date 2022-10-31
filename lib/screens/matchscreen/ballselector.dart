@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/ball.dart';
 import '../../models/wicket.dart';
-import '../choosewicket.dart';
-import '../../styles/strings.dart';
+import 'choosewicket.dart';
+import '../../util/strings.dart';
 import '../../util/elements.dart';
 import 'package:scorecard/util/utils.dart';
 

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/team.dart';
 import 'inningsinitscreen.dart';
-import '../teamlist.dart';
-import '../titledpage.dart';
+import '../team/teamlist.dart';
+import '../templates/titledpage.dart';
 import '../widgets/genericitem.dart';
-import '../widgets/itemlist.dart';
+import '../templates/itemlist.dart';
 import '../widgets/teamdummytile.dart';
-import '../widgets/teamtile.dart';
-import '../../styles/strings.dart';
+import '../team/teamtile.dart';
+import '../../util/strings.dart';
 import '../../util/elements.dart';
 import '../../util/utils.dart';
 
@@ -73,7 +73,6 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
           title: Strings.chooseTeam,
           child: TeamList(
             teamList: [widget.match.homeTeam, widget.match.awayTeam],
-            allowCreateTeam: false,
             onSelectTeam: (Team selectedTeam) {
               setState(() {
                 _tossWinner = selectedTeam;

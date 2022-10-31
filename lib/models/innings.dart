@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:scorecard/styles/strings.dart';
+import 'package:scorecard/util/strings.dart';
 
 import 'player.dart';
 import 'wicket.dart';

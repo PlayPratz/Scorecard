@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../models/team.dart';
-import 'teamdummytile.dart';
+import '../widgets/teamdummytile.dart';
 
 class TeamTile extends StatelessWidget {
   final Team team;
-  final Function(Team)? onSelect;
+  final void Function(Team)? onSelect;
 
   const TeamTile({Key? key, required this.team, this.onSelect})
       : super(key: key);

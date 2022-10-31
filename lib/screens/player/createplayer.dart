@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 
-import '../models/player.dart';
-import '../styles/strings.dart';
-import '../util/elements.dart';
-import '../util/helpers.dart';
-import '../util/utils.dart';
-import 'titledpage.dart';
+import '../../models/player.dart';
+import '../../util/strings.dart';
+import '../../util/elements.dart';
+import '../../util/helpers.dart';
+import '../../util/utils.dart';
+import '../templates/titledpage.dart';
 
 class CreatePlayerForm extends StatefulWidget {
   final Player? player;
-  const CreatePlayerForm({Key? key, this.player}) : super(key: key);
+
+  const CreatePlayerForm({Key? key})
+      : player = null,
+        super(key: key);
+
+  const CreatePlayerForm.update({Key? key, required this.player})
+      : super(key: key);
 
   @override
   State<CreatePlayerForm> createState() => _CreatePlayerFormState();

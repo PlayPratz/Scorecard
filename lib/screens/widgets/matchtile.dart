@@ -3,7 +3,7 @@ import '../../models/cricketmatch.dart';
 import '../../models/innings.dart';
 import '../../models/result.dart';
 import '../../styles/colorstyles.dart';
-import '../../styles/strings.dart';
+import '../../util/strings.dart';
 import '../../util/elements.dart';
 
 class MatchTile extends StatelessWidget {

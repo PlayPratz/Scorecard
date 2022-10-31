@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/teamlist.dart';
+import 'package:scorecard/screens/team/teamlist.dart';
 
-import '../models/cricketmatch.dart';
-import '../models/team.dart';
-import '../styles/colorstyles.dart';
-import '../styles/strings.dart';
-import '../util/elements.dart';
-import '../util/utils.dart';
-import 'matchscreen/matchinitscreen.dart';
-import 'titledpage.dart';
-import 'widgets/teamdummytile.dart';
+import '../../models/cricketmatch.dart';
+import '../../models/team.dart';
+import '../../styles/colorstyles.dart';
+import '../../util/strings.dart';
+import '../../util/elements.dart';
+import '../../util/utils.dart';
+import 'matchinitscreen.dart';
+import '../templates/titledpage.dart';
+import '../widgets/teamdummytile.dart';
 
 class CreateMatchForm extends StatefulWidget {
   const CreateMatchForm({Key? key}) : super(key: key);
@@ -94,7 +94,6 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
 
   void _chooseAwayTeam() {
     _chooseTeam((chosenTeam) {
-      chosenTeam.color = ColorStyles.awayTeam;
       _selectedAwayTeam = chosenTeam;
     });
   }

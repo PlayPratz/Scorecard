@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/basescreen.dart';
+import 'package:scorecard/screens/templates/basescreen.dart';
 import 'package:scorecard/styles/colorstyles.dart';
 import 'package:scorecard/util/utils.dart';
 

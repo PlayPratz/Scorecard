@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 
-import '../models/player.dart';
-import '../models/team.dart';
-import '../styles/colorstyles.dart';
-import '../styles/strings.dart';
-import '../util/elements.dart';
-import '../util/utils.dart';
-import 'playerlist.dart';
-import 'titledpage.dart';
-import 'widgets/playertile.dart';
+import '../../models/player.dart';
+import '../../models/team.dart';
+import '../../styles/colorstyles.dart';
+import '../../util/strings.dart';
+import '../../util/elements.dart';
+import '../../util/utils.dart';
+import '../player/playerlist.dart';
+import '../templates/titledpage.dart';
+import '../player/playertile.dart';
 
 class CreateTeamForm extends StatefulWidget {
-  final Team? team;
+  final Team team;
 
-  const CreateTeamForm({Key? key, this.team}) : super(key: key);
+  factory CreateTeamForm({Key? key}) =>
+      CreateTeamForm.update(team: Team.generate());
+
+  const CreateTeamForm.update({Key? key, required this.team}) : super(key: key);
 
   @override
   State<CreateTeamForm> createState() => _CreateTeamFormState();
@@ -26,15 +29,17 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   final TextEditingController _teamNameController = TextEditingController();
   final TextEditingController _shortTeamNameController =
       TextEditingController();
+  late int _selectedColorIndex;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.team != null) {
-      Team team = widget.team!;
-      _teamNameController.text = team.name;
-      _shortTeamNameController.text = team.shortName;
+    Team team = widget.team;
+    _teamNameController.text = team.name;
+    _shortTeamNameController.text = team.shortName;
+    _selectedColorIndex = ColorStyles.teamColors.indexOf(team.color);
+    if (widget.team.squadSize > 0) {
       _selectedCaptain = team.squad[0];
       _selectedPlayerList.addAll(team.squad.sublist(1));
     }
@@ -53,7 +58,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             const SizedBox(height: 16),
             _wSquadChooser(),
             Elements.getConfirmButton(
-                text: Strings.createTeamCreate,
+                text: Strings.createTeamSave,
                 onPressed: _canSubmitTeam ? _submitTeam : null),
           ],
         ),
@@ -62,19 +67,11 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   }
 
   void _submitTeam() {
-    Team team;
-    if (widget.team != null) {
-      team = widget.team!;
-      team.name = _teamNameController.text;
-      team.shortName = _shortTeamNameController.text;
-      team.squad = [_selectedCaptain!, ..._selectedPlayerList];
-    } else {
-      team = Team.create(
-        name: _teamNameController.text,
-        shortName: _shortTeamNameController.text,
-        squad: [_selectedCaptain!, ..._selectedPlayerList],
-      );
-    }
+    Team team = widget.team;
+    team.name = _teamNameController.text;
+    team.shortName = _shortTeamNameController.text;
+    team.squad = [_selectedCaptain!, ..._selectedPlayerList];
+    team.color = ColorStyles.teamColors[_selectedColorIndex];
     Utils.saveTeam(team);
     Utils.goBack(context, team);
   }
@@ -118,10 +115,20 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     return Row(
       children: [
         Expanded(
+            child: GestureDetector(
+          onTap: () => setState(() {
+            _selectedColorIndex =
+                (_selectedColorIndex + 1) % ColorStyles.teamColors.length;
+          }),
+          child: CircleAvatar(
+            backgroundColor: ColorStyles.teamColors[_selectedColorIndex],
+          ),
+        )),
+        Expanded(
           flex: 2,
           child: TextFormField(
             controller: _teamNameController,
-            maxLength: 25,
+            maxLength: 20,
             decoration:
                 const InputDecoration(label: Text(Strings.createTeamTeamName)),
           ),
@@ -198,7 +205,11 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                         await _getPlayerFromList(filteredPlayerList, context);
                     if (player != null) {
                       setState(() {
-                        _selectedPlayerList.add(player);
+                        if (_selectedCaptain == null) {
+                          _selectedCaptain = player;
+                        } else {
+                          _selectedPlayerList.add(player);
+                        }
                       });
                     }
                   }),

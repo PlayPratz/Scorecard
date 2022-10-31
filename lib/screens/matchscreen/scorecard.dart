@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/widgets/matchtile.dart';
 import 'package:scorecard/styles/colorstyles.dart';
-import 'package:scorecard/styles/strings.dart';
+import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/elements.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/innings.dart';
 import '../../models/wicket.dart';
-import '../titledpage.dart';
+import '../templates/titledpage.dart';
 import '../widgets/genericitem.dart';
 
 class Scorecard extends StatefulWidget {

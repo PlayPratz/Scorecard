@@ -13,7 +13,7 @@ class TeamDummyTile extends StatefulWidget {
     required this.primaryHint,
     required this.secondaryHint,
     this.onSelect,
-    this.color = ColorStyles.homeTeam,
+    this.color = Colors.white,
   }) : super(key: key);
 
   @override

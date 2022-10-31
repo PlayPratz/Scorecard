@@ -32,7 +32,7 @@ class _ScorecardState extends State<Scorecard> {
         child: Column(
           children: [
             MatchTile(match: widget.match),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
             ExpansionPanelList(
               dividerColor: Colors.transparent,
               children: [
@@ -96,12 +96,14 @@ class _ScorecardState extends State<Scorecard> {
         Strings.scorecardBatting,
         innings.battingTeam.color,
         innings.allBattingInnings
-            .map((batInn) => GenericItem(
-                  leading: Elements.getPlayerIcon(batInn.batter, 36),
-                  primaryHint: batInn.batter.name,
-                  secondaryHint: _getWicket(batInn.wicket),
-                  trailing: Text(batInn.score),
-                ))
+            .map(
+              (batInn) => GenericItem(
+                leading: Elements.getPlayerIcon(batInn.batter, 36),
+                primaryHint: batInn.batter.name,
+                secondaryHint: _getWicket(batInn.wicket),
+                trailing: Text(batInn.score),
+              ),
+            )
             .toList());
   }
 
@@ -123,7 +125,12 @@ class _ScorecardState extends State<Scorecard> {
             ),
           ),
           const SizedBox(height: 16),
-          ...playerTiles,
+          ...playerTiles.map((tile) => Column(
+                children: [
+                  const Divider(color: Colors.white30, thickness: 1),
+                  tile
+                ],
+              )),
         ],
       ),
     );

@@ -104,11 +104,11 @@ class _MatchScreenState extends State<MatchScreen> {
             match: widget.match,
             onSelectMatch: (match) => _goToScoreCard(),
           ),
-          _wNowPlaying(),
           _wRecentBalls(),
+          _wNowPlaying(),
           // Elements.getConfirmButton()
-          _wExtraChooser(),
           _wWicketChooser(),
+          _wExtraChooser(),
           _wRunChooser(),
           Row(
             children: [
@@ -317,7 +317,13 @@ class _MatchScreenState extends State<MatchScreen> {
       Ball currentBall = ballList[i];
       Widget currentWidget;
 
-      if (currentBall.runsScored == 4) {
+      if (currentBall.isWicket) {
+        currentWidget = CircleAvatar(
+          backgroundColor: ColorStyles.wicket,
+          foregroundColor: Colors.white,
+          child: Text(currentBall.runsScored.toString()),
+        );
+      } else if (currentBall.runsScored == 4) {
         currentWidget = CircleAvatar(
           backgroundColor: ColorStyles.ballFour,
           foregroundColor: Colors.white,
@@ -329,15 +335,13 @@ class _MatchScreenState extends State<MatchScreen> {
           foregroundColor: Colors.white,
           child: Text(currentBall.runsScored.toString()),
         );
-      } else if (currentBall.isWicket) {
-        currentWidget = CircleAvatar(
-          backgroundColor: ColorStyles.wicket,
-          foregroundColor: Colors.white,
-          child: Text(currentBall.runsScored.toString()),
-        );
       } else {
-        currentWidget =
-            CircleAvatar(child: Text(currentBall.runsScored.toString()));
+        currentWidget = CircleAvatar(
+            backgroundColor: ColorStyles.card,
+            foregroundColor: Colors.white,
+            child: Text(
+              currentBall.runsScored.toString(),
+            ));
       }
 
       Widget indicator = Elements.blankIndicator;

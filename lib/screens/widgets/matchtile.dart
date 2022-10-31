@@ -10,8 +10,11 @@ class MatchTile extends StatelessWidget {
   final CricketMatch match;
   final Function(CricketMatch)? onSelectMatch;
 
-  const MatchTile({required this.match, this.onSelectMatch, Key? key})
-      : super(key: key);
+  const MatchTile({
+    required this.match,
+    this.onSelectMatch,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,12 +22,13 @@ class MatchTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: ColorStyles.card,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white12),
       ),
       child: InkWell(
         onTap: onSelectMatch != null ? () => onSelectMatch!(match) : null,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
             children: [
               Row(
@@ -38,7 +42,8 @@ class MatchTile extends StatelessWidget {
                 ],
               ),
               const Divider(),
-              _wSummary()
+              _wSummary(),
+              const SizedBox(height: 8)
             ],
           ),
         ),
@@ -46,6 +51,167 @@ class MatchTile extends StatelessWidget {
     );
   }
 
+  // Widget _wSummary() {
+  //   List<TextSpan> textSpan;
+  //   MatchState matchState = match.matchState;
+  //   if (matchState == MatchState.notStarted) {
+  //     // Not started
+  //     textSpan = [
+  //       const TextSpan(text: Strings.scoreMatchNotStarted),
+  //     ];
+  //   } else if (matchState == MatchState.tossCompleted) {
+  //     textSpan = [
+  //       TextSpan(
+  //         text: match.toss!.winningTeam.shortName,
+  //         style: const TextStyle(fontWeight: FontWeight.bold),
+  //       ),
+  //       const TextSpan(text: Strings.scoreWonToss),
+  //       TextSpan(text: Strings.getTossChoice(match.toss!.choice)),
+  //     ];
+  //   } else if (mat) {
+  //     if (match.firstInnings.ballsBowled == 0) {
+  //       textSpan = [
+  //         TextSpan(
+  //           text: match.toss!.winningTeam.shortName,
+  //           style: const TextStyle(fontWeight: FontWeight.bold),
+  //         ),
+  //         const TextSpan(text: Strings.scoreWonToss),
+  //         TextSpan(text: Strings.getTossChoice(match.toss!.choice)),
+  //       ];
+  //     } else {
+  //       // Projected score
+  //       textSpan = [
+  //         TextSpan(
+  //           text: match.firstInnings.battingTeam.shortName,
+  //           style: const TextStyle(fontWeight: FontWeight.bold),
+  //         ),
+  //         const TextSpan(text: Strings.scoreWillScore),
+  //         TextSpan(
+  //             text: match.firstInnings.runsProjected.toString(),
+  //             style: const TextStyle(fontWeight: FontWeight.bold)),
+  //         const TextSpan(text: Strings.scoreRunsAtCurrentRate),
+  //         TextSpan(
+  //             text: match.firstInnings.runRatePerOver.toStringAsFixed(2),
+  //             style: const TextStyle(fontWeight: FontWeight.bold)),
+  //         const TextSpan(text: Strings.scoreRunsPerOver),
+  //       ];
+  //     }
+  //   } else if (matchState == MatchState.secondInnings &&
+  //       !match.secondInnings.isCompleted) {
+  //     // Chasing, required rate
+  //     int runsRequired = match.secondInnings.runsRequired;
+  //     int ballsLeft = match.secondInnings.ballsRemaining;
+  //     double runRateRequired = match.secondInnings.runRateRequired;
+  //     textSpan = [
+  //       TextSpan(
+  //         text: match.secondInnings.battingTeam.shortName,
+  //         style: const TextStyle(fontWeight: FontWeight.bold),
+  //       ),
+  //       const TextSpan(text: Strings.scoreRequire),
+  //       TextSpan(
+  //         text: runsRequired.toString(),
+  //         style: const TextStyle(fontWeight: FontWeight.bold),
+  //       ),
+  //       runsRequired == 1
+  //           ? const TextSpan(text: Strings.scoreRunsInSingle)
+  //           : const TextSpan(text: Strings.scoreRunsIn),
+  //       TextSpan(
+  //         text: ballsLeft.toString(),
+  //         style: const TextStyle(fontWeight: FontWeight.bold),
+  //       ),
+  //       ballsLeft == 1
+  //           ? const TextSpan(text: Strings.scoreBallSingle)
+  //           : const TextSpan(text: Strings.scoreBalls),
+  //     ];
+  //     if (ballsLeft > 30) {
+  //       textSpan.addAll([
+  //         const TextSpan(text: Strings.scoreAt),
+  //         TextSpan(
+  //           text: runRateRequired.toString(),
+  //           style: const TextStyle(fontWeight: FontWeight.bold),
+  //         ),
+  //         runRateRequired == 1
+  //             ? const TextSpan(text: Strings.scoreRunsPerOverSingle)
+  //             : const TextSpan(text: Strings.scoreRunsPerOver),
+  //       ]);
+  //     }
+  //   } else if (matchState == MatchState.completed ||
+  //       match.secondInnings.isCompleted) {
+  //     Result matchResult = match.generateResult();
+  //     switch (matchResult.getVictoryType()) {
+  //       case VictoryType.defending:
+  //         // win by ____ runs
+  //         matchResult = matchResult as ResultWinByDefending;
+  //         textSpan = [
+  //           TextSpan(
+  //             text: matchResult.winner.shortName,
+  //             style: const TextStyle(fontWeight: FontWeight.bold),
+  //           ),
+  //           const TextSpan(text: Strings.scoreWinBy),
+  //           TextSpan(
+  //             text: matchResult.runsWonBy.toString(),
+  //             style: const TextStyle(fontWeight: FontWeight.bold),
+  //           ),
+  //           matchResult.runsWonBy == 1
+  //               ? const TextSpan(text: Strings.scoreWinByRunSingle)
+  //               : const TextSpan(text: Strings.scoreWinByRuns),
+  //         ];
+  //         break;
+  //       case VictoryType.chasing:
+  //         // win by ____ wickets with ____ balls to spare
+  //         matchResult = matchResult as ResultWinByChasing;
+  //         textSpan = [
+  //           TextSpan(
+  //             text: matchResult.winner.shortName,
+  //             style: const TextStyle(fontWeight: FontWeight.bold),
+  //           ),
+  //           const TextSpan(text: Strings.scoreWinBy),
+  //           TextSpan(
+  //             text: matchResult.wicketsLeft.toString(),
+  //             style: const TextStyle(fontWeight: FontWeight.bold),
+  //           ),
+  //           matchResult.wicketsLeft == 1
+  //               ? const TextSpan(text: Strings.scoreWinByWicketSingle)
+  //               : const TextSpan(text: Strings.scoreWinByWickets),
+  //           TextSpan(
+  //             text: matchResult.ballsLeft.toString(),
+  //             style: const TextStyle(fontWeight: FontWeight.bold),
+  //           ),
+  //           matchResult.ballsLeft == 1
+  //               ? const TextSpan(text: Strings.scoreWinByBallsToSpareSingle)
+  //               : const TextSpan(text: Strings.scoreWinByBallsToSpare),
+  //         ];
+  //         break;
+  //       case VictoryType.tie:
+  //         matchResult = matchResult as ResultTie;
+  //         textSpan = [const TextSpan(text: Strings.scoreMatchTied)];
+  //         break;
+  //       default:
+  //         // TODO Exception
+  //         throw UnimplementedError();
+  //     }
+  //   } else {
+  //     // TODO Exception
+  //     throw UnimplementedError();
+  //   }
+
+  //   return Padding(
+  //     padding: const EdgeInsets.only(top: 12.0, right: 4, left: 4),
+  //     child: FittedBox(
+  //       fit: BoxFit.contain,
+  //       child: RichText(
+  //           textAlign: TextAlign.center,
+  //           text: TextSpan(
+  //             children: textSpan,
+  //             style: const TextStyle(
+  //               fontStyle: FontStyle.italic,
+  //               fontWeight: FontWeight.w300,
+  //               fontSize: 16,
+  //             ),
+  //           )),
+  //     ),
+  //   );
+  // }
   Widget _wSummary() {
     List<TextSpan> textSpan;
     switch (match.matchState) {

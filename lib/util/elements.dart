@@ -21,15 +21,15 @@ class Elements {
   );
 
   static const Icon onlineIcon = Icon(
-    Icons.fiber_manual_record,
-    size: 12,
+    Icons.play_arrow,
+    size: 16,
     color: ColorStyles.online,
   );
 
   static Widget getOnlineIndicator(bool isOnline) {
     return SizedBox(
-      height: 18,
-      width: 18,
+      height: 8,
+      width: 8,
       child: isOnline ? Elements.onlineIcon : null,
     );
   }

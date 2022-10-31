@@ -70,7 +70,10 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   }
 
   Widget _wSelectOvers() {
-    return Elements.getTextInput("Overs", "How many overs? 5? 10? 20?", null,
+    return Elements.getTextInput(
+        Strings.createMatchOvers,
+        Strings.createMatchOversHint,
+        null,
         (value) => _overs = int.parse(value));
   }
 

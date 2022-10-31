@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/styles/strings.dart';
 import '../../models/ball.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/player.dart';
@@ -20,40 +21,40 @@ class InningsInitScreen extends StatefulWidget {
 }
 
 class _InningsInitScreenState extends State<InningsInitScreen> {
-  Player? _batterOne;
-  Player? _batterTwo;
+  Player? _batter1;
+  Player? _batter2;
   Player? _bowler;
 
   @override
   Widget build(BuildContext context) {
     return TitledPage(
-        title: "Let's Start The Innings",
+        title: Strings.initInningsTitle,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Batter One"),
-            SizedBox(height: 24),
-            _wBatterSelection(_batterOne, ((p) {
-              _batterOne = p;
-              if (_batterTwo == p) {
-                _batterTwo = null;
+            const Text(Strings.initInningsBatter1),
+            const SizedBox(height: 24),
+            _wBatterSelection(_batter1, ((p) {
+              _batter1 = p;
+              if (_batter2 == p) {
+                _batter2 = null;
               }
             })),
-            Spacer(),
-            Text("Batter Two"),
-            SizedBox(height: 24),
-            _wBatterSelection(_batterTwo, ((p) {
-              _batterTwo = p;
-              if (_batterOne == p) {
-                _batterOne = null;
+            const Spacer(),
+            const Text(Strings.initInningsBatter2),
+            const SizedBox(height: 24),
+            _wBatterSelection(_batter2, ((p) {
+              _batter2 = p;
+              if (_batter1 == p) {
+                _batter1 = null;
               }
             })),
-            Spacer(),
-            Text("Bowler"),
-            SizedBox(height: 24),
+            const Spacer(),
+            const Text(Strings.initInningsBowler),
+            const SizedBox(height: 24),
             _wBowlerSelection(_bowler),
-            Spacer(),
+            const Spacer(),
             _wConfirmButton(),
           ],
         ));
@@ -63,9 +64,9 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
     return _wPlayerSelection(
         batter,
         onSelectBatter,
-        "Choose a Batter",
-        "Someone who can score many runs, hopefully",
-        "Pick a Batter",
+        Strings.initInningsChooseBatter,
+        Strings.initInningsChooseBatterHint,
+        Strings.initInningsChooseBatter,
         widget.match.currentInnings.battingTeam.squad);
   }
 
@@ -73,9 +74,9 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
     return _wPlayerSelection(
         bowler,
         (p) => _bowler = p,
-        "Choose a Bowler",
-        "Somene who can take many wickets, hopefully",
-        "Pick a Bowler",
+        Strings.initInningsChooseBowler,
+        Strings.initInningsChooseBowlerHint,
+        Strings.initInningsChooseBowler,
         widget.match.currentInnings.bowlingTeam.squad);
   }
 
@@ -96,7 +97,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
 
   Widget _wConfirmButton() {
     return Elements.getConfirmButton(
-      text: "Start Match",
+      text: Strings.initInningsStartInnings,
       onPressed: _canInitInnings
           ? () {
               if (widget.match.matchState == MatchState.tossCompleted) {
@@ -105,8 +106,8 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
                 widget.match.startSecondInnings();
               }
 
-              widget.match.currentInnings.addBatter(_batterOne!);
-              widget.match.currentInnings.addBatter(_batterTwo!);
+              widget.match.currentInnings.addBatter(_batter1!);
+              widget.match.currentInnings.addBatter(_batter2!);
               widget.match.currentInnings.addOver(Over(_bowler!));
               Utils.goToPage(MatchScreen(match: widget.match), context);
             }
@@ -133,5 +134,5 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
   }
 
   bool get _canInitInnings =>
-      _batterOne != null && _batterTwo != null && _bowler != null;
+      _batter1 != null && _batter2 != null && _bowler != null;
 }

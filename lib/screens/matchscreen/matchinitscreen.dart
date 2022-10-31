@@ -27,10 +27,10 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
   @override
   Widget build(BuildContext context) {
     return TitledPage(
-        title: "The Fun Begins",
+        title: Strings.initMatchTitle,
         child: Column(
           children: [
-            Text("Toss"),
+            Text(Strings.initMatchHeadingToss),
             _wTossWinningTeam(),
             _wWinningTeamChoice(),
             const Spacer(),
@@ -42,8 +42,8 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
   Widget _wTossWinningTeam() {
     return _tossWinner == null
         ? TeamDummyTile(
-            primaryHint: "Toss Winner",
-            secondaryHint: "Specify which team was luckier.",
+            primaryHint: Strings.initMatchTossTeamPrimary,
+            secondaryHint: Strings.initMatchTossTeamHint,
             onSelect: _chooseTossWinner)
         : TeamTile(
             team: _tossWinner!,
@@ -54,8 +54,8 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
   Widget _wWinningTeamChoice() {
     if (_tossChoice == null) {
       return GenericItem(
-        primaryHint: "Choose to",
-        secondaryHint: "Win or Lose? Oh sorry - Bat or Bowl?",
+        primaryHint: Strings.initMatchTossChoicePrimary,
+        secondaryHint: Strings.initMatchTossChoiceHint,
         leading: Icon(Icons.casino),
         onSelect: _chooseTossChoice,
       );
@@ -66,7 +66,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
   void _chooseTossWinner() {
     Utils.goToPage(
         TitledPage(
-          title: "Choose a Team",
+          title: Strings.chooseTeam,
           child: TeamList(
             teamList: [widget.match.homeTeam, widget.match.awayTeam],
             onSelectTeam: (Team selectedTeam) {
@@ -83,7 +83,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
   Widget _wTossChoiceInner(TossChoice tossChoice, Function onSelect) {
     return GenericItem(
       primaryHint: Strings.getTossChoice(tossChoice),
-      secondaryHint: "",
+      secondaryHint: Strings.empty,
       onSelect: onSelect,
     );
   }
@@ -91,7 +91,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
   void _chooseTossChoice() {
     Utils.goToPage(
         TitledPage(
-          title: "Win the toss and choose to",
+          title: Strings.initMatchTossChoiceTitle,
           child: ItemList(
               itemList: TossChoice.values
                   .map((tossChoice) => _wTossChoiceInner(
@@ -110,7 +110,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
 
   Widget _wConfirmButton() {
     return Elements.getConfirmButton(
-      text: "Start Match",
+      text: Strings.initMatchStartMatch,
       onPressed: _canCreateMatch
           ? () {
               widget.match.startMatch(Toss(_tossWinner!, _tossChoice!));

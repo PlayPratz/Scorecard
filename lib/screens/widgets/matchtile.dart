@@ -245,7 +245,9 @@ class _InningsTile extends StatelessWidget {
 
   Widget _wScoreDisplay(BuildContext context) {
     if (innings.isInPlay || innings.isCompleted) {
-      String score = innings.runs.toString() + "/" + innings.wickets.toString();
+      String score = innings.runs.toString() +
+          Strings.seperatorSlash +
+          innings.wickets.toString();
       TextTheme textTheme = Theme.of(context).textTheme;
 
       return RichText(
@@ -253,10 +255,11 @@ class _InningsTile extends StatelessWidget {
           TextSpan(text: score, style: textTheme.subtitle1),
           TextSpan(text: Strings.scoreIn, style: textTheme.caption),
           TextSpan(text: innings.oversBowled, style: textTheme.subtitle1),
-          TextSpan(text: " (", style: textTheme.subtitle1),
+          TextSpan(
+              text: Strings.bracketOpenWithSpace, style: textTheme.subtitle1),
           TextSpan(
               text: innings.maxOvers.toString(), style: textTheme.subtitle1),
-          TextSpan(text: ")", style: textTheme.subtitle1),
+          TextSpan(text: Strings.bracketClose, style: textTheme.subtitle1),
         ]),
       );
     } else {

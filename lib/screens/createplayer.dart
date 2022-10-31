@@ -48,25 +48,31 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
   @override
   Widget build(BuildContext context) {
     return TitledPage(
-        title: "Player Details",
+        title: Strings.createPlayerTitle,
         child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Elements.getTextInput("Name", "A future superstar?",
-                        widget.player?.name, (value) => _name = value),
+                    Elements.getTextInput(
+                        Strings.createPlayerName,
+                        Strings.createPlayerNameHint,
+                        widget.player?.name,
+                        (value) => _name = value),
                     const SizedBox(height: 32),
-                    _wToggleButtonWithLabel(_batArm, "Bat Arm"),
-                    _wToggleButtonWithLabel(_bowlArm, "Bowl Arm"),
-                    _wToggleButtonWithLabel(_bowlStyle, "Bowl Style"),
+                    _wToggleButtonWithLabel(
+                        _batArm, Strings.createPlayerBatArm),
+                    _wToggleButtonWithLabel(
+                        _bowlArm, Strings.createPlayerBowlArm),
+                    _wToggleButtonWithLabel(
+                        _bowlStyle, Strings.createPlayerBowlStyle),
                   ],
                 ),
               ),
             ),
             Elements.getConfirmButton(
-                text: "Create Player", onPressed: _onCreatePlayer),
+                text: Strings.createPlayerSave, onPressed: _onCreatePlayer),
           ],
         ));
   }

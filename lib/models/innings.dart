@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:scorecard/styles/strings.dart';
+
 import 'player.dart';
 import 'wicket.dart';
 import '../util/constants.dart';
@@ -152,10 +154,6 @@ class Innings {
         return newBatter;
       },
     ).play(ball);
-
-    _battingTeamInnings.forEach(
-        (i) => print(i.batter.name + " :: " + i.runsScored.toString()));
-
     if (
         // (wicketsRemaining == 0) || // The batting team is all down
         (ballsRemaining == 0) || // All overs have been bowled
@@ -241,7 +239,8 @@ class BatterInnings {
 
   bool get isOut => wicket != null;
 
-  String get score => runsScored.toString() + " in " + numBallsFaced.toString();
+  String get score =>
+      runsScored.toString() + Strings.scoreIn + numBallsFaced.toString();
 
   void play(Ball ball) {
     ballsFaced.add(ball);
@@ -278,9 +277,9 @@ class BowlerInnings {
 
   String get score =>
       wicketsTaken.toString() +
-      '-' +
+      Strings.seperatorHyphen +
       runsConceded.toString() +
-      " in " +
+      Strings.scoreIn +
       oversBowled;
 
   void bowl(Over over) {

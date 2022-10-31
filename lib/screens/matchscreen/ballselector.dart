@@ -57,7 +57,8 @@ class _BallSelectorState extends State<BallSelector> {
         const SizedBox(height: 16),
         _wRunChooser(),
         Elements.getConfirmButton(
-            text: "Next", onPressed: _validate() ? _processBall : null)
+            text: Strings.buttonNext,
+            onPressed: _validate() ? _processBall : null)
       ],
     );
   }
@@ -99,8 +100,8 @@ class _BallSelectorState extends State<BallSelector> {
   Widget _wRunChooser() {
     return Column(
       children: [
-        Text("Runs"),
-        SizedBox(height: 12),
+        const Text(Strings.ballSelectorRuns),
+        const SizedBox(height: 12),
         ToggleButtons(
           onPressed: (int index) => setState(() {
             // The button that is tapped is set to true, and the others to false.
@@ -128,10 +129,10 @@ class _BallSelectorState extends State<BallSelector> {
             leading: const CircleAvatar(
               child: Icon(Icons.sports_cricket),
             ),
-            title: const Text(Strings.addWicket),
+            title: const Text(Strings.matchScreenAddWicket),
             isThreeLine: true,
             subtitle: const Text(
-              Strings.addWicketHint,
+              Strings.matchScreenAddWicketHint,
             ),
             trailing: Elements.forwardIcon,
             onTap: _processWicket,

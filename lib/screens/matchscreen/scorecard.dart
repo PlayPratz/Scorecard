@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/styles/strings.dart';
 import 'package:scorecard/util/elements.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/innings.dart';
@@ -13,26 +14,33 @@ class Scorecard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String title = match.homeTeam.shortName + " v " + match.awayTeam.shortName;
+    String title = match.homeTeam.shortName +
+        Strings.seperatorHyphen +
+        match.awayTeam.shortName;
     return TitledPage(
         title: title,
         child: SingleChildScrollView(
           child: Column(
             children: [
               MatchTile(match: match),
-              Text("FIRST INNINGS"),
-              Text("Batting"),
-              ..._wbBattingPanel(match.firstInnings),
-              Text("Bowling"),
-              ..._wBowlingPanel(match.firstInnings),
-              Text("SECOND INNINGS"),
-              Text("Batting"),
-              ..._wbBattingPanel(match.secondInnings),
-              Text("Bowling"),
-              ..._wBowlingPanel(match.secondInnings)
+              _wInningsPanel(match.firstInnings, Strings.scorecardFirstInnings),
+              _wInningsPanel(
+                  match.secondInnings, Strings.scorecardSecondInnings),
             ],
           ),
         ));
+  }
+
+  Widget _wInningsPanel(Innings innings, String inningsTitle) {
+    return Column(
+      children: [
+        Text(inningsTitle),
+        Text(Strings.scorecardBatting),
+        ..._wbBattingPanel(innings),
+        Text(Strings.scorecardBowling),
+        ..._wBowlingPanel(innings)
+      ],
+    );
   }
 
   List<Widget> _wbBattingPanel(Innings innings) {

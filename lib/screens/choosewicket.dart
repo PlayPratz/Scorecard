@@ -17,12 +17,12 @@ class _ChooseWicketState extends State<ChooseWicket> {
   @override
   Widget build(BuildContext context) {
     return TitledPage(
-      title: "Choose a wicket",
+      title: Strings.chooseWicket,
       child: ItemList(
         itemList: Dismissal.values
             .map((dismissal) => GenericItem(
                   primaryHint: Strings.getDismissalName(dismissal),
-                  secondaryHint: "",
+                  secondaryHint: Strings.empty,
                   onSelect: () => _processDismissal(dismissal),
                 ))
             .toList(),

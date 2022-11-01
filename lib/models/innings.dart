@@ -274,7 +274,9 @@ class BowlerInnings {
     return (balls ~/ 6).toString() + '.' + (balls % 6).toString();
   }
 
-  double get economy => Constants.ballsPerOver * runsConceded / ballsBowled;
+  double get economy => ballsBowled == 0
+      ? 0
+      : Constants.ballsPerOver * runsConceded / ballsBowled;
 
   String get score =>
       wicketsTaken.toString() +

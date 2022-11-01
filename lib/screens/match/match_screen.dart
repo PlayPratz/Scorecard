@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/result.dart';
+import 'package:scorecard/screens/match/wicket_selector.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 
 import '../../models/ball.dart';
@@ -281,22 +282,40 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Widget _wWicketChooser() {
+    String primary = Strings.matchScreenAddWicket;
+    String hint = Strings.matchScreenAddWicketHint;
+    if (_wicketSelection != null) {
+      primary = _wicketSelection!.batter.name;
+      hint = Strings.getWicketDescription(_wicketSelection);
+    }
     return GenericItemTile(
-      leading: Elements.getOnlineIndicator(_wicketSelection != null),
-      primaryHint: Strings.matchScreenAddWicket,
-      secondaryHint: Strings.matchScreenAddWicketHint,
+      leading: const Icon(
+        Icons.gpp_bad,
+        color: Colors.redAccent,
+        size: 32,
+      ),
+      primaryHint: primary,
+      secondaryHint: hint,
       trailing: Elements.forwardIcon,
-      onSelect: () {
-        setState(() {
-          if (_wicketSelection != null) {
-            _wicketSelection = null;
-          } else {
-            _wicketSelection =
-                Wicket.bowled(batter: _striker.batter, bowler: _bowler);
-          }
-        });
-      },
+      onSelect: _onSelectWicket,
+      onLongPress: () => setState(() {
+        _wicketSelection = null;
+      }),
     );
+  }
+
+  void _onSelectWicket() async {
+    Wicket? selectedWicket = await Utils.goToPage(
+        WicketSelector(
+          bowler: _bowler,
+          striker: _striker.batter,
+          fieldingTeam: widget.match.currentInnings.bowlingTeam,
+          battingTeam: widget.match.currentInnings.battingTeam,
+        ),
+        context);
+    setState(() {
+      _wicketSelection = selectedWicket;
+    });
   }
 
   Widget _wRecentBalls() {
@@ -313,28 +332,28 @@ class _MatchScreenState extends State<MatchScreen> {
       }
 
       Ball currentBall = ballList[i];
-      Widget currentWidget;
+      CircleAvatar currentBallWidget;
 
       if (currentBall.isWicket) {
-        currentWidget = CircleAvatar(
+        currentBallWidget = CircleAvatar(
           backgroundColor: ColorStyles.wicket,
           foregroundColor: Colors.white,
           child: Text(currentBall.runsScored.toString()),
         );
       } else if (currentBall.runsScored == 4) {
-        currentWidget = CircleAvatar(
+        currentBallWidget = CircleAvatar(
           backgroundColor: ColorStyles.ballFour,
           foregroundColor: Colors.white,
           child: Text(currentBall.runsScored.toString()),
         );
       } else if (currentBall.runsScored == 6) {
-        currentWidget = CircleAvatar(
+        currentBallWidget = CircleAvatar(
           backgroundColor: ColorStyles.ballSix,
           foregroundColor: Colors.white,
           child: Text(currentBall.runsScored.toString()),
         );
       } else {
-        currentWidget = CircleAvatar(
+        currentBallWidget = CircleAvatar(
             backgroundColor: ColorStyles.card,
             foregroundColor: Colors.white,
             child: Text(
@@ -342,41 +361,37 @@ class _MatchScreenState extends State<MatchScreen> {
             ));
       }
 
-      Widget indicator = Elements.blankIndicator;
+      Color? indicatorColor = currentBallWidget.backgroundColor;
 
       if (currentBall.isBowlingExtra) {
         switch (currentBall.bowlingExtra!) {
           case BowlingExtra.noBall:
-            indicator = Elements.noBallIndicator;
+            indicatorColor = ColorStyles.ballNoBall;
             break;
           case BowlingExtra.wide:
-            indicator = Elements.wideBallIndicator;
+            indicatorColor = ColorStyles.ballWide;
             break;
         }
       }
 
-      displayWidgets.add(Column(
-        children: [
-          SizedBox(
-            height: 36,
-            child: currentWidget,
-          ),
-          indicator
-        ],
+      displayWidgets.add(CircleAvatar(
+        child: currentBallWidget,
+        radius: 22,
+        backgroundColor: indicatorColor,
       ));
     }
 
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 52,
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.yellow),
+          border: Border.all(color: ColorStyles.highlight),
           // color: Colors.red,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             reverse: true,
@@ -385,7 +400,7 @@ class _MatchScreenState extends State<MatchScreen> {
               children: [
                 ...displayWidgets.map((widget) => Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 2, vertical: 4),
+                          horizontal: 2, vertical: 2),
                       child: widget,
                     )),
               ],

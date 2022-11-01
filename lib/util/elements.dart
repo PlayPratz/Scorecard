@@ -64,16 +64,17 @@ class Elements {
 
   static Widget getPlayerIcon(Player player, double size) {
     return SizedBox(
+      // TODO remove sizedbox?
       width: size,
       height: size,
       child: player.imagePath != null
           ? CircleAvatar(
               foregroundImage: AssetImage(player.imagePath!),
-              radius: size,
+              radius: size / 2,
             )
           : Icon(
               Icons.person_outline,
-              size: size,
+              size: size / 2,
             ),
     );
   }

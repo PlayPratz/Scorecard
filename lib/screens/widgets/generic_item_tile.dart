@@ -6,9 +6,12 @@ class GenericItemTile extends StatefulWidget {
   final String primaryHint;
   final String secondaryHint;
   final Widget? leading;
-  final Function? onSelect;
-  final ItemSize? size;
+
+  // final ItemSize? size;
   final Widget? trailing;
+
+  final void Function()? onSelect;
+  final void Function()? onLongPress;
 
   const GenericItemTile(
       {Key? key,
@@ -16,7 +19,8 @@ class GenericItemTile extends StatefulWidget {
       required this.secondaryHint,
       this.leading,
       this.onSelect,
-      this.size = ItemSize.normal,
+      this.onLongPress,
+      // this.size = ItemSize.normal,
       this.trailing = const Icon(Icons.chevron_right)})
       : super(key: key);
 
@@ -27,7 +31,7 @@ class GenericItemTile extends StatefulWidget {
 class _GenericItemTileState extends State<GenericItemTile> {
   @override
   Widget build(BuildContext context) {
-    final genericTile = ListTile(
+    return ListTile(
       // TODO Minleadingwidth?
       // minLeadingWidth: 32,
       title: FittedBox(
@@ -43,17 +47,9 @@ class _GenericItemTileState extends State<GenericItemTile> {
       ),
       leading: widget.leading,
       trailing: widget.trailing,
+      onTap: widget.onSelect,
+      onLongPress: widget.onLongPress,
     );
-
-    if (widget.onSelect == null) {
-      return genericTile;
-    }
-
-    return InkWell(
-        onTap: () {
-          widget.onSelect!();
-        },
-        child: genericTile);
   }
 }
 

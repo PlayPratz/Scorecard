@@ -17,15 +17,9 @@ class CricketMatch {
 
   // In case of super over
   CricketMatch? _superOver;
+  CricketMatch? _parentMatch;
 
-  Toss? toss;
-
-  CricketMatch.create({required homeTeam, required awayTeam, required maxOvers})
-      : this(
-            id: Utils.generateUniqueId(),
-            homeTeam: homeTeam,
-            awayTeam: awayTeam,
-            maxOvers: maxOvers);
+  Toss? _toss;
 
   CricketMatch(
       {required this.id,
@@ -37,7 +31,23 @@ class CricketMatch {
         _awayInnings = Innings(
             battingTeam: awayTeam, bowlingTeam: homeTeam, maxOvers: maxOvers);
 
-  bool get isTossCompleted => toss != null;
+  CricketMatch.create({required homeTeam, required awayTeam, required maxOvers})
+      : this(
+            id: Utils.generateUniqueId(),
+            homeTeam: homeTeam,
+            awayTeam: awayTeam,
+            maxOvers: maxOvers);
+
+  factory CricketMatch.superOver({required CricketMatch match}) {
+    CricketMatch superOverMatch = CricketMatch.create(
+        homeTeam: match.homeTeam, awayTeam: match.awayTeam, maxOvers: 1);
+    superOverMatch
+        .startMatch(Toss(match.secondInnings.battingTeam, TossChoice.bat));
+    superOverMatch._parentMatch = match;
+    return superOverMatch;
+  }
+
+  bool get isTossCompleted => _toss != null;
 
   MatchState get matchState {
     if (secondInnings.isCompleted) {
@@ -45,7 +55,7 @@ class CricketMatch {
     } else if (secondInnings.isInPlay) {
       return MatchState.secondInnings;
     } else if (firstInnings.isCompleted) {
-      return MatchState.firstInnings;
+      return MatchState.secondInnings;
     } else if (firstInnings.isInPlay) {
       return MatchState.firstInnings;
     } else if (isTossCompleted) {
@@ -65,7 +75,7 @@ class CricketMatch {
         return secondInnings;
       default:
         // TODO Exception
-        throw UnimplementedError();
+        throw UnimplementedError("Current Innings requested before Toss");
     }
   }
 
@@ -100,14 +110,18 @@ class CricketMatch {
     }
   }
 
+  Toss? get toss => _toss;
   Innings get firstInnings => _isHomeInningsFirst ? homeInnings : awayInnings;
   Innings get secondInnings => _isHomeInningsFirst ? awayInnings : homeInnings;
   Innings get homeInnings => _homeInnings;
   Innings get awayInnings => _awayInnings;
+
+  bool get isSuperOver => _superOver != null;
   CricketMatch? get superOver => _superOver;
+  CricketMatch? get parentMatch => _parentMatch;
 
   void startMatch(Toss completedToss) {
-    toss = completedToss;
+    _toss = completedToss;
     if ((completedToss.winningTeam == homeTeam &&
             completedToss.choice == TossChoice.bowl) ||
         (completedToss.winningTeam == awayTeam &&
@@ -134,11 +148,7 @@ class CricketMatch {
       // TODO Exception
       throw UnimplementedError("Super Over initiated without tie");
     }
-    _superOver = CricketMatch.create(
-      homeTeam: homeTeam,
-      awayTeam: awayTeam,
-      maxOvers: 1,
-    );
+    _superOver = CricketMatch.superOver(match: this);
 
     _superOver?.startMatch(
       Toss(homeTeam, _isHomeInningsFirst ? TossChoice.bowl : TossChoice.bat),

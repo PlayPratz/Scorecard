@@ -5,7 +5,6 @@ import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/elements.dart';
 import '../../models/cricket_match.dart';
 import '../../models/innings.dart';
-import '../../models/wicket.dart';
 import '../templates/titled_page.dart';
 import '../widgets/generic_item_tile.dart';
 
@@ -92,7 +91,7 @@ class _ScorecardState extends State<Scorecard> {
         innings.bowlingTeam.color,
         innings.allBowlingInnings
             .map((bowlInn) => GenericItemTile(
-                  leading: Elements.getPlayerIcon(bowlInn.bowler, 36),
+                  leading: Elements.getPlayerIcon(bowlInn.bowler, 20),
                   primaryHint: bowlInn.bowler.name,
                   secondaryHint:
                       "Economy: " + bowlInn.economy.toStringAsFixed(2),
@@ -108,10 +107,13 @@ class _ScorecardState extends State<Scorecard> {
         innings.allBattingInnings
             .map(
               (batInn) => GenericItemTile(
-                leading: Elements.getPlayerIcon(batInn.batter, 36),
+                leading: Elements.getPlayerIcon(batInn.batter, 20),
                 primaryHint: batInn.batter.name,
-                secondaryHint: _getWicket(batInn.wicket),
-                trailing: Text(batInn.score),
+                secondaryHint: Strings.getWicketDescription(batInn.wicket),
+                trailing: Text(
+                  batInn.score,
+                  // style: TextStyle(fontSize: 16),
+                ),
               ),
             )
             .toList());
@@ -144,31 +146,5 @@ class _ScorecardState extends State<Scorecard> {
         ],
       ),
     );
-  }
-
-  String _getWicket(Wicket? wicket) {
-    if (wicket == null) {
-      return Strings.wicketNotOut;
-    }
-    switch (wicket.dismissal) {
-      case Dismissal.caught:
-        if (wicket.bowler == wicket.fielder) {
-          return Strings.wicketCaughtAndBowled + wicket.fielder!.name;
-        }
-        return Strings.wicketCaught +
-            wicket.fielder!.name +
-            Strings.wicketBowled +
-            wicket.bowler!.name;
-
-      case Dismissal.lbw:
-        return Strings.wicketLbw + wicket.bowler!.name;
-
-      case Dismissal.runout:
-        return Strings.wicketRunout + wicket.fielder!.name;
-
-      case Dismissal.bowled:
-      default:
-        return Strings.wicketBowled + wicket.bowler!.name;
-    }
   }
 }

@@ -29,7 +29,7 @@ class Strings {
   static const String scoreWillScore = " will score ";
   static const String scoreRunsAtCurrentRate = " runs at ";
   static const String scoreOvers = " overs";
-  static const String scoreWinBy = " win by ";
+  static const String scoreWinBy = " wins by ";
   static const String scoreWinByWickets = " wickets with ";
   static const String scoreWinByWicketSingle = " wicket with ";
   static const String scoreWinByBallsToSpare = " balls to spare";
@@ -127,9 +127,10 @@ class Strings {
   static const String wicketBowled = "b ";
   static const String wicketCaught = "c ";
   static const String wicketCaughtAndBowled = "c&b ";
+  static const String wicketLbw = "lbw ";
+  static const String wicketHitWicket = "hit-wicket ";
   static const String wicketRunout = "run-out ";
   static const String wicketStumped = "st ";
-  static const String wicketLbw = "lbw ";
   static const String wicketNotOut = "not out";
 
   // Match Screen
@@ -201,12 +202,12 @@ class Strings {
 
       case Dismissal.retired:
         return "Retired";
-      case Dismissal.hitTwice:
-        return "Hit Twice";
-      case Dismissal.obstructingField:
-        return "Obstructing The Field";
-      case Dismissal.timedOut:
-        return "Timed Out";
+      // case Dismissal.hitTwice:
+      //   return "Hit Twice";
+      // case Dismissal.obstructingField:
+      //   return "Obstructing The Field";
+      // case Dismissal.timedOut:
+      //   return "Timed Out";
     }
   }
 
@@ -234,5 +235,42 @@ class Strings {
 
   static String getRunText(int run) {
     return run.toString();
+  }
+
+  static String getWicketDescription(Wicket? wicket) {
+    if (wicket == null) {
+      return Strings.wicketNotOut;
+    }
+    switch (wicket.dismissal) {
+      case Dismissal.runout:
+        return Strings.wicketRunout + wicket.fielder!.name;
+
+      case Dismissal.caught:
+        if (wicket.bowler == wicket.fielder) {
+          return Strings.wicketCaughtAndBowled + wicket.fielder!.name;
+        }
+        return Strings.wicketCaught +
+            wicket.fielder!.name +
+            Strings.wicketBowled +
+            wicket.bowler!.name;
+
+      case Dismissal.stumped:
+        return Strings.wicketStumped +
+            wicket.fielder!.name +
+            Strings.wicketBowled +
+            wicket.bowler!.name;
+
+      case Dismissal.lbw:
+        return Strings.wicketLbw + wicket.bowler!.name;
+
+      case Dismissal.hitWicket:
+        return Strings.wicketHitWicket +
+            Strings.wicketBowled +
+            wicket.bowler!.name;
+
+      case Dismissal.bowled:
+      default:
+        return Strings.wicketBowled + wicket.bowler!.name;
+    }
   }
 }

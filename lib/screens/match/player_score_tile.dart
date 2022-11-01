@@ -30,7 +30,7 @@ class PlayerScoreTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: GenericItemTile(
-        leading: Elements.getPlayerIcon(player, 24),
+        leading: Elements.getPlayerIcon(player, 20),
         primaryHint: player.name,
         secondaryHint: score,
         trailing: null,

@@ -28,7 +28,7 @@ class Team {
       : id = Utils.generateUniqueId();
 
   factory Team.generate() {
-    _TeamTemplate template = _templates[Random().nextInt(8)];
+    _TeamTemplate template = _templates[Random().nextInt(_templates.length)];
     return Team.create(
         name: template.name,
         shortName: template.shortName,

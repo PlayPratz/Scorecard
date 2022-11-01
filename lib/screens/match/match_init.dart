@@ -84,7 +84,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
         context);
   }
 
-  Widget _wTossChoiceInner(TossChoice tossChoice, Function onSelect) {
+  Widget _wTossChoiceInner(TossChoice tossChoice, void Function() onSelect) {
     return GenericItemTile(
       primaryHint: Strings.getTossChoice(tossChoice),
       secondaryHint: Strings.empty,

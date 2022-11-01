@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';
-import 'createplayer.dart';
-import '../templates/itemlist.dart';
-import 'playertile.dart';
+import 'create_player.dart';
+import '../templates/item_list.dart';
+import 'player_tile.dart';
 
 class PlayerList extends StatelessWidget {
   final List<Player> playerList;

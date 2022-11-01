@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/team.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/util/strings.dart';
 
 import '../../util/elements.dart';
 import '../../util/utils.dart';
@@ -24,11 +26,12 @@ class ItemList extends StatelessWidget {
         createItem != null
             ? Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
-                child: ListTile(
-                    title: Text(createItem!.string),
+                child: GenericItemTile(
+                    primaryHint: createItem!.string,
+                    secondaryHint: Strings.empty,
                     leading: Elements.addIcon,
                     trailing: trailingIcon,
-                    onTap: () {
+                    onSelect: () {
                       if (createItem!.onCreateItem != null) {
                         Utils.goToPage(createItem!.page, context)
                             .then((item) => createItem!.onCreateItem!(item));

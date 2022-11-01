@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
 
-import '../styles/colorstyles.dart';
+import '../styles/color_styles.dart';
 
 class Elements {
   Elements._();

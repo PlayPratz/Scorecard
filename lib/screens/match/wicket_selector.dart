@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/wicket.dart';
-import '../templates/titledpage.dart';
-import '../widgets/genericitem.dart';
-import '../templates/itemlist.dart';
+import '../templates/titled_page.dart';
+import '../widgets/generic_item_tile.dart';
+import '../templates/item_list.dart';
 import '../../util/strings.dart';
 import '../../util/utils.dart';
 

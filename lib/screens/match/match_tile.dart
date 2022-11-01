@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/innings.dart';
 import '../../models/result.dart';
-import '../../styles/colorstyles.dart';
+import '../../styles/color_styles.dart';
 import '../../util/strings.dart';
 import '../../util/elements.dart';
 

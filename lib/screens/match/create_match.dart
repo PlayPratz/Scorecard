@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/team/teamlist.dart';
+import 'package:scorecard/screens/team/team_list.dart';
 
 import '../../models/cricketmatch.dart';
 import '../../models/team.dart';
 import '../../util/elements.dart';
 import '../../util/strings.dart';
 import '../../util/utils.dart';
-import '../templates/titledpage.dart';
-import '../widgets/teamdummytile.dart';
-import 'matchinitscreen.dart';
+import '../templates/titled_page.dart';
+import '../team/team_dummy_tile.dart';
+import 'match_init.dart';
 
 class CreateMatchForm extends StatefulWidget {
   const CreateMatchForm({Key? key}) : super(key: key);

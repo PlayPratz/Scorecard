@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'screens/hometabview.dart';
-import 'styles/colorstyles.dart';
-import 'styles/textstyles.dart';
+import 'screens/home.dart';
+import 'styles/color_styles.dart';
+import 'styles/text_styles.dart';
 
 void main() {
   runApp(const MyApp());

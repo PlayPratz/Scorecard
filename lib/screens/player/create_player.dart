@@ -5,7 +5,7 @@ import '../../util/strings.dart';
 import '../../util/elements.dart';
 import '../../util/helpers.dart';
 import '../../util/utils.dart';
-import '../templates/titledpage.dart';
+import '../templates/titled_page.dart';
 
 class CreatePlayerForm extends StatefulWidget {
   final Player? player;

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/widgets/genericitem.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 
 import '../../models/player.dart';
 import '../../models/team.dart';
-import '../../styles/colorstyles.dart';
+import '../../styles/color_styles.dart';
 import '../../util/strings.dart';
 import '../../util/elements.dart';
 import '../../util/utils.dart';
-import '../player/playerlist.dart';
-import '../templates/titledpage.dart';
-import '../player/playertile.dart';
+import '../player/player_list.dart';
+import '../templates/titled_page.dart';
+import '../player/player_tile.dart';
 
 class CreateTeamForm extends StatefulWidget {
   final Team team;

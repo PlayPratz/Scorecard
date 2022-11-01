@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/widgets/genericitem.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 
 import '../../models/ball.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/innings.dart';
 import '../../models/player.dart';
 import '../../models/wicket.dart';
-import '../../styles/colorstyles.dart';
+import '../../styles/color_styles.dart';
 import '../../util/strings.dart';
 import '../../util/elements.dart';
 import '../../util/helpers.dart';
 import '../../util/utils.dart';
-import '../player/playerlist.dart';
-import '../templates/titledpage.dart';
-import 'matchtile.dart';
-import 'inningsinitscreen.dart';
-import 'playerscoretile.dart';
+import '../player/player_list.dart';
+import '../templates/titled_page.dart';
+import 'match_tile.dart';
+import 'innings_init.dart';
+import 'player_score_tile.dart';
 import 'scorecard.dart';
 
 class MatchScreen extends StatefulWidget {

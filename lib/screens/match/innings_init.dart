@@ -3,14 +3,14 @@ import 'package:scorecard/util/strings.dart';
 import '../../models/ball.dart';
 import '../../models/cricketmatch.dart';
 import '../../models/player.dart';
-import 'matchscreen.dart';
-import '../player/playerlist.dart';
-import '../templates/titledpage.dart';
-import '../widgets/genericitem.dart';
+import 'match_screen.dart';
+import '../player/player_list.dart';
+import '../templates/titled_page.dart';
+import '../widgets/generic_item_tile.dart';
 import '../../util/elements.dart';
 import '../../util/utils.dart';
 
-import '../player/playertile.dart';
+import '../player/player_tile.dart';
 
 class InningsInitScreen extends StatefulWidget {
   final CricketMatch match;

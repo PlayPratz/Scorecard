@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/player/createplayer.dart';
-import 'package:scorecard/screens/team/createteam.dart';
-import 'package:scorecard/screens/team/teamlist.dart';
+import 'package:scorecard/screens/player/create_player.dart';
+import 'package:scorecard/screens/team/create_team.dart';
+import 'package:scorecard/screens/team/team_list.dart';
 
-import '../styles/colorstyles.dart';
+import '../styles/color_styles.dart';
 import '../util/strings.dart';
 import '../util/utils.dart';
-import 'templates/basescreen.dart';
-import 'match/matchlist.dart';
-import 'player/playerlist.dart';
+import 'templates/base_screen.dart';
+import 'match/match_list.dart';
+import 'player/player_list.dart';
 
 class HomeTabView extends StatefulWidget {
   const HomeTabView({Key? key}) : super(key: key);

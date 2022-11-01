@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/widgets/genericitem.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';

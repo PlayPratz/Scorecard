@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../styles/colorstyles.dart';
+import '../../styles/color_styles.dart';
 
 class BaseScreen extends StatelessWidget {
   final Widget child;

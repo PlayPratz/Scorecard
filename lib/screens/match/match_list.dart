@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/cricketmatch.dart';
-import 'package:scorecard/screens/match/inningsinitscreen.dart';
-import 'package:scorecard/screens/match/matchinitscreen.dart';
-import 'package:scorecard/screens/match/matchscreen.dart';
+import 'package:scorecard/screens/match/innings_init.dart';
+import 'package:scorecard/screens/match/match_init.dart';
+import 'package:scorecard/screens/match/match_screen.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
-import 'creatematch.dart';
-import '../templates/itemlist.dart';
-import 'matchtile.dart';
+import 'create_match.dart';
+import '../templates/item_list.dart';
+import 'match_tile.dart';
 import '../../util/strings.dart';
 import '../../util/utils.dart';
 

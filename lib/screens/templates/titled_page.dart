@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/templates/basescreen.dart';
-import 'package:scorecard/styles/colorstyles.dart';
+import 'package:scorecard/screens/templates/base_screen.dart';
+import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/utils.dart';
 
 class TitledPage extends StatelessWidget {

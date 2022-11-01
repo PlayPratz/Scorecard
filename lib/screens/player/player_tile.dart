@@ -21,7 +21,7 @@ class PlayerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GenericItemTile(
-      leading: Elements.getPlayerIcon(player, 48),
+      leading: Elements.getPlayerIcon(player, 42),
       primaryHint: player.name,
       secondaryHint: getBatBowlStyle(context),
       trailing: trailing,

@@ -28,9 +28,10 @@ class MatchTile extends StatelessWidget {
         onTap: onSelectMatch != null ? () => onSelectMatch!(match) : null,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           child: Column(
             children: [
+              _wMatchDetails(),
               Row(
                 children: [
                   Expanded(
@@ -48,6 +49,16 @@ class MatchTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _wMatchDetails() {
+    String text = match.isSuperOver
+        ? Strings.matchScreenSuperOver
+        : match.maxOvers.toString() + Strings.scoreOvers;
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Text(text),
     );
   }
 
@@ -124,12 +135,20 @@ class MatchTile extends StatelessWidget {
           ballsLeft == 1
               ? const TextSpan(text: Strings.scoreBallSingle)
               : const TextSpan(text: Strings.scoreBalls),
+          const TextSpan(text: Strings.scoreAt),
+          TextSpan(
+            text: runRateRequired.toStringAsFixed(2),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          runRateRequired == 1
+              ? const TextSpan(text: Strings.scoreRunsPerOverSingle)
+              : const TextSpan(text: Strings.scoreRunsPerOver),
         ];
         if (ballsLeft > 30) {
           textSpan.addAll([
             const TextSpan(text: Strings.scoreAt),
             TextSpan(
-              text: runRateRequired.toString(),
+              text: runRateRequired.toStringAsFixed(2),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             runRateRequired == 1
@@ -139,7 +158,7 @@ class MatchTile extends StatelessWidget {
         }
         break;
       case MatchState.completed:
-        Result matchResult = match.result!;
+        Result matchResult = match.result;
         switch (matchResult.getVictoryType()) {
           case VictoryType.defending:
             // win by ____ runs

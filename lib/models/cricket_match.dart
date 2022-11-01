@@ -38,12 +38,14 @@ class CricketMatch {
             awayTeam: awayTeam,
             maxOvers: maxOvers);
 
-  factory CricketMatch.superOver({required CricketMatch match}) {
+  factory CricketMatch.superOver({required CricketMatch parentMatch}) {
     CricketMatch superOverMatch = CricketMatch.create(
-        homeTeam: match.homeTeam, awayTeam: match.awayTeam, maxOvers: 1);
-    superOverMatch
-        .startMatch(Toss(match.secondInnings.battingTeam, TossChoice.bat));
-    superOverMatch._parentMatch = match;
+        homeTeam: parentMatch.homeTeam,
+        awayTeam: parentMatch.awayTeam,
+        maxOvers: 1);
+    superOverMatch.startMatch(
+        Toss(parentMatch.secondInnings.battingTeam, TossChoice.bat));
+    superOverMatch._parentMatch = parentMatch;
     return superOverMatch;
   }
 
@@ -79,15 +81,7 @@ class CricketMatch {
     }
   }
 
-  Result? get result {
-    if (!secondInnings.isCompleted) {
-      //TODO Exception
-      // throw UnimplementedError("Result generated before completion of match");
-      return null;
-    }
-    // This implies firstInnings.isCompleted is true as well
-    // _matchState = MatchState.completed;
-
+  Result get result {
     if (firstInnings.runs > secondInnings.runs) {
       // Won by defending
       int runsWonBy = firstInnings.runs - secondInnings.runs;
@@ -116,7 +110,8 @@ class CricketMatch {
   Innings get homeInnings => _homeInnings;
   Innings get awayInnings => _awayInnings;
 
-  bool get isSuperOver => _superOver != null;
+  bool get isSuperOver => _parentMatch != null;
+  bool get hasSuperOver => _superOver != null;
   CricketMatch? get superOver => _superOver;
   CricketMatch? get parentMatch => _parentMatch;
 
@@ -128,29 +123,30 @@ class CricketMatch {
             completedToss.choice == TossChoice.bat)) {
       _isHomeInningsFirst = false;
     }
-    // _matchState = MatchState.tossCompleted;
   }
 
   void startFirstInnings() {
-    // _matchState = MatchState.firstInnings;
     firstInnings.isInPlay = true;
   }
 
   void startSecondInnings() {
-    // firstInnings.isCompleted = true;
+    if (!firstInnings.isCompleted) {
+      firstInnings.isAbandoned = true;
+    }
     secondInnings.target = firstInnings.runs + 1;
-    // _matchState = MatchState.secondInnings;
     secondInnings.isInPlay = true;
   }
 
-  void startSuperOver() {
-    if (result?.getVictoryType() != VictoryType.tie) {
-      // TODO Exception
-      throw UnimplementedError("Super Over initiated without tie");
+  void endSecondInnings() {
+    if (!secondInnings.isCompleted) {
+      secondInnings.isAbandoned = true;
     }
-    _superOver = CricketMatch.superOver(match: this);
+  }
 
-    _superOver?.startMatch(
+  void startSuperOver() {
+    _superOver = CricketMatch.superOver(parentMatch: this);
+
+    _superOver!.startMatch(
       Toss(homeTeam, _isHomeInningsFirst ? TossChoice.bowl : TossChoice.bat),
     ); // This ensures that the order of innings is swapped.
   }

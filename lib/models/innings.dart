@@ -27,7 +27,7 @@ class Innings {
   final Map<Player, BowlerInnings> _bowlerTeamInnings = {};
 
   bool _isInPlay = false;
-  // bool _isCompleted = false;
+  bool isAbandoned = false;
 
   int get maxWickets => battingTeam.squadSize;
 
@@ -108,7 +108,7 @@ class Innings {
   bool get hasStarted => isInPlay || isCompleted;
   bool get isInPlay => (_isInPlay || _overs.isNotEmpty) && !isCompleted;
   bool get isCompleted =>
-      // _isCompleted ||
+      isAbandoned ||
       oversCompleted == maxOvers ||
       // wicketsRemaining == 0 ||
       (target != null && runsRequired <= 0);

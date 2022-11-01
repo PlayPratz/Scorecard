@@ -21,6 +21,10 @@ class _ScorecardState extends State<Scorecard> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.match.isSuperOver) {
+      return Scorecard(match: widget.match.parentMatch!);
+    }
+
     String title = widget.match.homeTeam.shortName +
         Strings.seperatorVersus +
         widget.match.awayTeam.shortName;
@@ -91,7 +95,7 @@ class _ScorecardState extends State<Scorecard> {
         innings.bowlingTeam.color,
         innings.allBowlingInnings
             .map((bowlInn) => GenericItemTile(
-                  leading: Elements.getPlayerIcon(bowlInn.bowler, 20),
+                  leading: Elements.getPlayerIcon(bowlInn.bowler, 40),
                   primaryHint: bowlInn.bowler.name,
                   secondaryHint:
                       "Economy: " + bowlInn.economy.toStringAsFixed(2),
@@ -107,7 +111,7 @@ class _ScorecardState extends State<Scorecard> {
         innings.allBattingInnings
             .map(
               (batInn) => GenericItemTile(
-                leading: Elements.getPlayerIcon(batInn.batter, 20),
+                leading: Elements.getPlayerIcon(batInn.batter, 40),
                 primaryHint: batInn.batter.name,
                 secondaryHint: Strings.getWicketDescription(batInn.wicket),
                 trailing: Text(

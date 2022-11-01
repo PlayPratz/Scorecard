@@ -515,8 +515,9 @@ class _MatchScreenState extends State<MatchScreen> {
       widget.match.startSecondInnings();
       Utils.goToReplacementPage(
           InningsInitScreen(match: widget.match), context);
-    } else if (widget.match.matchState == MatchState.completed) {
-      if (widget.match.result?.getVictoryType() == VictoryType.tie) {
+    } else {
+      widget.match.endSecondInnings();
+      if (widget.match.result.getVictoryType() == VictoryType.tie) {
         // Super Over option
         showModalBottomSheet(
             context: context,
@@ -538,6 +539,7 @@ class _MatchScreenState extends State<MatchScreen> {
                       primaryHint: Strings.matchScreenEndTiedMatch,
                       secondaryHint: Strings.matchScreenEndTiedMatchHint,
                       onSelect: () {
+                        Utils.goBack(context);
                         Utils.goToReplacementPage(
                             Scorecard(match: widget.match), context);
                       },
@@ -549,6 +551,7 @@ class _MatchScreenState extends State<MatchScreen> {
                       secondaryHint: Strings.matchScreenSuperOverHint,
                       onSelect: () {
                         widget.match.startSuperOver();
+                        Utils.goBack(context);
                         Utils.goToReplacementPage(
                             InningsInitScreen(match: widget.match.superOver!),
                             context);

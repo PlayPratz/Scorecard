@@ -45,7 +45,10 @@ class _GenericItemTileState extends State<GenericItemTile> {
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
-      leading: widget.leading,
+      leading: SizedBox(
+        height: widget.secondaryHint.isNotEmpty ? double.infinity : null,
+        child: widget.leading,
+      ),
       trailing: widget.trailing,
       onTap: widget.onSelect,
       onLongPress: widget.onLongPress,

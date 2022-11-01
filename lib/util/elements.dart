@@ -67,9 +67,12 @@ class Elements {
       width: size,
       height: size,
       child: player.imagePath != null
-          ? CircleAvatar(
-              foregroundImage: AssetImage(player.imagePath!),
-              radius: size / 2,
+          ? FittedBox(
+              fit: BoxFit.none,
+              child: CircleAvatar(
+                foregroundImage: AssetImage(player.imagePath!),
+                radius: size / 2,
+              ),
             )
           : Icon(
               Icons.person_outline,

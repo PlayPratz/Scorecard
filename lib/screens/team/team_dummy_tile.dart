@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import '../../styles/color_styles.dart';
 
 class TeamDummyTile extends StatefulWidget {
   final String primaryHint;

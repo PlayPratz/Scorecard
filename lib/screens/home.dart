@@ -68,7 +68,7 @@ class _HomeTabViewState extends State<HomeTabView> {
   }
 
   List<Widget> get screens => [
-        MatchList(),
+        const MatchList(),
         TeamList(
           teamList: Utils.getAllTeams(),
           onSelectTeam: (team) => Utils.goToPage(

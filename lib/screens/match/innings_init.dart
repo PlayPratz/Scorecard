@@ -99,7 +99,6 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
               } else {
                 widget.match.startSecondInnings();
               }
-
               widget.match.currentInnings.addBatter(_batter1!);
               widget.match.currentInnings.addBatter(_batter2!);
               widget.match.currentInnings.addOver(Over(_bowler!));

@@ -59,7 +59,7 @@ class Ball {
 
   bool get isWicket => wicket != null;
   bool get isBowlerWicket =>
-      (isWicket && BowlerDismissals.contains(wicket!.dismissal));
+      (isWicket && Dismissal.values.take(5).contains(wicket!.dismissal));
   bool get isBowlingExtra => bowlingExtra != null;
   bool get isBattingExtra => battingExtra != null;
   bool get shouldCount => _shouldCountBall && !isBowlingExtra;

@@ -58,11 +58,3 @@ enum Dismissal {
   // obstructingField,
   // timedOut
 }
-
-const BowlerDismissals = [
-  Dismissal.bowled,
-  Dismissal.caught,
-  Dismissal.lbw,
-  Dismissal.hitWicket,
-  Dismissal.stumped
-];

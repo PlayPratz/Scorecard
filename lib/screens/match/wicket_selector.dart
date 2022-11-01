@@ -142,20 +142,6 @@ class _WicketSelectorState extends State<WicketSelector> {
   bool get canAddWicket =>
       _isDimissalSelected && _isFielderSelected && _isBatterSelected;
 
-  Future<Player?> _chooseFielder(BuildContext context) async {
-    return await Utils.goToPage(
-      TitledPage(
-        title: "Choose Fielder",
-        child: PlayerList(
-          playerList: widget.fieldingTeam.squad,
-          showAddButton: false,
-          onSelectPlayer: (player) => Utils.goBack(context, player),
-        ),
-      ),
-      context,
-    );
-  }
-
   bool _requiresBatter(Dismissal? dismissal) {
     if (dismissal == Dismissal.runout || dismissal == Dismissal.retired) {
       // Wickets where non-striker can get run-out

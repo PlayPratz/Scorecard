@@ -64,7 +64,6 @@ class Elements {
 
   static Widget getPlayerIcon(Player player, double size) {
     return SizedBox(
-      // TODO remove sizedbox?
       width: size,
       height: size,
       child: player.imagePath != null

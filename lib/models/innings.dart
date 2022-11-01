@@ -246,7 +246,6 @@ class BatterInnings {
   void play(Ball ball) {
     ballsFaced.add(ball);
     if (ball.isWicket && ball.wicket?.batter == batter) {
-      // TODO Do we even need this "if"?
       wicket = ball.wicket;
     }
   }

@@ -27,7 +27,7 @@ class Innings {
   final Map<Player, BowlerInnings> _bowlerTeamInnings = {};
 
   bool _isInPlay = false;
-  bool _isCompleted = false;
+  // bool _isCompleted = false;
 
   int get maxWickets => battingTeam.squadSize;
 
@@ -108,7 +108,7 @@ class Innings {
   bool get hasStarted => isInPlay || isCompleted;
   bool get isInPlay => (_isInPlay || _overs.isNotEmpty) && !isCompleted;
   bool get isCompleted =>
-      _isCompleted ||
+      // _isCompleted ||
       oversCompleted == maxOvers ||
       // wicketsRemaining == 0 ||
       (target != null && runsRequired <= 0);
@@ -155,13 +155,13 @@ class Innings {
         return newBatter;
       },
     ).play(ball);
-    if (
-        // (wicketsRemaining == 0) || // The batting team is all down
-        (ballsRemaining == 0) || // All overs have been bowled
-            (target != null && target! <= runs)) {
-      // The batting team has chased its target
-      _isCompleted = true;
-    }
+    // if (
+    //     // (wicketsRemaining == 0) || // The batting team is all down
+    //     (ballsRemaining == 0) || // All overs have been bowled
+    //         (target != null && target! <= runs)) {
+    //   // The batting team has chased its target
+    //   _isCompleted = true;
+    // }
   }
 
   Ball undoBall() {

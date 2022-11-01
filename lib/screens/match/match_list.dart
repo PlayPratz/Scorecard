@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/cricketmatch.dart';
+import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/match_init.dart';
 import 'package:scorecard/screens/match/match_screen.dart';
@@ -11,7 +11,7 @@ import '../../util/strings.dart';
 import '../../util/utils.dart';
 
 class MatchList extends StatelessWidget {
-  MatchList({Key? key}) : super(key: key);
+  const MatchList({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

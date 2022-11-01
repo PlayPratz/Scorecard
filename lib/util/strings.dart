@@ -1,5 +1,5 @@
 import '../models/ball.dart';
-import '../models/cricketmatch.dart';
+import '../models/cricket_match.dart';
 import '../models/player.dart';
 import '../models/wicket.dart';
 
@@ -128,7 +128,9 @@ class Strings {
   static const String wicketCaught = "c ";
   static const String wicketCaughtAndBowled = "c&b ";
   static const String wicketRunout = "run-out ";
-  static const String wicketStumped = "st";
+  static const String wicketStumped = "st ";
+  static const String wicketLbw = "lbw ";
+  static const String wicketNotOut = "not out";
 
   // Match Screen
   static const String matchScreenAddWicket = "Add Wicket";
@@ -138,6 +140,15 @@ class Strings {
   static const String matchScreenUndo = "Undo";
   static const String matchScreenChooseBatter = "Choose Batter";
   static const String matchScreenChooseBowler = "Choose Bowler";
+  static const String matchScreenMatchTied = "The match has ended in a TIE!";
+  static const String matchScreenMatchTiedHint =
+      "What would you like to do now?";
+  static const String matchScreenEndTiedMatch = "End Match as Tie";
+  static const String matchScreenEndTiedMatchHint =
+      "The teams were quite evenly matched, weren't they?";
+  static const String matchScreenSuperOver = "Super Over";
+  static const String matchScreenSuperOverHint =
+      "A quick one-over game to settle the scores.";
 
   // Ball Selector
   static const String ballSelectorRuns = "Runs";

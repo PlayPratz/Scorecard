@@ -3,7 +3,7 @@ import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/elements.dart';
-import '../../models/cricketmatch.dart';
+import '../../models/cricket_match.dart';
 import '../../models/innings.dart';
 import '../../models/wicket.dart';
 import '../templates/titled_page.dart';
@@ -30,32 +30,41 @@ class _ScorecardState extends State<Scorecard> {
       title: title,
       child: SingleChildScrollView(
         child: Column(
-          children: [
-            MatchTile(match: widget.match),
-            const SizedBox(height: 32),
-            ExpansionPanelList(
-              expandedHeaderPadding: const EdgeInsets.all(0),
-              dividerColor: Colors.transparent,
-              children: [
-                _wInningsPanel(
-                    widget.match.firstInnings,
-                    widget.match.firstInnings.battingTeam.name +
-                        Strings.scorecardInningsWithSpace,
-                    _isInningsPanelOpen[0]),
-                _wInningsPanel(
-                    widget.match.secondInnings,
-                    widget.match.secondInnings.battingTeam.name +
-                        Strings.scorecardInningsWithSpace,
-                    _isInningsPanelOpen[1]),
-              ],
-              expansionCallback: (panelIndex, isExpanded) => setState(() {
-                _isInningsPanelOpen[panelIndex] = !isExpanded;
-              }),
-            ),
-          ],
+          children: _wMatchPanel(widget.match),
         ),
       ),
     );
+  }
+
+  List<Widget> _wMatchPanel(CricketMatch? match) {
+    if (match == null) {
+      return [];
+    }
+    List<Widget> children = [
+      MatchTile(match: match),
+      const SizedBox(height: 32),
+      ExpansionPanelList(
+        expandedHeaderPadding: const EdgeInsets.all(0),
+        dividerColor: Colors.transparent,
+        children: [
+          _wInningsPanel(
+              match.firstInnings,
+              match.firstInnings.battingTeam.name +
+                  Strings.scorecardInningsWithSpace,
+              _isInningsPanelOpen[0]),
+          _wInningsPanel(
+              match.secondInnings,
+              match.secondInnings.battingTeam.name +
+                  Strings.scorecardInningsWithSpace,
+              _isInningsPanelOpen[1]),
+        ],
+        expansionCallback: (panelIndex, isExpanded) => setState(() {
+          _isInningsPanelOpen[panelIndex] = !isExpanded;
+        }),
+      ),
+    ];
+
+    return [...children, ..._wMatchPanel(match.superOver)];
   }
 
   ExpansionPanel _wInningsPanel(
@@ -139,9 +148,24 @@ class _ScorecardState extends State<Scorecard> {
 
   String _getWicket(Wicket? wicket) {
     if (wicket == null) {
-      return "not out";
+      return Strings.wicketNotOut;
     }
     switch (wicket.dismissal) {
+      case Dismissal.caught:
+        if (wicket.bowler == wicket.fielder) {
+          return Strings.wicketCaughtAndBowled + wicket.fielder!.name;
+        }
+        return Strings.wicketCaught +
+            wicket.fielder!.name +
+            Strings.wicketBowled +
+            wicket.bowler!.name;
+
+      case Dismissal.lbw:
+        return Strings.wicketLbw + wicket.bowler!.name;
+
+      case Dismissal.runout:
+        return Strings.wicketRunout + wicket.fielder!.name;
+
       case Dismissal.bowled:
       default:
         return Strings.wicketBowled + wicket.bowler!.name;

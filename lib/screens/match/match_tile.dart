@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/cricketmatch.dart';
+import '../../models/cricket_match.dart';
 import '../../models/innings.dart';
 import '../../models/result.dart';
 import '../../styles/color_styles.dart';
@@ -300,7 +300,7 @@ class MatchTile extends StatelessWidget {
         }
         break;
       case MatchState.completed:
-        Result matchResult = match.generateResult();
+        Result matchResult = match.result!;
         switch (matchResult.getVictoryType()) {
           case VictoryType.defending:
             // win by ____ runs

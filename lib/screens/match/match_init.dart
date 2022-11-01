@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/cricketmatch.dart';
+import '../../models/cricket_match.dart';
 import '../../models/team.dart';
 import 'innings_init.dart';
 import '../team/team_list.dart';

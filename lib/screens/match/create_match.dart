@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/team/team_list.dart';
 
-import '../../models/cricketmatch.dart';
+import '../../models/cricket_match.dart';
 import '../../models/team.dart';
 import '../../util/elements.dart';
 import '../../util/strings.dart';

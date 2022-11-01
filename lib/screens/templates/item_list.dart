@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/util/strings.dart';
 
@@ -22,6 +21,7 @@ class ItemList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       // padding: const EdgeInsets.symmetric(horizontal: 12),
+
       children: [
         createItem != null
             ? Padding(

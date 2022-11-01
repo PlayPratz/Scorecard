@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/cricketmatch.dart';
+import '../models/cricket_match.dart';
 import '../models/player.dart';
 import '../models/team.dart';
 

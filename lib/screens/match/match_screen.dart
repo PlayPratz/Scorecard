@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 
 import '../../models/ball.dart';
-import '../../models/cricketmatch.dart';
+import '../../models/cricket_match.dart';
 import '../../models/innings.dart';
 import '../../models/player.dart';
 import '../../models/wicket.dart';
@@ -43,10 +44,6 @@ class _MatchScreenState extends State<MatchScreen> {
 
   /// The player on strike. Will always be in [onPitchBatters].
   late BatterInnings _striker;
-
-  BatterInnings get _nonStriker => _striker == onPitchBatters.first
-      ? onPitchBatters.last
-      : onPitchBatters.first;
 
   /// The player that is bowling the current over
   Player get _bowler => widget.match.currentInnings.currentOver.bowler;
@@ -102,7 +99,8 @@ class _MatchScreenState extends State<MatchScreen> {
         children: [
           MatchTile(
             match: widget.match,
-            onSelectMatch: (match) => _goToScoreCard(),
+            onSelectMatch: (match) =>
+                Utils.goToPage(Scorecard(match: match), context),
           ),
           _wRecentBalls(),
           _wNowPlaying(),
@@ -500,15 +498,55 @@ class _MatchScreenState extends State<MatchScreen> {
   void _doEndInnings() {
     if (widget.match.matchState == MatchState.firstInnings) {
       widget.match.startSecondInnings();
-      Utils.goToPage(InningsInitScreen(match: widget.match), context);
-    } else if (widget.match.matchState == MatchState.secondInnings) {
-      widget.match.generateResult();
-      _goToScoreCard();
+      Utils.goToReplacementPage(
+          InningsInitScreen(match: widget.match), context);
+    } else if (widget.match.matchState == MatchState.completed) {
+      if (widget.match.result?.getVictoryType() == VictoryType.tie) {
+        // Super Over option
+        showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return Material(
+                color: ColorStyles.background,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 32),
+                    const Text(
+                      Strings.matchScreenMatchTied,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 32),
+                    const Text(Strings.matchScreenMatchTiedHint),
+                    const SizedBox(height: 32),
+                    GenericItemTile(
+                      leading: const Icon(Icons.handshake),
+                      primaryHint: Strings.matchScreenEndTiedMatch,
+                      secondaryHint: Strings.matchScreenEndTiedMatchHint,
+                      onSelect: () {
+                        Utils.goToReplacementPage(
+                            Scorecard(match: widget.match), context);
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    GenericItemTile(
+                      leading: const Icon(Icons.sports_baseball),
+                      primaryHint: Strings.matchScreenSuperOver,
+                      secondaryHint: Strings.matchScreenSuperOverHint,
+                      onSelect: () {
+                        widget.match.startSuperOver();
+                        Utils.goToReplacementPage(
+                            InningsInitScreen(match: widget.match.superOver!),
+                            context);
+                      },
+                    ),
+                  ],
+                ),
+              );
+            });
+      } else {
+        Utils.goToReplacementPage(Scorecard(match: widget.match), context);
+      }
     }
-  }
-
-  void _goToScoreCard() {
-    Utils.goToPage(Scorecard(match: widget.match), context);
   }
 
   void _undoMove() {

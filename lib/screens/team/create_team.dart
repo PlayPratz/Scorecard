@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/util/storage_util.dart';
 
 import '../../models/player.dart';
 import '../../models/team.dart';
@@ -73,7 +74,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     team.shortName = _shortTeamNameController.text;
     team.squad = [_selectedCaptain!, ..._selectedPlayerList];
     team.color = ColorStyles.teamColors[_selectedColorIndex];
-    Utils.saveTeam(team);
+    StorageUtils.saveTeam(team);
     Utils.goBack(context, team);
   }
 
@@ -98,7 +99,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
 
   void _chooseCaptain() async {
     Player? chosenCaptain =
-        await _getPlayerFromList(Utils.getAllPlayers(), context);
+        await _getPlayerFromList(StorageUtils.getAllPlayers(), context);
     if (chosenCaptain != null) {
       if (_selectedPlayerList.contains(chosenCaptain)) {
         _selectedPlayerList.remove(chosenCaptain);
@@ -191,7 +192,8 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                   secondaryHint: Strings.createTeamSquadHint,
                   trailing: Elements.addIcon,
                   onSelect: () async {
-                    List<Player> filteredPlayerList = Utils.getAllPlayers();
+                    List<Player> filteredPlayerList =
+                        StorageUtils.getAllPlayers();
                     filteredPlayerList.removeWhere(
                         (player) => _selectedPlayerList.contains(player));
                     filteredPlayerList.remove(_selectedCaptain);

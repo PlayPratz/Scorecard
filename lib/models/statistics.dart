@@ -1,5 +1,7 @@
 // import 'package:scorecard/util/constants.dart';
 
+// TODO bring these classses back to life
+
 // class Statistics {
 //   _BattingStatistics battingStatistics;
 //   BowlingStatistics bowlingStatistics;

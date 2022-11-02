@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/screens/player/create_player.dart';
 import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/screens/team/team_list.dart';
+import 'package:scorecard/util/storage_util.dart';
 
 import '../styles/color_styles.dart';
 import '../util/strings.dart';
@@ -70,7 +71,7 @@ class _HomeTabViewState extends State<HomeTabView> {
   List<Widget> get screens => [
         const MatchList(),
         TeamList(
-          teamList: Utils.getAllTeams(),
+          teamList: StorageUtils.getAllTeams(),
           onSelectTeam: (team) => Utils.goToPage(
             CreateTeamForm.update(team: team),
             context,
@@ -78,7 +79,7 @@ class _HomeTabViewState extends State<HomeTabView> {
           onCreateTeam: (team) => setState(() {}),
         ),
         PlayerList(
-          playerList: Utils.getAllPlayers(),
+          playerList: StorageUtils.getAllPlayers(),
           onSelectPlayer: (player) => Utils.goToPage(
             CreatePlayerForm.update(player: player),
             context,

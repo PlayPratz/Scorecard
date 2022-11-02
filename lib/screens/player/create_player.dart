@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/util/storage_util.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';
@@ -79,7 +80,8 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
               ),
             ),
             Elements.getConfirmButton(
-                text: Strings.createPlayerSave, onPressed: _onCreatePlayer),
+                text: Strings.createPlayerSave,
+                onPressed: _canCreatePlayer ? _onCreatePlayer : null),
           ],
         ));
   }
@@ -127,9 +129,9 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
           bowlArm: _bowlArm.selection!,
           bowlStyle: _bowlStyle.selection!);
     }
-    Utils.savePlayer(player);
+    StorageUtils.savePlayer(player);
     Utils.goBack(context);
   }
 
-  bool get canCreatePlayer => _name != null;
+  bool get _canCreatePlayer => _name != null;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/team/team_list.dart';
+import 'package:scorecard/util/storage_util.dart';
 
 import '../../models/cricket_match.dart';
 import '../../models/team.dart';
@@ -116,7 +117,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
       TitledPage(
         title: Strings.chooseTeam,
         child: TeamList(
-          teamList: Utils.getAllTeams(),
+          teamList: StorageUtils.getAllTeams(),
           onSelectTeam: (team) => Utils.goBack(context, team),
           onCreateTeam: (team) => Utils.goBack(context, team),
         ),

@@ -24,6 +24,7 @@ class CreatePlayerForm extends StatefulWidget {
 
 class _CreatePlayerFormState extends State<CreatePlayerForm> {
   String? _name;
+  ImageProvider? _playerPhoto;
 
   final SingleToggleSelection<Arm> _batArm = SingleToggleSelection(
       dataList: Arm.values,
@@ -43,7 +44,11 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
   @override
   void initState() {
     super.initState();
-    _name = widget.player?.name;
+    if (widget.player != null) {
+      _name = widget.player!.name;
+      _playerPhoto = StorageUtils.getPlayerPhoto(widget.player!);
+    }
+
     if (widget.player != null) {
       Player player = widget.player!;
       _batArm.selection = player.batArm;
@@ -62,6 +67,22 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    InkWell(
+                      onTap: () => Utils.pickPhotoFromGallery()
+                          .then((photo) => setState(() {
+                                if (photo != null) {
+                                  _playerPhoto = photo;
+                                }
+                              })),
+                      child: CircleAvatar(
+                        radius: 64,
+                        foregroundImage: _playerPhoto,
+                        child: const Icon(
+                          Icons.person,
+                          size: 56,
+                        ),
+                      ),
+                    ),
                     Elements.getTextInput(
                       Strings.createPlayerName,
                       Strings.createPlayerNameHint,
@@ -131,8 +152,11 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
           bowlArm: _bowlArm.selection!,
           bowlStyle: _bowlStyle.selection!);
     }
+    if (_playerPhoto != null) {
+      StorageUtils.savePlayerPhoto(player.id, (_playerPhoto as FileImage).file);
+    }
     StorageUtils.savePlayer(player);
-    Utils.goBack(context);
+    Utils.goBack(context, player);
   }
 
   bool get _canCreatePlayer => _name != null;

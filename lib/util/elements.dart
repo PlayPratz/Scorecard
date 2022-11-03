@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/util/storage_util.dart';
 
 import '../styles/color_styles.dart';
 
@@ -63,14 +64,16 @@ class Elements {
   }
 
   static Widget getPlayerIcon(Player player, double size) {
+    ImageProvider? _profilePhoto = StorageUtils.getPlayerPhoto(player);
+
     return SizedBox(
       width: size,
       height: size,
-      child: player.imagePath != null
+      child: _profilePhoto != null
           ? FittedBox(
               fit: BoxFit.none,
               child: CircleAvatar(
-                foregroundImage: AssetImage(player.imagePath!),
+                foregroundImage: _profilePhoto,
                 radius: size / 2,
               ),
             )

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/util/utils.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';
@@ -11,15 +10,17 @@ class PlayerList extends StatelessWidget {
   final List<Player> playerList;
   final bool showAddButton;
   final Function(Player player)? onSelectPlayer;
+  final Function(Player? player)? onCreatePlayer;
   final Icon? trailingIcon;
 
-  const PlayerList({
-    Key? key,
-    required this.playerList,
-    required this.showAddButton,
-    this.onSelectPlayer,
-    this.trailingIcon,
-  }) : super(key: key);
+  const PlayerList(
+      {Key? key,
+      required this.playerList,
+      required this.showAddButton,
+      this.onSelectPlayer,
+      this.trailingIcon,
+      this.onCreatePlayer})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,8 @@ class PlayerList extends StatelessWidget {
           createItem: CreateItemEntry(
             page: const CreatePlayerForm(),
             string: Strings.addNewPlayer,
-            onCreateItem: (item) => Utils.goBack(context, item),
+            onCreateItem:
+                onCreatePlayer != null ? (item) => onCreatePlayer!(item) : null,
           ));
     }
 

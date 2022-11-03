@@ -109,6 +109,8 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
       _selectedAwayTeam = chosenTeam;
     });
   }
+  // TODO Convert ALLLLL Callbacks to Async calls
+  // (This is what happens when you develop in TypeScript and Dart simulatenously.)
 
   void _chooseTeam(
     Function(Team) onSelectTeam,

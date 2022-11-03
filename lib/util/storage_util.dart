@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/cricket_match.dart';
@@ -10,9 +9,6 @@ import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/models/wicket.dart';
-
-// Paths
-const String pathPlayerPhotos = "/photos/players";
 
 const String _playerBoxName = "players";
 const int _playerTypeId = 101;
@@ -45,6 +41,7 @@ class StorageUtils {
   static Future<void> init() async {
     // App Data directory
     _appDataDirectory = await getApplicationDocumentsDirectory();
+    await Directory(pathPlayerPhotos).create(recursive: true);
 
     // Hive NoSQL DB
     await Hive.initFlutter();
@@ -132,11 +129,24 @@ class StorageUtils {
   //   _teamBox.delete(team);
   // }
 
-  // static void pickProfilePhoto(Player player) async {
-  //   XFile? pickedPhoto = await ImagePicker().pickImage(source: ImageSource.gallery);
-  //   File savedPhoto = await pickedPhoto
+  static ImageProvider? getPlayerPhoto(Player player) {
+    File photoFile = File(getProfilePhotoPath(player.id));
+    if (!photoFile.existsSync()) {
+      return null;
+    }
+    return FileImage(photoFile);
+  }
 
-  // }
+  static Future<void> savePlayerPhoto(
+      String playerId, File profilePhoto) async {
+    await profilePhoto.copy(getProfilePhotoPath(playerId));
+  }
+
+  static String getProfilePhotoPath(String playerId) =>
+      pathPlayerPhotos + '/' + playerId;
+
+  static String get pathPlayerPhotos =>
+      _appDataDirectory.path + "/photos/players";
 }
 
 class _PlayerAdapter extends TypeAdapter<Player> {

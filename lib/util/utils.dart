@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 class Utils {
@@ -21,5 +25,14 @@ class Utils {
 
   static void goBack(BuildContext context, [result]) {
     Navigator.pop(context, result);
+  }
+
+  static Future<ImageProvider?> pickPhotoFromGallery() async {
+    XFile? pickedPhoto =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedPhoto == null) {
+      return null;
+    }
+    return FileImage(File(pickedPhoto.path));
   }
 }

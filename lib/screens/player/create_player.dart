@@ -67,22 +67,30 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    InkWell(
-                      onTap: () => Utils.pickPhotoFromGallery()
-                          .then((photo) => setState(() {
-                                if (photo != null) {
-                                  _playerPhoto = photo;
-                                }
-                              })),
-                      child: CircleAvatar(
-                        radius: 64,
-                        foregroundImage: _playerPhoto,
-                        child: const Icon(
-                          Icons.person,
-                          size: 56,
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          shape: BoxShape.circle),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Utils.pickPhotoFromGallery()
+                            .then((photo) => setState(() {
+                                  if (photo != null) {
+                                    _playerPhoto = photo;
+                                  }
+                                })),
+                        child: CircleAvatar(
+                          radius: 64,
+                          foregroundImage: _playerPhoto,
+                          backgroundColor: Colors.transparent,
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 48,
+                          ),
                         ),
                       ),
                     ),
+                    const SizedBox(height: 32),
                     Elements.getTextInput(
                       Strings.createPlayerName,
                       Strings.createPlayerNameHint,

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:scorecard/util/strings.dart';
 
 import 'player.dart';
@@ -125,10 +123,11 @@ class Innings {
 
   // Functions
   void addBall(Ball ball) {
-    if (isCompleted) {
-      //TODO Exception
-      throw UnimplementedError();
-    }
+    // This should happen only when the Innings is loaded from storage
+    // Hence, commenting. TODO check if needed
+    //if (isCompleted) {
+    //   throw UnimplementedError();
+    // }
 
     if (_overs.isEmpty || currentOver.isCompleted) {
       // Add new over
@@ -189,9 +188,11 @@ class Innings {
 
   @Deprecated("Use [addBall] instead")
   void addOver(Over over) {
-    if (isCompleted || (_overs.isNotEmpty && !currentOver.isCompleted)) {
-      throw UnimplementedError();
-    }
+    // This should happen only when loading from storage, hence commenting
+    // TODO check if needed
+    // if (isCompleted || (_overs.isNotEmpty && !currentOver.isCompleted)) {
+    //   throw UnimplementedError();
+    // }
     _overs.add(over);
 
     // Add current over to BowlerInnings

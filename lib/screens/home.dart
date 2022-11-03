@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/screens/player/create_player.dart';
 import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/screens/team/team_list.dart';
-import 'package:scorecard/util/storage_util.dart';
+import 'package:scorecard/util/storage_utils.dart';
 
 import '../styles/color_styles.dart';
 import '../util/strings.dart';

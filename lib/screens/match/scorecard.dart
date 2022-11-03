@@ -33,41 +33,38 @@ class _ScorecardState extends State<Scorecard> {
       title: title,
       child: SingleChildScrollView(
         child: Column(
-          children: _wMatchPanel(widget.match),
-        ),
+            children: [
+          MatchTile(match: widget.match),
+          const SizedBox(height: 32),
+          ExpansionPanelList(
+            expandedHeaderPadding: const EdgeInsets.all(0),
+            dividerColor: Colors.transparent,
+            children: [
+              _wInningsPanel(
+                  widget.match.firstInnings,
+                  widget.match.firstInnings.battingTeam.name +
+                      Strings.scorecardInningsWithSpace,
+                  _isInningsPanelOpen[0]),
+              _wInningsPanel(
+                  widget.match.secondInnings,
+                  widget.match.secondInnings.battingTeam.name +
+                      Strings.scorecardInningsWithSpace,
+                  _isInningsPanelOpen[1]),
+            ],
+            expansionCallback: (panelIndex, isExpanded) => setState(() {
+              _isInningsPanelOpen[panelIndex] = !isExpanded;
+            }),
+          ),
+        ]..addAll(widget.match.superOver != null
+                ? [
+                    SizedBox(
+                      height: 32,
+                    ),
+                    Scorecard(match: widget.match.superOver!),
+                  ]
+                : [])),
       ),
     );
-  }
-
-  List<Widget> _wMatchPanel(CricketMatch? match) {
-    if (match == null) {
-      return [];
-    }
-    List<Widget> children = [
-      MatchTile(match: match),
-      const SizedBox(height: 32),
-      ExpansionPanelList(
-        expandedHeaderPadding: const EdgeInsets.all(0),
-        dividerColor: Colors.transparent,
-        children: [
-          _wInningsPanel(
-              match.firstInnings,
-              match.firstInnings.battingTeam.name +
-                  Strings.scorecardInningsWithSpace,
-              _isInningsPanelOpen[0]),
-          _wInningsPanel(
-              match.secondInnings,
-              match.secondInnings.battingTeam.name +
-                  Strings.scorecardInningsWithSpace,
-              _isInningsPanelOpen[1]),
-        ],
-        expansionCallback: (panelIndex, isExpanded) => setState(() {
-          _isInningsPanelOpen[panelIndex] = !isExpanded;
-        }),
-      ),
-    ];
-
-    return [...children, ..._wMatchPanel(match.superOver)];
   }
 
   ExpansionPanel _wInningsPanel(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/util/storage_util.dart';
+import 'package:scorecard/util/storage_utils.dart';
 
 import '../styles/color_styles.dart';
 

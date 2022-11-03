@@ -69,7 +69,7 @@ class CricketMatch {
     } else if (secondInnings.isInPlay) {
       return MatchState.secondInnings;
     } else if (firstInnings.isCompleted) {
-      return MatchState.secondInnings;
+      return MatchState.firstInnings;
     } else if (firstInnings.isInPlay) {
       return MatchState.firstInnings;
     } else if (isTossCompleted) {
@@ -84,8 +84,8 @@ class CricketMatch {
       case MatchState.tossCompleted:
       case MatchState.firstInnings:
         return firstInnings;
-      case MatchState.completed:
       case MatchState.secondInnings:
+      case MatchState.completed:
         return secondInnings;
       default:
         // TODO Exception

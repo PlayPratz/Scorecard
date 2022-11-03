@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/match/wicket_selector.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import 'package:scorecard/util/storage_util.dart';
+import 'package:scorecard/util/storage_utils.dart';
 
 import '../../models/ball.dart';
 import '../../models/cricket_match.dart';

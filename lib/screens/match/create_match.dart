@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/team/team_list.dart';
-import 'package:scorecard/util/storage_util.dart';
+import 'package:scorecard/util/storage_utils.dart';
 
 import '../../models/cricket_match.dart';
 import '../../models/team.dart';

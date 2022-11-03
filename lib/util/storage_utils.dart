@@ -351,7 +351,6 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
     if (id != "") {
       match.parentMatch = StorageUtils.getMatchById(id);
     }
-
     return match;
   }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/util/storage_util.dart';
+import 'package:scorecard/util/storage_utils.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';

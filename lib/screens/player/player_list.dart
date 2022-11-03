@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/util/utils.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';
@@ -28,6 +29,7 @@ class PlayerList extends StatelessWidget {
           createItem: CreateItemEntry(
             page: const CreatePlayerForm(),
             string: Strings.addNewPlayer,
+            onCreateItem: (item) => Utils.goBack(context, item),
           ));
     }
 

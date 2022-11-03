@@ -5,49 +5,61 @@ import 'team.dart';
 
 class CricketMatch {
   final String id;
-  Team homeTeam;
-  Team awayTeam;
-  int maxOvers;
+  final Team homeTeam;
+  final Team awayTeam;
+  final int maxOvers;
 
-  final Innings _homeInnings;
-  final Innings _awayInnings;
+  final Innings homeInnings;
+  final Innings awayInnings;
 
   // MatchState _matchState = MatchState.notStarted;
   bool _isHomeInningsFirst = true;
 
   // In case of super over
-  CricketMatch? _superOver;
-  CricketMatch? _parentMatch;
+  CricketMatch? superOver;
+  CricketMatch? parentMatch;
 
   Toss? _toss;
 
-  CricketMatch(
-      {required this.id,
-      required this.homeTeam,
-      required this.awayTeam,
-      required this.maxOvers})
-      : _homeInnings = Innings(
+  CricketMatch({
+    required this.id,
+    required this.homeTeam,
+    required this.awayTeam,
+    required this.maxOvers,
+  })  : homeInnings = Innings(
             battingTeam: homeTeam, bowlingTeam: awayTeam, maxOvers: maxOvers),
-        _awayInnings = Innings(
+        awayInnings = Innings(
             battingTeam: awayTeam, bowlingTeam: homeTeam, maxOvers: maxOvers);
 
-  CricketMatch.create({required homeTeam, required awayTeam, required maxOvers})
-      : this(
+  CricketMatch.create({
+    required homeTeam,
+    required awayTeam,
+    required maxOvers,
+  }) : this(
             id: Utils.generateUniqueId(),
             homeTeam: homeTeam,
             awayTeam: awayTeam,
             maxOvers: maxOvers);
 
   factory CricketMatch.superOver({required CricketMatch parentMatch}) {
-    CricketMatch superOverMatch = CricketMatch.create(
+    CricketMatch superOverMatch = CricketMatch(
+        id: parentMatch.id + "_superover",
         homeTeam: parentMatch.homeTeam,
         awayTeam: parentMatch.awayTeam,
         maxOvers: 1);
     superOverMatch.startMatch(
         Toss(parentMatch.secondInnings.battingTeam, TossChoice.bat));
-    superOverMatch._parentMatch = parentMatch;
+    superOverMatch.parentMatch = parentMatch;
     return superOverMatch;
   }
+
+  CricketMatch.load({
+    required this.id,
+    required this.maxOvers,
+    required this.homeInnings,
+    required this.awayInnings,
+  })  : homeTeam = homeInnings.battingTeam,
+        awayTeam = awayInnings.battingTeam;
 
   bool get isTossCompleted => _toss != null;
 
@@ -107,13 +119,9 @@ class CricketMatch {
   Toss? get toss => _toss;
   Innings get firstInnings => _isHomeInningsFirst ? homeInnings : awayInnings;
   Innings get secondInnings => _isHomeInningsFirst ? awayInnings : homeInnings;
-  Innings get homeInnings => _homeInnings;
-  Innings get awayInnings => _awayInnings;
 
-  bool get isSuperOver => _parentMatch != null;
-  bool get hasSuperOver => _superOver != null;
-  CricketMatch? get superOver => _superOver;
-  CricketMatch? get parentMatch => _parentMatch;
+  bool get isSuperOver => parentMatch != null;
+  bool get hasSuperOver => superOver != null;
 
   void startMatch(Toss completedToss) {
     _toss = completedToss;
@@ -144,9 +152,9 @@ class CricketMatch {
   }
 
   void startSuperOver() {
-    _superOver = CricketMatch.superOver(parentMatch: this);
+    superOver = CricketMatch.superOver(parentMatch: this);
 
-    _superOver!.startMatch(
+    superOver!.startMatch(
       Toss(homeTeam, _isHomeInningsFirst ? TossChoice.bowl : TossChoice.bat),
     ); // This ensures that the order of innings is swapped.
   }

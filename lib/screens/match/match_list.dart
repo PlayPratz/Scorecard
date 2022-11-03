@@ -11,7 +11,8 @@ import '../../util/strings.dart';
 import '../../util/utils.dart';
 
 class MatchList extends StatelessWidget {
-  const MatchList({Key? key}) : super(key: key);
+  final List<CricketMatch> matchList;
+  const MatchList({Key? key, required this.matchList}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class MatchList extends StatelessWidget {
   }
 
   List<Widget> getMatchList(BuildContext context) {
-    return Utils.getAllMatches()
+    return matchList
         .map((match) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: MatchTile(

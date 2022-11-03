@@ -3,12 +3,15 @@ import 'wicket.dart';
 import 'package:scorecard/util/constants.dart';
 
 class Ball {
+  /// The bowler who bowled the delivery
+  Player bowler;
+
+  /// The batter who faced the delivery
+  Player batter;
+
   /// Runs awarded to the batting team by facing this [Ball].
   /// <br/> Note: Do not specify the runs due to a bowling extra.
   int runsScored;
-
-  /// The [Wicket], if any, which was taken on this [Ball]
-  Wicket? wicket;
 
   /// The type of [BowlingExtra] if applicable
   BowlingExtra? bowlingExtra;
@@ -16,11 +19,8 @@ class Ball {
   /// The type of [BattingExtra] if applicable
   BattingExtra? battingExtra;
 
-  /// The bowler who bowled the delivery
-  Player bowler;
-
-  /// The batter who faced the delivery
-  Player batter;
+  /// The [Wicket], if any, which was taken on this [Ball]
+  Wicket? wicket;
 
   bool _shouldCountBall = true;
 

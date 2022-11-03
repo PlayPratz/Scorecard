@@ -43,7 +43,7 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
   @override
   void initState() {
     super.initState();
-
+    _name = widget.player?.name;
     if (widget.player != null) {
       Player player = widget.player!;
       _batArm.selection = player.batArm;
@@ -65,7 +65,9 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
                     Elements.getTextInput(
                       Strings.createPlayerName,
                       Strings.createPlayerNameHint,
-                      (value) => _name = value,
+                      (value) => setState(() {
+                        _name = value;
+                      }),
                       widget.player?.name,
                     ),
                     const SizedBox(height: 32),

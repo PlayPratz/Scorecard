@@ -187,13 +187,13 @@ class MatchTile extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const TextSpan(text: Strings.scoreWinBy),
-              TextSpan(
-                text: matchResult.wicketsLeft.toString(),
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              matchResult.wicketsLeft == 1
-                  ? const TextSpan(text: Strings.scoreWinByWicketSingle)
-                  : const TextSpan(text: Strings.scoreWinByWickets),
+              // TextSpan(
+              //   text: matchResult.wicketsLeft.toString(),
+              //   style: const TextStyle(fontWeight: FontWeight.bold),
+              // ),
+              // matchResult.wicketsLeft == 1
+              //     ? const TextSpan(text: Strings.scoreWinByWicketSingle)
+              //     : const TextSpan(text: Strings.scoreWinByWickets),
               TextSpan(
                 text: matchResult.ballsLeft.toString(),
                 style: const TextStyle(fontWeight: FontWeight.bold),

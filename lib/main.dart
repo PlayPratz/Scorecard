@@ -58,7 +58,9 @@ class _MyAppState extends State<MyApp> {
         ),
         textTheme: TextStyles.theme,
       ),
-      home: _isLoaded ? const HomeTabView() : const CircularProgressIndicator(),
+      home: _isLoaded
+          ? const HomeTabView()
+          : const SafeArea(child: Center(child: CircularProgressIndicator())),
     );
   }
 }

@@ -137,7 +137,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
       awayTeam: _selectedAwayTeam!,
       maxOvers: _overs,
     );
-    Utils.saveMatch(match);
+    StorageUtils.saveMatch(match);
     Utils.goToReplacementPage(MatchInitScreen(match: match), context);
   }
 

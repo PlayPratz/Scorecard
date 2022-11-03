@@ -37,6 +37,12 @@ class Wicket {
       : dismissal = Dismissal.retired,
         bowler = null,
         fielder = null;
+
+  Wicket(
+      {required this.batter,
+      this.bowler,
+      this.fielder,
+      required this.dismissal});
 }
 
 enum Dismissal {

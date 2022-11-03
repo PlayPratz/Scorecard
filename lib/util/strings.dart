@@ -29,8 +29,8 @@ class Strings {
   static const String scoreWillScore = " will score ";
   static const String scoreRunsAtCurrentRate = " runs at ";
   static const String scoreOvers = " overs";
-  static const String scoreWinBy = " wins by ";
-  static const String scoreWinByWickets = " wickets with ";
+  static const String scoreWinBy = " wins with ";
+  // static const String scoreWinByWickets = " wickets with ";
   static const String scoreWinByWicketSingle = " wicket with ";
   static const String scoreWinByBallsToSpare = " balls to spare";
   static const String scoreWinByBallsToSpareSingle = " ball to spare";

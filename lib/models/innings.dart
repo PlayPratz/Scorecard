@@ -10,10 +10,13 @@ import 'ball.dart';
 import 'team.dart';
 
 class Innings {
-  Team battingTeam;
-  Team bowlingTeam;
-  int? target;
+  final Team battingTeam;
+  final Team bowlingTeam;
   final int maxOvers;
+  int? target;
+
+  bool _isInPlay = false;
+  bool isAbandoned = false;
 
   Innings({
     required this.battingTeam,
@@ -22,12 +25,12 @@ class Innings {
     this.target,
   });
 
+  // Stuff that is populated as this innings progresses
   final List<Over> _overs = [];
   final List<BatterInnings> _battingTeamInnings = [];
   final Map<Player, BowlerInnings> _bowlerTeamInnings = {};
 
-  bool _isInPlay = false;
-  bool isAbandoned = false;
+  // Getters and setters
 
   int get maxWickets => battingTeam.squadSize;
 
@@ -72,17 +75,6 @@ class Innings {
     }
     return Constants.ballsPerOver * oversCompleted +
         currentOver.numOfLegalBalls;
-  }
-
-  List<Ball> getLastBalls(int count) {
-    List<Ball> ballList = [];
-    for (Over over in _overs.reversed) {
-      ballList.insertAll(0, over.balls);
-      if (ballList.length > count) {
-        break;
-      }
-    }
-    return ballList.sublist(ballList.length - min(count, ballList.length));
   }
 
   List<Ball> get allBalls {
@@ -131,13 +123,14 @@ class Innings {
     return Constants.ballsPerOver * runsRequired / ballsRemaining;
   }
 
+  // Functions
   void addBall(Ball ball) {
     if (isCompleted) {
       //TODO Exception
       throw UnimplementedError();
     }
 
-    if (currentOver.isCompleted) {
+    if (_overs.isEmpty || currentOver.isCompleted) {
       // Add new over
       Over newOver = Over(ball.bowler);
       addOver(newOver);
@@ -145,16 +138,11 @@ class Innings {
 
     currentOver.addBall(ball);
 
-    _battingTeamInnings.lastWhere(
-      (batterInnings) => batterInnings.batter == ball.batter,
-      orElse: () {
-        // No such batter exists in the current BowlerInnings list.
-        // Add to list
-        BatterInnings newBatter = BatterInnings(batter: ball.batter);
-        _battingTeamInnings.add(newBatter);
-        return newBatter;
-      },
-    ).play(ball);
+    addBatter(ball.batter);
+
+    _battingTeamInnings
+        .lastWhere((batterInnings) => batterInnings.batter == ball.batter)
+        .play(ball);
     // if (
     //     // (wicketsRemaining == 0) || // The batting team is all down
     //     (ballsRemaining == 0) || // All overs have been bowled
@@ -166,7 +154,8 @@ class Innings {
 
   Ball undoBall() {
     if (_overs.isEmpty) {
-      throw UnimplementedError();
+      throw UnimplementedError(
+          "Atttempted to remove ball when no ball has been bowled");
     }
 
     Ball removedBall = currentOver.balls.removeLast();
@@ -187,18 +176,6 @@ class Innings {
     // as it uses the same Over object as Innings._overs
 
     return removedBall;
-  }
-
-  Over undoOver() {
-    // if (currentOver.numOfBallsBowled == 0)
-    // Cancel this over
-    Over removedOver = _overs.removeLast();
-    _bowlerTeamInnings[removedOver.bowler]?.overs.remove(removedOver);
-
-    if (_bowlerTeamInnings[removedOver.bowler]!.overs.isEmpty) {
-      _bowlerTeamInnings.remove(removedOver.bowler);
-    }
-    return removedOver;
   }
 
   @Deprecated("Use [addBall] instead")
@@ -222,6 +199,18 @@ class Innings {
         over.bowler, () => BowlerInnings(bowler: over.bowler));
 
     _bowlerTeamInnings[over.bowler]!.bowl(over);
+  }
+
+  Over undoOver() {
+    // if (currentOver.numOfBallsBowled == 0)
+    // Cancel this over
+    Over removedOver = _overs.removeLast();
+    _bowlerTeamInnings[removedOver.bowler]?.overs.remove(removedOver);
+
+    if (_bowlerTeamInnings[removedOver.bowler]!.overs.isEmpty) {
+      _bowlerTeamInnings.remove(removedOver.bowler);
+    }
+    return removedOver;
   }
 }
 
@@ -268,10 +257,8 @@ class BowlerInnings {
   int get ballsBowled =>
       overs.fold(0, (ballsBowled, over) => ballsBowled + over.numOfLegalBalls);
 
-  String get oversBowled {
-    int balls = ballsBowled;
-    return (balls ~/ 6).toString() + '.' + (balls % 6).toString();
-  }
+  String get oversBowled =>
+      (ballsBowled ~/ 6).toString() + '.' + (ballsBowled % 6).toString();
 
   double get economy => ballsBowled == 0
       ? 0

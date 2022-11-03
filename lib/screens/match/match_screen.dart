@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/match/wicket_selector.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/util/storage_util.dart';
 
 import '../../models/ball.dart';
 import '../../models/cricket_match.dart';
@@ -80,12 +81,9 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   @override
-  void didUpdateWidget(covariant MatchScreen oldWidget) {
-    // TODO: implement didUpdateWidget
-    super.didUpdateWidget(oldWidget);
-
-    // Save match
-    Utils.saveMatch(widget.match);
+  void dispose() {
+    super.dispose();
+    StorageUtils.saveMatch(widget.match);
   }
 
   @override

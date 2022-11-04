@@ -17,6 +17,7 @@ class ColorStyles {
   static const Color wicket = Colors.red;
   static const Color ballNoBall = Colors.yellowAccent;
   static const Color ballWide = Colors.white;
+  static const Color ballEvent = Colors.blueGrey;
   // Colors.pink and pinkAccent should be used, they are good colors
 
   // static const highlight = Color(0xFFFF8000);

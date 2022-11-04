@@ -189,7 +189,7 @@ class MatchTile extends StatelessWidget {
                 text: matchResult.winner.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              const TextSpan(text: Strings.scoreWinBy),
+              const TextSpan(text: Strings.scoreWinWith),
               // TextSpan(
               //   text: matchResult.wicketsLeft.toString(),
               //   style: const TextStyle(fontWeight: FontWeight.bold),

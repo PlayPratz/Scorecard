@@ -29,7 +29,8 @@ class Strings {
   static const String scoreWillScore = " will score ";
   static const String scoreRunsAtCurrentRate = " runs at ";
   static const String scoreOvers = " overs";
-  static const String scoreWinBy = " wins with ";
+  static const String scoreWinBy = " wins by ";
+  static const String scoreWinWith = " wins with ";
   // static const String scoreWinByWickets = " wickets with ";
   static const String scoreWinByWicketSingle = " wicket with ";
   static const String scoreWinByBallsToSpare = " balls to spare";
@@ -225,7 +226,7 @@ class Strings {
   static String getBattingExtra(BattingExtra battingExtra) {
     switch (battingExtra) {
       case BattingExtra.bye:
-        return "Bye";
+        return "Event"; // TODO Temporary
       case BattingExtra.legBye:
         return "Leg Bye";
       default:
@@ -251,6 +252,7 @@ class Strings {
         }
         return Strings.wicketCaught +
             wicket.fielder!.name +
+            " " +
             Strings.wicketBowled +
             wicket.bowler!.name;
 

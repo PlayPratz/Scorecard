@@ -22,36 +22,39 @@ class Ball {
   /// The [Wicket], if any, which was taken on this [Ball]
   Wicket? wicket;
 
-  bool _shouldCountBall = true;
+  // bool _shouldCountBall = true;
+  bool isEventOnly = false;
 
-  Ball(
-      {required this.bowler,
-      required this.batter,
-      required this.runsScored,
-      this.wicket,
-      this.battingExtra,
-      this.bowlingExtra});
+  Ball({
+    required this.bowler,
+    required this.batter,
+    required this.runsScored,
+    this.wicket,
+    this.battingExtra,
+    this.bowlingExtra,
+  });
 
   /// Creates a ball that does not constitute a wicket and is not an extra of any kind
   Ball.runs(
       {required this.bowler, required this.batter, required this.runsScored});
 
   /// Creates a ball that is a wicket of type [Wicket] with the specified number of [runsScored].
-  Ball.wicket(
-      {required this.bowler,
-      required this.batter,
-      this.runsScored = 0,
-      required this.wicket,
-      this.bowlingExtra,
-      this.battingExtra});
-
-  /// Creates a ball that is not bowled, but a runout is recorded
-  Ball.runoutBeforeDelivery({
+  Ball.wicket({
     required this.bowler,
     required this.batter,
-  })  : runsScored = 0,
-        wicket = Wicket.runout(batter: batter, fielder: bowler),
-        _shouldCountBall = false;
+    this.runsScored = 0,
+    required this.wicket,
+    this.bowlingExtra,
+    this.battingExtra,
+  });
+
+  /// Creates a ball that is not bowled, but a runout is recorded
+  // Ball.runoutBeforeDelivery({
+  //   required this.bowler,
+  //   required this.batter,
+  // })  : runsScored = 0,
+  //       wicket = Wicket.runout(batter: batter, fielder: bowler),
+  //       shouldCountBall = false;
 
   int get totalRuns => runsScored + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;
@@ -62,7 +65,9 @@ class Ball {
       (isWicket && Dismissal.values.take(5).contains(wicket!.dismissal));
   bool get isBowlingExtra => bowlingExtra != null;
   bool get isBattingExtra => battingExtra != null;
-  bool get shouldCount => _shouldCountBall && !isBowlingExtra;
+  // bool get shouldCount => _shouldCountBall && !isBowlingExtra;
+  // set shouldCount(bool scb) => _shouldCountBall = scb;
+  bool get shouldCount => !isEventOnly && !isBowlingExtra;
 }
 
 class Over {

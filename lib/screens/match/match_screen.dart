@@ -361,15 +361,12 @@ class _MatchScreenState extends State<MatchScreen> {
 
       Color? indicatorColor = currentBallWidget.backgroundColor;
 
-      if (currentBall.isBowlingExtra) {
-        switch (currentBall.bowlingExtra!) {
-          case BowlingExtra.noBall:
-            indicatorColor = ColorStyles.ballNoBall;
-            break;
-          case BowlingExtra.wide:
-            indicatorColor = ColorStyles.ballWide;
-            break;
-        }
+      if (currentBall.bowlingExtra == BowlingExtra.noBall) {
+        indicatorColor = ColorStyles.ballNoBall;
+      } else if (currentBall.bowlingExtra == BowlingExtra.wide) {
+        indicatorColor = ColorStyles.ballWide;
+      } else if (currentBall.shouldCount == false) {
+        indicatorColor = ColorStyles.ballEvent;
       }
 
       displayWidgets.add(CircleAvatar(
@@ -418,6 +415,11 @@ class _MatchScreenState extends State<MatchScreen> {
       bowlingExtra: _bowlingExtraSelection.selection,
       battingExtra: _battingExtraSelection.selection,
     );
+
+    if (ball.battingExtra == BattingExtra.bye) {
+      ball.battingExtra = null;
+      ball.isEventOnly = true;
+    }
 
     setState(() {
       Innings currentInnings = widget.match.currentInnings;

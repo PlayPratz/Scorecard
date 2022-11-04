@@ -98,6 +98,8 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
                         _name = value;
                       }),
                       widget.player?.name,
+                      null,
+                      TextCapitalization.words,
                     ),
                     const SizedBox(height: 32),
                     _wToggleButtonWithLabel(

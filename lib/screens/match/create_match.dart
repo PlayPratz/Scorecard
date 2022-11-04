@@ -12,7 +12,8 @@ import '../team/team_dummy_tile.dart';
 import 'match_init.dart';
 
 class CreateMatchForm extends StatefulWidget {
-  const CreateMatchForm({Key? key}) : super(key: key);
+  final void Function(CricketMatch match)? onCreateMatch;
+  const CreateMatchForm({Key? key, this.onCreateMatch}) : super(key: key);
 
   @override
   State<CreateMatchForm> createState() => _CreateMatchFormState();
@@ -141,6 +142,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     );
     StorageUtils.saveMatch(match);
     Utils.goToReplacementPage(MatchInitScreen(match: match), context);
+    widget.onCreateMatch?.call(match);
   }
 
   bool get _canCreateMatch =>

@@ -202,7 +202,6 @@ class _WicketSelectorState extends State<WicketSelector> {
           title: Strings.choosePlayer,
           child: PlayerList(
             playerList: widget.battingTeam.squad,
-            showAddButton: false,
             onSelectPlayer: (batter) => setState(() {
               _batter = batter;
               Utils.goBack(context);
@@ -220,7 +219,6 @@ class _WicketSelectorState extends State<WicketSelector> {
           title: Strings.choosePlayer,
           child: PlayerList(
             playerList: widget.fieldingTeam.squad,
-            showAddButton: false,
             onSelectPlayer: (fielder) => setState(() {
               _fielder = fielder;
               Utils.goBack(context);

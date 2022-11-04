@@ -126,9 +126,9 @@ class StorageUtils {
     _matchBox.put(match.id, match);
   }
 
-  // static void deleteMatch(Match match) {
-  //   _teamBox.delete(team);
-  // }
+  static void deleteMatch(CricketMatch match) {
+    _matchBox.delete(match.id);
+  }
 
   static ImageProvider? getPlayerPhoto(Player player) {
     File photoFile = File(_getProfilePhotoPath(player.id));

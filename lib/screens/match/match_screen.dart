@@ -489,7 +489,6 @@ class _MatchScreenState extends State<MatchScreen> {
           title: Strings.choosePlayer,
           child: PlayerList(
               playerList: squad,
-              showAddButton: false,
               onSelectPlayer: (player) {
                 setState(() {
                   onSelectPlayer(player);
@@ -519,46 +518,44 @@ class _MatchScreenState extends State<MatchScreen> {
         // Super Over option
         showModalBottomSheet(
             context: context,
-            builder: (context) {
-              return Material(
-                color: ColorStyles.background,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 32),
-                    const Text(
-                      Strings.matchScreenMatchTied,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 32),
-                    const Text(Strings.matchScreenMatchTiedHint),
-                    const SizedBox(height: 32),
-                    GenericItemTile(
-                      leading: const Icon(Icons.handshake),
-                      primaryHint: Strings.matchScreenEndTiedMatch,
-                      secondaryHint: Strings.matchScreenEndTiedMatchHint,
-                      onSelect: () {
-                        Utils.goBack(context);
-                        Utils.goToReplacementPage(
-                            Scorecard(match: widget.match), context);
-                      },
-                    ),
-                    const SizedBox(height: 32),
-                    GenericItemTile(
-                      leading: const Icon(Icons.sports_baseball),
-                      primaryHint: Strings.matchScreenSuperOver,
-                      secondaryHint: Strings.matchScreenSuperOverHint,
-                      onSelect: () {
-                        widget.match.startSuperOver();
-                        Utils.goBack(context);
-                        Utils.goToReplacementPage(
-                            InningsInitScreen(match: widget.match.superOver!),
-                            context);
-                      },
-                    ),
-                  ],
-                ),
-              );
-            });
+            builder: (context) => Material(
+                  color: ColorStyles.background,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 32),
+                      const Text(
+                        Strings.matchScreenMatchTied,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 32),
+                      const Text(Strings.matchScreenMatchTiedHint),
+                      const SizedBox(height: 32),
+                      GenericItemTile(
+                        leading: const Icon(Icons.handshake),
+                        primaryHint: Strings.matchScreenEndTiedMatch,
+                        secondaryHint: Strings.matchScreenEndTiedMatchHint,
+                        onSelect: () {
+                          Utils.goBack(context);
+                          Utils.goToReplacementPage(
+                              Scorecard(match: widget.match), context);
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      GenericItemTile(
+                        leading: const Icon(Icons.sports_baseball),
+                        primaryHint: Strings.matchScreenSuperOver,
+                        secondaryHint: Strings.matchScreenSuperOverHint,
+                        onSelect: () {
+                          widget.match.startSuperOver();
+                          Utils.goBack(context);
+                          Utils.goToReplacementPage(
+                              InningsInitScreen(match: widget.match.superOver!),
+                              context);
+                        },
+                      ),
+                    ],
+                  ),
+                ));
       } else {
         Utils.goToReplacementPage(Scorecard(match: widget.match), context);
       }

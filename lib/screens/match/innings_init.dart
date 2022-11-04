@@ -116,7 +116,6 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
             title: title,
             child: PlayerList(
               playerList: squad,
-              showAddButton: false,
               onSelectPlayer: (player) {
                 setState(() {
                   onSelect(player);

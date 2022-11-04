@@ -54,10 +54,6 @@ class _HomeTabViewState extends State<HomeTabView> {
                 icon: Icon(Icons.people),
                 label: Strings.navbarPlayers,
               ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(Icons.settings),
-              //   label: Strings.navbarSettings,
-              // ),
             ],
             onTap: (selectedIndex) => setState(() {
               _index = selectedIndex;
@@ -69,9 +65,7 @@ class _HomeTabViewState extends State<HomeTabView> {
   }
 
   List<Widget> get screens => [
-        MatchList(
-          matchList: StorageUtils.getAllMatches(),
-        ),
+        const MatchList(),
         TeamList(
           teamList: StorageUtils.getAllTeams(),
           onSelectTeam: (team) => Utils.goToPage(
@@ -86,7 +80,7 @@ class _HomeTabViewState extends State<HomeTabView> {
             CreatePlayerForm.update(player: player),
             context,
           ).then((_) => setState(() {})),
-          showAddButton: true,
+          onCreatePlayer: (player) => setState(() {}),
         ),
       ];
 }

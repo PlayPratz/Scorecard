@@ -22,8 +22,7 @@ class TeamList extends StatelessWidget {
           ? CreateItemEntry(
               page: CreateTeamForm(),
               string: Strings.createTeamCreate,
-              onCreateItem:
-                  onCreateTeam != null ? (item) => onCreateTeam!(item) : null,
+              onCreateItem: (item) => onCreateTeam!(item),
             )
           : null,
     );

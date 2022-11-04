@@ -8,11 +8,13 @@ import '../../util/elements.dart';
 
 class MatchTile extends StatelessWidget {
   final CricketMatch match;
-  final Function(CricketMatch)? onSelectMatch;
+  final void Function(CricketMatch match)? onSelectMatch;
+  final void Function(CricketMatch match)? onLongPress;
 
   const MatchTile({
     required this.match,
     this.onSelectMatch,
+    this.onLongPress,
     Key? key,
   }) : super(key: key);
 
@@ -26,6 +28,7 @@ class MatchTile extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onSelectMatch != null ? () => onSelectMatch!(match) : null,
+        onLongPress: onLongPress != null ? () => onLongPress!(match) : null,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),

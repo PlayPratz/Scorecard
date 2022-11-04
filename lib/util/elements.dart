@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/util/storage_utils.dart';
 
@@ -54,27 +55,32 @@ class Elements {
 
   static Widget getTextInput(
       String label, String hint, void Function(String value) onChangeValue,
-      [String? initialValue, TextInputType? textInputType]) {
+      [String? initialValue,
+      TextInputType? textInputType,
+      TextCapitalization? textCapitalization]) {
     return TextFormField(
       decoration: InputDecoration(labelText: label, hintText: hint),
       initialValue: initialValue,
       onChanged: onChangeValue,
       keyboardType: textInputType,
+      textCapitalization: textCapitalization ?? TextCapitalization.none,
     );
   }
 
   static Widget getPlayerIcon(Player player, double size) {
     ImageProvider? _profilePhoto = StorageUtils.getPlayerPhoto(player);
 
-    return SizedBox(
-      width: size,
-      height: size,
+    return CircleAvatar(
+      backgroundColor: ColorStyles.card,
+      // foregroundColor: Colors.white,
+      radius: (size / 2),
       child: _profilePhoto != null
           ? FittedBox(
-              fit: BoxFit.none,
+              fit: BoxFit.contain,
               child: CircleAvatar(
                 foregroundImage: _profilePhoto,
-                radius: size / 2,
+                backgroundColor: Colors.transparent,
+                radius: size / 2 - 1,
               ),
             )
           : Icon(

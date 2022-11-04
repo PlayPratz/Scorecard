@@ -87,7 +87,6 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
           title: Strings.choosePlayer,
           child: PlayerList(
             playerList: playerList,
-            showAddButton: true,
             onSelectPlayer: (player) => Utils.goBack(context, player),
             onCreatePlayer: (player) => Utils.goBack(context, player),
           ),
@@ -213,7 +212,6 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             Expanded(
               child: PlayerList(
                 playerList: _selectedPlayerList,
-                showAddButton: false,
                 trailingIcon: Elements.removeIcon,
                 onSelectPlayer: (Player player) {
                   setState(() {

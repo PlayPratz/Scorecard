@@ -40,7 +40,9 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     Team team = widget.team;
     _teamNameController.text = team.name;
     _shortTeamNameController.text = team.shortName;
-    _selectedColorIndex = ColorStyles.teamColors.indexOf(team.color);
+
+    _selectedColorIndex = ColorStyles.teamColors
+        .indexWhere((color) => team.color.value == color.value);
     if (widget.team.squadSize > 0) {
       _selectedCaptain = team.squad[0];
       _selectedPlayerList.addAll(team.squad.sublist(1));

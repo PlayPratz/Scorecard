@@ -1,9 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../util/utils.dart';
 import 'player.dart';
+
+int index = 0;
 
 class Team {
   final String id;
@@ -28,7 +28,7 @@ class Team {
       : id = Utils.generateUniqueId();
 
   factory Team.generate() {
-    _TeamTemplate template = _templates[Random().nextInt(_templates.length)];
+    _TeamTemplate template = _templates[index++ % _templates.length];
     return Team.create(
         name: template.name,
         shortName: template.shortName,
@@ -53,7 +53,7 @@ final List<_TeamTemplate> _templates = [
   _TeamTemplate(name: "Blue", shortName: "BLU", color: Colors.blue),
   _TeamTemplate(name: "Saffron", shortName: "SAF", color: Colors.orange),
   _TeamTemplate(name: "Amber", shortName: "AMB", color: Colors.amber),
-  // _TeamTemplate(name: "Green", shortName: "GRN", color: Colors.green),
+  _TeamTemplate(name: "Green", shortName: "GRN", color: Colors.green),
   _TeamTemplate(name: "Cyan", shortName: "CYN", color: Colors.cyan),
   _TeamTemplate(name: "Brown", shortName: "BRN", color: Colors.brown),
   _TeamTemplate(name: "Orange", shortName: "ORA", color: Colors.deepOrange),

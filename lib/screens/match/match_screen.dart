@@ -77,7 +77,11 @@ class _MatchScreenState extends State<MatchScreen> {
   @override
   void initState() {
     super.initState();
-    _striker = onPitchBatters.first;
+    if (onPitchBatters.isEmpty) {
+      _shouldChooseBatter = true;
+    } else {
+      _striker = onPitchBatters.first;
+    }
   }
 
   @override

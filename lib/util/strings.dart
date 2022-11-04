@@ -252,7 +252,7 @@ class Strings {
         }
         return Strings.wicketCaught +
             wicket.fielder!.name +
-            " " +
+            ' ' +
             Strings.wicketBowled +
             wicket.bowler!.name;
 

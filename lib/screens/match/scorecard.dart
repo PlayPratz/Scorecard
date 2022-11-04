@@ -8,71 +8,92 @@ import '../../models/innings.dart';
 import '../templates/titled_page.dart';
 import '../widgets/generic_item_tile.dart';
 
-class Scorecard extends StatefulWidget {
+class Scorecard extends StatelessWidget {
   final CricketMatch match;
   const Scorecard({Key? key, required this.match}) : super(key: key);
 
   @override
-  State<Scorecard> createState() => _ScorecardState();
-}
-
-class _ScorecardState extends State<Scorecard> {
-  final List<bool> _isInningsPanelOpen = [false, false];
-
-  @override
   Widget build(BuildContext context) {
-    if (widget.match.isSuperOver) {
-      return Scorecard(match: widget.match.parentMatch!);
-    }
-
-    String title = widget.match.homeTeam.shortName +
+    String title = match.homeTeam.shortName +
         Strings.seperatorVersus +
-        widget.match.awayTeam.shortName;
+        match.awayTeam.shortName;
 
     return TitledPage(
       title: title,
       child: SingleChildScrollView(
-        child: Column(
-            children: [
-          MatchTile(match: widget.match),
-          const SizedBox(height: 32),
-          ExpansionPanelList(
-            expandedHeaderPadding: const EdgeInsets.all(0),
-            dividerColor: Colors.transparent,
-            children: [
-              _wInningsPanel(
-                  widget.match.firstInnings,
-                  widget.match.firstInnings.battingTeam.name +
-                      Strings.scorecardInningsWithSpace,
-                  _isInningsPanelOpen[0]),
-              _wInningsPanel(
-                  widget.match.secondInnings,
-                  widget.match.secondInnings.battingTeam.name +
-                      Strings.scorecardInningsWithSpace,
-                  _isInningsPanelOpen[1]),
-            ],
-            expansionCallback: (panelIndex, isExpanded) => setState(() {
-              _isInningsPanelOpen[panelIndex] = !isExpanded;
-            }),
-          ),
-        ]..addAll(widget.match.superOver != null
-                ? [
-                    SizedBox(
-                      height: 32,
-                    ),
-                    Scorecard(match: widget.match.superOver!),
-                  ]
-                : [])),
+        child: _ScorecardMatchPanel(match: match),
       ),
     );
   }
+}
+
+class _ScorecardMatchPanel extends StatefulWidget {
+  final CricketMatch match;
+  final bool revertToParentMatch;
+  const _ScorecardMatchPanel(
+      {Key? key, required this.match, this.revertToParentMatch = true})
+      : super(key: key);
+
+  @override
+  State<_ScorecardMatchPanel> createState() => __ScorecardMatchPanelState();
+}
+
+class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
+  final List<bool> _isInningsPanelOpen = [false, false];
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.revertToParentMatch && widget.match.isSuperOver) {
+      return _ScorecardMatchPanel(match: widget.match.parentMatch!);
+    }
+
+    return Column(children: [
+      MatchTile(match: widget.match),
+      const SizedBox(height: 32),
+      ExpansionPanelList(
+        expandedHeaderPadding: const EdgeInsets.all(0),
+        dividerColor: Colors.transparent,
+        children: [
+          _wInningsPanel(
+              widget.match.firstInnings,
+              widget.match.firstInnings.battingTeam.name +
+                  Strings.scorecardInningsWithSpace,
+              0),
+          _wInningsPanel(
+              widget.match.secondInnings,
+              widget.match.secondInnings.battingTeam.name +
+                  Strings.scorecardInningsWithSpace,
+              1),
+        ],
+        expansionCallback: (panelIndex, isExpanded) => setState(() {
+          _isInningsPanelOpen[panelIndex] = !isExpanded;
+        }),
+      ),
+      if (widget.match.hasSuperOver) ...[
+        const SizedBox(height: 32),
+        _ScorecardMatchPanel(
+          match: widget.match.superOver!,
+          revertToParentMatch: false,
+        ),
+      ]
+    ]);
+  }
 
   ExpansionPanel _wInningsPanel(
-      Innings innings, String inningsTitle, bool isOpen) {
+      Innings innings, String inningsTitle, int index) {
     return ExpansionPanel(
       backgroundColor: ColorStyles.background,
-      isExpanded: isOpen,
-      headerBuilder: (context, isExpanded) => Text(inningsTitle.toUpperCase()),
+      isExpanded: _isInningsPanelOpen[index],
+      headerBuilder: (context, isExpanded) => InkWell(
+          onTap: () => setState(() {
+                _isInningsPanelOpen[index] = !isExpanded;
+              }),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              inningsTitle.toUpperCase(),
+            ),
+          )),
       body: innings.hasStarted
           ? Column(
               children: [

@@ -60,6 +60,7 @@ class StorageUtils {
     _playerBox = await Hive.openBox<Player>(_playerBoxName);
     _teamBox = await Hive.openBox<Team>(_teamBoxName);
     _matchBox = await Hive.openBox<CricketMatch>(_matchBoxName);
+    _linkSuperOvers();
   }
 
   // Player
@@ -109,7 +110,7 @@ class StorageUtils {
   // Match
   static List<CricketMatch> getAllMatches() {
     return _matchBox.values
-        .where((match) => !match.id.endsWith("_superOver"))
+        .where((match) => !match.id.endsWith("_superover"))
         .toList();
   }
 
@@ -130,7 +131,7 @@ class StorageUtils {
   // }
 
   static ImageProvider? getPlayerPhoto(Player player) {
-    File photoFile = File(getProfilePhotoPath(player.id));
+    File photoFile = File(_getProfilePhotoPath(player.id));
     if (!photoFile.existsSync()) {
       return null;
     }
@@ -139,10 +140,20 @@ class StorageUtils {
 
   static Future<void> savePlayerPhoto(
       String playerId, File profilePhoto) async {
-    await profilePhoto.copy(getProfilePhotoPath(playerId));
+    await profilePhoto.copy(_getProfilePhotoPath(playerId));
   }
 
-  static String getProfilePhotoPath(String playerId) =>
+  static void _linkSuperOvers() {
+    for (CricketMatch match in _matchBox.values) {
+      String superOverId = match.id + "_superover";
+      if (_matchBox.containsKey(superOverId)) {
+        match.superOver = getMatchById(superOverId);
+        match.superOver!.parentMatch = match;
+      }
+    }
+  }
+
+  static String _getProfilePhotoPath(String playerId) =>
       pathPlayerPhotos + '/' + playerId;
 
   static String get pathPlayerPhotos =>
@@ -343,14 +354,6 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
       match.startMatch(toss);
     }
 
-    String id = reader.readString();
-    if (id != "") {
-      match.superOver = StorageUtils.getMatchById(id);
-    }
-    id = reader.readString();
-    if (id != "") {
-      match.parentMatch = StorageUtils.getMatchById(id);
-    }
     return match;
   }
 
@@ -363,9 +366,7 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
       ..write(match.homeInnings)
       ..write(match.awayInnings)
       // Toss
-      ..write(match.toss)
-      // Super Over
-      ..writeString(match.superOver?.id ?? "")
-      ..writeString(match.parentMatch?.id ?? "");
+      ..write(match.toss);
+    // Super Overs are handled in _linkSuperOvers()
   }
 }

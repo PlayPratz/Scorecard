@@ -138,16 +138,8 @@ class MatchTile extends StatelessWidget {
           ballsLeft == 1
               ? const TextSpan(text: Strings.scoreBallSingle)
               : const TextSpan(text: Strings.scoreBalls),
-          const TextSpan(text: Strings.scoreAt),
-          TextSpan(
-            text: runRateRequired.toStringAsFixed(2),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          runRateRequired == 1
-              ? const TextSpan(text: Strings.scoreRunsPerOverSingle)
-              : const TextSpan(text: Strings.scoreRunsPerOver),
         ];
-        if (ballsLeft > 30) {
+        if (ballsLeft > 6) {
           textSpan.addAll([
             const TextSpan(text: Strings.scoreAt),
             TextSpan(
@@ -168,7 +160,7 @@ class MatchTile extends StatelessWidget {
             matchResult = matchResult as ResultWinByDefending;
             textSpan = [
               TextSpan(
-                text: matchResult.winner.name,
+                text: matchResult.winner!.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const TextSpan(text: Strings.scoreWinBy),
@@ -186,7 +178,7 @@ class MatchTile extends StatelessWidget {
             matchResult = matchResult as ResultWinByChasing;
             textSpan = [
               TextSpan(
-                text: matchResult.winner.name,
+                text: matchResult.winner!.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const TextSpan(text: Strings.scoreWinWith),

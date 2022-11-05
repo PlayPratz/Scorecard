@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/screens/widgets/separated_widgets.dart';
 import 'package:scorecard/util/storage_utils.dart';
 
 import '../../models/player.dart';
@@ -177,52 +178,39 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
 
   Widget _wSquadChooser() {
     return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: ColorStyles.highlight),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-              child: GenericItemTile(
-                  leading: const Icon(Icons.people),
-                  primaryHint: Strings.squad,
-                  secondaryHint: Strings.createTeamSquadHint,
-                  trailing: Elements.addIcon,
-                  onSelect: () async {
-                    List<Player> filteredPlayerList =
-                        StorageUtils.getAllPlayers();
-                    filteredPlayerList.removeWhere(
-                        (player) => _selectedPlayerList.contains(player));
-                    filteredPlayerList.remove(_selectedCaptain);
-                    Player? player =
-                        await _getPlayerFromList(filteredPlayerList, context);
-                    if (player != null) {
-                      setState(() {
-                        if (_selectedCaptain == null) {
-                          _selectedCaptain = player;
-                        } else {
-                          _selectedPlayerList.add(player);
-                        }
-                      });
-                    }
-                  }),
-            ),
-            const Divider(thickness: 1),
-            Expanded(
-              child: PlayerList(
-                playerList: _selectedPlayerList,
-                trailingIcon: Elements.removeIcon,
-                onSelectPlayer: (Player player) {
-                  setState(() {
-                    _selectedPlayerList.remove(player);
-                  });
-                },
-              ),
-            ),
-          ],
+      child: SeparatedWidgetPair(
+        top: GenericItemTile(
+            leading: const Icon(Icons.people),
+            primaryHint: Strings.squad,
+            secondaryHint: Strings.createTeamSquadHint,
+            trailing: Elements.addIcon,
+            onSelect: () async {
+              List<Player> filteredPlayerList = StorageUtils.getAllPlayers();
+              filteredPlayerList.removeWhere(
+                  (player) => _selectedPlayerList.contains(player));
+              filteredPlayerList.remove(_selectedCaptain);
+              Player? player =
+                  await _getPlayerFromList(filteredPlayerList, context);
+              if (player != null) {
+                setState(() {
+                  if (_selectedCaptain == null) {
+                    _selectedCaptain = player;
+                  } else {
+                    _selectedPlayerList.add(player);
+                  }
+                });
+              }
+            }),
+        bottom: Expanded(
+          child: PlayerList(
+            playerList: _selectedPlayerList,
+            trailingIcon: Elements.removeIcon,
+            onSelectPlayer: (Player player) {
+              setState(() {
+                _selectedPlayerList.remove(player);
+              });
+            },
+          ),
         ),
       ),
     );

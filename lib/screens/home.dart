@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/player/create_player.dart';
+import 'package:scorecard/screens/series/series_list.dart';
 import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/screens/team/team_list.dart';
 import 'package:scorecard/util/storage_utils.dart';
@@ -33,31 +34,51 @@ class _HomeTabViewState extends State<HomeTabView> {
             ),
           ),
           // const Divider(),
-          BottomNavigationBar(
-            currentIndex: _index,
-            backgroundColor: ColorStyles.elevated,
-            type: BottomNavigationBarType.fixed,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.sports_cricket),
-                label: Strings.navbarMatches,
+          DecoratedBox(
+            // position: DecorationPosition.foreground,
+            decoration: const BoxDecoration(
+              color: ColorStyles.card,
+              border: Border(
+                top: BorderSide(color: ColorStyles.highlight, width: 2),
               ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(Icons.emoji_events),
-              //   label: Strings.navbarTournaments,
-              // ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.thumbs_up_down),
-                label: Strings.navbarTeams,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6.0),
+              child: BottomNavigationBar(
+                currentIndex: _index,
+                backgroundColor: ColorStyles.card,
+                type: BottomNavigationBarType.fixed,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.emoji_events),
+                    label: "Series",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.live_tv),
+                    label: "Ongoing",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.event_available),
+                    label: "Completed",
+                  ),
+                  // BottomNavigationBarItem(
+                  //   icon: Icon(Icons.emoji_events),
+                  //   label: Strings.navbarTournaments,
+                  // ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.groups),
+                    label: Strings.navbarTeams,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    label: Strings.navbarPlayers,
+                  ),
+                ],
+                onTap: (selectedIndex) => setState(() {
+                  _index = selectedIndex;
+                }),
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.people),
-                label: Strings.navbarPlayers,
-              ),
-            ],
-            onTap: (selectedIndex) => setState(() {
-              _index = selectedIndex;
-            }),
+            ),
           )
         ],
       ),
@@ -65,7 +86,14 @@ class _HomeTabViewState extends State<HomeTabView> {
   }
 
   List<Widget> get screens => [
-        const MatchList(),
+        SeriesList(series: StorageUtils.getAllSeries()),
+        MatchList(
+          allowCreateMatch: true,
+          matchList: StorageUtils.getOngoingMatches(),
+        ),
+        MatchList(
+          matchList: StorageUtils.getCompletedMatches(),
+        ),
         TeamList(
           teamList: StorageUtils.getAllTeams(),
           onSelectTeam: (team) => Utils.goToPage(

@@ -50,10 +50,9 @@ class Innings {
   }
 
   Over get currentOver => _overs.last;
-  List<BatterInnings> get onPitchBatters => _battingTeamInnings
-      .where((battingInnings) => !battingInnings.isOut)
-      .take(2)
-      .toList();
+  List<BatterInnings> get onPitchBatters => _allOnPitchBatters.take(2).toList();
+  Iterable<BatterInnings> get _allOnPitchBatters =>
+      _battingTeamInnings.where((battingInnings) => !battingInnings.isOut);
   List<BatterInnings> get allBattingInnings => _battingTeamInnings;
   List<BowlerInnings> get allBowlingInnings =>
       _bowlerTeamInnings.values.toList();
@@ -165,10 +164,18 @@ class Innings {
         .remove(removedBall);
 
     if (removedBall.isWicket) {
+      // Remove wicket from batter
       _battingTeamInnings
           .lastWhere((battingInnings) =>
               battingInnings.batter == removedBall.wicket!.batter)
           .wicket = null;
+
+      // Remove batters who haven't batted yet
+      Iterable<BatterInnings> onPitchBatters = _allOnPitchBatters;
+      while (onPitchBatters.length > 2) {
+        _battingTeamInnings.remove(onPitchBatters.last);
+        onPitchBatters = _allOnPitchBatters;
+      }
     }
 
     // No need to handle seperately for bowlerInnings

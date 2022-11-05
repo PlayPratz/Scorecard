@@ -1,16 +1,19 @@
 import 'team.dart';
 
 abstract class Result {
+  final Team? winner;
+  final Team? loser;
+
+  Result({required this.winner, required this.loser});
+
   VictoryType getVictoryType();
 }
 
 class ResultWinByDefending extends Result {
-  final Team winner;
-  final Team loser;
   final int runsWonBy;
 
   ResultWinByDefending(
-      {required this.winner, required this.loser, required this.runsWonBy});
+      {required super.winner, required super.loser, required this.runsWonBy});
 
   @override
   VictoryType getVictoryType() {
@@ -19,14 +22,12 @@ class ResultWinByDefending extends Result {
 }
 
 class ResultWinByChasing extends Result {
-  final Team winner;
-  final Team loser;
   final int ballsLeft;
   final int wicketsLeft;
 
   ResultWinByChasing(
-      {required this.winner,
-      required this.loser,
+      {required super.winner,
+      required super.loser,
       required this.ballsLeft,
       required this.wicketsLeft});
 
@@ -37,10 +38,10 @@ class ResultWinByChasing extends Result {
 }
 
 class ResultTie extends Result {
-  final Team homeTeam;
-  final Team awayTeam;
+  // final Team homeTeam;
+  // final Team awayTeam;
 
-  ResultTie({required this.homeTeam, required this.awayTeam});
+  ResultTie() : super(winner: null, loser: null);
 
   @override
   VictoryType getVictoryType() {

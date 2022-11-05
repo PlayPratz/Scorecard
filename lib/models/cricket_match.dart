@@ -112,7 +112,7 @@ class CricketMatch {
       );
     } else {
       // Match ties
-      return ResultTie(homeTeam: homeTeam, awayTeam: awayTeam);
+      return ResultTie();
     }
   }
 

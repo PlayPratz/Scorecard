@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/player.dart';
 import '../../util/strings.dart';
 import 'create_player.dart';
-import '../templates/item_list.dart';
+import '../widgets/item_list.dart';
 import 'player_tile.dart';
 
 class PlayerList extends StatelessWidget {

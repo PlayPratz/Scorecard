@@ -21,25 +21,21 @@ class ItemList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       // padding: const EdgeInsets.symmetric(horizontal: 12),
-
       children: [
         createItem != null
-            ? Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: GenericItemTile(
-                    primaryHint: createItem!.string,
-                    secondaryHint: Strings.empty,
-                    leading: Elements.addIcon,
-                    trailing: trailingIcon,
-                    onSelect: () {
-                      if (createItem!.onCreateItem != null) {
-                        Utils.goToPage(createItem!.page, context)
-                            .then((item) => createItem!.onCreateItem!(item));
-                      } else {
-                        Utils.goToPage(createItem!.page, context);
-                      }
-                    }),
-              )
+            ? GenericItemTile(
+                primaryHint: createItem!.string,
+                secondaryHint: Strings.empty,
+                leading: Elements.addIcon,
+                trailing: trailingIcon,
+                onSelect: () {
+                  if (createItem!.onCreateItem != null) {
+                    Utils.goToPage(createItem!.page, context)
+                        .then((item) => createItem!.onCreateItem!(item));
+                  } else {
+                    Utils.goToPage(createItem!.page, context);
+                  }
+                })
             : Container(),
         ...itemList
       ],

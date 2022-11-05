@@ -259,6 +259,7 @@ class Strings {
       case Dismissal.stumped:
         return Strings.wicketStumped +
             wicket.fielder!.name +
+            ' ' +
             Strings.wicketBowled +
             wicket.bowler!.name;
 

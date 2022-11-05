@@ -6,7 +6,7 @@ import 'innings_init.dart';
 import '../team/team_list.dart';
 import '../templates/titled_page.dart';
 import '../widgets/generic_item_tile.dart';
-import '../templates/item_list.dart';
+import '../widgets/item_list.dart';
 import '../team/team_dummy_tile.dart';
 import '../team/team_tile.dart';
 import '../../util/strings.dart';

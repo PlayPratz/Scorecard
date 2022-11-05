@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/util/strings.dart';
 import '../../models/team.dart';
-import '../templates/item_list.dart';
+import '../widgets/item_list.dart';
 import 'team_tile.dart';
 
 class TeamList extends StatelessWidget {

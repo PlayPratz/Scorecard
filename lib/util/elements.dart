@@ -28,6 +28,8 @@ class Elements {
     color: ColorStyles.online,
   );
 
+  static const Icon teamIcon = Icon(Icons.groups);
+
   static Widget getOnlineIndicator(bool isOnline) {
     return SizedBox(
       height: 8,

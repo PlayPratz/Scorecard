@@ -8,13 +8,17 @@ import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/storage_utils.dart';
 import 'create_match.dart';
-import '../templates/item_list.dart';
+import '../widgets/item_list.dart';
 import 'match_tile.dart';
 import '../../util/strings.dart';
 import '../../util/utils.dart';
 
 class MatchList extends StatefulWidget {
-  const MatchList({Key? key}) : super(key: key);
+  final List<CricketMatch> matchList;
+  final bool allowCreateMatch;
+  const MatchList(
+      {Key? key, required this.matchList, this.allowCreateMatch = false})
+      : super(key: key);
 
   @override
   State<MatchList> createState() => _MatchListState();
@@ -25,15 +29,17 @@ class _MatchListState extends State<MatchList> {
   Widget build(BuildContext context) {
     return ItemList(
         itemList: getMatchList(context),
-        createItem: CreateItemEntry(
-          page: CreateMatchForm(onCreateMatch: (match) => setState(() {})),
-          string: Strings.matchlistCreateNewMatch,
-        ));
+        createItem: widget.allowCreateMatch
+            ? CreateItemEntry(
+                page:
+                    CreateMatchForm(onCreateMatch: (match) => setState(() {})),
+                string: Strings.matchlistCreateNewMatch,
+              )
+            : null);
   }
 
   List<Widget> getMatchList(BuildContext context) {
-    return StorageUtils.getAllMatches()
-        .reversed
+    return widget.matchList.reversed
         .map((match) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: MatchTile(

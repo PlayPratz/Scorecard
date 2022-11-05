@@ -7,6 +7,7 @@ import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/series.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/models/wicket.dart';
 
@@ -27,6 +28,9 @@ const int _wicketTypeId = 106;
 
 const int _tossTypeId = 107;
 
+const int _seriesTypeId = 108;
+const String _seriesBoxName = "series";
+
 class StorageUtils {
   StorageUtils._();
 
@@ -34,6 +38,7 @@ class StorageUtils {
   static late final Box<Player> _playerBox;
   static late final Box<Team> _teamBox;
   static late final Box<CricketMatch> _matchBox; //lmao "matchbox"
+  static late final Box<Series> _seriesBox;
 
   // AppData
   static late final Directory _appDataDirectory;
@@ -55,12 +60,15 @@ class StorageUtils {
     Hive.registerAdapter(_InningsAdapter());
     Hive.registerAdapter(_TossAdapter());
     Hive.registerAdapter(_CricketMatchAdapter());
+    Hive.registerAdapter(_SeriesAdapter());
 
     // Open Boxes
     _playerBox = await Hive.openBox<Player>(_playerBoxName);
     _teamBox = await Hive.openBox<Team>(_teamBoxName);
     _matchBox = await Hive.openBox<CricketMatch>(_matchBoxName);
     _linkSuperOvers();
+
+    _seriesBox = await Hive.openBox<Series>(_seriesBoxName);
   }
 
   // Player
@@ -84,6 +92,19 @@ class StorageUtils {
   // static void deletePlayer(Player player) {
   //   _playerBox.delete(player.id);
   // }
+
+  static ImageProvider? getPlayerPhoto(Player player) {
+    File photoFile = File(_getProfilePhotoPath(player.id));
+    if (!photoFile.existsSync()) {
+      return null;
+    }
+    return FileImage(photoFile);
+  }
+
+  static Future<void> savePlayerPhoto(
+      String playerId, File profilePhoto) async {
+    await profilePhoto.copy(_getProfilePhotoPath(playerId));
+  }
 
   // Team
 
@@ -114,6 +135,22 @@ class StorageUtils {
         .toList();
   }
 
+  static List<CricketMatch> getOngoingMatches() {
+    return _matchBox.values
+        .where((match) =>
+            !match.id.endsWith("_superover") &&
+            match.matchState != MatchState.completed)
+        .toList();
+  }
+
+  static List<CricketMatch> getCompletedMatches() {
+    return _matchBox.values
+        .where((match) =>
+            !match.id.endsWith("_superover") &&
+            match.matchState == MatchState.completed)
+        .toList();
+  }
+
   static CricketMatch getMatchById(String id) {
     CricketMatch? match = _matchBox.get(id);
     if (match == null) {
@@ -130,18 +167,16 @@ class StorageUtils {
     _matchBox.delete(match.id);
   }
 
-  static ImageProvider? getPlayerPhoto(Player player) {
-    File photoFile = File(_getProfilePhotoPath(player.id));
-    if (!photoFile.existsSync()) {
-      return null;
-    }
-    return FileImage(photoFile);
+  // Series
+  static List<Series> getAllSeries() {
+    return _seriesBox.values.toList();
   }
 
-  static Future<void> savePlayerPhoto(
-      String playerId, File profilePhoto) async {
-    await profilePhoto.copy(_getProfilePhotoPath(playerId));
+  static void saveSeries(Series series) {
+    _seriesBox.put(series.id, series);
   }
+
+  // Misc
 
   static void _linkSuperOvers() {
     for (CricketMatch match in _matchBox.values) {
@@ -368,5 +403,33 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
       // Toss
       ..write(match.toss);
     // Super Overs are handled in _linkSuperOvers()
+  }
+}
+
+class _SeriesAdapter extends TypeAdapter<Series> {
+  @override
+  int get typeId => _seriesTypeId;
+
+  @override
+  Series read(BinaryReader reader) {
+    return Series(
+      id: reader.readString(),
+      teams: reader
+          .readStringList()
+          .map((id) => StorageUtils.getTeamById(id))
+          .toList(),
+      matches: reader
+          .readStringList()
+          .map((id) => StorageUtils.getMatchById(id))
+          .toList(),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Series series) {
+    writer
+      ..writeString(series.id)
+      ..writeStringList(series.teams.map((team) => team.id).toList())
+      ..writeStringList(series.matches.map((match) => match.id).toList());
   }
 }

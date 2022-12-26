@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/util/storage_utils.dart';
+import 'package:scorecard/services/storage_service.dart';
 
 import '../styles/color_styles.dart';
 
@@ -70,7 +70,7 @@ class Elements {
   }
 
   static Widget getPlayerIcon(Player player, double size) {
-    ImageProvider? _profilePhoto = StorageUtils.getPlayerPhoto(player);
+    ImageProvider? _profilePhoto = StorageService.getPlayerPhoto(player);
 
     return CircleAvatar(
       backgroundColor: ColorStyles.card,

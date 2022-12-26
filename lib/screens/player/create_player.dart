@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/util/storage_utils.dart';
+import 'package:scorecard/services/storage_service.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';
@@ -46,7 +46,7 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
     super.initState();
     if (widget.player != null) {
       _name = widget.player!.name;
-      _playerPhoto = StorageUtils.getPlayerPhoto(widget.player!);
+      _playerPhoto = StorageService.getPlayerPhoto(widget.player!);
     }
 
     if (widget.player != null) {
@@ -163,9 +163,10 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
           bowlStyle: _bowlStyle.selection!);
     }
     if (_playerPhoto != null) {
-      StorageUtils.savePlayerPhoto(player.id, (_playerPhoto as FileImage).file);
+      StorageService.savePlayerPhoto(
+          player.id, (_playerPhoto as FileImage).file);
     }
-    StorageUtils.savePlayer(player);
+    StorageService.savePlayer(player);
     Utils.goBack(context, player);
   }
 

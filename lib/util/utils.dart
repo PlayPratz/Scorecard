@@ -12,9 +12,11 @@ class Utils {
 
   static String generateUniqueId() => _uuid.v1();
 
-  static Future<dynamic> goToPage(Widget page, BuildContext context) {
+  static Future<dynamic> goToPage(Widget page, BuildContext context, [Animat]) {
     return Navigator.push(
-        context, MaterialPageRoute(builder: (context) => page));
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
   }
 
   static Future<dynamic> goToReplacementPage(

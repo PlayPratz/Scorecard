@@ -25,6 +25,8 @@ class Ball {
   // bool _shouldCountBall = true;
   bool isEventOnly = false;
 
+  bool isFirstBallOfOver = false;
+
   Ball({
     required this.bowler,
     required this.batter,
@@ -32,6 +34,7 @@ class Ball {
     this.wicket,
     this.battingExtra,
     this.bowlingExtra,
+    this.isFirstBallOfOver = false,
   });
 
   /// Creates a ball that does not constitute a wicket and is not an extra of any kind

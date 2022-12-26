@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/util/storage_utils.dart';
+import 'package:scorecard/services/storage_service.dart';
 import '../../models/cricket_match.dart';
 import '../../models/team.dart';
 import 'innings_init.dart';
@@ -119,7 +119,7 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
       onPressed: _canCreateMatch
           ? () {
               widget.match.startMatch(Toss(_tossWinner!, _tossChoice!));
-              StorageUtils.saveMatch(widget.match);
+              StorageService.saveMatch(widget.match);
               Utils.goToReplacementPage(
                   InningsInitScreen(match: widget.match), context);
             }

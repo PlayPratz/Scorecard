@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/match/wicket_selector.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import 'package:scorecard/util/storage_utils.dart';
+import 'package:scorecard/services/storage_service.dart';
 
 import '../../models/ball.dart';
 import '../../models/cricket_match.dart';
@@ -87,7 +87,7 @@ class _MatchScreenState extends State<MatchScreen> {
   @override
   void dispose() {
     super.dispose();
-    StorageUtils.saveMatch(widget.match);
+    StorageService.saveMatch(widget.match);
   }
 
   @override
@@ -322,92 +322,87 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Widget _wRecentBalls() {
     List<Ball> ballList = widget.match.currentInnings.allBalls;
-    List<Widget> displayWidgets = [];
-
-    for (int i = 0; i < ballList.length; i++) {
-      if (i > 0 && ballList[i - 1].bowler != ballList[i].bowler) {
-        // Add pipe
-        displayWidgets.add(const SizedBox(
-          height: 32,
-          child: VerticalDivider(color: Colors.amber),
-        ));
-      }
-
-      Ball currentBall = ballList[i];
-      CircleAvatar currentBallWidget;
-
-      if (currentBall.isWicket) {
-        currentBallWidget = CircleAvatar(
-          backgroundColor: ColorStyles.wicket,
-          foregroundColor: Colors.white,
-          child: Text(currentBall.runsScored.toString()),
-        );
-      } else if (currentBall.runsScored == 4) {
-        currentBallWidget = CircleAvatar(
-          backgroundColor: ColorStyles.ballFour,
-          foregroundColor: Colors.white,
-          child: Text(currentBall.runsScored.toString()),
-        );
-      } else if (currentBall.runsScored == 6) {
-        currentBallWidget = CircleAvatar(
-          backgroundColor: ColorStyles.ballSix,
-          foregroundColor: Colors.white,
-          child: Text(currentBall.runsScored.toString()),
-        );
-      } else {
-        currentBallWidget = CircleAvatar(
-            backgroundColor: ColorStyles.card,
-            foregroundColor: Colors.white,
-            child: Text(
-              currentBall.runsScored.toString(),
-            ));
-      }
-
-      Color? indicatorColor = currentBallWidget.backgroundColor;
-
-      if (currentBall.bowlingExtra == BowlingExtra.noBall) {
-        indicatorColor = ColorStyles.ballNoBall;
-      } else if (currentBall.bowlingExtra == BowlingExtra.wide) {
-        indicatorColor = ColorStyles.ballWide;
-      } else if (currentBall.shouldCount == false) {
-        indicatorColor = ColorStyles.ballEvent;
-      }
-
-      displayWidgets.add(CircleAvatar(
-        child: currentBallWidget,
-        radius: 22,
-        backgroundColor: indicatorColor,
-      ));
-    }
 
     return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: ColorStyles.highlight),
-          // color: Colors.red,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            reverse: true,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ...displayWidgets.map((widget) => Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 2, vertical: 2),
-                      child: widget,
-                    )),
-              ],
+        height: 52,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: ColorStyles.highlight),
+            // color: Colors.red,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: ListView.separated(
+              reverse: true,
+              scrollDirection: Axis.horizontal,
+              itemCount: ballList.length,
+              itemBuilder: ((context, index) {
+                Ball currentBall = ballList[ballList.length - 1 - index];
+                CircleAvatar currentBallWidget;
+                if (currentBall.isWicket) {
+                  currentBallWidget = CircleAvatar(
+                    backgroundColor: ColorStyles.wicket,
+                    foregroundColor: Colors.white,
+                    radius: 18,
+                    child: Text(currentBall.runsScored.toString()),
+                  );
+                } else if (currentBall.runsScored == 4) {
+                  currentBallWidget = CircleAvatar(
+                    backgroundColor: ColorStyles.ballFour,
+                    foregroundColor: Colors.white,
+                    radius: 18,
+                    child: Text(currentBall.runsScored.toString()),
+                  );
+                } else if (currentBall.runsScored == 6) {
+                  currentBallWidget = CircleAvatar(
+                    backgroundColor: ColorStyles.ballSix,
+                    foregroundColor: Colors.white,
+                    radius: 18,
+                    child: Text(currentBall.runsScored.toString()),
+                  );
+                } else {
+                  currentBallWidget = CircleAvatar(
+                      backgroundColor: ColorStyles.card,
+                      foregroundColor: Colors.white,
+                      radius: 18,
+                      child: Text(currentBall.runsScored.toString()));
+                }
+
+                Color? indicatorColor = currentBallWidget.backgroundColor;
+
+                if (currentBall.bowlingExtra == BowlingExtra.noBall) {
+                  indicatorColor = ColorStyles.ballNoBall;
+                } else if (currentBall.bowlingExtra == BowlingExtra.wide) {
+                  indicatorColor = ColorStyles.ballWide;
+                } else if (currentBall.shouldCount == false) {
+                  indicatorColor = ColorStyles.ballEvent;
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 1),
+                  child: CircleAvatar(
+                    child: currentBallWidget,
+                    radius: 20,
+                    backgroundColor: indicatorColor,
+                  ),
+                );
+              }),
+              separatorBuilder: (context, index) {
+                int realIndex = ballList.length - 1 - index;
+                if (realIndex + 1 < ballList.length &&
+                    ballList[realIndex + 1].isFirstBallOfOver) {
+                  return const SizedBox(
+                    height: 32,
+                    child: VerticalDivider(color: Colors.amber),
+                  );
+                } else {
+                  return Container();
+                }
+              },
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   void _processBall() {

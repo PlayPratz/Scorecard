@@ -7,7 +7,13 @@ class TitledPage extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const TitledPage({Key? key, required this.title, required this.child})
+  final bool showBackButton;
+
+  const TitledPage(
+      {Key? key,
+      required this.title,
+      required this.child,
+      this.showBackButton = true})
       : super(key: key);
 
   @override
@@ -19,10 +25,12 @@ class TitledPage extends StatelessWidget {
           title: Text(
             title,
           ),
-          leading: InkWell(
-            child: const Icon(Icons.chevron_left),
-            onTap: () => Utils.goBack(context),
-          ),
+          leading: showBackButton
+              ? InkWell(
+                  child: const Icon(Icons.chevron_left),
+                  onTap: () => Utils.goBack(context),
+                )
+              : null,
           elevation: 0,
         ),
         body: Padding(

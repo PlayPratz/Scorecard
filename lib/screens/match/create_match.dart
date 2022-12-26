@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/team/team_list.dart';
-import 'package:scorecard/util/storage_utils.dart';
+import 'package:scorecard/services/storage_service.dart';
 
 import '../../models/cricket_match.dart';
 import '../../models/team.dart';
@@ -13,7 +13,15 @@ import 'match_init.dart';
 
 class CreateMatchForm extends StatefulWidget {
   final void Function(CricketMatch match)? onCreateMatch;
-  const CreateMatchForm({Key? key, this.onCreateMatch}) : super(key: key);
+
+  final Team? homeTeam;
+  final Team? awayTeam;
+  const CreateMatchForm({
+    Key? key,
+    this.onCreateMatch,
+    this.homeTeam,
+    this.awayTeam,
+  }) : super(key: key);
 
   @override
   State<CreateMatchForm> createState() => _CreateMatchFormState();
@@ -25,9 +33,18 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   int _overs = 5;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _selectedHomeTeam = widget.homeTeam;
+    _selectedAwayTeam = widget.awayTeam;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TitledPage(
         title: Strings.matchlistCreateNewMatch,
+        showBackButton: false,
         child: Form(
           autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
@@ -120,7 +137,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
       TitledPage(
         title: Strings.chooseTeam,
         child: TeamList(
-          teamList: StorageUtils.getAllTeams(),
+          teamList: StorageService.getAllTeams(),
           onSelectTeam: (team) => Utils.goBack(context, team),
           onCreateTeam: (team) => Utils.goBack(context, team),
         ),
@@ -140,7 +157,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
       awayTeam: _selectedAwayTeam!,
       maxOvers: _overs,
     );
-    StorageUtils.saveMatch(match);
+    StorageService.saveMatch(match);
     Utils.goToReplacementPage(MatchInitScreen(match: match), context);
     widget.onCreateMatch?.call(match);
   }

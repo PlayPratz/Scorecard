@@ -6,7 +6,7 @@ import 'package:scorecard/screens/match/match_screen.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
-import 'package:scorecard/util/storage_utils.dart';
+import 'package:scorecard/services/storage_service.dart';
 import 'create_match.dart';
 import '../widgets/item_list.dart';
 import 'match_tile.dart';
@@ -44,21 +44,7 @@ class _MatchListState extends State<MatchList> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: MatchTile(
                 match: match,
-                onSelectMatch: (match) {
-                  switch (match.matchState) {
-                    case MatchState.notStarted:
-                      Utils.goToPage(MatchInitScreen(match: match), context);
-                      return;
-                    case MatchState.tossCompleted:
-                      Utils.goToPage(InningsInitScreen(match: match), context);
-                      return;
-                    case MatchState.completed:
-                      Utils.goToPage(Scorecard(match: match), context);
-                      return;
-                    default:
-                      Utils.goToPage(MatchScreen(match: match), context);
-                  }
-                },
+                onSelectMatch: (match) => handleOpenMatch(match, context),
                 onLongPress: (match) => {
                   showModalBottomSheet(
                       context: context,
@@ -70,6 +56,25 @@ class _MatchListState extends State<MatchList> {
                                 const SizedBox(height: 64),
                                 GenericItemTile(
                                   leading: const Icon(
+                                    Icons.replay,
+                                    color: ColorStyles.selected,
+                                  ),
+                                  primaryHint: "Rematch",
+                                  secondaryHint:
+                                      "Quickly start a new match with the same teams",
+                                  onSelect: () => setState(() {
+                                    Utils.goBack(context);
+                                    Utils.goToPage(
+                                        CreateMatchForm(
+                                          homeTeam: match.homeTeam,
+                                          awayTeam: match.awayTeam,
+                                        ),
+                                        context);
+                                  }),
+                                ),
+                                const SizedBox(height: 24),
+                                GenericItemTile(
+                                  leading: const Icon(
                                     Icons.delete_forever,
                                     color: ColorStyles.remove,
                                   ),
@@ -77,7 +82,7 @@ class _MatchListState extends State<MatchList> {
                                   secondaryHint:
                                       "This match will be gone forever! (That's a really long time)",
                                   onSelect: () => setState(() {
-                                    StorageUtils.deleteMatch(match);
+                                    StorageService.deleteMatch(match);
                                     Utils.goBack(context);
                                   }),
                                 ),
@@ -89,5 +94,21 @@ class _MatchListState extends State<MatchList> {
               ),
             ))
         .toList();
+  }
+
+  void handleOpenMatch(CricketMatch match, BuildContext context) {
+    switch (match.matchState) {
+      case MatchState.notStarted:
+        Utils.goToPage(MatchInitScreen(match: match), context);
+        return;
+      case MatchState.tossCompleted:
+        Utils.goToPage(InningsInitScreen(match: match), context);
+        return;
+      case MatchState.completed:
+        Utils.goToPage(Scorecard(match: match), context);
+        return;
+      default:
+        Utils.goToPage(MatchScreen(match: match), context);
+    }
   }
 }

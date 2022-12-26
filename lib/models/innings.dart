@@ -122,7 +122,7 @@ class Innings {
 
   // Functions
   void addBall(Ball ball) {
-    // This should happen only when the Innings is loaded from storage
+    // This "if" will occur only when the Innings is loaded from storage
     // Hence, commenting. TODO check if needed
     //if (isCompleted) {
     //   throw UnimplementedError();
@@ -135,6 +135,10 @@ class Innings {
     }
 
     currentOver.addBall(ball);
+
+    if (currentOver.numOfBallsBowled == 1) {
+      ball.isFirstBallOfOver = true;
+    }
 
     addBatter(ball.batter);
 

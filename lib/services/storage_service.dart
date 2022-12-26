@@ -31,8 +31,8 @@ const int _tossTypeId = 107;
 const int _seriesTypeId = 108;
 const String _seriesBoxName = "series";
 
-class StorageUtils {
-  StorageUtils._();
+class StorageService {
+  StorageService._();
 
   // Hive NoSQL DB
   static late final Box<Player> _playerBox;
@@ -67,7 +67,6 @@ class StorageUtils {
     _teamBox = await Hive.openBox<Team>(_teamBoxName);
     _matchBox = await Hive.openBox<CricketMatch>(_matchBoxName);
     _linkSuperOvers();
-
     _seriesBox = await Hive.openBox<Series>(_seriesBoxName);
   }
 
@@ -234,7 +233,7 @@ class _TeamAdapter extends TypeAdapter<Team> {
       shortName: reader.readString(),
       squad: reader
           .readStringList()
-          .map((playerId) => StorageUtils.getPlayerById(playerId))
+          .map((playerId) => StorageService.getPlayerById(playerId))
           .toList(),
       color: Color(reader.readInt()),
     );
@@ -258,8 +257,8 @@ class _InningsAdapter extends TypeAdapter<Innings> {
   @override
   Innings read(BinaryReader reader) {
     Innings innings = Innings(
-        battingTeam: StorageUtils.getTeamById(reader.readString()),
-        bowlingTeam: StorageUtils.getTeamById(reader.readString()),
+        battingTeam: StorageService.getTeamById(reader.readString()),
+        bowlingTeam: StorageService.getTeamById(reader.readString()),
         maxOvers: reader.readInt(),
         target: reader.readInt())
       ..isInPlay = reader.readBool()
@@ -291,11 +290,11 @@ class _WicketAdapter extends TypeAdapter<Wicket> {
 
   @override
   Wicket read(BinaryReader reader) {
-    Player batter = StorageUtils.getPlayerById(reader.readString());
+    Player batter = StorageService.getPlayerById(reader.readString());
     String id = reader.readString();
-    Player? bowler = id == "" ? null : StorageUtils.getPlayerById(id);
+    Player? bowler = id == "" ? null : StorageService.getPlayerById(id);
     id = reader.readString();
-    Player? fielder = id == "" ? null : StorageUtils.getPlayerById(id);
+    Player? fielder = id == "" ? null : StorageService.getPlayerById(id);
     Dismissal dismissal = Dismissal.values[reader.readInt()];
     return Wicket(
       batter: batter,
@@ -322,8 +321,8 @@ class _BallAdapter extends TypeAdapter<Ball> {
   @override
   Ball read(BinaryReader reader) {
     Ball ball = Ball(
-      bowler: StorageUtils.getPlayerById(reader.readString()),
-      batter: StorageUtils.getPlayerById(reader.readString()),
+      bowler: StorageService.getPlayerById(reader.readString()),
+      batter: StorageService.getPlayerById(reader.readString()),
       runsScored: reader.readInt(),
     );
     int index = reader.readInt();
@@ -357,7 +356,7 @@ class _TossAdapter extends TypeAdapter<Toss> {
   @override
   Toss read(BinaryReader reader) {
     return Toss(
-      StorageUtils.getTeamById(reader.readString()),
+      StorageService.getTeamById(reader.readString()),
       TossChoice.values[reader.readInt()],
     );
   }
@@ -416,11 +415,11 @@ class _SeriesAdapter extends TypeAdapter<Series> {
       id: reader.readString(),
       teams: reader
           .readStringList()
-          .map((id) => StorageUtils.getTeamById(id))
+          .map((id) => StorageService.getTeamById(id))
           .toList(),
       matches: reader
           .readStringList()
-          .map((id) => StorageUtils.getMatchById(id))
+          .map((id) => StorageService.getMatchById(id))
           .toList(),
     );
   }

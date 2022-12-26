@@ -45,7 +45,9 @@ class MatchTile extends StatelessWidget {
                   ),
                 ],
               ),
-              const Divider(),
+              const Divider(
+                thickness: 4,
+              ),
               _wSummary(),
               const SizedBox(height: 8)
             ],
@@ -223,7 +225,7 @@ class MatchTile extends StatelessWidget {
               style: const TextStyle(
                 fontStyle: FontStyle.italic,
                 fontWeight: FontWeight.w300,
-                fontSize: 16,
+                fontSize: 14,
               ),
             )),
       ),
@@ -238,20 +240,38 @@ class _InningsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String score = innings.runs.toString() +
+        Strings.seperatorSlash +
+        innings.wickets.toString();
     return ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-        minVerticalPadding: 0,
-        minLeadingWidth: 0,
-        dense: true,
-        leading: Elements.getOnlineIndicator(innings.isInPlay),
-        title: Text(
-          innings.battingTeam.name,
-          style: Theme.of(context).textTheme.subtitle1?.merge(TextStyle(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+      // tileColor: innings.battingTeam.color,
+      minVerticalPadding: 8,
+      minLeadingWidth: 0,
+      // horizontalTitleGap: 0,
+      dense: false,
+      leading: Elements.getOnlineIndicator(innings.isInPlay),
+      title: Container(
+        height: 48,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: innings.battingTeam.color.withOpacity(0.8),
+        ),
+        child: Text(
+          innings.battingTeam.name.toUpperCase(),
+          style: Theme.of(context).textTheme.titleSmall?.merge(const TextStyle(
                 fontWeight: FontWeight.bold,
-                color: innings.battingTeam.color,
+                color: Colors.white,
               )),
         ),
-        subtitle: _wScoreDisplay(context));
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: _wScoreDisplay(context),
+      ),
+      trailing: const SizedBox(width: 12),
+    );
   }
 
   Widget _wScoreDisplay(BuildContext context) {
@@ -263,20 +283,20 @@ class _InningsTile extends StatelessWidget {
 
       return RichText(
         text: TextSpan(children: [
-          TextSpan(text: score, style: textTheme.subtitle1),
-          TextSpan(text: Strings.scoreIn, style: textTheme.caption),
-          TextSpan(text: innings.oversBowled, style: textTheme.subtitle1),
+          TextSpan(text: score, style: textTheme.bodyLarge),
+          TextSpan(text: Strings.scoreIn, style: textTheme.bodySmall),
+          TextSpan(text: innings.oversBowled, style: textTheme.bodyLarge),
           TextSpan(
-              text: Strings.bracketOpenWithSpace, style: textTheme.subtitle1),
+              text: Strings.bracketOpenWithSpace, style: textTheme.bodySmall),
           TextSpan(
-              text: innings.maxOvers.toString(), style: textTheme.subtitle1),
-          TextSpan(text: Strings.bracketClose, style: textTheme.subtitle1),
+              text: innings.maxOvers.toString(), style: textTheme.bodySmall),
+          TextSpan(text: Strings.bracketClose, style: textTheme.bodySmall),
         ]),
       );
     } else {
       return RichText(
           text: TextSpan(
-        style: Theme.of(context).textTheme.caption,
+        style: Theme.of(context).textTheme.bodySmall,
         text: Strings.scoreYetToBat,
       ));
     }

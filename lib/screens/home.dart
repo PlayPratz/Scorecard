@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/match/create_match.dart';
 import 'package:scorecard/screens/player/create_player.dart';
-import 'package:scorecard/screens/series/series_list.dart';
 import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/screens/team/team_list.dart';
-import 'package:scorecard/util/storage_utils.dart';
+import 'package:scorecard/services/storage_service.dart';
 
 import '../styles/color_styles.dart';
 import '../util/strings.dart';
@@ -25,77 +25,68 @@ class _HomeTabViewState extends State<HomeTabView> {
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
-      child: Column(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8.0, left: 4, right: 4),
-              child: screens[_index],
+        child: Scaffold(
+      body: screens[_index],
+      backgroundColor: ColorStyles.background,
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _index,
+        backgroundColor: ColorStyles.card,
+
+        // type: BottomNavigationBarType.fixed,
+        destinations: [
+          const NavigationDestination(
+            icon: Icon(Icons.live_tv),
+            label: "Ongoing",
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.event_available),
+            label: "Completed",
+          ),
+          // NavigationDestination(
+          //   icon: Icon(Icons.add),
+          //   label: "Create",
+          // ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.tealAccent,
+                  width: 2,
+                ),
+                shape: BoxShape.circle),
+            child: IconButton(
+              onPressed: () => Utils.goToPage(
+                const CreateMatchForm(),
+                context,
+              ),
+              icon: const Icon(Icons.add),
             ),
           ),
-          // const Divider(),
-          DecoratedBox(
-            // position: DecorationPosition.foreground,
-            decoration: const BoxDecoration(
-              color: ColorStyles.card,
-              border: Border(
-                top: BorderSide(color: ColorStyles.highlight, width: 2),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6.0),
-              child: BottomNavigationBar(
-                currentIndex: _index,
-                backgroundColor: ColorStyles.card,
-                type: BottomNavigationBarType.fixed,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.emoji_events),
-                    label: "Series",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.live_tv),
-                    label: "Ongoing",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.event_available),
-                    label: "Completed",
-                  ),
-                  // BottomNavigationBarItem(
-                  //   icon: Icon(Icons.emoji_events),
-                  //   label: Strings.navbarTournaments,
-                  // ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.groups),
-                    label: Strings.navbarTeams,
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person),
-                    label: Strings.navbarPlayers,
-                  ),
-                ],
-                onTap: (selectedIndex) => setState(() {
-                  _index = selectedIndex;
-                }),
-              ),
-            ),
-          )
+          const NavigationDestination(
+            icon: Icon(Icons.groups),
+            label: Strings.navbarTeams,
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.person),
+            label: Strings.navbarPlayers,
+          ),
         ],
+        onDestinationSelected: (selectedIndex) => setState(() {
+          _index = selectedIndex;
+        }),
       ),
-    );
+    ));
   }
 
   List<Widget> get screens => [
-        SeriesList(series: StorageUtils.getAllSeries()),
         MatchList(
-          allowCreateMatch: true,
-          matchList: StorageUtils.getOngoingMatches(),
+          matchList: StorageService.getOngoingMatches(),
         ),
         MatchList(
-          matchList: StorageUtils.getCompletedMatches(),
+          matchList: StorageService.getCompletedMatches(),
         ),
+        const CreateMatchForm(),
         TeamList(
-          teamList: StorageUtils.getAllTeams(),
+          teamList: StorageService.getAllTeams(),
           onSelectTeam: (team) => Utils.goToPage(
             CreateTeamForm.update(team: team),
             context,
@@ -103,7 +94,7 @@ class _HomeTabViewState extends State<HomeTabView> {
           onCreateTeam: (team) => setState(() {}),
         ),
         PlayerList(
-          playerList: StorageUtils.getAllPlayers(),
+          playerList: StorageService.getAllPlayers(),
           onSelectPlayer: (player) => Utils.goToPage(
             CreatePlayerForm.update(player: player),
             context,

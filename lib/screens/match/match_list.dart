@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/match_init.dart';
-import 'package:scorecard/screens/match/match_screen.dart';
+import 'package:scorecard/screens/match/innings_play_screen/match_screen.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
@@ -108,7 +108,7 @@ class _MatchListState extends State<MatchList> {
         Utils.goToPage(Scorecard(match: match), context);
         return;
       default:
-        Utils.goToPage(MatchScreen(match: match), context);
+        Utils.goToPage(MatchInterface(match: match), context);
     }
   }
 }

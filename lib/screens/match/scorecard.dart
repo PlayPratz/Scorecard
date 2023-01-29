@@ -94,7 +94,7 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
               inningsTitle.toUpperCase(),
             ),
           )),
-      body: innings.hasStarted
+      body: innings.balls.isNotEmpty
           ? Column(
               children: [
                 _wBattingPanel(innings),
@@ -111,13 +111,13 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
     return _innerPanel(
         Strings.scorecardBowling,
         innings.bowlingTeam.color,
-        innings.allBowlingInnings
+        innings.bowlerInnings
             .map((bowlInn) => GenericItemTile(
                   leading: Elements.getPlayerIcon(bowlInn.bowler, 40),
                   primaryHint: bowlInn.bowler.name,
                   secondaryHint:
                       "Economy: " + bowlInn.economy.toStringAsFixed(2),
-                  trailing: Text(bowlInn.score),
+                  trailing: Text("SCORE GOES HERE"),
                 ))
             .toList());
   }
@@ -126,7 +126,7 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
     return _innerPanel(
         Strings.scorecardBatting,
         innings.battingTeam.color,
-        innings.allBattingInnings
+        innings.batterInnings
             .map(
               (batInn) => GenericItemTile(
                 leading: Elements.getPlayerIcon(batInn.batter, 40),

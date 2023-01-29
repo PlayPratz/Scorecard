@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/ball.dart';
 
 class ColorStyles {
+  ColorStyles._();
+
   static const background = Color(0xFF121212);
   static const elevated = Color(0xFF242424);
   // static const card = Color(0xFF000041);

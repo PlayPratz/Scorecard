@@ -23,13 +23,13 @@ class ResultWinByDefending extends Result {
 
 class ResultWinByChasing extends Result {
   final int ballsLeft;
-  final int wicketsLeft;
+  // final int wicketsLeft;
 
-  ResultWinByChasing(
-      {required super.winner,
-      required super.loser,
-      required this.ballsLeft,
-      required this.wicketsLeft});
+  ResultWinByChasing({
+    required super.winner,
+    required super.loser,
+    required this.ballsLeft,
+  });
 
   @override
   VictoryType getVictoryType() {

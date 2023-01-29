@@ -257,16 +257,12 @@ class _InningsAdapter extends TypeAdapter<Innings> {
   @override
   Innings read(BinaryReader reader) {
     Innings innings = Innings(
-        battingTeam: StorageService.getTeamById(reader.readString()),
-        bowlingTeam: StorageService.getTeamById(reader.readString()),
-        maxOvers: reader.readInt(),
-        target: reader.readInt())
-      ..isInPlay = reader.readBool()
-      ..isAbandoned = reader.readBool();
-    if (innings.target == -1) innings.target = null;
-    List<dynamic> ballList = reader.readList();
+      battingTeam: StorageService.getTeamById(reader.readString()),
+      bowlingTeam: StorageService.getTeamById(reader.readString()),
+    );
+    List ballList = reader.readList();
     for (Ball ball in ballList) {
-      innings.addBall(ball);
+      innings.pushBall(ball);
     }
     return innings;
   }
@@ -276,11 +272,7 @@ class _InningsAdapter extends TypeAdapter<Innings> {
     writer
       ..writeString(innings.battingTeam.id)
       ..writeString(innings.bowlingTeam.id)
-      ..writeInt(innings.maxOvers)
-      ..writeInt(innings.target ?? -1)
-      ..writeBool(innings.isInPlay)
-      ..writeBool(innings.isAbandoned)
-      ..writeList(innings.allBalls);
+      ..writeList(innings.balls);
   }
 }
 

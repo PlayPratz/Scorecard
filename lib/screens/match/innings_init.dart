@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:scorecard/state_managers/ball_manager.dart';
+import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/util/strings.dart';
 import '../../models/ball.dart';
 import '../../models/cricket_match.dart';
 import '../../models/player.dart';
-import 'match_screen.dart';
+import 'innings_play_screen/match_screen.dart';
 import '../player/player_list.dart';
 import '../templates/titled_page.dart';
 import '../widgets/generic_item_tile.dart';
@@ -99,11 +102,17 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
               } else {
                 widget.match.startSecondInnings();
               }
+              BallManager(batter:  _)
               widget.match.currentInnings.addBatter(_batter1!);
               widget.match.currentInnings.addBatter(_batter2!);
               widget.match.currentInnings.addOver(Over(_bowler!));
               Utils.goToReplacementPage(
-                  MatchScreen(match: widget.match), context);
+                  MultiProvider(
+                    providers: [
+                      ChangeNotifierProvider(create: (context)=>InningsManager(widget.match.currentInnings),
+                      ChangeNotifierProvider(create: (context) => BallManager(batter: batter, bowler: bowler),))
+                    ],
+                    child: MatchInterface(match: widget.match)), context);
             }
           : null,
     );

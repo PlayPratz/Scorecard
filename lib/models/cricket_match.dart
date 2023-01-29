@@ -1,3 +1,5 @@
+import 'package:scorecard/util/constants.dart';
+
 import '../util/utils.dart';
 import 'innings.dart';
 import 'result.dart';
@@ -21,15 +23,15 @@ class CricketMatch {
 
   Toss? _toss;
 
+  MatchState matchState = MatchState.notStarted;
+
   CricketMatch({
     required this.id,
     required this.homeTeam,
     required this.awayTeam,
     required this.maxOvers,
-  })  : homeInnings = Innings(
-            battingTeam: homeTeam, bowlingTeam: awayTeam, maxOvers: maxOvers),
-        awayInnings = Innings(
-            battingTeam: awayTeam, bowlingTeam: homeTeam, maxOvers: maxOvers);
+  })  : homeInnings = Innings(battingTeam: homeTeam, bowlingTeam: awayTeam),
+        awayInnings = Innings(battingTeam: awayTeam, bowlingTeam: homeTeam);
 
   CricketMatch.create({
     required homeTeam,
@@ -63,22 +65,6 @@ class CricketMatch {
 
   bool get isTossCompleted => _toss != null;
 
-  MatchState get matchState {
-    if (secondInnings.isCompleted) {
-      return MatchState.completed;
-    } else if (secondInnings.isInPlay) {
-      return MatchState.secondInnings;
-    } else if (firstInnings.isCompleted) {
-      return MatchState.firstInnings;
-    } else if (firstInnings.isInPlay) {
-      return MatchState.firstInnings;
-    } else if (isTossCompleted) {
-      return MatchState.tossCompleted;
-    } else {
-      return MatchState.notStarted;
-    }
-  }
-
   Innings get currentInnings {
     switch (matchState) {
       case MatchState.tossCompleted:
@@ -107,8 +93,9 @@ class CricketMatch {
       return ResultWinByChasing(
         winner: secondInnings.battingTeam,
         loser: firstInnings.battingTeam,
-        ballsLeft: secondInnings.ballsRemaining,
-        wicketsLeft: secondInnings.wicketsRemaining,
+        ballsLeft:
+            maxOvers * Constants.ballsPerOver - secondInnings.ballsBowled,
+        // wicketsLeft: secondInnings.wicketsRemaining,
       );
     } else {
       // Match ties
@@ -131,24 +118,19 @@ class CricketMatch {
             completedToss.choice == TossChoice.bat)) {
       _isHomeInningsFirst = false;
     }
+    matchState = MatchState.tossCompleted;
   }
 
   void startFirstInnings() {
-    firstInnings.isInPlay = true;
+    matchState = MatchState.firstInnings;
   }
 
   void startSecondInnings() {
-    if (!firstInnings.isCompleted) {
-      firstInnings.isAbandoned = true;
-    }
-    secondInnings.target = firstInnings.runs + 1;
-    secondInnings.isInPlay = true;
+    matchState = MatchState.secondInnings;
   }
 
   void endSecondInnings() {
-    if (!secondInnings.isCompleted) {
-      secondInnings.isAbandoned = true;
-    }
+    matchState = MatchState.completed;
   }
 
   void startSuperOver() {

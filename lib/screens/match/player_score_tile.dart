@@ -5,7 +5,7 @@ import '../widgets/generic_item_tile.dart';
 import '../../util/elements.dart';
 
 class PlayerScoreTile extends StatelessWidget {
-  final Player player;
+  final Player? player;
   final String score;
   final bool isOnline;
   final Color teamColor;
@@ -29,12 +29,14 @@ class PlayerScoreTile extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(18),
       ),
-      child: GenericItemTile(
-        leading: Elements.getPlayerIcon(player, 36),
-        primaryHint: player.name,
-        secondaryHint: score,
-        trailing: null,
-      ),
+      child: player != null
+          ? GenericItemTile(
+              leading: Elements.getPlayerIcon(player!, 36),
+              primaryHint: player!.name,
+              secondaryHint: score,
+              trailing: null,
+            )
+          : null,
     );
   }
 }

@@ -106,20 +106,20 @@ class MatchTile extends StatelessWidget {
           ),
           const TextSpan(text: Strings.scoreWillScore),
           TextSpan(
-              text: match.firstInnings.runsProjected.toString(),
+              text: "PROJECTED SCORE HERE",
               style: const TextStyle(fontWeight: FontWeight.bold)),
           const TextSpan(text: Strings.scoreRunsAtCurrentRate),
           TextSpan(
-              text: match.firstInnings.runRatePerOver.toStringAsFixed(2),
+              text: "RPO HERE",
               style: const TextStyle(fontWeight: FontWeight.bold)),
           const TextSpan(text: Strings.scoreRunsPerOver),
         ];
         break;
       case MatchState.secondInnings:
         // Chasing, required rate
-        int runsRequired = match.secondInnings.runsRequired;
-        int ballsLeft = match.secondInnings.ballsRemaining;
-        double runRateRequired = match.secondInnings.runRateRequired;
+        int runsRequired = -1;
+        int ballsLeft = -1;
+        double runRateRequired = -1;
         textSpan = [
           TextSpan(
             text: match.secondInnings.battingTeam.shortName,
@@ -250,7 +250,7 @@ class _InningsTile extends StatelessWidget {
       minLeadingWidth: 0,
       // horizontalTitleGap: 0,
       dense: false,
-      leading: Elements.getOnlineIndicator(innings.isInPlay),
+      leading: Elements.getOnlineIndicator(true),
       title: Container(
         height: 48,
         alignment: Alignment.center,
@@ -266,39 +266,39 @@ class _InningsTile extends StatelessWidget {
               )),
         ),
       ),
-      subtitle: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: _wScoreDisplay(context),
-      ),
+      // subtitle: Padding(
+      //   padding: const EdgeInsets.symmetric(vertical: 8),
+      //   child: _wScoreDisplay(context),
+      // ),
       trailing: const SizedBox(width: 12),
     );
   }
 
-  Widget _wScoreDisplay(BuildContext context) {
-    if (innings.isInPlay || innings.isCompleted) {
-      String score = innings.runs.toString() +
-          Strings.seperatorSlash +
-          innings.wickets.toString();
-      TextTheme textTheme = Theme.of(context).textTheme;
+  // Widget _wScoreDisplay(BuildContext context) {
+  //   if (innings.isInPlay || innings.isCompleted) {
+  //     String score = innings.runs.toString() +
+  //         Strings.seperatorSlash +
+  //         innings.wickets.toString();
+  //     TextTheme textTheme = Theme.of(context).textTheme;
 
-      return RichText(
-        text: TextSpan(children: [
-          TextSpan(text: score, style: textTheme.bodyLarge),
-          TextSpan(text: Strings.scoreIn, style: textTheme.bodySmall),
-          TextSpan(text: innings.oversBowled, style: textTheme.bodyLarge),
-          TextSpan(
-              text: Strings.bracketOpenWithSpace, style: textTheme.bodySmall),
-          TextSpan(
-              text: innings.maxOvers.toString(), style: textTheme.bodySmall),
-          TextSpan(text: Strings.bracketClose, style: textTheme.bodySmall),
-        ]),
-      );
-    } else {
-      return RichText(
-          text: TextSpan(
-        style: Theme.of(context).textTheme.bodySmall,
-        text: Strings.scoreYetToBat,
-      ));
-    }
-  }
+  //     return RichText(
+  //       text: TextSpan(children: [
+  //         TextSpan(text: score, style: textTheme.bodyLarge),
+  //         TextSpan(text: Strings.scoreIn, style: textTheme.bodySmall),
+  //         TextSpan(text: innings.oversBowled, style: textTheme.bodyLarge),
+  //         TextSpan(
+  //             text: Strings.bracketOpenWithSpace, style: textTheme.bodySmall),
+  //         TextSpan(
+  //             text: innings.maxOvers.toString(), style: textTheme.bodySmall),
+  //         TextSpan(text: Strings.bracketClose, style: textTheme.bodySmall),
+  //       ]),
+  //     );
+  //   } else {
+  //     return RichText(
+  //         text: TextSpan(
+  //       style: Theme.of(context).textTheme.bodySmall,
+  //       text: Strings.scoreYetToBat,
+  //     ));
+  //   }
+  // }
 }

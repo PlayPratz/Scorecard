@@ -12,7 +12,7 @@ class RecentBallsView extends StatelessWidget {
     return Selector<InningsManager, int>(
       selector: (context, inningsManager) =>
           inningsManager.innings.balls.length,
-      builder: (context, ballCount, child) => Container(
+      builder: (context, ballCount, child) => SizedBox(
           height: 52,
           child: DecoratedBox(
             decoration: BoxDecoration(

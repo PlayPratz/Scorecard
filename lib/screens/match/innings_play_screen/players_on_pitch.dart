@@ -6,7 +6,8 @@ import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 
 class PlayersOnPitchView extends StatelessWidget {
-  const PlayersOnPitchView({super.key});
+  final bool isHomeTeamBatting;
+  const PlayersOnPitchView({super.key, required this.isHomeTeamBatting});
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +67,9 @@ class PlayersOnPitchView extends StatelessWidget {
     ];
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: inningsManager.isHomeTeamBatting
+      children: isHomeTeamBatting
           ? nowPlayingWidgets
-          : [...nowPlayingWidgets.reversed],
+          : nowPlayingWidgets.reversed.toList(),
     );
   }
 }

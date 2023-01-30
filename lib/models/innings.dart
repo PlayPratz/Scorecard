@@ -35,6 +35,9 @@ class Innings {
 
   int get ballsBowled => balls.where((ball) => ball.isLegal).length;
 
+  String get strScore => "$runs/$wickets";
+  String get strOvers => "${ballsBowled ~/ 6}.${ballsBowled % 6}";
+
   // Bowler
 
   Iterable<BowlerInnings> get bowlerInnings {

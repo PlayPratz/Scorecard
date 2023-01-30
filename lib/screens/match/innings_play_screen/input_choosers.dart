@@ -18,6 +18,7 @@ class RunChooser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final inningsManager = context.watch<InningsManager>();
+    _runSelection._selectedRuns = inningsManager.runs;
     return ToggleButtons(
       onPressed: (int index) {
         // The button that is tapped is set to true, and the others to false.
@@ -113,31 +114,40 @@ class WicketChooser extends StatelessWidget {
 }
 
 class ExtraChooser extends StatelessWidget {
-  const ExtraChooser({super.key});
+  ExtraChooser({super.key});
+
+  final SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
+      SingleToggleSelection.withWidgetifier(
+          dataList: BowlingExtra.values,
+          widgetifier: (bowlingExtra, selection) {
+            Color color = ColorStyles.ballWide;
+            if (bowlingExtra == selection) {
+              color = Colors.black;
+            } else if (bowlingExtra == BowlingExtra.noBall) {
+              color = ColorStyles.ballNoBall;
+            }
+            return Text(
+              Strings.getBowlingExtra(bowlingExtra),
+              style: TextStyle(color: color),
+            );
+          });
+  final SingleToggleSelection<BattingExtra> _battingExtraSelection =
+      SingleToggleSelection(
+    dataList: BattingExtra.values,
+    stringifier: Strings.getBattingExtra,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final inningsManager = context.watch<InningsManager>();
-    final SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
-        SingleToggleSelection.withWidgetifier(
-            dataList: BowlingExtra.values,
-            widgetifier: (bowlingExtra, selection) {
-              Color color = ColorStyles.ballWide;
-              if (bowlingExtra == selection) {
-                color = Colors.black;
-              } else if (bowlingExtra == BowlingExtra.noBall) {
-                color = ColorStyles.ballNoBall;
-              }
-              return Text(
-                Strings.getBowlingExtra(bowlingExtra),
-                style: TextStyle(color: color),
-              );
-            });
-    final SingleToggleSelection<BattingExtra> _battingExtraSelection =
-        SingleToggleSelection(
-      dataList: BattingExtra.values,
-      stringifier: Strings.getBattingExtra,
-    );
+    final battingExtra = context.select<InningsManager, BattingExtra?>(
+        (inningsManager) => inningsManager.battingExtra);
+
+    _battingExtraSelection.selection = battingExtra;
+
+    final bowlingExtra = context.select<InningsManager, BowlingExtra?>(
+        (inningsManager) => inningsManager.bowlingExtra);
+
+    _bowlingExtraSelection.selection = bowlingExtra;
     return Row(children: [
       ToggleButtons(
           onPressed: (index) {
@@ -146,7 +156,9 @@ class ExtraChooser extends StatelessWidget {
             } else {
               _battingExtraSelection.index = index;
             }
-            inningsManager.setBattingExtra(_battingExtraSelection.selection);
+            context
+                .read<InningsManager>()
+                .setBattingExtra(_battingExtraSelection.selection);
           },
           children: _battingExtraSelection.widgets,
           isSelected: _battingExtraSelection.booleans,
@@ -162,7 +174,9 @@ class ExtraChooser extends StatelessWidget {
             } else {
               _bowlingExtraSelection.index = index;
             }
-            inningsManager.setBowlingExtra(_bowlingExtraSelection.selection);
+            context
+                .read<InningsManager>()
+                .setBowlingExtra(_bowlingExtraSelection.selection);
           },
           children: _bowlingExtraSelection.widgets,
           isSelected: _bowlingExtraSelection.booleans,

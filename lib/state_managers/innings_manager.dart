@@ -113,10 +113,6 @@ class InningsManager with ChangeNotifier {
     _canSelectBatter = true;
     _canSelectBowler = true;
   }
-
-  // MISC
-
-  bool get isHomeTeamBatting => true; //TODO
 }
 
 enum NextInput {

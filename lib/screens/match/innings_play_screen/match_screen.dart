@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/innings.dart';
+import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_on_pitch.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart';
+import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 
 import '../../../models/cricket_match.dart';
@@ -14,8 +16,6 @@ import '../../../util/elements.dart';
 import '../../../util/utils.dart';
 import '../../player/player_list.dart';
 import '../../templates/titled_page.dart';
-import '../match_tile.dart';
-import '../scorecard.dart';
 
 class MatchInterface extends StatelessWidget {
   final CricketMatch match;
@@ -23,23 +23,45 @@ class MatchInterface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = match.homeTeam.shortName +
-        Strings.seperatorVersus +
-        match.awayTeam.shortName;
     return TitledPage(
-      title: title,
+      headerWidget: Selector<InningsManager, int>(
+        selector: (context, inningsManager) =>
+            inningsManager.innings.balls.length,
+        builder: (context, inningsManager, child) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: InkWell(
+            onTap: () => Utils.goToPage(Scorecard(match: match), context),
+            child: Row(
+              // mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: ScoreTile(
+                      team: match.homeTeam,
+                      battingInnings: match.currentInnings),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ScoreTile(
+                      team: match.awayTeam,
+                      battingInnings: match.currentInnings),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      toolbarHeight: 96,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          MatchTile(
-            match: match,
-            onSelectMatch: (match) =>
-                Utils.goToPage(Scorecard(match: match), context),
-          ),
+          const SizedBox(height: 0),
           const RecentBallsView(),
-          const PlayersOnPitchView(),
+          PlayersOnPitchView(
+            isHomeTeamBatting:
+                match.currentInnings.battingTeam == match.homeTeam,
+          ),
           const WicketChooser(),
-          const ExtraChooser(),
+          ExtraChooser(),
           RunChooser(),
           Consumer<InningsManager>(
             builder: (context, inningsManager, child) => Row(
@@ -127,5 +149,52 @@ class MatchInterface extends StatelessWidget {
         context);
 
     return selectedPlayer;
+  }
+}
+
+class ScoreTile extends StatelessWidget {
+  final Team team;
+  final Innings battingInnings;
+  final bool useShortName;
+
+  const ScoreTile({
+    super.key,
+    required this.team,
+    required this.battingInnings,
+    this.useShortName = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final score = team == battingInnings.battingTeam
+        ? battingInnings.strScore
+        : battingInnings.strOvers;
+
+    final teamName = useShortName ? team.shortName : team.name;
+    return Container(
+      height: 96,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: team.color.withOpacity(0.8),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            teamName.toUpperCase(),
+            style:
+                Theme.of(context).textTheme.titleSmall?.merge(const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    )),
+          ),
+          Text(
+            score,
+            style: Theme.of(context).textTheme.displaySmall,
+          )
+        ],
+      ),
+    );
   }
 }

@@ -116,10 +116,16 @@ class _MatchListState extends State<MatchList> {
             batter: lastBall.batter, innings: match.currentInnings);
         final bowler = BowlerInnings(
             bowler: lastBall.bowler, innings: match.currentInnings);
-        final inningsManager = context.read<InningsManager>();
-        inningsManager.setBatter(batter);
-        inningsManager.setBowler(bowler);
-        Utils.goToPage(MatchInterface(match: match), context);
+        Utils.goToPage(
+            ChangeNotifierProvider<InningsManager>(
+              create: (context) => InningsManager(
+                match.currentInnings,
+                batter: batter,
+                bowler: bowler,
+              ),
+              child: MatchInterface(match: match),
+            ),
+            context);
     }
   }
 }

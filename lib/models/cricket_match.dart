@@ -23,8 +23,6 @@ class CricketMatch {
 
   Toss? _toss;
 
-  MatchState matchState = MatchState.notStarted;
-
   CricketMatch({
     required this.id,
     required this.homeTeam,
@@ -79,6 +77,19 @@ class CricketMatch {
     }
   }
 
+  MatchState get matchState {
+    if (toss == null) {
+      // Toss has not completed
+      return MatchState.notStarted;
+    } else if (firstInnings.balls.isEmpty) {
+      return MatchState.tossCompleted;
+    } else if (secondInnings.balls.isEmpty) {
+      return MatchState.firstInnings;
+    } else {
+      return MatchState.secondInnings;
+    }
+  }
+
   Result get result {
     if (firstInnings.runs > secondInnings.runs) {
       // Won by defending
@@ -118,19 +129,19 @@ class CricketMatch {
             completedToss.choice == TossChoice.bat)) {
       _isHomeInningsFirst = false;
     }
-    matchState = MatchState.tossCompleted;
+    // matchState = MatchState.tossCompleted;
   }
 
   void startFirstInnings() {
-    matchState = MatchState.firstInnings;
+    // matchState = MatchState.firstInnings;
   }
 
   void startSecondInnings() {
-    matchState = MatchState.secondInnings;
+    // matchState = MatchState.secondInnings;
   }
 
   void endSecondInnings() {
-    matchState = MatchState.completed;
+    // matchState = MatchState.completed;
   }
 
   void startSuperOver() {

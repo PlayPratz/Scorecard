@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/cricket_match.dart';
+import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/match_init.dart';
 import 'package:scorecard/screens/match/innings_play_screen/match_screen.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/services/storage_service.dart';
 import 'create_match.dart';
@@ -108,6 +111,14 @@ class _MatchListState extends State<MatchList> {
         Utils.goToPage(Scorecard(match: match), context);
         return;
       default:
+        final lastBall = match.currentInnings.balls.last;
+        final batter = BatterInnings(
+            batter: lastBall.batter, innings: match.currentInnings);
+        final bowler = BowlerInnings(
+            bowler: lastBall.bowler, innings: match.currentInnings);
+        final inningsManager = context.read<InningsManager>();
+        inningsManager.setBatter(batter);
+        inningsManager.setBowler(bowler);
         Utils.goToPage(MatchInterface(match: match), context);
     }
   }

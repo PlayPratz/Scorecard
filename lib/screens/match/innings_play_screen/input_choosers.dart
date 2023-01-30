@@ -4,7 +4,6 @@ import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/screens/match/wicket_selector.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import 'package:scorecard/state_managers/ball_manager.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/elements.dart';
@@ -14,21 +13,16 @@ import 'package:scorecard/util/utils.dart';
 
 class RunChooser extends StatelessWidget {
   RunChooser({super.key});
-
   final _runSelection = _RunSelection();
 
   @override
   Widget build(BuildContext context) {
-    // context.select<InningsManager, int>(
-    //     (inningsManager) => inningsManager.selectedRuns);
-
-    print("GG");
-
+    final inningsManager = context.watch<InningsManager>();
     return ToggleButtons(
       onPressed: (int index) {
         // The button that is tapped is set to true, and the others to false.
         _runSelection.runIndex = index;
-        context.read<BallManager>().setRuns(_runSelection.runs);
+        inningsManager.setRuns(_runSelection.runs);
       },
       borderRadius: const BorderRadius.all(Radius.circular(8)),
       fillColor: _runSelection.runs == 4
@@ -81,15 +75,15 @@ class WicketChooser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ballManager = context.watch<BallManager>();
     String primary = Strings.matchScreenAddWicket;
     String hint = Strings.matchScreenAddWicketHint;
 
-    Wicket? _wicketSelection = ballManager.wicket;
+    final wicket = context.select<InningsManager, Wicket?>(
+        (inningsManager) => inningsManager.wicket);
 
-    if (_wicketSelection != null) {
-      primary = _wicketSelection.batter.name;
-      hint = Strings.getWicketDescription(_wicketSelection);
+    if (wicket != null) {
+      primary = wicket.batter.name;
+      hint = Strings.getWicketDescription(wicket);
     }
     return GenericItemTile(
         leading: const Icon(
@@ -101,21 +95,20 @@ class WicketChooser extends StatelessWidget {
         secondaryHint: hint,
         trailing: Elements.forwardIcon,
         onSelect: () => _onSelectWicket(context),
-        onLongPress: () => ballManager.setWicket(null));
+        onLongPress: () => context.read<InningsManager>().setWicket(null));
   }
 
   void _onSelectWicket(BuildContext context) async {
     final inningsManager = context.read<InningsManager>();
-    final ballManager = context.read<BallManager>();
     Wicket? selectedWicket = await Utils.goToPage(
         WicketSelector(
-          bowler: ballManager.bowler, //TODO solve jugaad
-          striker: ballManager.batter,
+          bowler: inningsManager.bowler!.bowler, //TODO solve jugaad
+          striker: inningsManager.batter!.batter,
           fieldingTeam: inningsManager.innings.bowlingTeam,
           battingTeam: inningsManager.innings.battingTeam,
         ),
         context);
-    ballManager.setWicket(selectedWicket);
+    inningsManager.setWicket(selectedWicket);
   }
 }
 
@@ -125,7 +118,6 @@ class ExtraChooser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final inningsManager = context.watch<InningsManager>();
-    final ballManager = context.watch<BallManager>();
     final SingleToggleSelection<BowlingExtra> _bowlingExtraSelection =
         SingleToggleSelection.withWidgetifier(
             dataList: BowlingExtra.values,
@@ -154,7 +146,7 @@ class ExtraChooser extends StatelessWidget {
             } else {
               _battingExtraSelection.index = index;
             }
-            ballManager.setBattingExtra(_battingExtraSelection.selection);
+            inningsManager.setBattingExtra(_battingExtraSelection.selection);
           },
           children: _battingExtraSelection.widgets,
           isSelected: _battingExtraSelection.booleans,
@@ -170,7 +162,7 @@ class ExtraChooser extends StatelessWidget {
             } else {
               _bowlingExtraSelection.index = index;
             }
-            ballManager.setBowlingExtra(_bowlingExtraSelection.selection);
+            inningsManager.setBowlingExtra(_bowlingExtraSelection.selection);
           },
           children: _bowlingExtraSelection.widgets,
           isSelected: _bowlingExtraSelection.booleans,

@@ -44,7 +44,8 @@ class Innings {
       if (bowlerInningsMap.containsKey(ball.bowler)) {
         bowlerInningsMap[ball.bowler]!.balls.add(ball);
       } else {
-        bowlerInningsMap[ball.bowler] = BowlerInnings(bowler: ball.bowler);
+        bowlerInningsMap[ball.bowler] =
+            BowlerInnings(bowler: ball.bowler, innings: this);
       }
     }
 
@@ -54,26 +55,32 @@ class Innings {
   // Batter
 
   Iterable<BatterInnings> get batterInnings {
-    final Map<Player, BatterInnings> batterInningsMap = {};
-
+    final batterInnings = <BatterInnings>[];
     for (final ball in balls) {
-      if (batterInningsMap.containsKey(ball.batter)) {
-        batterInningsMap[ball.batter]!.play(ball);
-      } else {
-        batterInningsMap[ball.batter] = BatterInnings(batter: ball.batter);
-      }
+      final batterInning = batterInnings.lastWhere(
+        (batInn) => batInn.batter == ball.batter && !batInn.isOut,
+        orElse: () {
+          final batInn = BatterInnings(batter: ball.batter, innings: this);
+          batterInnings.add(batInn);
+          return batInn;
+        },
+      );
+      batterInning.play(ball);
     }
 
-    return batterInningsMap.values;
+    return batterInnings;
   }
 }
 
 class BatterInnings {
   Player batter;
-  BatterInnings({required this.batter});
+  Innings innings;
+  BatterInnings({required this.batter, required this.innings});
 
-  final List<Ball> balls = [];
   Wicket? wicket;
+
+  List<Ball> get balls =>
+      innings.balls.where((ball) => ball.batter == batter).toList();
 
   int get runsScored =>
       balls.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
@@ -96,9 +103,11 @@ class BatterInnings {
 
 class BowlerInnings {
   Player bowler;
-  BowlerInnings({required this.bowler});
+  Innings innings;
+  BowlerInnings({required this.bowler, required this.innings});
 
-  final List<Ball> balls = [];
+  List<Ball> get balls =>
+      innings.balls.where((ball) => ball.bowler == bowler).toList();
 
   int get runsConceded => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
 
@@ -117,12 +126,12 @@ class BowlerInnings {
       ? 0
       : Constants.ballsPerOver * runsConceded / ballsBowled;
 
-  // String get score =>
-  //     wicketsTaken.toString() +
-  //     Strings.seperatorHyphen +
-  //     runsConceded.toString() +
-  //     Strings.scoreIn +
-  //     oversBowled;
+  String get score =>
+      wicketsTaken.toString() +
+      Strings.seperatorHyphen +
+      runsConceded.toString() +
+      Strings.scoreIn +
+      ballsBowled.toString();
 
   // void bowl(Over over) {
   //   overs.add(over);

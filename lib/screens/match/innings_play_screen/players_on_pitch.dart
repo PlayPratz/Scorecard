@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/screens/match/player_score_tile.dart';
-import 'package:scorecard/state_managers/ball_manager.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
@@ -12,25 +11,23 @@ class PlayersOnPitchView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final inningsManager = context.watch<InningsManager>();
-    final onPitchBatters = inningsManager.onPitchBatters;
 
     List<Widget> nowPlayingWidgets = [
       Expanded(
         child: Column(children: [
-          ...onPitchBatters.map((batterInnings) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: InkWell(
-                  onTap: () => context
-                      .read<BallManager>()
-                      .setBatter(batterInnings.batter),
-                  child: PlayerScoreTile(
-                    player: batterInnings.batter,
-                    score: batterInnings.score,
-                    teamColor: inningsManager.innings.battingTeam.color,
-                    isOnline: batterInnings == inningsManager.onStrikeBatter,
-                  ),
-                ),
-              ))
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: InkWell(
+              // TODO
+              // onTap: () => inningsManager.setBatter(inningsManager.batter!),
+              child: PlayerScoreTile(
+                player: inningsManager.batter!.batter,
+                score: inningsManager.batter!.score,
+                teamColor: inningsManager.innings.battingTeam.color,
+                isOnline: true,
+              ),
+            ),
+          ),
         ]),
       ),
       const SizedBox(width: 4),
@@ -42,10 +39,9 @@ class PlayersOnPitchView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2.0),
               child: PlayerScoreTile(
-                player: inningsManager.bowler,
+                player: inningsManager.bowler!.bowler,
                 teamColor: inningsManager.innings.bowlingTeam.color,
-                score: "SCORE GOES HERE",
-                // score: inningsManager.innings.currentBowlerInnings.score,
+                score: inningsManager.bowler!.score,
               ),
             ),
             const SizedBox(height: 8),

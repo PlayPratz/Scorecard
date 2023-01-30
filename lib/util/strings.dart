@@ -103,8 +103,7 @@ class Strings {
 
   // Innings Init
   static const String initInningsTitle = "Let's Start The Innings";
-  static const String initInningsBatter1 = "Batter One";
-  static const String initInningsBatter2 = "Batter Two";
+  static const String initInningsBatter = "Batter";
   static const String initInningsBowler = "Bowler";
   static const String initInningsChooseBatter = "Choose a Batter";
   static const String initInningsChooseBatterHint = "It's scorin' time!";

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/state_managers/ball_manager.dart';
+import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/util/strings.dart';
-import '../../models/ball.dart';
 import '../../models/cricket_match.dart';
 import '../../models/player.dart';
 import 'innings_play_screen/match_screen.dart';
@@ -24,8 +23,7 @@ class InningsInitScreen extends StatefulWidget {
 }
 
 class _InningsInitScreenState extends State<InningsInitScreen> {
-  Player? _batter1;
-  Player? _batter2;
+  Player? _batter;
   Player? _bowler;
 
   @override
@@ -36,20 +34,13 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(Strings.initInningsBatter1),
-            const SizedBox(height: 24),
-            _wBatterSelection(_batter1, ((p) {
-              _batter1 = p;
-            })),
             const Spacer(),
-            const Text(Strings.initInningsBatter2),
-            const SizedBox(height: 24),
-            _wBatterSelection(_batter2, ((p) {
-              _batter2 = p;
+            const Text(Strings.initInningsBatter),
+            _wBatterSelection(_batter, ((p) {
+              _batter = p;
             })),
             const Spacer(),
             const Text(Strings.initInningsBowler),
-            const SizedBox(height: 24),
             _wBowlerSelection(_bowler),
             const Spacer(),
             _wConfirmButton(),
@@ -102,17 +93,19 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
               } else {
                 widget.match.startSecondInnings();
               }
-              BallManager(batter:  _)
-              widget.match.currentInnings.addBatter(_batter1!);
-              widget.match.currentInnings.addBatter(_batter2!);
-              widget.match.currentInnings.addOver(Over(_bowler!));
+              final batter = BatterInnings(
+                  batter: _batter!, innings: widget.match.currentInnings);
+              final bowler = BowlerInnings(
+                  bowler: _bowler!, innings: widget.match.currentInnings);
               Utils.goToReplacementPage(
-                  MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider(create: (context)=>InningsManager(widget.match.currentInnings),
-                      ChangeNotifierProvider(create: (context) => BallManager(batter: batter, bowler: bowler),))
-                    ],
-                    child: MatchInterface(match: widget.match)), context);
+                  ChangeNotifierProvider(
+                    create: (context) => InningsManager(
+                        widget.match.currentInnings,
+                        batter: batter,
+                        bowler: bowler),
+                    child: MatchInterface(match: widget.match),
+                  ),
+                  context);
             }
           : null,
     );
@@ -135,6 +128,5 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
         context);
   }
 
-  bool get _canInitInnings =>
-      _batter1 != null && _batter2 != null && _bowler != null;
+  bool get _canInitInnings => _batter != null && _bowler != null;
 }

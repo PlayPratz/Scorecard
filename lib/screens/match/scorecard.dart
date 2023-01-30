@@ -117,7 +117,7 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
                   primaryHint: bowlInn.bowler.name,
                   secondaryHint:
                       "Economy: " + bowlInn.economy.toStringAsFixed(2),
-                  trailing: Text("SCORE GOES HERE"),
+                  trailing: Text(bowlInn.score),
                 ))
             .toList());
   }

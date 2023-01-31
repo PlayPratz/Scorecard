@@ -46,21 +46,6 @@ class PlayersOnPitchView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-
-            // THIS IS End Innings Button
-            SizedBox(
-              height: 64,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: OutlinedButton.icon(
-                  onPressed: null,
-                  onLongPress: inningsManager.endInnings,
-                  style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
-                  icon: const Icon(Icons.cancel),
-                  label: const Text(Strings.matchScreenEndInnings),
-                ),
-              ),
-            )
           ],
         ),
       ),

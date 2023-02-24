@@ -5,7 +5,7 @@ import 'package:scorecard/models/wicket.dart';
 
 class InningsManager with ChangeNotifier {
   final Innings innings;
-  InningsManager(this.innings, {this.batter, this.bowler});
+  InningsManager(this.innings, {this.batter, this.nsbatter, this.bowler});
 
   Iterable<BatterInnings> get onPitchBatters => innings.batterInnings
       .where((batterInning) => !batterInning.isOut)
@@ -24,6 +24,9 @@ class InningsManager with ChangeNotifier {
         bowlingExtra: bowlingExtra,
         wicket: wicket);
     innings.pushBall(ball);
+    if (runs % 2 == 1) {
+      _swapStrike();
+    }
     resetSelections();
     notifyListeners();
   }
@@ -44,6 +47,7 @@ class InningsManager with ChangeNotifier {
   // SELECTIONS
 
   BatterInnings? batter;
+  BatterInnings? nsbatter;
   BowlerInnings? bowler;
 
   int runs = 0;
@@ -58,10 +62,20 @@ class InningsManager with ChangeNotifier {
   }
 
   void setBatter(BatterInnings batter) {
-    this.batter = batter;
+    if (batter == nsbatter) {
+      _swapStrike();
+    } else {
+      this.batter = batter;
+    }
     _canSelectBatter = false;
 
     notifyListeners();
+  }
+
+  void _swapStrike() {
+    final swap = batter;
+    batter = nsbatter;
+    nsbatter = swap;
   }
 
   void setBowler(BowlerInnings bowler) {

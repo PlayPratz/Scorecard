@@ -11,7 +11,20 @@ class Innings {
   final Team battingTeam;
   final Team bowlingTeam;
 
-  Innings({required this.battingTeam, required this.bowlingTeam});
+  final int? target;
+  final int maxOvers;
+
+  Innings(
+      {required this.battingTeam,
+      required this.bowlingTeam,
+      required this.maxOvers})
+      : target = null;
+
+  Innings.target(
+      {required this.battingTeam,
+      required this.bowlingTeam,
+      required this.target,
+      required this.maxOvers});
 
   final List<Ball> balls = [];
 
@@ -121,9 +134,8 @@ class BowlerInnings {
 
   int get ballsBowled => balls.where((ball) => ball.isLegal).length;
 
-  // TODO
-  // String get oversBowled =>
-  //     (ballsBowled ~/ 6).toString() + '.' + (ballsBowled % 6).toString();
+  String get oversBowled =>
+      (ballsBowled ~/ 6).toString() + '.' + (ballsBowled % 6).toString();
 
   double get economy => ballsBowled == 0
       ? 0
@@ -132,9 +144,7 @@ class BowlerInnings {
   String get score =>
       wicketsTaken.toString() +
       Strings.seperatorHyphen +
-      runsConceded.toString() +
-      Strings.scoreIn +
-      ballsBowled.toString();
+      runsConceded.toString();
 
   // void bowl(Over over) {
   //   overs.add(over);

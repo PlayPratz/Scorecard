@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/match/innings_play_screen/match_screen.dart';
+import 'package:scorecard/models/team.dart';
 import '../../models/cricket_match.dart';
 import '../../models/innings.dart';
-import '../../models/result.dart';
 import '../../styles/color_styles.dart';
 import '../../util/strings.dart';
-import '../../util/elements.dart';
 
 class MatchTile extends StatelessWidget {
   final CricketMatch match;
@@ -39,10 +37,16 @@ class MatchTile extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: _InningsTile(match.homeInnings),
+                    child: _InningsTile(
+                      innings: match.homeInnings,
+                      team: match.homeTeam,
+                    ),
                   ),
                   Expanded(
-                    child: _InningsTile(match.awayInnings),
+                    child: _InningsTile(
+                      innings: match.awayInnings,
+                      team: match.awayTeam,
+                    ),
                   ),
                 ],
               ),
@@ -66,35 +70,90 @@ class MatchTile extends StatelessWidget {
 }
 
 class _InningsTile extends StatelessWidget {
-  final Innings innings;
+  final Innings? innings;
+  final Team team;
 
-  const _InningsTile(this.innings);
+  const _InningsTile({required this.innings, required this.team});
 
   @override
   Widget build(BuildContext context) {
-    String score = innings.runs.toString() +
-        Strings.seperatorSlash +
-        innings.wickets.toString();
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-      // tileColor: innings.battingTeam.color,
-      minVerticalPadding: 8,
-      minLeadingWidth: 0,
-      // horizontalTitleGap: 0,
-      dense: false,
-      // leading: Elements.getOnlineIndicator(true),
-      title: ScoreTile(
-        battingInnings: innings,
-        team: innings.battingTeam,
-        useShortName: true,
-      ),
-      // subtitle: Padding(
-      //   padding: const EdgeInsets.symmetric(vertical: 8),
-      //   child: _wScoreDisplay(context),
-      // ),
-      trailing: Text(
-        innings.strOvers,
-        style: Theme.of(context).textTheme.titleLarge,
+    if (innings == null) {
+      return ScoreTileInner(
+          teamName: team.shortName, score: "YTB", color: team.color);
+    }
+
+    return ScoreTileInner(
+      teamName: team.shortName,
+      score: innings!.strScore,
+      color: team.color,
+      // useShortName: true,
+    );
+  }
+}
+
+class ScoreTile extends StatelessWidget {
+  final Team team;
+  final Innings battingInnings;
+  final bool useShortName;
+
+  const ScoreTile({
+    super.key,
+    required this.team,
+    required this.battingInnings,
+    this.useShortName = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final score = team == battingInnings.battingTeam
+        ? battingInnings.strScore
+        : battingInnings.strOvers;
+    final teamName = useShortName ? team.shortName : team.name;
+    return ScoreTileInner(score: score, teamName: teamName, color: team.color);
+  }
+}
+
+class ScoreTileInner extends StatelessWidget {
+  final String teamName;
+  final String score;
+  final Color color;
+
+  const ScoreTileInner({
+    super.key,
+    required this.teamName,
+    required this.score,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Container(
+        height: 96,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: color.withOpacity(0.8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              teamName,
+              style: Theme.of(context).textTheme.titleSmall?.merge(
+                    const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+            ),
+            Text(
+              score,
+              style: Theme.of(context).textTheme.displaySmall,
+            )
+          ],
+        ),
       ),
     );
   }

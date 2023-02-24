@@ -17,7 +17,8 @@ const int _playerTypeId = 101;
 const String _teamBoxName = "teams";
 const int _teamTypeId = 102;
 
-const String _matchBoxName = "matches"; //lmao "matchbox"
+// const String _matchBoxName = "matches"; //lmao "matchbox"
+const String _matchBoxName = "matches_store"; //lmao "matchbox"
 const int _matchTypeId = 103;
 
 const int _inningsTypeId = 104;
@@ -79,7 +80,7 @@ class StorageService {
   static Player getPlayerById(String id) {
     Player? player = _playerBox.get(id);
     if (player == null) {
-      throw UnimplementedError("An non-existent Player was accessed: " + id);
+      throw UnimplementedError("A non-existent Player was accessed: " + id);
     }
     return player;
   }
@@ -257,9 +258,9 @@ class _InningsAdapter extends TypeAdapter<Innings> {
   @override
   Innings read(BinaryReader reader) {
     Innings innings = Innings(
-      battingTeam: StorageService.getTeamById(reader.readString()),
-      bowlingTeam: StorageService.getTeamById(reader.readString()),
-    );
+        battingTeam: StorageService.getTeamById(reader.readString()),
+        bowlingTeam: StorageService.getTeamById(reader.readString()),
+        maxOvers: reader.readInt());
     List ballList = reader.readList();
     for (Ball ball in ballList) {
       innings.pushBall(ball);
@@ -272,6 +273,7 @@ class _InningsAdapter extends TypeAdapter<Innings> {
     writer
       ..writeString(innings.battingTeam.id)
       ..writeString(innings.bowlingTeam.id)
+      ..writeInt(innings.maxOvers)
       ..writeList(innings.balls);
   }
 }
@@ -370,8 +372,10 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
     CricketMatch match = CricketMatch.load(
       id: reader.readString(),
       maxOvers: reader.readInt(),
-      homeInnings: reader.read(),
-      awayInnings: reader.read(),
+      homeTeam: StorageService.getTeamById(reader.readString()),
+      awayTeam: StorageService.getTeamById(reader.readString()),
+      inningsIndex: reader.readInt(),
+      inningsList: reader.readList().cast(),
     );
 
     // Toss
@@ -388,9 +392,12 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
     writer
       ..writeString(match.id)
       ..writeInt(match.maxOvers)
-      // Innings
-      ..write(match.homeInnings)
-      ..write(match.awayInnings)
+      // Teams
+      ..writeString(match.homeTeam.id)
+      ..writeString(match.awayTeam.id)
+      //Innings
+      ..writeInt(match.inningsIndex)
+      ..writeList(match.inningsList)
       // Toss
       ..write(match.toss);
     // Super Overs are handled in _linkSuperOvers()

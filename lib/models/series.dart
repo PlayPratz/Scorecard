@@ -31,11 +31,11 @@ class Series {
     matches.add(match);
   }
 
-  int getWinsForTeam(Team team) {
-    return matches
-        .where((match) =>
-            match.matchState == MatchState.completed &&
-            match.result.winner == team)
-        .length;
-  }
+  // int getWinsForTeam(Team team) {
+  //   return matches
+  //       .where((match) =>
+  //           match.matchState == MatchState.completed &&
+  //           match.result.winner == team)
+  //       .length;
+  // }
 }

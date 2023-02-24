@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/player.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
@@ -53,18 +54,15 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
       ExpansionPanelList(
         expandedHeaderPadding: const EdgeInsets.all(0),
         dividerColor: Colors.transparent,
-        children: [
-          _wInningsPanel(
-              widget.match.firstInnings,
-              widget.match.firstInnings.battingTeam.name +
-                  Strings.scorecardInningsWithSpace,
-              0),
-          _wInningsPanel(
-              widget.match.secondInnings,
-              widget.match.secondInnings.battingTeam.name +
-                  Strings.scorecardInningsWithSpace,
-              1),
-        ],
+        children: widget.match.inningsList
+            .map(
+              (innings) => _wInningsPanel(
+                innings,
+                innings.battingTeam.name + Strings.scorecardInningsWithSpace,
+                widget.match.inningsList.indexOf(innings),
+              ),
+            )
+            .toList(),
         expansionCallback: (panelIndex, isExpanded) => setState(() {
           _isInningsPanelOpen[panelIndex] = !isExpanded;
         }),
@@ -112,33 +110,18 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
         Strings.scorecardBowling,
         innings.bowlingTeam.color,
         innings.bowlerInnings
-            .map((bowlInn) => GenericItemTile(
-                  leading: Elements.getPlayerIcon(bowlInn.bowler, 40),
-                  primaryHint: bowlInn.bowler.name,
-                  secondaryHint:
-                      "Economy: " + bowlInn.economy.toStringAsFixed(2),
-                  trailing: Text(bowlInn.score),
-                ))
+            .map((bowlInn) => _BowlerInningsScore(bowlerInnings: bowlInn))
             .toList());
   }
 
   Widget _wBattingPanel(Innings innings) {
     return _innerPanel(
-        Strings.scorecardBatting,
-        innings.battingTeam.color,
-        innings.batterInnings
-            .map(
-              (batInn) => GenericItemTile(
-                leading: Elements.getPlayerIcon(batInn.batter, 40),
-                primaryHint: batInn.batter.name,
-                secondaryHint: Strings.getWicketDescription(batInn.wicket),
-                trailing: Text(
-                  batInn.score,
-                  // style: TextStyle(fontSize: 16),
-                ),
-              ),
-            )
-            .toList());
+      Strings.scorecardBatting,
+      innings.battingTeam.color,
+      innings.batterInnings
+          .map((batInn) => _BattingInningsScore(batterInnings: batInn))
+          .toList(),
+    );
   }
 
   Widget _innerPanel(String heading, Color color, List<Widget> playerTiles) {
@@ -165,6 +148,73 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
                   tile
                 ],
               )),
+        ],
+      ),
+    );
+  }
+}
+
+class _BowlerInningsScore extends StatelessWidget {
+  final BowlerInnings bowlerInnings;
+  const _BowlerInningsScore({required this.bowlerInnings});
+
+  @override
+  Widget build(BuildContext context) {
+    return _GenericInningsScore(
+      player: bowlerInnings.bowler,
+      // secondary: "Economy: " + bowlerInnings.economy.toStringAsFixed(2),
+      secondary: "${bowlerInnings.oversBowled} @${bowlerInnings.economy}",
+      trailPrimary: bowlerInnings.runsConceded.toString(),
+      trailSecondary: bowlerInnings.wicketsTaken.toString(),
+    );
+  }
+}
+
+class _BattingInningsScore extends StatelessWidget {
+  final BatterInnings batterInnings;
+  const _BattingInningsScore({required this.batterInnings});
+
+  @override
+  Widget build(BuildContext context) {
+    return _GenericInningsScore(
+      player: batterInnings.batter,
+      secondary: Strings.getWicketDescription(batterInnings.wicket),
+      trailPrimary: batterInnings.runsScored.toString(),
+      trailSecondary: batterInnings.numBallsFaced.toString(),
+    );
+  }
+}
+
+class _GenericInningsScore extends StatelessWidget {
+  final String secondary;
+  final String trailPrimary;
+  final String trailSecondary;
+  final Player player;
+  const _GenericInningsScore({
+    required this.player,
+    required this.secondary,
+    required this.trailPrimary,
+    required this.trailSecondary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GenericItemTile(
+      leading: Elements.getPlayerIcon(player, 40),
+      primaryHint: player.name,
+      secondaryHint: secondary,
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            trailPrimary,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          Text(
+            trailSecondary,
+            // style: TextStyle(fontSize: 16),
+          ),
         ],
       ),
     );

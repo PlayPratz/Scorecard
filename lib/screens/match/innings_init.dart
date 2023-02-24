@@ -24,6 +24,7 @@ class InningsInitScreen extends StatefulWidget {
 
 class _InningsInitScreenState extends State<InningsInitScreen> {
   Player? _batter;
+  Player? _batter2;
   Player? _bowler;
 
   @override
@@ -38,6 +39,11 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
             const Text(Strings.initInningsBatter),
             _wBatterSelection(_batter, ((p) {
               _batter = p;
+            })),
+            const Spacer(),
+            const Text("Non Striker"), //TODO
+            _wBatterSelection(_batter2, ((p) {
+              _batter2 = p;
             })),
             const Spacer(),
             const Text(Strings.initInningsBowler),
@@ -95,14 +101,20 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
               }
               final batter = BatterInnings(
                   batter: _batter!, innings: widget.match.currentInnings);
+              final nsbatter = _batter2 == null
+                  ? null
+                  : BatterInnings(
+                      batter: _batter2!, innings: widget.match.currentInnings);
               final bowler = BowlerInnings(
                   bowler: _bowler!, innings: widget.match.currentInnings);
               Utils.goToReplacementPage(
                   ChangeNotifierProvider(
                     create: (context) => InningsManager(
-                        widget.match.currentInnings,
-                        batter: batter,
-                        bowler: bowler),
+                      widget.match.currentInnings,
+                      batter: batter,
+                      nsbatter: nsbatter,
+                      bowler: bowler,
+                    ),
                     child: MatchInterface(match: widget.match),
                   ),
                   context);

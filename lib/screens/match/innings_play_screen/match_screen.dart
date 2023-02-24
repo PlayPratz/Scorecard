@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/innings.dart';
-import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_on_pitch.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart';
+import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 
@@ -149,52 +149,5 @@ class MatchInterface extends StatelessWidget {
         context);
 
     return selectedPlayer;
-  }
-}
-
-class ScoreTile extends StatelessWidget {
-  final Team team;
-  final Innings battingInnings;
-  final bool useShortName;
-
-  const ScoreTile({
-    super.key,
-    required this.team,
-    required this.battingInnings,
-    this.useShortName = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final score = team == battingInnings.battingTeam
-        ? battingInnings.strScore
-        : battingInnings.strOvers;
-
-    final teamName = useShortName ? team.shortName : team.name;
-    return Container(
-      height: 96,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: team.color.withOpacity(0.8),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            teamName.toUpperCase(),
-            style:
-                Theme.of(context).textTheme.titleSmall?.merge(const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    )),
-          ),
-          Text(
-            score,
-            style: Theme.of(context).textTheme.displaySmall,
-          )
-        ],
-      ),
-    );
   }
 }

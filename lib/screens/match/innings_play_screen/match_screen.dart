@@ -64,7 +64,28 @@ class MatchInterface extends StatelessWidget {
                 match.currentInnings.battingTeam == match.homeTeam,
           ),
           const RecentBallsView(),
-          const WicketChooser(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 96,
+                height: 56,
+                child: OutlinedButton.icon(
+                  onPressed: null,
+                  onLongPress: () {
+                    match.progressMatch();
+                    handleOpenMatch(match, context);
+                  },
+                  icon: Icon(Icons.cancel),
+                  label: Text("End"),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.redAccent,
+                  ),
+                ),
+              ),
+              Expanded(child: const WicketChooser()),
+            ],
+          ),
           ExtraChooser(),
           RunChooser(),
           Consumer<InningsManager>(

@@ -81,16 +81,17 @@ class RecentBallsView extends StatelessWidget {
                   );
                 },
                 separatorBuilder: (context, index) {
-                  int realIndex = ballCount - 1 - index;
-                  if (realIndex + 1 < ballCount &&
-                      context
-                          .read<InningsManager>()
-                          .innings
-                          .balls[realIndex + 1]
-                          .isFirstBallOfOver) {
-                    return const SizedBox(
-                      height: 32,
-                      child: VerticalDivider(color: Colors.amber),
+                  Ball currentBall = context
+                      .read<InningsManager>()
+                      .innings
+                      .balls[ballCount - 1 - index];
+
+                  if (currentBall.isFirstBallOfOver) {
+                    return const VerticalDivider(
+                      color: Colors.amber,
+                      endIndent: 4,
+                      indent: 4,
+                      width: 8,
                     );
                   } else {
                     return const SizedBox();

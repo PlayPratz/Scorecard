@@ -98,34 +98,41 @@ class _MatchListState extends State<MatchList> {
             ))
         .toList();
   }
+}
 
-  void handleOpenMatch(CricketMatch match, BuildContext context) {
-    switch (match.matchState) {
-      case MatchState.notStarted:
-        Utils.goToPage(MatchInitScreen(match: match), context);
-        return;
-      case MatchState.tossCompleted:
+void handleOpenMatch(CricketMatch match, BuildContext context) {
+  switch (match.matchState) {
+    case MatchState.notStarted:
+      Utils.goToPage(MatchInitScreen(match: match), context);
+      return;
+    case MatchState.tossCompleted:
+      Utils.goToPage(InningsInitScreen(match: match), context);
+      return;
+    case MatchState.completed:
+      Utils.goToPage(Scorecard(match: match), context);
+      return;
+    case MatchState.secondInnings:
+      if (match.secondInnings!.balls.isEmpty) {
         Utils.goToPage(InningsInitScreen(match: match), context);
         return;
-      case MatchState.completed:
-        Utils.goToPage(Scorecard(match: match), context);
-        return;
-      default:
-        final lastBall = match.currentInnings.balls.last;
-        final batter = BatterInnings(
-            batter: lastBall.batter, innings: match.currentInnings);
-        final bowler = BowlerInnings(
-            bowler: lastBall.bowler, innings: match.currentInnings);
-        Utils.goToPage(
-            ChangeNotifierProvider<InningsManager>(
-              create: (context) => InningsManager(
-                match.currentInnings,
-                batter: batter,
-                bowler: bowler,
-              ),
-              child: MatchInterface(match: match),
+      }
+      continue def;
+    def:
+    default:
+      final lastBall = match.currentInnings.balls.last;
+      final batter =
+          BatterInnings(batter: lastBall.batter, innings: match.currentInnings);
+      final bowler =
+          BowlerInnings(bowler: lastBall.bowler, innings: match.currentInnings);
+      Utils.goToPage(
+          ChangeNotifierProvider<InningsManager>(
+            create: (context) => InningsManager(
+              match.currentInnings,
+              batter: batter,
+              bowler: bowler,
             ),
-            context);
-    }
+            child: MatchInterface(match: match),
+          ),
+          context);
   }
 }

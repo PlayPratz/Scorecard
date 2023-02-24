@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/wicket.dart';
+import 'package:scorecard/util/constants.dart';
 
 class InningsManager with ChangeNotifier {
   final Innings innings;
@@ -42,7 +43,7 @@ class InningsManager with ChangeNotifier {
 
   bool get canAddBall => true; // TODO _validateBallParams
 
-  void endInnings() {}
+  // void endInnings() {} TODO
 
   // SELECTIONS
 
@@ -104,6 +105,14 @@ class InningsManager with ChangeNotifier {
   bool _canSelectBowler = false;
 
   NextInput get nextInput {
+    if (innings.ballsBowled == innings.maxOvers * Constants.ballsPerOver) {
+      return NextInput.end;
+    }
+
+    if (innings.target != null && innings.runs >= innings.target!) {
+      return NextInput.end;
+    }
+
     if (_canSelectBowler &&
         innings.balls.isNotEmpty &&
         innings.balls.where((ball) => ball.isLegal).length % 6 == 0) {

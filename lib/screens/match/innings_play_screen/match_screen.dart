@@ -4,6 +4,7 @@ import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_on_pitch.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart';
+import 'package:scorecard/screens/match/match_list.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
@@ -39,7 +40,7 @@ class MatchInterface extends StatelessWidget {
                       team: match.homeTeam,
                       battingInnings: match.currentInnings),
                 ),
-                const SizedBox(width: 8),
+                // const SizedBox(width: 8),
                 Expanded(
                   child: ScoreTile(
                       team: match.awayTeam,
@@ -55,11 +56,14 @@ class MatchInterface extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const SizedBox(height: 0),
-          const RecentBallsView(),
+          RunRatePane(
+            showTarget: (match.currentInnings == match.secondInnings),
+          ),
           PlayersOnPitchView(
             isHomeTeamBatting:
                 match.currentInnings.battingTeam == match.homeTeam,
           ),
+          const RecentBallsView(),
           const WicketChooser(),
           ExtraChooser(),
           RunChooser(),
@@ -108,7 +112,7 @@ class MatchInterface extends StatelessWidget {
         break;
       case NextInput.end:
         text = Strings.matchScreenEndInnings;
-        onPressed = inningsManager.endInnings;
+        onPressed = () => _endInnings(context);
         break;
     }
 
@@ -149,5 +153,55 @@ class MatchInterface extends StatelessWidget {
         context);
 
     return selectedPlayer;
+  }
+
+  void _endInnings(BuildContext context) {
+    match.progressMatch();
+    handleOpenMatch(match, context);
+  }
+}
+
+class RunRatePane extends StatelessWidget {
+  final bool showTarget;
+  const RunRatePane({super.key, this.showTarget = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final innings = context.watch<InningsManager>().innings;
+    return Row(
+      children: !showTarget
+          ? [
+              Expanded(
+                child: ScoreTileInner(
+                  teamName: "Current RR",
+                  score: innings.currentRunRate.toStringAsFixed(2),
+                  color: Colors.blueGrey,
+                ),
+              ),
+              Expanded(
+                child: ScoreTileInner(
+                  teamName: "Projected",
+                  score: innings.projectedRuns.toString(),
+                  color: Colors.lime,
+                ),
+              ),
+            ]
+          : [
+              Expanded(
+                child: ScoreTileInner(
+                  teamName: "Required",
+                  score: innings.requiredRuns.toString(),
+                  color: Colors.green,
+                ),
+              ),
+              Expanded(
+                child: ScoreTileInner(
+                  teamName: "Balls Left",
+                  score: innings.ballsLeft.toString(),
+                  color: Colors.red,
+                ),
+              ),
+            ],
+    );
   }
 }

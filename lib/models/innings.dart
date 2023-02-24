@@ -31,6 +31,9 @@ class Innings {
   // OPERATIONS
 
   void pushBall(Ball ball) {
+    if (ballsBowled % 6 == 0) {
+      ball.isFirstBallOfOver = true;
+    }
     balls.add(ball);
   }
 
@@ -49,7 +52,18 @@ class Innings {
   int get ballsBowled => balls.where((ball) => ball.isLegal).length;
 
   String get strScore => "$runs/$wickets";
-  String get strOvers => "${ballsBowled ~/ 6}.${ballsBowled % 6}";
+  String get strOvers =>
+      "${ballsBowled ~/ Constants.ballsPerOver}.${ballsBowled % Constants.ballsPerOver}";
+
+  // Calculations
+
+  double get currentRunRate =>
+      ballsBowled == 0 ? 0 : (runs / ballsBowled) * Constants.ballsPerOver;
+  int get projectedRuns => (currentRunRate * maxOvers).floor();
+  int get requiredRuns => target != null ? (target! - runs) : 0;
+  int get ballsLeft => maxOvers * Constants.ballsPerOver - ballsBowled;
+  double get requiredRunRate =>
+      target != null ? (requiredRuns / ballsLeft) * Constants.ballsPerOver : 0;
 
   // Bowler
 

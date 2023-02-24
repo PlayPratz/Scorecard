@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:scorecard/util/constants.dart';
 
 import '../util/utils.dart';
@@ -68,7 +70,7 @@ class CricketMatch {
 
   bool get isTossCompleted => _toss != null;
 
-  Innings get currentInnings => inningsList[inningsIndex];
+  Innings get currentInnings => inningsList[min(inningsIndex, 1)];
 
   MatchState get matchState {
     if (toss == null) {
@@ -76,10 +78,12 @@ class CricketMatch {
       return MatchState.notStarted;
     } else if (firstInnings != null && firstInnings!.balls.isEmpty) {
       return MatchState.tossCompleted;
-    } else if (secondInnings != null && secondInnings!.balls.isEmpty) {
+    } else if (inningsIndex == 0) {
       return MatchState.firstInnings;
-    } else {
+    } else if (inningsIndex == 1) {
       return MatchState.secondInnings;
+    } else {
+      return MatchState.completed;
     }
   }
 
@@ -144,14 +148,25 @@ class CricketMatch {
     // matchState = MatchState.tossCompleted;
   }
 
+  void progressMatch() {
+    if (currentInnings == firstInnings) {
+      startSecondInnings();
+    } else {
+      endSecondInnings();
+    }
+  }
+
   void startFirstInnings() {
     // matchState = MatchState.firstInnings;
   }
 
   void startSecondInnings() {
     // matchState = MatchState.secondInnings;
-    final bowlingTeam = _isHomeInningsFirst ? homeTeam : awayTeam;
+    while (inningsList.length > 1) {
+      inningsList.removeLast();
+    }
     final battingTeam = _isHomeInningsFirst ? awayTeam : homeTeam;
+    final bowlingTeam = _isHomeInningsFirst ? homeTeam : awayTeam;
     inningsList.add(
       Innings.target(
         battingTeam: battingTeam,
@@ -165,6 +180,7 @@ class CricketMatch {
 
   void endSecondInnings() {
     // matchState = MatchState.completed;
+    inningsIndex = 2; // TODO
   }
 
   void startSuperOver() {

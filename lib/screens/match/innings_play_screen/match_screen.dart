@@ -7,6 +7,7 @@ import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart'
 import 'package:scorecard/screens/match/match_list.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
+import 'package:scorecard/services/storage_service.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 
 import '../../../models/cricket_match.dart';
@@ -120,7 +121,10 @@ class MatchInterface extends StatelessWidget {
     switch (inningsManager.nextInput) {
       case NextInput.ball:
         text = Strings.buttonNext;
-        onPressed = () => inningsManager.addBall();
+        onPressed = () {
+          inningsManager.addBall();
+          StorageService.saveMatch(match);
+        };
         canClick = inningsManager.canAddBall;
         break;
       case NextInput.batter:

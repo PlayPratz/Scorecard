@@ -13,6 +13,10 @@ class GenericItemTile extends StatefulWidget {
   final void Function()? onSelect;
   final void Function()? onLongPress;
 
+  final Color? color;
+  final ShapeBorder? shape;
+  final EdgeInsetsGeometry? contentPadding;
+
   const GenericItemTile(
       {Key? key,
       required this.primaryHint,
@@ -20,6 +24,9 @@ class GenericItemTile extends StatefulWidget {
       this.leading,
       this.onSelect,
       this.onLongPress,
+      this.color,
+      this.shape,
+      this.contentPadding,
       // this.size = ItemSize.normal,
       this.trailing = const Icon(Icons.chevron_right)})
       : super(key: key);
@@ -52,6 +59,9 @@ class _GenericItemTileState extends State<GenericItemTile> {
       trailing: widget.trailing,
       onTap: widget.onSelect,
       onLongPress: widget.onLongPress,
+      tileColor: widget.color,
+      shape: widget.shape,
+      contentPadding: widget.contentPadding,
     );
   }
 }

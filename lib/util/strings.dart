@@ -8,10 +8,9 @@ class Strings {
 
   // Bottom Navigation Bar
   static const String navbarMatches = "Matches";
-  static const String navbarTournaments = "Tourneys";
-  static const String navbarTeams = "Teams";
   static const String navbarPlayers = "Players";
   static const String navbarSettings = "Settings";
+  static const String navbarStats = "Statistics";
 
   //Score
   static const String scoreIn = " in ";

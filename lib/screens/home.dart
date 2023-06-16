@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/match/create_match.dart';
 import 'package:scorecard/screens/player/create_player.dart';
-import 'package:scorecard/screens/team/create_team.dart';
-import 'package:scorecard/screens/team/team_list.dart';
+import 'package:scorecard/screens/statistics/statistics.dart';
 import 'package:scorecard/services/storage_service.dart';
 
 import '../styles/color_styles.dart';
@@ -62,12 +61,12 @@ class _HomeTabViewState extends State<HomeTabView> {
             ),
           ),
           const NavigationDestination(
-            icon: Icon(Icons.groups),
-            label: Strings.navbarTeams,
-          ),
-          const NavigationDestination(
             icon: Icon(Icons.person),
             label: Strings.navbarPlayers,
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.leaderboard),
+            label: Strings.navbarStats,
           ),
         ],
         onDestinationSelected: (selectedIndex) => setState(() {
@@ -85,14 +84,6 @@ class _HomeTabViewState extends State<HomeTabView> {
           matchList: StorageService.getCompletedMatches(),
         ),
         const CreateMatchForm(),
-        TeamList(
-          teamList: StorageService.getAllTeams(),
-          onSelectTeam: (team) => Utils.goToPage(
-            CreateTeamForm.update(team: team),
-            context,
-          ).then((_) => setState(() {})),
-          onCreateTeam: (team) => setState(() {}),
-        ),
         PlayerList(
           playerList: StorageService.getAllPlayers(),
           onSelectPlayer: (player) => Utils.goToPage(
@@ -101,5 +92,6 @@ class _HomeTabViewState extends State<HomeTabView> {
           ).then((_) => setState(() {})),
           onCreatePlayer: (player) => setState(() {}),
         ),
+        StatisticsScreen()
       ];
 }

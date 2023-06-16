@@ -160,7 +160,7 @@ class _BowlerInningsScore extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _GenericInningsScore(
+    return GenericInningsScore(
       player: bowlerInnings.bowler,
       // secondary: "Economy: " + bowlerInnings.economy.toStringAsFixed(2),
       secondary: "${bowlerInnings.oversBowled} @${bowlerInnings.economy}",
@@ -176,7 +176,7 @@ class _BattingInningsScore extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _GenericInningsScore(
+    return GenericInningsScore(
       player: batterInnings.batter,
       secondary: Strings.getWicketDescription(batterInnings.wicket),
       trailPrimary: batterInnings.runsScored.toString(),
@@ -185,12 +185,13 @@ class _BattingInningsScore extends StatelessWidget {
   }
 }
 
-class _GenericInningsScore extends StatelessWidget {
+class GenericInningsScore extends StatelessWidget {
   final String secondary;
   final String trailPrimary;
   final String trailSecondary;
   final Player player;
-  const _GenericInningsScore({
+  const GenericInningsScore({
+    super.key,
     required this.player,
     required this.secondary,
     required this.trailPrimary,

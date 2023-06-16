@@ -56,7 +56,6 @@ class MatchInterface extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const SizedBox(height: 0),
           RunRatePane(
             showTarget: (match.currentInnings == match.secondInnings),
           ),
@@ -69,7 +68,7 @@ class MatchInterface extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SizedBox(
-                width: 96,
+                width: 100,
                 height: 56,
                 child: OutlinedButton.icon(
                   onPressed: null,
@@ -84,7 +83,7 @@ class MatchInterface extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(child: const WicketChooser()),
+              const Expanded(child: const WicketChooser()),
             ],
           ),
           ExtraChooser(),
@@ -160,8 +159,7 @@ class MatchInterface extends StatelessWidget {
     final player =
         await _choosePlayer(context, inningsManager.innings.bowlingTeam.squad);
     if (player != null) {
-      inningsManager.setBowler(
-          BowlerInnings(bowler: player, innings: inningsManager.innings));
+      inningsManager.setBowler(player);
     }
   }
 
@@ -193,6 +191,7 @@ class RunRatePane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final innings = context.watch<InningsManager>().innings;
+    final dataTextStyle = Theme.of(context).textTheme.headlineMedium;
     return Row(
       children: !showTarget
           ? [
@@ -201,6 +200,7 @@ class RunRatePane extends StatelessWidget {
                   teamName: "Current RR",
                   score: innings.currentRunRate.toStringAsFixed(2),
                   color: Colors.blueGrey,
+                  dataTextStyle: dataTextStyle,
                 ),
               ),
               Expanded(
@@ -208,6 +208,7 @@ class RunRatePane extends StatelessWidget {
                   teamName: "Projected",
                   score: innings.projectedRuns.toString(),
                   color: Colors.lime,
+                  dataTextStyle: dataTextStyle,
                 ),
               ),
             ]
@@ -217,6 +218,7 @@ class RunRatePane extends StatelessWidget {
                   teamName: "Required",
                   score: innings.requiredRuns.toString(),
                   color: Colors.green,
+                  dataTextStyle: dataTextStyle,
                 ),
               ),
               Expanded(
@@ -224,6 +226,7 @@ class RunRatePane extends StatelessWidget {
                   teamName: "Balls Left",
                   score: innings.ballsLeft.toString(),
                   color: Colors.red,
+                  dataTextStyle: dataTextStyle,
                 ),
               ),
             ],

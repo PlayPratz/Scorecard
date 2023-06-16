@@ -83,24 +83,9 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
 
   bool get _canSubmitTeam => _selectedCaptain != null;
 
-  Future<Player?> _getPlayerFromList(
-      List<Player> playerList, BuildContext context) async {
-    Player? player = await Utils.goToPage(
-        TitledPage(
-          title: Strings.choosePlayer,
-          child: PlayerList(
-            playerList: playerList,
-            onSelectPlayer: (player) => Utils.goBack(context, player),
-            onCreatePlayer: (player) => Utils.goBack(context, player),
-          ),
-        ),
-        context);
-    return player;
-  }
-
   void _chooseCaptain() async {
     Player? chosenCaptain =
-        await _getPlayerFromList(StorageService.getAllPlayers(), context);
+        await getPlayerFromList(StorageService.getAllPlayers(), context);
     if (chosenCaptain != null) {
       if (_selectedPlayerList.contains(chosenCaptain)) {
         _selectedPlayerList.remove(chosenCaptain);
@@ -190,7 +175,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
                   (player) => _selectedPlayerList.contains(player));
               filteredPlayerList.remove(_selectedCaptain);
               Player? player =
-                  await _getPlayerFromList(filteredPlayerList, context);
+                  await getPlayerFromList(filteredPlayerList, context);
               if (player != null) {
                 setState(() {
                   if (_selectedCaptain == null) {

@@ -117,13 +117,14 @@ class ScoreTileInner extends StatelessWidget {
   final String teamName;
   final String score;
   final Color color;
+  final TextStyle? dataTextStyle;
 
-  const ScoreTileInner({
-    super.key,
-    required this.teamName,
-    required this.score,
-    required this.color,
-  });
+  const ScoreTileInner(
+      {super.key,
+      required this.teamName,
+      required this.score,
+      required this.color,
+      this.dataTextStyle});
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +151,7 @@ class ScoreTileInner extends StatelessWidget {
             ),
             Text(
               score,
-              style: Theme.of(context).textTheme.displaySmall,
+              style: dataTextStyle ?? Theme.of(context).textTheme.displaySmall,
             )
           ],
         ),

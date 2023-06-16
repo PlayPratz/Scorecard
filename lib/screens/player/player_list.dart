@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/util/utils.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';
@@ -46,4 +48,19 @@ class PlayerList extends StatelessWidget {
     }
     return playerTiles;
   }
+}
+
+Future<Player?> getPlayerFromList(
+    List<Player> playerList, BuildContext context) async {
+  Player? player = await Utils.goToPage(
+      TitledPage(
+        title: Strings.choosePlayer,
+        child: PlayerList(
+          playerList: playerList,
+          onSelectPlayer: (player) => Utils.goBack(context, player),
+          onCreatePlayer: (player) => Utils.goBack(context, player),
+        ),
+      ),
+      context);
+  return player;
 }

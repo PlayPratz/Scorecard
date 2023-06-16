@@ -104,7 +104,7 @@ class WicketChooser extends StatelessWidget {
     Wicket? selectedWicket = await Utils.goToPage(
         WicketSelector(
           bowler: inningsManager.bowler!.bowler, //TODO solve jugaad
-          striker: inningsManager.batter!.batter,
+          striker: inningsManager.striker!.batter,
           fieldingTeam: inningsManager.innings.bowlingTeam,
           battingTeam: inningsManager.innings.battingTeam,
         ),

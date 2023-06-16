@@ -128,7 +128,7 @@ void handleOpenMatch(CricketMatch match, BuildContext context) {
           ChangeNotifierProvider<InningsManager>(
             create: (context) => InningsManager(
               match.currentInnings,
-              batter: batter,
+              batter1: batter,
               bowler: bowler,
             ),
             child: MatchInterface(match: match),

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/innings.dart';
+import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/constants.dart';
 
 class InningsManager with ChangeNotifier {
   final Innings innings;
-  InningsManager(this.innings, {this.batter, this.nsbatter, this.bowler});
+  InningsManager(this.innings, {this.batter1, this.batter2, this.bowler})
+      : striker = batter1;
 
   Iterable<BatterInnings> get onPitchBatters => innings.batterInnings
       .where((batterInning) => !batterInning.isOut)
@@ -19,7 +21,7 @@ class InningsManager with ChangeNotifier {
   void addBall() {
     final ball = Ball(
         bowler: bowler!.bowler,
-        batter: batter!.batter,
+        batter: striker!.batter,
         runsScored: runs,
         battingExtra: battingExtra,
         bowlingExtra: bowlingExtra,
@@ -33,7 +35,7 @@ class InningsManager with ChangeNotifier {
   }
 
   bool get canUndoMove =>
-      innings.ballsBowled > 0; //More than zero balls in list
+      innings.balls.length > 0; //More than zero balls in list
 
   void undoMove() {
     innings.popBall();
@@ -47,8 +49,9 @@ class InningsManager with ChangeNotifier {
 
   // SELECTIONS
 
-  BatterInnings? batter;
-  BatterInnings? nsbatter;
+  BatterInnings? batter1;
+  BatterInnings? batter2;
+  BatterInnings? striker;
   BowlerInnings? bowler;
 
   int runs = 0;
@@ -63,24 +66,40 @@ class InningsManager with ChangeNotifier {
   }
 
   void setBatter(BatterInnings batter) {
-    if (batter == nsbatter) {
-      _swapStrike();
-    } else {
-      this.batter = batter;
-    }
+    // if (batter == nsbatter) {
+    //   _swapStrike();
+    // } else {
+    //   this.batter = batter;
+    // }
+
+    striker = batter;
     _canSelectBatter = false;
 
     notifyListeners();
   }
 
   void _swapStrike() {
-    final swap = batter;
-    batter = nsbatter;
-    nsbatter = swap;
+    // final swap = batter;
+    // batter = nsbatter;
+    // nsbatter = swap;
+    if (striker == batter1) {
+      striker = batter2;
+    } else {
+      striker = batter1;
+    }
   }
 
-  void setBowler(BowlerInnings bowler) {
-    this.bowler = bowler;
+  // void setBowler(BowlerInnings bowler) {
+  //   this.bowler = bowler;
+  //   _canSelectBowler = false;
+
+  //   notifyListeners();
+  // }
+
+  bool get canChangeBowler => innings.ballsBowled % Constants.ballsPerOver == 0;
+
+  void setBowler(Player bowler) {
+    this.bowler = BowlerInnings(bowler: bowler, innings: innings);
     _canSelectBowler = false;
 
     notifyListeners();
@@ -88,6 +107,7 @@ class InningsManager with ChangeNotifier {
 
   void setWicket(Wicket? wicket) {
     this.wicket = wicket;
+
     notifyListeners();
   }
 

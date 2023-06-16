@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/screens/team/team_list.dart';
+import 'package:scorecard/screens/widgets/number_picker.dart';
 import 'package:scorecard/services/storage_service.dart';
 
 import '../../models/cricket_match.dart';
@@ -34,7 +36,6 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _selectedHomeTeam = widget.homeTeam;
     _selectedAwayTeam = widget.awayTeam;
@@ -99,20 +100,12 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   }
 
   Widget _wSelectOvers() {
-    return Elements.getTextInput(
-      Strings.createMatchOvers,
-      Strings.createMatchOversHint,
-      (value) {
-        setState(() {
-          if (value.isNotEmpty) {
-            _overs = int.parse(value);
-          } else {
-            _overs = -1;
-          }
-        });
-      },
-      _overs.toString(),
-      TextInputType.number,
+    return SizedBox(
+      width: 192,
+      child: Column(children: [
+        Text(Strings.createMatchOvers),
+        NumberPicker(min: 1, onChange: (value) => _overs = value)
+      ]),
     );
   }
 
@@ -134,14 +127,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     Function(Team) onSelectTeam,
   ) async {
     Team? chosenTeam = await Utils.goToPage(
-      TitledPage(
-        title: Strings.chooseTeam,
-        child: TeamList(
-          teamList: StorageService.getAllTeams(),
-          onSelectTeam: (team) => Utils.goBack(context, team),
-          onCreateTeam: (team) => Utils.goBack(context, team),
-        ),
-      ),
+      CreateTeamForm(),
       context,
     );
     if (chosenTeam != null) {

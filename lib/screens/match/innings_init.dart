@@ -111,8 +111,8 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
                   ChangeNotifierProvider(
                     create: (context) => InningsManager(
                       widget.match.currentInnings,
-                      batter: batter,
-                      nsbatter: nsbatter,
+                      batter1: batter,
+                      batter2: nsbatter,
                       bowler: bowler,
                     ),
                     child: MatchInterface(match: widget.match),

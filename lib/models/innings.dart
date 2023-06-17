@@ -114,7 +114,9 @@ class BatterInnings {
 
   int get runsScored =>
       balls.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
-  int get numBallsFaced => balls.where((ball) => ball.shouldCount).length;
+  int get numBallsFaced => balls
+      .where((ball) => ball.isLegal || ball.bowlingExtra == BowlingExtra.noBall)
+      .length;
 
   double get strikeRate => 100 * runsScored / numBallsFaced;
 
@@ -154,6 +156,9 @@ class BowlerInnings {
   double get economy => ballsBowled == 0
       ? 0
       : Constants.ballsPerOver * runsConceded / ballsBowled;
+
+  double get strikeRate => ballsBowled / wicketsTaken;
+  double get average => runsConceded / wicketsTaken;
 
   String get score =>
       wicketsTaken.toString() +

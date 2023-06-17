@@ -188,8 +188,8 @@ class _BowlerInningsScore extends StatelessWidget {
       secondary:
           "${bowlerInnings.oversBowled} Overs at ${bowlerInnings.economy.toStringAsFixed(2)} RPO",
       trailPrimary:
-          "${bowlerInnings.runsConceded.toString()}/${bowlerInnings.wicketsTaken.toString()}",
-      trailSecondary: "runs/wickets",
+          "${bowlerInnings.wicketsTaken.toString()}/${bowlerInnings.runsConceded.toString()}",
+      trailSecondary: "@${bowlerInnings.average.toStringAsFixed(2)}",
     );
   }
 }

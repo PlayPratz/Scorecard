@@ -28,21 +28,51 @@
 
 //   double get average => runsScored / wicketsGiven;
 // }
+//
 
-// class BowlingStatistics {
-//   int runsConceded;
-//   int ballsBowled;
-//   int wicketsTaken;
+import 'package:scorecard/models/ball.dart';
+import 'package:scorecard/models/player.dart';
+import 'package:scorecard/util/constants.dart';
 
-//   BowlingStatistics(
-//       {this.runsConceded = 0, this.ballsBowled = 0, this.wicketsTaken = 0});
+// TODO solve Jugaad
+class BattingStatistics {
+  final Player batter;
+  final List<Ball> balls = [];
 
-//   double get economy => Constants.ballsPerOver * runsConceded / ballsBowled;
+  BattingStatistics(this.batter);
 
-//   double get strikeRate => ballsBowled / wicketsTaken;
+  // TODO JUGAAD COPIED FROM BATTERINNINGS
+  int get runsScored =>
+      balls.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
 
-//   double get average => runsConceded / wicketsTaken;
-// }
+  int get numBallsFaced => balls
+      .where((ball) => ball.isLegal || ball.bowlingExtra == BowlingExtra.noBall)
+      .length;
+
+  int get wicketsFallen => balls.where((ball) => ball.isWicket).length;
+
+  double get strikeRate => 100 * runsScored / numBallsFaced;
+  double get average => runsScored / wicketsFallen;
+}
+
+class BowlingStatistics {
+  final Player bowler;
+  final List<Ball> balls = [];
+
+  BowlingStatistics(this.bowler);
+
+  // TODO Jugaad copied from BowlerInnings
+  int get runsConceded => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
+  int get wicketsTaken => balls.where((ball) => ball.isBowlerWicket).length;
+  int get ballsBowled => balls.where((ball) => ball.isLegal).length;
+
+  double get economy => Constants.ballsPerOver * runsConceded / ballsBowled;
+  double get strikeRate => ballsBowled / wicketsTaken;
+  double get average => runsConceded / wicketsTaken;
+
+  String get oversBowled =>
+      (ballsBowled ~/ 6).toString() + '.' + (ballsBowled % 6).toString();
+}
 
 // class _FieldingStatistics {
 //   int catchesTaken;

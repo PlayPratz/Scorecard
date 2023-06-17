@@ -31,7 +31,7 @@ class PlayerScoreTile extends StatelessWidget {
           color: isOnline ? ColorStyles.online : Colors.transparent,
           width: 3,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: player != null
           ? GenericItemTile(

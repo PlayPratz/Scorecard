@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/match/create_match.dart';
 import 'package:scorecard/screens/player/create_player.dart';
-import 'package:scorecard/screens/statistics/statistics.dart';
+import 'package:scorecard/screens/statistics/statistics_screen.dart';
 import 'package:scorecard/services/storage_service.dart';
 
 import '../styles/color_styles.dart';

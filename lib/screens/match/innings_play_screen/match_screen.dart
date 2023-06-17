@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_on_pitch.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart';
@@ -149,8 +148,7 @@ class MatchInterface extends StatelessWidget {
     final player =
         await _choosePlayer(context, inningsManager.innings.battingTeam.squad);
     if (player != null) {
-      inningsManager.setBatter(
-          BatterInnings(batter: player, innings: inningsManager.innings));
+      inningsManager.addBatter(player);
     }
   }
 
@@ -197,7 +195,7 @@ class RunRatePane extends StatelessWidget {
           ? [
               Expanded(
                 child: ScoreTileInner(
-                  teamName: "Current RR",
+                  teamName: "Run Rate",
                   score: innings.currentRunRate.toStringAsFixed(2),
                   color: Colors.blueGrey,
                   dataTextStyle: dataTextStyle,

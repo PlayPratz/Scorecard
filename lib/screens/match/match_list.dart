@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/cricket_match.dart';
-import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/match_init.dart';
 import 'package:scorecard/screens/match/innings_play_screen/match_screen.dart';
@@ -119,17 +118,10 @@ void handleOpenMatch(CricketMatch match, BuildContext context) {
       continue def;
     def:
     default:
-      final lastBall = match.currentInnings.balls.last;
-      final batter =
-          BatterInnings(batter: lastBall.batter, innings: match.currentInnings);
-      final bowler =
-          BowlerInnings(bowler: lastBall.bowler, innings: match.currentInnings);
       Utils.goToPage(
           ChangeNotifierProvider<InningsManager>(
-            create: (context) => InningsManager(
+            create: (context) => InningsManager.resume(
               match.currentInnings,
-              batter1: batter,
-              bowler: bowler,
             ),
             child: MatchInterface(match: match),
           ),

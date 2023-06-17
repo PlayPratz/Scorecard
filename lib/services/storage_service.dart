@@ -254,6 +254,7 @@ class _TeamAdapter extends TypeAdapter<Team> {
 class _InningsAdapter extends TypeAdapter<Innings> {
   @override
   int get typeId => _inningsTypeId;
+  // TODO REDO with Map
 
   @override
   Innings read(BinaryReader reader) {
@@ -381,7 +382,7 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
     // Toss
     Toss? toss = reader.read();
     if (toss != null) {
-      match.startMatch(toss);
+      match.toss = toss;
     }
 
     return match;

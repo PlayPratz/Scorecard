@@ -19,7 +19,7 @@ class PlayersOnPitchView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: InkWell(
               // TODO
-              onTap: () => inningsManager.setBatter(inningsManager.batter1!),
+              onTap: () => inningsManager.setStrike(inningsManager.batter1!),
               customBorder: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -36,7 +36,7 @@ class PlayersOnPitchView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: InkWell(
                 // TODO
-                onTap: () => inningsManager.setBatter(inningsManager.batter2!),
+                onTap: () => inningsManager.setStrike(inningsManager.batter2!),
                 customBorder: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),

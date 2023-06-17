@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import 'package:scorecard/screens/widgets/item_list.dart';
 
 class StatisticsScreen extends StatelessWidget {
   const StatisticsScreen({super.key});

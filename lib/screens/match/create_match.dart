@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/team/create_team.dart';
-import 'package:scorecard/screens/team/team_list.dart';
 import 'package:scorecard/screens/widgets/number_picker.dart';
 import 'package:scorecard/services/storage_service.dart';
 

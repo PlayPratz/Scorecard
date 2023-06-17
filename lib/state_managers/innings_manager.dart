@@ -10,11 +10,22 @@ class InningsManager with ChangeNotifier {
   InningsManager(this.innings, {this.batter1, this.batter2, this.bowler})
       : striker = batter1;
 
-  Iterable<BatterInnings> get onPitchBatters => innings.batterInnings
-      .where((batterInning) => !batterInning.isOut)
-      .toList()
-      .reversed
-      .take(2);
+  factory InningsManager.resume(Innings innings) {
+    final lastBall = innings.balls.last;
+    final batterInnings = innings.batterInnings
+        .where((batterInning) => !batterInning.isOut)
+        .toList()
+        .reversed
+        .take(2);
+
+    return InningsManager(
+      innings,
+      batter1: batterInnings.first,
+      batter2: batterInnings.last,
+      bowler: innings.bowlerInnings.singleWhere(
+          (bowlerInnings) => bowlerInnings.bowler == lastBall.bowler),
+    );
+  }
 
   // Ball
 
@@ -52,6 +63,13 @@ class InningsManager with ChangeNotifier {
   BatterInnings? batter1;
   BatterInnings? batter2;
   BatterInnings? striker;
+
+  Iterable<BatterInnings> get _onPitchBatters => innings.batterInnings
+      .where((batterInning) => !batterInning.isOut)
+      .toList()
+      .reversed
+      .take(2);
+
   BowlerInnings? bowler;
 
   int runs = 0;
@@ -65,16 +83,38 @@ class InningsManager with ChangeNotifier {
     notifyListeners();
   }
 
-  void setBatter(BatterInnings batter) {
+  void addBatter(Player batter) {
     // if (batter == nsbatter) {
     //   _swapStrike();
     // } else {
     //   this.batter = batter;
     // }
 
-    striker = batter;
+    final batterInnings = BatterInnings(batter: batter, innings: innings);
+
+    // striker = batterInnings;
+
+    if (_onPitchBatters.first == batter1) {
+      batter2 = batterInnings;
+    } else {
+      batter1 = batterInnings;
+    }
+
+    if (striker != batter1 && striker != batter2) {
+      striker = batterInnings;
+    }
+
     _canSelectBatter = false;
 
+    notifyListeners();
+  }
+
+  void setStrike(BatterInnings batter) {
+    if (batter2 != null && batter == batter2) {
+      striker = batter2;
+    } else {
+      striker = batter1;
+    }
     notifyListeners();
   }
 
@@ -96,7 +136,8 @@ class InningsManager with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  bool get canChangeBowler => innings.ballsBowled % Constants.ballsPerOver == 0;
+  // bool get canChangeBowler => innings.ballsBowled % Constants.ballsPerOver == 0;
+  bool get canChangeBowler => true;
 
   void setBowler(Player bowler) {
     this.bowler = BowlerInnings(bowler: bowler, innings: innings);
@@ -125,20 +166,24 @@ class InningsManager with ChangeNotifier {
   bool _canSelectBowler = false;
 
   NextInput get nextInput {
+    // End Innings due to over completion
     if (innings.ballsBowled == innings.maxOvers * Constants.ballsPerOver) {
       return NextInput.end;
     }
 
+    // End Innings due to chasing the target
     if (innings.target != null && innings.runs >= innings.target!) {
       return NextInput.end;
     }
 
+    // Change Bowler due to end of over
     if (_canSelectBowler &&
         innings.balls.isNotEmpty &&
         innings.balls.where((ball) => ball.isLegal).length % 6 == 0) {
       return NextInput.bowler;
     }
 
+    // Change Batter due to fall of wicket
     if (_canSelectBatter &&
         innings.balls.isNotEmpty &&
         innings.balls.last.isWicket) {

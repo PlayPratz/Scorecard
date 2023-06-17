@@ -26,7 +26,7 @@ class CricketMatch {
   CricketMatch? superOver;
   CricketMatch? parentMatch;
 
-  Toss? _toss;
+  Toss? toss;
 
   CricketMatch({
     required this.id,
@@ -68,7 +68,7 @@ class CricketMatch {
     this.inningsIndex = -1,
   });
 
-  bool get isTossCompleted => _toss != null;
+  bool get isTossCompleted => toss != null;
 
   Innings get currentInnings => inningsList[min(inningsIndex, 1)];
 
@@ -113,7 +113,6 @@ class CricketMatch {
     }
   }
 
-  Toss? get toss => _toss;
   Innings? get firstInnings => inningsList.isNotEmpty ? inningsList[0] : null;
   // Innings get firstInnings => _isHomeInningsFirst ? homeInnings : awayInnings;
   Innings? get secondInnings => inningsList.length > 1 ? inningsList[1] : null;
@@ -128,7 +127,7 @@ class CricketMatch {
   bool get hasSuperOver => superOver != null;
 
   void startMatch(Toss completedToss) {
-    _toss = completedToss;
+    toss = completedToss;
     if ((completedToss.winningTeam == homeTeam &&
             completedToss.choice == TossChoice.bowl) ||
         (completedToss.winningTeam == awayTeam &&

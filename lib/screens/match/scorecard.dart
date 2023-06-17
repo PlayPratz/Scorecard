@@ -163,9 +163,11 @@ class _BowlerInningsScore extends StatelessWidget {
     return GenericInningsScore(
       player: bowlerInnings.bowler,
       // secondary: "Economy: " + bowlerInnings.economy.toStringAsFixed(2),
-      secondary: "${bowlerInnings.oversBowled} @${bowlerInnings.economy}",
-      trailPrimary: bowlerInnings.runsConceded.toString(),
-      trailSecondary: bowlerInnings.wicketsTaken.toString(),
+      secondary:
+          "${bowlerInnings.oversBowled} Overs at ${bowlerInnings.economy} RPO",
+      trailPrimary:
+          "${bowlerInnings.runsConceded.toString()}/${bowlerInnings.wicketsTaken.toString()}",
+      trailSecondary: "runs/wickets",
     );
   }
 }

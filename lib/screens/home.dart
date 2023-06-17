@@ -25,7 +25,10 @@ class _HomeTabViewState extends State<HomeTabView> {
   Widget build(BuildContext context) {
     return BaseScreen(
         child: Scaffold(
-      body: screens[_index],
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: screens[_index],
+      ),
       backgroundColor: ColorStyles.background,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,

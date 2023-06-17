@@ -21,9 +21,13 @@ class ItemList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       // padding: const EdgeInsets.symmetric(horizontal: 12),
+      reverse: true,
       children: [
-        createItem != null
-            ? GenericItemTile(
+        ...itemList,
+        if (createItem != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: GenericItemTile(
                 primaryHint: createItem!.string,
                 secondaryHint: Strings.empty,
                 leading: Elements.addIcon,
@@ -35,10 +39,9 @@ class ItemList extends StatelessWidget {
                   } else {
                     Utils.goToPage(createItem!.page, context);
                   }
-                })
-            : Container(),
-        ...itemList
-      ],
+                }),
+          ),
+      ].reversed.toList(),
     );
   }
 }

@@ -108,8 +108,8 @@ class CricketMatch {
         // wicketsLeft: secondInnings.wicketsRemaining,
       );
     } else {
-      // Match ties
-      return ResultTie();
+      // Match ties, TODO fix jugaad
+      return ResultTie(winner: homeTeam, loser: awayTeam);
     }
   }
 

@@ -28,12 +28,13 @@ class Strings {
   static const String scoreWillScore = " will score ";
   static const String scoreRunsAtCurrentRate = " runs at ";
   static const String scoreOvers = " overs";
+  // Result
   static const String scoreWinBy = " wins by ";
-  static const String scoreWinWith = " wins with ";
+  static const String scoreWinWith = "wins with";
   // static const String scoreWinByWickets = " wickets with ";
-  static const String scoreWinByWicketSingle = " wicket with ";
-  static const String scoreWinByBallsToSpare = " balls to spare";
-  static const String scoreWinByBallsToSpareSingle = " ball to spare";
+  static const String scoreWinByWicketSingle = "wicket with";
+  static const String scoreWinByBallsToSpare = "balls to spare";
+  static const String scoreWinByBallsToSpareSingle = "ball to spare";
   static const String scoreWinByRuns = " runs";
   static const String scoreWinByRunSingle = " run";
   static const String scoreMatchTied = "Match Tied";

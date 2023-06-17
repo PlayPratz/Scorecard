@@ -31,12 +31,13 @@ class InningsManager with ChangeNotifier {
 
   void addBall() {
     final ball = Ball(
-        bowler: bowler!.bowler,
-        batter: striker!.batter,
-        runsScored: runs,
-        battingExtra: battingExtra,
-        bowlingExtra: bowlingExtra,
-        wicket: wicket);
+      bowler: bowler!.bowler,
+      batter: striker!.batter,
+      runsScored: runs,
+      battingExtra: battingExtra,
+      bowlingExtra: bowlingExtra,
+      wicket: wicket,
+    );
     innings.pushBall(ball);
     if (runs % 2 == 1) {
       _swapStrike();
@@ -139,8 +140,12 @@ class InningsManager with ChangeNotifier {
   // bool get canChangeBowler => innings.ballsBowled % Constants.ballsPerOver == 0;
   bool get canChangeBowler => true;
 
-  void setBowler(Player bowler) {
+  void setBowler(Player bowler, {bool isMidOverChange = false}) {
     this.bowler = BowlerInnings(bowler: bowler, innings: innings);
+
+    if (!isMidOverChange) {
+      _swapStrike();
+    }
     _canSelectBowler = false;
 
     notifyListeners();

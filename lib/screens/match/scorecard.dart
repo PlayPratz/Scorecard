@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
@@ -41,6 +42,26 @@ class _ScorecardMatchPanel extends StatefulWidget {
 
 class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
   final List<bool> _isInningsPanelOpen = [false, false];
+  Widget? resultLine;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.match.matchState == MatchState.completed) {
+      String resultString;
+      final result = widget.match.result;
+      if (result.getVictoryType() == VictoryType.chasing) {
+        resultString =
+            "${result.winner.shortName} ${Strings.scoreWinWith} ${(result as ResultWinByChasing).ballsLeft} ${Strings.scoreWinByBallsToSpare}";
+      } else if (result.getVictoryType() == VictoryType.defending) {
+        resultString =
+            "${result.winner.shortName} ${Strings.scoreWinBy} ${(result as ResultWinByDefending).runsWonBy} ${Strings.scoreWinByRuns}";
+      } else {
+        resultString = Strings.scoreMatchTied;
+      }
+      resultLine = Text(resultString);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +72,7 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
     return Column(children: [
       MatchTile(match: widget.match),
       const SizedBox(height: 32),
+      if (resultLine != null) resultLine!,
       ExpansionPanelList(
         expandedHeaderPadding: const EdgeInsets.all(0),
         dividerColor: Colors.transparent,
@@ -164,7 +186,7 @@ class _BowlerInningsScore extends StatelessWidget {
       player: bowlerInnings.bowler,
       // secondary: "Economy: " + bowlerInnings.economy.toStringAsFixed(2),
       secondary:
-          "${bowlerInnings.oversBowled} Overs at ${bowlerInnings.economy} RPO",
+          "${bowlerInnings.oversBowled} Overs at ${bowlerInnings.economy.toStringAsFixed(2)} RPO",
       trailPrimary:
           "${bowlerInnings.runsConceded.toString()}/${bowlerInnings.wicketsTaken.toString()}",
       trailSecondary: "runs/wickets",

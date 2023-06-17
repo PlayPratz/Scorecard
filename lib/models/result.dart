@@ -1,8 +1,8 @@
 import 'team.dart';
 
 abstract class Result {
-  final Team? winner;
-  final Team? loser;
+  final Team winner;
+  final Team loser;
 
   Result({required this.winner, required this.loser});
 
@@ -38,10 +38,7 @@ class ResultWinByChasing extends Result {
 }
 
 class ResultTie extends Result {
-  // final Team homeTeam;
-  // final Team awayTeam;
-
-  ResultTie() : super(winner: null, loser: null);
+  ResultTie({required super.winner, required super.loser});
 
   @override
   VictoryType getVictoryType() {

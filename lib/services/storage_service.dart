@@ -65,6 +65,58 @@ class StorageService {
 
     // Open Boxes
     _playerBox = await Hive.openBox<Player>(_playerBoxName);
+    // TODO Jugaad
+    _playerBox.putAll({
+      '1': Player(
+          id: '1',
+          name: "Pratik",
+          batArm: Arm.right,
+          bowlArm: Arm.right,
+          bowlStyle: BowlStyle.spin),
+      '2': Player(
+          id: '2',
+          name: "Chaitanya",
+          batArm: Arm.right,
+          bowlArm: Arm.right,
+          bowlStyle: BowlStyle.spin),
+      '3': Player(
+          id: '3',
+          name: "Rutash",
+          batArm: Arm.right,
+          bowlArm: Arm.right,
+          bowlStyle: BowlStyle.spin),
+      '4': Player(
+          id: '4',
+          name: "Calden",
+          batArm: Arm.right,
+          bowlArm: Arm.right,
+          bowlStyle: BowlStyle.spin),
+      '5': Player(
+          id: '5',
+          name: "Kyle",
+          batArm: Arm.right,
+          bowlArm: Arm.right,
+          bowlStyle: BowlStyle.spin),
+      '6': Player(
+          id: '6',
+          name: "Roshan",
+          batArm: Arm.right,
+          bowlArm: Arm.right,
+          bowlStyle: BowlStyle.spin),
+      '7': Player(
+          id: '7',
+          name: "Darren",
+          batArm: Arm.right,
+          bowlArm: Arm.right,
+          bowlStyle: BowlStyle.spin),
+      '8': Player(
+          id: '8',
+          name: "Chimpu",
+          batArm: Arm.right,
+          bowlArm: Arm.right,
+          bowlStyle: BowlStyle.spin),
+    });
+
     _teamBox = await Hive.openBox<Team>(_teamBoxName);
     _matchBox = await Hive.openBox<CricketMatch>(_matchBoxName);
     _linkSuperOvers();
@@ -266,6 +318,10 @@ class _InningsAdapter extends TypeAdapter<Innings> {
     for (Ball ball in ballList) {
       innings.pushBall(ball);
     }
+    final target = reader.readInt();
+    if (target > -1) {
+      innings.target = target;
+    }
     return innings;
   }
 
@@ -275,7 +331,8 @@ class _InningsAdapter extends TypeAdapter<Innings> {
       ..writeString(innings.battingTeam.id)
       ..writeString(innings.bowlingTeam.id)
       ..writeInt(innings.maxOvers)
-      ..writeList(innings.balls);
+      ..writeList(innings.balls)
+      ..writeInt(innings.target ?? -1);
   }
 }
 

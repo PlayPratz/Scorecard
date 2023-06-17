@@ -24,14 +24,15 @@ class PlayersOnPitchView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: PlayerScoreTile(
-                player: inningsManager.batter1!.batter,
-                score: inningsManager.batter1!.score,
-                teamColor: inningsManager.innings.battingTeam.color,
-                isOnline: inningsManager.striker == inningsManager.batter1,
-              ),
+                  player: inningsManager.batter1!.batter,
+                  score: inningsManager.batter1!.score,
+                  teamColor: inningsManager.innings.battingTeam.color,
+                  isOnline: inningsManager.batter1 == inningsManager.striker,
+                  toBeReplaced: inningsManager.batter1!.isOut),
             ),
           ),
-          if (inningsManager.batter2 != null)
+          if (inningsManager.batter2 != null &&
+              inningsManager.batter2!.batter != inningsManager.batter1!.batter)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: InkWell(
@@ -41,11 +42,11 @@ class PlayersOnPitchView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: PlayerScoreTile(
-                  player: inningsManager.batter2!.batter,
-                  score: inningsManager.batter2!.score,
-                  teamColor: inningsManager.innings.battingTeam.color,
-                  isOnline: inningsManager.striker == inningsManager.batter2,
-                ),
+                    player: inningsManager.batter2!.batter,
+                    score: inningsManager.batter2!.score,
+                    teamColor: inningsManager.innings.battingTeam.color,
+                    isOnline: inningsManager.batter2 == inningsManager.striker,
+                    toBeReplaced: inningsManager.batter2!.isOut),
               ),
             ),
         ]),
@@ -64,7 +65,7 @@ class PlayersOnPitchView extends StatelessWidget {
                     final player = await getPlayerFromList(
                         inningsManager.innings.bowlingTeam.squad, context);
                     if (player != null) {
-                      inningsManager.setBowler(player);
+                      inningsManager.setBowler(player, isMidOverChange: true);
                     }
                   }
                 },

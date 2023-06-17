@@ -47,11 +47,13 @@ class _GenericItemTileState extends State<GenericItemTile> {
           child: Text(
             widget.primaryHint,
           )),
-      subtitle: Text(
-        widget.secondaryHint,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      ),
+      subtitle: widget.secondaryHint.isNotEmpty
+          ? Text(
+              widget.secondaryHint,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            )
+          : null,
       leading: SizedBox(
         height: widget.secondaryHint.isNotEmpty ? double.infinity : null,
         child: widget.leading,

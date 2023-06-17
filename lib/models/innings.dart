@@ -11,7 +11,7 @@ class Innings {
   final Team battingTeam;
   final Team bowlingTeam;
 
-  final int? target;
+  int? target;
   final int maxOvers;
 
   Innings(
@@ -118,7 +118,7 @@ class BatterInnings {
 
   double get strikeRate => 100 * runsScored / numBallsFaced;
 
-  bool get isOut => wicket != null;
+  bool get isOut => wicket != null || (balls.isNotEmpty && balls.last.isWicket);
 
   String get score =>
       runsScored.toString() + Strings.scoreIn + numBallsFaced.toString();

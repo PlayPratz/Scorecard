@@ -9,7 +9,7 @@ class StatisticsScreen extends StatelessWidget {
       alignment: Alignment.bottomCenter,
       child: Row(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           StatisticsChip(
             primaryHint: "Batters",
@@ -56,7 +56,7 @@ class StatisticsChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Chip(
           surfaceTintColor: color,
           label: Row(

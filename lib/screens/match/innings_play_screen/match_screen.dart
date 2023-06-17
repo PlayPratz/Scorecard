@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_on_pitch.dart';
@@ -178,6 +180,7 @@ class MatchInterface extends StatelessWidget {
 
   void _endInnings(BuildContext context) {
     match.progressMatch();
+    Utils.goBack(context);
     handleOpenMatch(match, context);
   }
 }
@@ -214,7 +217,7 @@ class RunRatePane extends StatelessWidget {
               Expanded(
                 child: ScoreTileInner(
                   teamName: "Required",
-                  score: innings.requiredRuns.toString(),
+                  score: max(innings.requiredRuns, 0).toString(),
                   color: Colors.green,
                   dataTextStyle: dataTextStyle,
                 ),

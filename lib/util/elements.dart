@@ -87,6 +87,7 @@ class Elements {
           : Icon(
               Icons.person_outline,
               size: size / 2,
+              color: Colors.grey.shade600,
             ),
     );
   }

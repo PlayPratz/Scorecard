@@ -157,6 +157,10 @@ class Strings {
   // Common
   static const String buttonNext = "Next";
 
+  // Pick Batter
+  static const String pickBatterTitle = "Pick the next batter";
+  static const String pickBatterLastMan = "Continue as Last Man";
+
   static String getTossChoice(TossChoice tossChoice) {
     switch (tossChoice) {
       case TossChoice.bat:

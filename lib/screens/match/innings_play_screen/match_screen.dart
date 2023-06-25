@@ -84,7 +84,7 @@ class MatchInterface extends StatelessWidget {
                   ),
                 ),
               ),
-              const Expanded(child: const WicketChooser()),
+              const Expanded(child: WicketChooser()),
             ],
           ),
           ExtraChooser(),
@@ -149,6 +149,7 @@ class MatchInterface extends StatelessWidget {
       BuildContext context, InningsManager inningsManager) async {
     final player =
         await _choosePlayer(context, inningsManager.innings.battingTeam.squad);
+
     if (player != null) {
       inningsManager.addBatter(player);
     }

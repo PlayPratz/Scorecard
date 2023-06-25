@@ -25,7 +25,12 @@ class Ball {
   // bool _shouldCountBall = true;
   bool isEventOnly = false;
 
-  bool isFirstBallOfOver = false;
+  /// Zero-based index of the over this ball is bowled in
+  int overIndex;
+
+  /// One-based index of this ball in its over
+  /// It could be zero if the first ball is a bowling extra
+  int ballIndex;
 
   Ball({
     required this.bowler,
@@ -34,30 +39,14 @@ class Ball {
     this.wicket,
     this.battingExtra,
     this.bowlingExtra,
-    this.isFirstBallOfOver = false,
+    this.overIndex = 0,
+    this.ballIndex = 0,
   });
 
-  /// Creates a ball that does not constitute a wicket and is not an extra of any kind
-  Ball.runs(
-      {required this.bowler, required this.batter, required this.runsScored});
-
-  /// Creates a ball that is a wicket of type [Wicket] with the specified number of [runsScored].
-  Ball.wicket({
-    required this.bowler,
-    required this.batter,
-    this.runsScored = 0,
-    required this.wicket,
-    this.bowlingExtra,
-    this.battingExtra,
-  });
-
-  /// Creates a ball that is not bowled, but a runout is recorded
-  // Ball.runoutBeforeDelivery({
-  //   required this.bowler,
-  //   required this.batter,
-  // })  : runsScored = 0,
-  //       wicket = Wicket.runout(batter: batter, fielder: bowler),
-  //       shouldCountBall = false;
+  void assignIndexes({required int over, required int ball}) {
+    overIndex = over;
+    ballIndex = ball;
+  }
 
   int get totalRuns => runsScored + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;
@@ -68,10 +57,7 @@ class Ball {
       (isWicket && Dismissal.values.take(5).contains(wicket!.dismissal));
   bool get isBowlingExtra => bowlingExtra != null;
   bool get isBattingExtra => battingExtra != null;
-  bool get isLegal => !isBattingExtra && !isBowlingExtra && !isEventOnly;
-  // bool get shouldCount => _shouldCountBall && !isBowlingExtra;
-  // set shouldCount(bool scb) => _shouldCountBall = scb;
-  bool get shouldCount => !isEventOnly && !isBowlingExtra;
+  bool get isLegal => !isBowlingExtra && !isEventOnly;
 }
 
 class Over {
@@ -81,7 +67,7 @@ class Over {
 
   Over(this.bowler);
 
-  List<Ball> get legalBalls => balls.where((ball) => ball.shouldCount).toList();
+  List<Ball> get legalBalls => balls.where((ball) => ball.isLegal).toList();
 
   List<Ball> get bowlingExtraBalls =>
       balls.where((ball) => ball.isBowlingExtra).toList();

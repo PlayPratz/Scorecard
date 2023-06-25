@@ -7,8 +7,14 @@ import 'package:scorecard/util/constants.dart';
 
 class InningsManager with ChangeNotifier {
   final Innings innings;
-  InningsManager(this.innings, {this.batter1, this.batter2, this.bowler})
-      : striker = batter1;
+  InningsManager(
+    this.innings, {
+    this.batter1,
+    this.batter2,
+    this.bowler,
+    int overIndex = 0,
+    int ballIndex = 0,
+  }) : striker = batter1;
 
   factory InningsManager.resume(Innings innings) {
     final lastBall = innings.balls.last;
@@ -24,10 +30,15 @@ class InningsManager with ChangeNotifier {
       batter2: batterInnings.last,
       bowler: innings.bowlerInnings.singleWhere(
           (bowlerInnings) => bowlerInnings.bowler == lastBall.bowler),
+      overIndex: lastBall.overIndex,
+      ballIndex: lastBall.ballIndex,
     );
   }
 
   // Ball
+
+  // int _overIndex;
+  // int _ballIndex;
 
   void addBall() {
     final ball = Ball(
@@ -38,20 +49,49 @@ class InningsManager with ChangeNotifier {
       bowlingExtra: bowlingExtra,
       wicket: wicket,
     );
-    innings.pushBall(ball);
-    if (runs % 2 == 1) {
-      _swapStrike();
+
+    // Detemine ball and over index
+    int ballIndex = 0;
+    int overIndex = 0;
+
+    if (innings.balls.isNotEmpty) {
+      // Ball index has to be changed
+
+      // Get current indexes
+      final lastBall = innings.balls.last;
+      ballIndex = lastBall.ballIndex;
+      overIndex = lastBall.overIndex;
+
+      if (ballIndex == Constants.ballsPerOver) {
+        // First ball of the over
+        overIndex++;
+        ballIndex = 1;
+
+        if (!ball.isLegal) {
+          ballIndex = 0;
+        }
+      }
+
+      ball.ballIndex = ballIndex;
+      ball.overIndex = overIndex;
     }
-    resetSelections();
+
+    innings.pushBall(ball);
+    if (runs % 2 == 1) _swapStrike();
+    _resetSelections();
+
     notifyListeners();
   }
 
-  bool get canUndoMove =>
-      innings.balls.length > 0; //More than zero balls in list
+  bool get canUndoMove => innings.balls.isNotEmpty;
 
   void undoMove() {
-    innings.popBall();
-    resetSelections();
+    if (!canUndoMove) return;
+
+    final ball = innings.popBall();
+    if (ball!.runsScored % 2 == 1) _swapStrike();
+    _resetSelections();
+
     notifyListeners();
   }
 
@@ -184,7 +224,7 @@ class InningsManager with ChangeNotifier {
     // Change Bowler due to end of over
     if (_canSelectBowler &&
         innings.balls.isNotEmpty &&
-        innings.balls.where((ball) => ball.isLegal).length % 6 == 0) {
+        innings.balls.last.ballIndex == Constants.ballsPerOver) {
       return NextInput.bowler;
     }
 
@@ -197,7 +237,7 @@ class InningsManager with ChangeNotifier {
     return NextInput.ball;
   } //TODO
 
-  void resetSelections() {
+  void _resetSelections() {
     runs = 0;
     wicket = null;
     bowlingExtra = null;

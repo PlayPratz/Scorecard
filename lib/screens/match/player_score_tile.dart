@@ -9,22 +9,28 @@ class PlayerScoreTile extends StatelessWidget {
   final String score;
   final bool isOnline;
   final Color teamColor;
-  final bool toBeReplaced;
+  final bool isOut;
 
   const PlayerScoreTile(
       {Key? key,
       required this.player,
       required this.score,
       required this.teamColor,
-      this.toBeReplaced = false,
+      this.isOut = false,
       this.isOnline = false})
       : super(key: key);
+
+  const PlayerScoreTile.wicket(
+      {super.key, required this.player, required this.score})
+      : isOut = true,
+        teamColor = Colors.transparent,
+        isOnline = false;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: toBeReplaced
+        color: isOut
             ? ColorStyles.wicket.withOpacity(0.5)
             : teamColor.withOpacity(0.6),
         border: Border.all(

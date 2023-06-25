@@ -31,16 +31,14 @@ class Innings {
   // OPERATIONS
 
   void pushBall(Ball ball) {
-    if (ballsBowled % 6 == 0) {
-      ball.isFirstBallOfOver = true;
-    }
     balls.add(ball);
   }
 
-  void popBall() {
+  Ball? popBall() {
     if (balls.isNotEmpty) {
-      balls.removeLast();
+      return balls.removeLast();
     }
+    return null;
   }
 
   // Score

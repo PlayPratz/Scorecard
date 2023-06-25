@@ -67,7 +67,7 @@ class RecentBallsView extends StatelessWidget {
                     indicatorColor = ColorStyles.ballNoBall;
                   } else if (currentBall.bowlingExtra == BowlingExtra.wide) {
                     indicatorColor = ColorStyles.ballWide;
-                  } else if (currentBall.shouldCount == false) {
+                  } else if (currentBall.isEventOnly) {
                     indicatorColor = ColorStyles.ballEvent;
                   }
 
@@ -86,7 +86,7 @@ class RecentBallsView extends StatelessWidget {
                       .innings
                       .balls[ballCount - 1 - index];
 
-                  if (currentBall.isFirstBallOfOver) {
+                  if (currentBall.ballIndex == 0) {
                     return const VerticalDivider(
                       color: Colors.amber,
                       endIndent: 4,

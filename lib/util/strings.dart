@@ -118,6 +118,8 @@ class Strings {
   static const String scorecardBowling = "Bowling";
   static const String scorecardInningsWithSpace = " Innings";
 
+  static const String goToTimeline = "View Timeline";
+
   // Choose
   static const String choosePlayer = "Choose a Player";
   static const String chooseTeam = "Choose a Team";
@@ -154,12 +156,15 @@ class Strings {
   // Ball Selector
   static const String ballSelectorRuns = "Runs";
 
-  // Common
-  static const String buttonNext = "Next";
-
   // Pick Batter
   static const String pickBatterTitle = "Pick the next batter";
   static const String pickBatterLastMan = "Continue as Last Man";
+
+  // Recent Balls (Innings Timeline)
+  static const String inningsTimelineTitle = "Innings Timeline";
+
+  // Common
+  static const String buttonNext = "Next";
 
   static String getTossChoice(TossChoice tossChoice) {
     switch (tossChoice) {

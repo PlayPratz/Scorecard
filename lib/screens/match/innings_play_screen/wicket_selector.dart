@@ -4,12 +4,12 @@ import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
 import 'package:scorecard/util/elements.dart';
-import '../../models/wicket.dart';
-import '../templates/titled_page.dart';
-import '../widgets/generic_item_tile.dart';
-import '../widgets/item_list.dart';
-import '../../util/strings.dart';
-import '../../util/utils.dart';
+import '../../../models/wicket.dart';
+import '../../templates/titled_page.dart';
+import '../../widgets/generic_item_tile.dart';
+import '../../widgets/item_list.dart';
+import '../../../util/strings.dart';
+import '../../../util/utils.dart';
 
 class WicketSelector extends StatefulWidget {
   final Player bowler;

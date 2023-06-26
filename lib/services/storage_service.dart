@@ -10,6 +10,7 @@ import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/series.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/models/wicket.dart';
+import 'package:scorecard/state_managers/innings_manager.dart';
 
 const String _playerBoxName = "players";
 const int _playerTypeId = 101;
@@ -315,8 +316,9 @@ class _InningsAdapter extends TypeAdapter<Innings> {
         bowlingTeam: StorageService.getTeamById(reader.readString()),
         maxOvers: reader.readInt());
     List ballList = reader.readList();
+    final inningsManager = InningsManager(innings);
     for (Ball ball in ballList) {
-      innings.pushBall(ball);
+      inningsManager.loadBallIntoInnings(ball);
     }
     final target = reader.readInt();
     if (target > -1) {

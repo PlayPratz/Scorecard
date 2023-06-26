@@ -17,7 +17,7 @@ class SeparatedWidgetPair extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+            padding: const EdgeInsets.all(8),
             child: top,
           ),
           const Divider(thickness: 1), // TODO change

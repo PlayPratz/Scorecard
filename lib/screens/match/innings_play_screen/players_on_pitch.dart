@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/screens/match/player_score_tile.dart';
+import 'package:scorecard/models/innings.dart';
+import 'package:scorecard/screens/match/innings_play_screen/player_pick.dart';
+import 'package:scorecard/screens/match/innings_play_screen/player_score_tile.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 
@@ -15,41 +17,10 @@ class PlayersOnPitchView extends StatelessWidget {
     List<Widget> nowPlayingWidgets = [
       Expanded(
         child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: InkWell(
-              // TODO
-              onTap: () => inningsManager.setStrike(inningsManager.batter1!),
-              customBorder: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: PlayerScoreTile(
-                player: inningsManager.batter1!.batter,
-                score: inningsManager.batter1!.score,
-                teamColor: inningsManager.innings.battingTeam.color,
-                isOnline: inningsManager.batter1 == inningsManager.striker,
-                isOut: inningsManager.batter1!.isOut,
-              ),
-            ),
-          ),
+          _wBatterOnPitch(context, inningsManager, inningsManager.batter1!),
           if (inningsManager.batter2 != null &&
               inningsManager.batter2!.batter != inningsManager.batter1!.batter)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: InkWell(
-                // TODO
-                onTap: () => inningsManager.setStrike(inningsManager.batter2!),
-                customBorder: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: PlayerScoreTile(
-                    player: inningsManager.batter2!.batter,
-                    score: inningsManager.batter2!.score,
-                    teamColor: inningsManager.innings.battingTeam.color,
-                    isOnline: inningsManager.batter2 == inningsManager.striker,
-                    isOut: inningsManager.batter2!.isOut),
-              ),
-            ),
+            _wBatterOnPitch(context, inningsManager, inningsManager.batter2!),
         ]),
       ),
       const SizedBox(width: 4),
@@ -71,7 +42,7 @@ class PlayersOnPitchView extends StatelessWidget {
                   }
                 },
                 customBorder: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: PlayerScoreTile(
                   player: inningsManager.bowler!.bowler,
@@ -90,6 +61,28 @@ class PlayersOnPitchView extends StatelessWidget {
       children: isHomeTeamBatting
           ? nowPlayingWidgets
           : nowPlayingWidgets.reversed.toList(),
+    );
+  }
+
+  Padding _wBatterOnPitch(BuildContext context, InningsManager inningsManager,
+      BatterInnings batterInnings) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: InkWell(
+        onTap: () => inningsManager.setStrike(batterInnings),
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        onLongPress: () => chooseBatter(
+            context, inningsManager..batterToReplace = batterInnings),
+        child: PlayerScoreTile(
+          player: batterInnings.batter,
+          score: batterInnings.score,
+          teamColor: inningsManager.innings.battingTeam.color,
+          isOnline: batterInnings == inningsManager.striker,
+          isOut: batterInnings.isOut,
+        ),
+      ),
     );
   }
 }

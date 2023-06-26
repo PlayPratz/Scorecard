@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/result.dart';
+import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/util/utils.dart';
 import '../../models/cricket_match.dart';
 import '../../models/innings.dart';
 import '../templates/titled_page.dart';
@@ -41,12 +43,17 @@ class _ScorecardMatchPanel extends StatefulWidget {
 }
 
 class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
-  final List<bool> _isInningsPanelOpen = [false, false];
+  late final List<bool> _isInningsPanelOpen;
   Widget? resultLine;
 
   @override
   void initState() {
     super.initState();
+    _isInningsPanelOpen =
+        widget.match.inningsList.map((innings) => false).toList();
+    if (_isInningsPanelOpen.isNotEmpty) {
+      _isInningsPanelOpen.first = true;
+    }
     if (widget.match.matchState == MatchState.completed) {
       String resultString;
       final result = widget.match.result;
@@ -117,9 +124,20 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
       body: innings.balls.isNotEmpty
           ? Column(
               children: [
+                const SizedBox(height: 16),
                 _wBattingPanel(innings),
                 const SizedBox(height: 16),
                 _wBowlingPanel(innings),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Utils.goToPage(
+                        InningsTimelineScreen(innings: innings), context),
+                    icon: const Icon(Icons.timeline),
+                    label: const Text(Strings.goToTimeline),
+                  ),
+                ),
                 const SizedBox(height: 16),
               ],
             )
@@ -182,6 +200,7 @@ class _BowlerInningsScore extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final average = bowlerInnings.average;
     return GenericInningsScore(
       player: bowlerInnings.bowler,
       // secondary: "Economy: " + bowlerInnings.economy.toStringAsFixed(2),
@@ -189,7 +208,8 @@ class _BowlerInningsScore extends StatelessWidget {
           "${bowlerInnings.oversBowled} Overs at ${bowlerInnings.economy.toStringAsFixed(2)} RPO",
       trailPrimary:
           "${bowlerInnings.wicketsTaken.toString()}/${bowlerInnings.runsConceded.toString()}",
-      trailSecondary: "@${bowlerInnings.average.toStringAsFixed(2)}",
+      trailSecondary:
+          average == double.infinity ? "" : "@${average.toStringAsFixed(2)}",
     );
   }
 }

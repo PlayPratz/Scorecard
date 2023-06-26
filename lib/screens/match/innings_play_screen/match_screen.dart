@@ -7,18 +7,16 @@ import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart';
 import 'package:scorecard/screens/match/match_list.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
-import 'package:scorecard/screens/match/player_pick.dart';
+import 'package:scorecard/screens/match/innings_play_screen/player_pick.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/services/storage_service.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 
 import '../../../models/cricket_match.dart';
-import '../../../models/player.dart';
 import '../../../styles/color_styles.dart';
 import '../../../util/strings.dart';
 import '../../../util/elements.dart';
 import '../../../util/utils.dart';
-import '../../player/player_list.dart';
 import '../../templates/titled_page.dart';
 
 class MatchInterface extends StatelessWidget {
@@ -130,11 +128,11 @@ class MatchInterface extends StatelessWidget {
         break;
       case NextInput.batter:
         text = Strings.matchScreenChooseBatter;
-        onPressed = () => _chooseBatter(context, inningsManager);
+        onPressed = () => chooseBatter(context, inningsManager);
         break;
       case NextInput.bowler:
         text = Strings.matchScreenChooseBowler;
-        onPressed = () => _chooseBowler(context, inningsManager);
+        onPressed = () => chooseBowler(context, inningsManager);
         break;
       case NextInput.end:
         text = Strings.matchScreenEndInnings;
@@ -144,47 +142,6 @@ class MatchInterface extends StatelessWidget {
 
     return Elements.getConfirmButton(
         text: text, onPressed: canClick ? onPressed : null);
-  }
-
-  void _chooseBatter(
-      BuildContext context, InningsManager inningsManager) async {
-    final player = await Utils.goToPage(
-      PickBatter(
-        squad: inningsManager.innings.battingTeam.squad,
-        batterToReplace: inningsManager.batterToReplace!.batter,
-        wicket: inningsManager.wicket,
-      ),
-      context,
-    );
-
-    if (player == null) {
-      return;
-    }
-    inningsManager.addBatter(player);
-  }
-
-  void _chooseBowler(
-      BuildContext context, InningsManager inningsManager) async {
-    final player =
-        await _choosePlayer(context, inningsManager.innings.bowlingTeam.squad);
-    if (player != null) {
-      inningsManager.setBowler(player);
-    }
-  }
-
-  Future<Player?> _choosePlayer(
-      BuildContext context, List<Player> squad) async {
-    final Player? selectedPlayer = await Utils.goToPage(
-        TitledPage(
-          title: Strings.choosePlayer,
-          child: PlayerList(
-            playerList: squad,
-            onSelectPlayer: (player) => Utils.goBack(context, player),
-          ),
-        ),
-        context);
-
-    return selectedPlayer;
   }
 
   void _endInnings(BuildContext context) {

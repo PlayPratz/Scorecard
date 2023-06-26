@@ -86,7 +86,8 @@ class Innings {
     final batterInnings = <BatterInnings>[];
     for (final ball in balls) {
       final batterInning = batterInnings.lastWhere(
-        (batInn) => batInn.batter == ball.batter && !batInn.isOut,
+        (batInn) => batInn.batter == ball.batter //&& !batInn.isOut
+        ,
         orElse: () {
           final batInn = BatterInnings(batter: ball.batter, innings: this);
           batterInnings.add(batInn);
@@ -105,7 +106,7 @@ class BatterInnings {
   Innings innings;
   BatterInnings({required this.batter, required this.innings});
 
-  Wicket? wicket;
+  // Wicket? wicket;
 
   List<Ball> get balls =>
       innings.balls.where((ball) => ball.batter == batter).toList();
@@ -118,16 +119,18 @@ class BatterInnings {
 
   double get strikeRate => 100 * runsScored / numBallsFaced;
 
-  bool get isOut => wicket != null || (balls.isNotEmpty && balls.last.isWicket);
+  Wicket? get wicket => balls.isNotEmpty ? balls.last.wicket : null;
+
+  bool get isOut => wicket != null;
 
   String get score =>
       runsScored.toString() + Strings.scoreIn + numBallsFaced.toString();
 
   void play(Ball ball) {
     balls.add(ball);
-    if (ball.isWicket && ball.wicket?.batter == batter) {
-      wicket = ball.wicket;
-    }
+    // if (ball.isWicket && ball.wicket?.batter == batter) {
+    //   wicket = ball.wicket;
+    // }
   }
 }
 

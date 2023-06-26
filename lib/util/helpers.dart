@@ -29,7 +29,7 @@ class SingleToggleSelection<T> {
 
   T? get selection => index == -1 ? null : dataList[index];
   set selection(T? value) =>
-      value != null ? index = dataList.indexOf(value) : -1;
+      index = value != null ? dataList.indexOf(value) : -1;
 
   List<bool> get booleans => dataList.map((data) => data == selection).toList();
   List<Widget> get widgets =>

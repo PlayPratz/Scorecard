@@ -50,9 +50,18 @@ class InningsManager with ChangeNotifier {
       wicket: wicket,
     );
 
+    loadBallIntoInnings(ball);
+
+    if (runs % 2 == 1) _swapStrike();
+    _resetSelections();
+
+    notifyListeners();
+  }
+
+  void loadBallIntoInnings(Ball ball) {
     // Detemine ball and over index
-    int ballIndex = 0;
     int overIndex = 0;
+    int ballIndex = 1;
 
     if (innings.balls.isNotEmpty) {
       // Ball index has to be changed
@@ -62,7 +71,10 @@ class InningsManager with ChangeNotifier {
       ballIndex = lastBall.ballIndex;
       overIndex = lastBall.overIndex;
 
-      if (ballIndex == Constants.ballsPerOver) {
+      // Increment ballIndex
+      ballIndex++;
+
+      if (ballIndex > Constants.ballsPerOver) {
         // First ball of the over
         overIndex++;
         ballIndex = 1;
@@ -71,16 +83,15 @@ class InningsManager with ChangeNotifier {
           ballIndex = 0;
         }
       }
-
-      ball.ballIndex = ballIndex;
-      ball.overIndex = overIndex;
+    } else if (!ball.isLegal) {
+      ballIndex = 0;
     }
 
-    innings.pushBall(ball);
-    if (runs % 2 == 1) _swapStrike();
-    _resetSelections();
+    ball.ballIndex = ballIndex;
+    ball.overIndex = overIndex;
 
-    notifyListeners();
+    innings.pushBall(ball);
+    innings.batterInnings;
   }
 
   bool get canUndoMove => innings.balls.isNotEmpty;
@@ -91,6 +102,9 @@ class InningsManager with ChangeNotifier {
     final ball = innings.popBall();
     if (ball!.runsScored % 2 == 1) _swapStrike();
     _resetSelections();
+
+    // Prevent undo of first ball from triggering "Pick Bowler" NextInput
+    _canSelectBowler = false;
 
     notifyListeners();
   }
@@ -236,7 +250,9 @@ class InningsManager with ChangeNotifier {
     // Change Batter due to fall of wicket
     if (
         // _canSelectBatter &&
-        innings.balls.isNotEmpty && innings.balls.last.isWicket) {
+        innings.balls.isNotEmpty &&
+            innings.balls.last.isWicket &&
+            batterToReplace != null) {
       return NextInput.batter;
     }
     return NextInput.ball;
@@ -251,7 +267,7 @@ class InningsManager with ChangeNotifier {
 
     // _canSelectBatter = true;
     _canSelectBowler = true;
-    batterToReplace = null;
+    // batterToReplace = null;
   }
 
   BatterInnings? _getBatterInningsOfPlayer(Player player) {

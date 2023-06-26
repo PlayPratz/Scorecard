@@ -104,6 +104,7 @@ class InningsManager with ChangeNotifier {
   BatterInnings? batter1;
   BatterInnings? batter2;
   BatterInnings? striker;
+  BatterInnings? batterToReplace;
 
   Iterable<BatterInnings> get _onPitchBatters => innings.batterInnings
       .where((batterInning) => !batterInning.isOut)
@@ -125,15 +126,14 @@ class InningsManager with ChangeNotifier {
   }
 
   void addBatter(Player batter) {
-    // if (batter == nsbatter) {
-    //   _swapStrike();
-    // } else {
-    //   this.batter = batter;
-    // }
-
-    final batterInnings = BatterInnings(batter: batter, innings: innings);
-
-    // striker = batterInnings;
+    // Check if the batter exists in the Batter Innings list
+    BatterInnings? batterInnings = _getBatterInningsOfPlayer(batter);
+    if (batterInnings == null) {
+      // New batter
+      batterInnings = BatterInnings(batter: batter, innings: innings);
+      return;
+    }
+    // New batter
 
     if (_onPitchBatters.first == batter1) {
       batter2 = batterInnings;
@@ -145,7 +145,8 @@ class InningsManager with ChangeNotifier {
       striker = batterInnings;
     }
 
-    _canSelectBatter = false;
+    // _canSelectBatter = false;
+    batterToReplace = null;
 
     notifyListeners();
   }
@@ -194,6 +195,10 @@ class InningsManager with ChangeNotifier {
   void setWicket(Wicket? wicket) {
     this.wicket = wicket;
 
+    if (wicket != null) {
+      batterToReplace = _getBatterInningsOfPlayer(wicket.batter);
+    }
+
     notifyListeners();
   }
 
@@ -207,7 +212,7 @@ class InningsManager with ChangeNotifier {
     notifyListeners();
   }
 
-  bool _canSelectBatter = false;
+  // bool _canSelectBatter = false;
   bool _canSelectBowler = false;
 
   NextInput get nextInput {
@@ -229,22 +234,33 @@ class InningsManager with ChangeNotifier {
     }
 
     // Change Batter due to fall of wicket
-    if (_canSelectBatter &&
-        innings.balls.isNotEmpty &&
-        innings.balls.last.isWicket) {
+    if (
+        // _canSelectBatter &&
+        innings.balls.isNotEmpty && innings.balls.last.isWicket) {
       return NextInput.batter;
     }
     return NextInput.ball;
   } //TODO
 
+  // Helpers
   void _resetSelections() {
     runs = 0;
     wicket = null;
     bowlingExtra = null;
     battingExtra = null;
 
-    _canSelectBatter = true;
+    // _canSelectBatter = true;
     _canSelectBowler = true;
+    batterToReplace = null;
+  }
+
+  BatterInnings? _getBatterInningsOfPlayer(Player player) {
+    try {
+      return innings.batterInnings
+          .lastWhere((batInn) => batInn.batter == player);
+    } on StateError {
+      return null;
+    }
   }
 }
 

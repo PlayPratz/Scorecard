@@ -7,6 +7,7 @@ import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart';
 import 'package:scorecard/screens/match/match_list.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
+import 'package:scorecard/screens/match/player_pick.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/services/storage_service.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
@@ -147,12 +148,19 @@ class MatchInterface extends StatelessWidget {
 
   void _chooseBatter(
       BuildContext context, InningsManager inningsManager) async {
-    final player =
-        await _choosePlayer(context, inningsManager.innings.battingTeam.squad);
+    final player = await Utils.goToPage(
+      PickBatter(
+        squad: inningsManager.innings.battingTeam.squad,
+        batterToReplace: inningsManager.batterToReplace!.batter,
+        wicket: inningsManager.wicket,
+      ),
+      context,
+    );
 
-    if (player != null) {
-      inningsManager.addBatter(player);
+    if (player == null) {
+      return;
     }
+    inningsManager.addBatter(player);
   }
 
   void _chooseBowler(

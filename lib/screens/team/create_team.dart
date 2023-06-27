@@ -5,7 +5,6 @@ import 'package:scorecard/services/storage_service.dart';
 
 import '../../models/player.dart';
 import '../../models/team.dart';
-import '../../styles/color_styles.dart';
 import '../../util/strings.dart';
 import '../../util/elements.dart';
 import '../../util/utils.dart';
@@ -16,10 +15,16 @@ import '../player/player_tile.dart';
 class CreateTeamForm extends StatefulWidget {
   final Team team;
 
-  factory CreateTeamForm({Key? key}) =>
-      CreateTeamForm.update(team: Team.generate());
+  factory CreateTeamForm({Team? team}) {
+    if (team == null) {
+      return CreateTeamForm.blank();
+    }
+    return CreateTeamForm.update(team: team);
+  }
 
-  const CreateTeamForm.update({Key? key, required this.team}) : super(key: key);
+  CreateTeamForm.blank({super.key}) : team = Team.generate();
+
+  const CreateTeamForm.update({super.key, required this.team});
 
   @override
   State<CreateTeamForm> createState() => _CreateTeamFormState();
@@ -32,7 +37,6 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   final TextEditingController _teamNameController = TextEditingController();
   final TextEditingController _shortTeamNameController =
       TextEditingController();
-  late int _selectedColorIndex;
 
   @override
   void initState() {
@@ -42,8 +46,6 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     _teamNameController.text = team.name;
     _shortTeamNameController.text = team.shortName;
 
-    _selectedColorIndex = ColorStyles.teamColors
-        .indexWhere((color) => team.color.value == color.value);
     if (widget.team.squadSize > 0) {
       _selectedCaptain = team.squad[0];
       _selectedPlayerList.addAll(team.squad.sublist(1));
@@ -76,7 +78,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     team.name = _teamNameController.text;
     team.shortName = _shortTeamNameController.text;
     team.squad = [_selectedCaptain!, ..._selectedPlayerList];
-    team.color = ColorStyles.teamColors[_selectedColorIndex];
+    team.color = genTeamTemplates[genTeamIndex % genTeamTemplates.length].color;
     StorageService.saveTeam(team);
     Utils.goBack(context, team);
   }
@@ -105,11 +107,11 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
         Expanded(
             child: GestureDetector(
           onTap: () => setState(() {
-            _selectedColorIndex =
-                (_selectedColorIndex + 1) % ColorStyles.teamColors.length;
+            genTeamIndex++;
           }),
           child: CircleAvatar(
-            backgroundColor: ColorStyles.teamColors[_selectedColorIndex],
+            backgroundColor:
+                genTeamTemplates[genTeamIndex % genTeamTemplates.length].color,
           ),
         )),
         Expanded(

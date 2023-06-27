@@ -100,7 +100,8 @@ class InningsManager with ChangeNotifier {
     if (!canUndoMove) return;
 
     final ball = innings.popBall();
-    if (ball!.runsScored % 2 == 1) _swapStrike();
+    // if (ball!.runsScored % 2 == 1) _swapStrike();
+    // setStrike(_getBatterInningsOfPlayer(ball!.batter)!);
     _resetSelections();
 
     // Prevent undo of first ball from triggering "Pick Bowler" NextInput

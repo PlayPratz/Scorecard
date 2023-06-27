@@ -16,7 +16,7 @@ import '../player/player_tile.dart';
 
 class InningsInitScreen extends StatefulWidget {
   final CricketMatch match;
-  const InningsInitScreen({Key? key, required this.match}) : super(key: key);
+  const InningsInitScreen({super.key, required this.match});
 
   @override
   State<InningsInitScreen> createState() => _InningsInitScreenState();
@@ -61,7 +61,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
         Strings.initInningsChooseBatter,
         Strings.initInningsChooseBatterHint,
         Strings.initInningsChooseBatter,
-        widget.match.currentInnings.battingTeam.squad);
+        widget.match.nextTeamToBat.squad);
   }
 
   Widget _wBowlerSelection(Player? bowler) {
@@ -71,7 +71,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
         Strings.initInningsChooseBowler,
         Strings.initInningsChooseBowlerHint,
         Strings.initInningsChooseBowler,
-        widget.match.currentInnings.bowlingTeam.squad);
+        widget.match.nextTeamToBowl.squad);
   }
 
   Widget _wPlayerSelection(Player? player, Function(Player) onSelectPlayer,
@@ -94,11 +94,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
       text: Strings.initInningsStartInnings,
       onPressed: _canInitInnings
           ? () {
-              if (widget.match.matchState == MatchState.tossCompleted) {
-                widget.match.startFirstInnings();
-              } else {
-                widget.match.startSecondInnings();
-              }
+              widget.match.progressMatch();
               final batter = BatterInnings(
                   batter: _batter!, innings: widget.match.currentInnings);
               final nsbatter = _batter2 == null

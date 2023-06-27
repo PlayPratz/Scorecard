@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/innings.dart';
@@ -9,65 +10,112 @@ import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
+final recentBallsViewKey = GlobalKey<AnimatedListState>();
+
 class RecentBallsView extends StatelessWidget {
   const RecentBallsView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // final innings = context.read<InningsManager>();
     return Selector<InningsManager, int>(
       selector: (context, inningsManager) =>
           inningsManager.innings.balls.length,
       builder: (context, ballCount, child) => Container(
-          height: 64,
+          // height: 64,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius:
+                const BorderRadius.horizontal(left: Radius.circular(8)),
             border: Border.all(color: ColorStyles.highlight),
           ),
           child: InkWell(
-            onTap: () => Utils.goToPage(
-                InningsTimelineScreen(
-                    innings: context.read<InningsManager>().innings),
-                context),
+            onTap: ballCount == 0
+                ? null
+                : () => Utils.goToPage(
+                    InningsTimelineScreen(
+                      innings: context.read<InningsManager>().innings,
+                    ),
+                    context),
             customBorder:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(width: 6),
-                Expanded(
-                  child: ListView.builder(
-                    reverse: true,
-                    scrollDirection: Axis.horizontal,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: ballCount,
-                    itemBuilder: (context, index) {
-                      final innings = context.read<InningsManager>().innings;
-                      final currentBall = innings.balls[ballCount - 1 - index];
-                      Color? ballIndexColor;
-                      if (ballCount > 1) {
-                        final previousBall =
-                            innings.balls[ballCount - 2 - index];
-                        if (previousBall.overIndex != currentBall.overIndex) {
-                          ballIndexColor = innings.bowlingTeam.color;
+            child: SizedBox(
+              height: 56,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // const SizedBox(width: 4),
+                  Expanded(
+                    child: ListView.builder(
+                      reverse: true,
+                      scrollDirection: Axis.horizontal,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: ballCount,
+                      itemBuilder: (context, index) {
+                        final innings = context.read<InningsManager>().innings;
+                        final ballsReversed = innings.balls.reversed.toList();
+                        final currentBall = ballsReversed[index];
+                        Color? ballIndexColor;
+                        if (index > 0) {
+                          // At least two balls exist
+                          final previousBall = ballsReversed[index - 1];
+                          if (previousBall.overIndex != currentBall.overIndex) {
+                            ballIndexColor = innings.bowlingTeam.color;
+                          }
                         }
-                      }
-                      return RecentBall(
-                        ball: currentBall,
-                        highlightBallIndex: ballIndexColor,
-                      );
-                    },
+                        return Padding(
+                            padding: const EdgeInsets.all(1),
+                            child: RecentBall(
+                              ball: currentBall,
+                              highlightBallIndex: ballIndexColor,
+                            ));
+                      },
+                    ),
                   ),
-                ),
-                Container(
-                  color: ColorStyles.highlight,
-                  height: double.infinity,
-                  width: 32,
-                  child: Icon(
-                    Icons.chevron_right,
-                    color: Colors.white,
+                  // Expanded(
+                  //   child: AnimatedList(
+                  //     key: recentBallsViewKey,
+                  //     reverse: true,
+                  //     initialItemCount: ballCount,
+                  //     scrollDirection: Axis.horizontal,
+                  //     itemBuilder: (context, index, animation) {
+                  //       final innings = context.read<InningsManager>().innings;
+                  //       final ballsReversed = innings.balls.reversed.toList();
+                  //       final currentBall = ballsReversed[index];
+                  //       Color? ballIndexColor;
+                  //       if (index > 0) {
+                  //         // At least two balls exist
+                  //         final previousBall = ballsReversed[index - 1];
+                  //         if (previousBall.overIndex != currentBall.overIndex) {
+                  //           ballIndexColor = innings.bowlingTeam.color;
+                  //         }
+                  //       }
+                  //       return SlideTransition(
+                  //         position: animation.drive(
+                  //           Tween<Offset>(
+                  //             begin: const Offset(1, 0),
+                  //             end: const Offset(0, 0),
+                  //           ),
+                  //         ),
+                  //         child: RecentBall(
+                  //           ball: currentBall,
+                  //           highlightBallIndex: ballIndexColor,
+                  //         ),
+                  //       );
+                  //     },
+                  //     },
+                  //   ),
+                  // ),
+                  Container(
+                    color: ColorStyles.highlight,
+                    height: double.infinity,
+                    width: 36,
+                    child: const Icon(
+                      Icons.chevron_right,
+                      color: ColorStyles.background,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           )),
     );
@@ -104,9 +152,10 @@ class RecentBall extends StatelessWidget {
       indicatorColor = ColorStyles.ballEvent;
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(1),
+    return SizedBox(
+      height: 56,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
             child: CircleAvatar(
@@ -124,7 +173,7 @@ class RecentBall extends StatelessWidget {
                 .textTheme
                 .bodySmall!
                 .copyWith(color: highlightBallIndex),
-          )
+          ),
         ],
       ),
     );
@@ -139,6 +188,7 @@ class InningsTimelineScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final balls = innings.balls;
+
     return TitledPage(
       title: Strings.inningsTimelineTitle,
       child: ListView.separated(
@@ -146,12 +196,30 @@ class InningsTimelineScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           if (index == balls.length) return const SizedBox();
           final ball = balls[balls.length - index - 1];
-          return GenericItemTile(
-            // contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-            leading: RecentBall(ball: ball),
-            primaryHint: "${ball.bowler.name} to ${ball.batter.name}",
-            secondaryHint: " ",
-            trailing: null,
+          return Row(
+            children: [
+              Material(
+                textStyle: Theme.of(context).textTheme.bodySmall,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(DateFormat('h:m').format(ball.timestamp.toLocal())),
+                    Text(DateFormat('a').format(ball.timestamp.toLocal())),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: GenericItemTile(
+                  // contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                  leading: RecentBall(ball: ball),
+                  primaryHint: "${ball.bowler.name} to ${ball.batter.name}",
+                  secondaryHint: ball.isWicket
+                      ? " ${Strings.getWicketDescription(ball.wicket)}"
+                      : " ",
+                  trailing: null,
+                ),
+              ),
+            ],
           );
         },
         separatorBuilder: (context, index) {
@@ -183,7 +251,7 @@ class InningsTimelineScreen extends StatelessWidget {
   Widget _wOverHeader(Ball ball) => Align(
         alignment: Alignment.centerLeft,
         child: Padding(
-          padding: const EdgeInsets.only(left: 8.0, bottom: 8),
+          padding: const EdgeInsets.only(left: 36.0, bottom: 8),
           child: Chip(
             label: Text("Over ${ball.overIndex + 1}"),
             backgroundColor: innings.bowlingTeam.color,

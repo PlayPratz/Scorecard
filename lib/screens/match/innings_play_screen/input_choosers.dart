@@ -17,13 +17,14 @@ class RunChooser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inningsManager = context.watch<InningsManager>();
-    _runSelection._selectedRuns = inningsManager.runs;
+    final selectedRuns = context
+        .select<InningsManager, int>((inningsManager) => inningsManager.runs);
+    _runSelection._selectedRuns = selectedRuns;
     return ToggleButtons(
       onPressed: (int index) {
         // The button that is tapped is set to true, and the others to false.
         _runSelection.runIndex = index;
-        inningsManager.setRuns(_runSelection.runs);
+        context.read<InningsManager>().setRuns(_runSelection.runs);
       },
       borderRadius: const BorderRadius.all(Radius.circular(8)),
       fillColor: _runSelection.runs == 4
@@ -77,7 +78,8 @@ class WicketChooser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String primary = Strings.matchScreenAddWicket;
-    String hint = Strings.matchScreenAddWicketHint;
+    // String hint = Strings.matchScreenAddWicketHint;
+    String hint = "";
 
     final wicket = context.select<InningsManager, Wicket?>(
         (inningsManager) => inningsManager.wicket);

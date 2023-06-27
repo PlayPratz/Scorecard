@@ -102,20 +102,20 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     return SizedBox(
       width: 192,
       child: Column(children: [
-        Text(Strings.createMatchOvers),
+        const Text(Strings.createMatchOvers),
         NumberPicker(min: 1, onChange: (value) => _overs = value)
       ]),
     );
   }
 
   void _chooseHomeTeam() {
-    _chooseTeam((chosenTeam) {
+    _chooseTeam(_selectedHomeTeam, (chosenTeam) {
       _selectedHomeTeam = chosenTeam;
     });
   }
 
   void _chooseAwayTeam() {
-    _chooseTeam((chosenTeam) {
+    _chooseTeam(_selectedAwayTeam, (chosenTeam) {
       _selectedAwayTeam = chosenTeam;
     });
   }
@@ -123,10 +123,11 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   // (This is what happens when you develop in TypeScript and Dart simulatenously.)
 
   void _chooseTeam(
+    Team? currentTeam,
     Function(Team) onSelectTeam,
   ) async {
     Team? chosenTeam = await Utils.goToPage(
-      CreateTeamForm(),
+      CreateTeamForm(team: currentTeam),
       context,
     );
     if (chosenTeam != null) {

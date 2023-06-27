@@ -434,7 +434,6 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
       maxOvers: reader.readInt(),
       homeTeam: StorageService.getTeamById(reader.readString()),
       awayTeam: StorageService.getTeamById(reader.readString()),
-      inningsIndex: reader.readInt(),
       inningsList: reader.readList().cast(),
     );
 
@@ -456,7 +455,6 @@ class _CricketMatchAdapter extends TypeAdapter<CricketMatch> {
       ..writeString(match.homeTeam.id)
       ..writeString(match.awayTeam.id)
       //Innings
-      ..writeInt(match.inningsIndex)
       ..writeList(match.inningsList)
       // Toss
       ..write(match.toss);

@@ -163,7 +163,7 @@ class BowlerInnings {
 
   String get score =>
       wicketsTaken.toString() +
-      Strings.seperatorHyphen +
+      Strings.separatorHyphen +
       runsConceded.toString();
 
   // void bowl(Over over) {

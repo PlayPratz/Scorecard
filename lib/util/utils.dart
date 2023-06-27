@@ -11,7 +11,7 @@ class Utils {
 
   static String generateUniqueId() => _uuid.v1();
 
-  static Future<dynamic> goToPage(Widget page, BuildContext context, [Animat]) {
+  static Future<dynamic> goToPage(Widget page, BuildContext context) {
     return Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => page),

@@ -53,11 +53,11 @@ class Strings {
 
   // Hacks
   static const String empty = "";
-  static const String seperatorHyphen = '-';
-  static const String seperatorSlash = '/';
+  static const String separatorHyphen = '-';
+  static const String separatorSlash = '/';
   static const String bracketOpenWithSpace = " (";
   static const String bracketClose = ")";
-  static const String seperatorVersus = " v ";
+  static const String separatorVersus = " v ";
 
   // Create Team
   static const String createTeamSelectCaptain = "Select a captain";
@@ -78,6 +78,14 @@ class Strings {
   static const String createPlayerBowlArm = "Bowling Arm";
   static const String createPlayerBowlStyle = "Bowling Style";
   static const String createPlayerSave = "Save Player";
+
+  // Match List
+  static const String matchListRematch = "Rematch";
+  static const String matchListRematchDescription =
+      "Quickly start a new match with the same teams";
+  static const String matchListDelete = "Delete";
+  static const String matchListDeleteDescription =
+      "This match will be gone forever! (That's a really long time)";
 
   // Create Match
   static const String createMatchSelectHomeTeam = "Select Home Team";
@@ -140,6 +148,9 @@ class Strings {
   static const String matchScreenAddWicketHint =
       "Specify the game-changing incident";
   static const String matchScreenEndInnings = "End Innings";
+  static const String matchScreenEndInningsShort = "End";
+  static const String matchScreenEndInningsLongPressToEnd =
+      "Long press the button to end innings";
   static const String matchScreenUndo = "Undo";
   static const String matchScreenChooseBatter = "Choose Batter";
   static const String matchScreenChooseBowler = "Choose Bowler";

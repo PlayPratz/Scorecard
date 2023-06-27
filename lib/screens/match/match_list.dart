@@ -16,10 +16,12 @@ import '../../util/strings.dart';
 import '../../util/utils.dart';
 
 class MatchList extends StatefulWidget {
-  final List<CricketMatch> matchList;
+  // final List<CricketMatch> matchList;
+
+  final List<CricketMatch> Function() getMatchList;
   final bool allowCreateMatch;
   const MatchList(
-      {Key? key, required this.matchList, this.allowCreateMatch = false})
+      {Key? key, required this.getMatchList, this.allowCreateMatch = false})
       : super(key: key);
 
   @override
@@ -41,7 +43,9 @@ class _MatchListState extends State<MatchList> {
   }
 
   List<Widget> getMatchList(BuildContext context) {
-    return widget.matchList.reversed
+    return widget
+        .getMatchList()
+        .reversed
         .map((match) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: MatchTile(
@@ -61,9 +65,9 @@ class _MatchListState extends State<MatchList> {
                                     Icons.replay,
                                     color: ColorStyles.selected,
                                   ),
-                                  primaryHint: "Rematch",
+                                  primaryHint: Strings.matchListRematch,
                                   secondaryHint:
-                                      "Quickly start a new match with the same teams",
+                                      Strings.matchListRematchDescription,
                                   onSelect: () => setState(() {
                                     Utils.goBack(context);
                                     Utils.goToPage(
@@ -80,9 +84,9 @@ class _MatchListState extends State<MatchList> {
                                     Icons.delete_forever,
                                     color: ColorStyles.remove,
                                   ),
-                                  primaryHint: "Delete",
+                                  primaryHint: Strings.matchListDelete,
                                   secondaryHint:
-                                      "This match will be gone forever! (That's a really long time)",
+                                      Strings.matchListDeleteDescription,
                                   onSelect: () => setState(() {
                                     StorageService.deleteMatch(match);
                                     Utils.goBack(context);
@@ -110,14 +114,12 @@ void handleOpenMatch(CricketMatch match, BuildContext context) {
     case MatchState.completed:
       Utils.goToPage(Scorecard(match: match), context);
       return;
-    case MatchState.secondInnings:
-      if (match.secondInnings!.balls.isEmpty) {
-        Utils.goToPage(InningsInitScreen(match: match), context);
+    default:
+      if (match.currentInnings.balls.isEmpty) {
+        match.inningsList.removeLast();
+        handleOpenMatch(match, context);
         return;
       }
-      continue def;
-    def:
-    default:
       Utils.goToPage(
           ChangeNotifierProvider<InningsManager>(
             create: (context) => InningsManager.resume(

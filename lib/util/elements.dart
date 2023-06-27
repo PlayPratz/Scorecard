@@ -44,15 +44,48 @@ class Elements {
       child: SizedBox(
         width: double.infinity,
         height: 56,
-        child: OutlinedButton(
-          onPressed: onPressed,
-          child: Text(
-            text,
-          ),
-        ),
+        child: getButton(text: text, onPressed: onPressed),
       ),
     );
   }
+
+  static Widget getButton({
+    required String text,
+    void Function()? onPressed,
+    Color? foreground,
+    Color? background,
+  }) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: background?.withOpacity(0.1),
+        foregroundColor: foreground,
+      ),
+      onPressed: onPressed,
+      child: Text(
+        text,
+      ),
+    );
+  }
+
+  // static Widget getIconButton({
+  //   required String text,
+  //   required Widget icon,
+  //   void Function()? onPressed,
+  //   Color? foreground,
+  //   Color? background,
+  // }) {
+  //   return ElevatedButton.icon(
+  //     style: ElevatedButton.styleFrom(
+  //       backgroundColor: background?.withOpacity(0.1),
+  //       foregroundColor: foreground,
+  //     ),
+  //     onPressed: onPressed,
+  //     label: Text(
+  //       text,
+  //     ),
+  //     icon: icon,
+  //   );
+  // }
 
   static Widget getTextInput(
       String label, String hint, void Function(String value) onChangeValue,

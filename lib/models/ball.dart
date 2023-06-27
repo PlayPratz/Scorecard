@@ -32,6 +32,8 @@ class Ball {
   /// It could be zero if the first ball is a bowling extra
   int ballIndex;
 
+  DateTime timestamp;
+
   Ball({
     required this.bowler,
     required this.batter,
@@ -41,7 +43,18 @@ class Ball {
     this.bowlingExtra,
     this.overIndex = 0,
     this.ballIndex = 0,
-  });
+  }) : timestamp = DateTime.timestamp();
+
+  Ball.load(
+      {required this.bowler,
+      required this.batter,
+      required this.runsScored,
+      this.wicket,
+      this.battingExtra,
+      this.bowlingExtra,
+      this.overIndex = 0,
+      this.ballIndex = 0,
+      required this.timestamp});
 
   void assignIndexes({required int over, required int ball}) {
     overIndex = over;

@@ -2,13 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/models/result.dart';
+import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_on_pitch.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart';
-import 'package:scorecard/screens/match/match_list.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/match/innings_play_screen/player_pick.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/services/storage_service.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 
@@ -70,16 +72,29 @@ class MatchInterface extends StatelessWidget {
               SizedBox(
                 width: 100,
                 height: 56,
-                child: OutlinedButton.icon(
-                  onPressed: null,
-                  onLongPress: () {
-                    match.progressMatch();
-                    handleOpenMatch(match, context);
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            Strings.matchScreenEndInningsLongPressToEnd,
+                            style: TextStyle(color: Colors.white)),
+                        backgroundColor: ColorStyles.card,
+                        showCloseIcon: true,
+                        closeIconColor: Colors.white,
+                        dismissDirection: DismissDirection.horizontal,
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
                   },
-                  icon: Icon(Icons.cancel),
-                  label: Text("End"),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.redAccent,
+                  onLongPress: () => _endInnings(context),
+                  icon: const Icon(Icons.cancel),
+                  label: const Text(Strings.matchScreenEndInningsShort),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: ColorStyles.remove,
+                    backgroundColor: ColorStyles.remove.withOpacity(0.1),
                   ),
                 ),
               ),
@@ -105,9 +120,20 @@ class MatchInterface extends StatelessWidget {
   }
 
   Widget _wUndoButton(InningsManager inningsManager) {
-    return OutlinedButton.icon(
-      onPressed: inningsManager.canUndoMove ? inningsManager.undoMove : null,
-      style: OutlinedButton.styleFrom(primary: ColorStyles.remove),
+    return ElevatedButton.icon(
+      onPressed: inningsManager.canUndoMove
+          ? () {
+              inningsManager.undoMove();
+              recentBallsViewKey.currentState?.removeItem(
+                0,
+                (context, animation) => const SizedBox(),
+                duration: Duration.zero,
+              );
+            }
+          : null,
+      style: ElevatedButton.styleFrom(
+          foregroundColor: ColorStyles.remove,
+          backgroundColor: ColorStyles.remove.withOpacity(0.1)),
       icon: const Icon(Icons.undo),
       label: const Text(Strings.matchScreenUndo),
     );
@@ -123,6 +149,7 @@ class MatchInterface extends StatelessWidget {
         onPressed = () {
           inningsManager.addBall();
           StorageService.saveMatch(match);
+          recentBallsViewKey.currentState?.insertItem(0);
         };
         canClick = inningsManager.canAddBall;
         break;
@@ -145,9 +172,57 @@ class MatchInterface extends StatelessWidget {
   }
 
   void _endInnings(BuildContext context) {
-    match.progressMatch();
-    Utils.goBack(context);
-    handleOpenMatch(match, context);
+    // final inningsManager = context.read<InningsManager>();
+    if (match.matchState == MatchState.secondInnings) {
+      // TODO make this such that matchState need not be checked
+      match.progressMatch();
+      if (match.result.getVictoryType() == VictoryType.tie) {
+        showModalBottomSheet(
+          context: context,
+          builder: (context) => Material(
+            color: ColorStyles.background,
+            child: Column(
+              children: [
+                const SizedBox(height: 32),
+                const Text(
+                  Strings.matchScreenMatchTied,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 32),
+                const Text(Strings.matchScreenMatchTiedHint),
+                const SizedBox(height: 32),
+                GenericItemTile(
+                  leading: const Icon(Icons.handshake),
+                  primaryHint: Strings.matchScreenEndTiedMatch,
+                  secondaryHint: Strings.matchScreenEndTiedMatchHint,
+                  onSelect: () {
+                    Utils.goBack(context);
+                    Utils.goToReplacementPage(Scorecard(match: match), context);
+                  },
+                ),
+                const SizedBox(height: 32),
+                GenericItemTile(
+                  leading: const Icon(Icons.sports_baseball),
+                  primaryHint: Strings.matchScreenSuperOver,
+                  secondaryHint: Strings.matchScreenSuperOverHint,
+                  onSelect: () {
+                    match.startSuperOver();
+                    Utils.goBack(context);
+                    Utils.goToReplacementPage(
+                        InningsInitScreen(match: match.superOver!), context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+        return;
+      }
+
+      Utils.goToReplacementPage(Scorecard(match: match), context);
+      return;
+    }
+    Utils.goToReplacementPage(InningsInitScreen(match: match), context);
   }
 }
 

@@ -19,7 +19,7 @@ class Scorecard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String title = match.homeTeam.shortName +
-        Strings.seperatorVersus +
+        Strings.separatorVersus +
         match.awayTeam.shortName;
 
     return TitledPage(
@@ -50,10 +50,7 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
   void initState() {
     super.initState();
     _isInningsPanelOpen =
-        widget.match.inningsList.map((innings) => false).toList();
-    if (_isInningsPanelOpen.isNotEmpty) {
-      _isInningsPanelOpen.first = true;
-    }
+        widget.match.inningsList.map((innings) => true).toList();
     if (widget.match.matchState == MatchState.completed) {
       String resultString;
       final result = widget.match.result;

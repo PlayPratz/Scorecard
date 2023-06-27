@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../util/utils.dart';
 import 'player.dart';
 
-int index = 0;
+int genTeamIndex = -1;
 
 class Team {
   final String id;
@@ -28,7 +28,8 @@ class Team {
       : id = Utils.generateUniqueId();
 
   factory Team.generate() {
-    _TeamTemplate template = _templates[index++ % _templates.length];
+    _TeamTemplate template =
+        genTeamTemplates[++genTeamIndex % genTeamTemplates.length];
     return Team.create(
         name: template.name,
         shortName: template.shortName,
@@ -49,13 +50,13 @@ class _TeamTemplate {
       {required this.name, required this.shortName, required this.color});
 }
 
-final List<_TeamTemplate> _templates = [
-  _TeamTemplate(name: "Blue", shortName: "BLU", color: Colors.blue),
-  _TeamTemplate(name: "Saffron", shortName: "SAF", color: Colors.orange),
-  _TeamTemplate(name: "Amber", shortName: "AMB", color: Colors.amber),
-  _TeamTemplate(name: "Green", shortName: "GRN", color: Colors.green),
-  _TeamTemplate(name: "Cyan", shortName: "CYN", color: Colors.cyan),
-  _TeamTemplate(name: "Brown", shortName: "BRN", color: Colors.brown),
-  _TeamTemplate(name: "Orange", shortName: "ORA", color: Colors.deepOrange),
-  // _TeamTemplate(name: "Purple", shortName: "PRP", color: Colors.purple),
+final List<_TeamTemplate> genTeamTemplates = [
+  _TeamTemplate(name: "Aqua", shortName: "AQU", color: Colors.blue),
+  _TeamTemplate(name: "Lava", shortName: "LAV", color: Colors.deepOrange),
+  _TeamTemplate(name: "Smoke", shortName: "SMK", color: Colors.grey.shade700),
+  _TeamTemplate(name: "Grass", shortName: "GRA", color: Colors.green),
+  _TeamTemplate(name: "Mint", shortName: "MIN", color: Colors.cyan),
+  _TeamTemplate(name: "Cookie", shortName: "CKE", color: Colors.brown),
+  _TeamTemplate(name: "Lemon", shortName: "LEM", color: Colors.lime),
+  _TeamTemplate(name: "Blackberry", shortName: "BLB", color: Colors.deepPurple),
 ];

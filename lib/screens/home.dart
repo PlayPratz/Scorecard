@@ -81,10 +81,10 @@ class _HomeTabViewState extends State<HomeTabView> {
 
   List<Widget> get screens => [
         MatchList(
-          matchList: StorageService.getOngoingMatches(),
+          getMatchList: () => StorageService.getOngoingMatches(),
         ),
         MatchList(
-          matchList: StorageService.getCompletedMatches(),
+          getMatchList: () => StorageService.getCompletedMatches(),
         ),
         const CreateMatchForm(),
         PlayerList(
@@ -95,6 +95,6 @@ class _HomeTabViewState extends State<HomeTabView> {
           ).then((_) => setState(() {})),
           onCreatePlayer: (player) => setState(() {}),
         ),
-        StatisticsScreen()
+        const StatisticsScreen()
       ];
 }

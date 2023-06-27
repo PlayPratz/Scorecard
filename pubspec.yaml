@@ -44,6 +44,7 @@ dependencies:
   # image_crop: ^0.4.1
   image_picker: ^0.8.6
   provider: ^6.0.5
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:

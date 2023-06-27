@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:scorecard/util/constants.dart';
 
 import '../util/utils.dart';
@@ -17,10 +15,23 @@ class CricketMatch {
   // final Innings awayInnings;
 
   final List<Innings> inningsList;
-  int inningsIndex = -1;
+  // int inningsIndex = -1;
+  bool _isCompleted = false;
+  bool get isCompleted => _isCompleted;
 
   // MatchState _matchState = MatchState.notStarted;
   bool _isHomeInningsFirst = true;
+
+  Team get nextTeamToBat {
+    if (inningsList.isEmpty && _isHomeInningsFirst) {
+      return homeTeam;
+    } else if (!_isHomeInningsFirst) {
+      return awayTeam;
+    }
+    return currentInnings.bowlingTeam;
+  }
+
+  Team get nextTeamToBowl => nextTeamToBat == homeTeam ? awayTeam : homeTeam;
 
   // In case of super over
   CricketMatch? superOver;
@@ -65,25 +76,25 @@ class CricketMatch {
     required this.homeTeam,
     required this.awayTeam,
     required this.inningsList,
-    this.inningsIndex = -1,
+    // this.inningsIndex = -1,
   });
 
   bool get isTossCompleted => toss != null;
 
-  Innings get currentInnings => inningsList[min(inningsIndex, 1)];
+  Innings get currentInnings => inningsList.last;
 
   MatchState get matchState {
-    if (toss == null) {
+    if (_isCompleted) {
+      return MatchState.completed;
+    } else if (toss == null || inningsList.isEmpty) {
       // Toss has not completed
       return MatchState.notStarted;
-    } else if (firstInnings != null && firstInnings!.balls.isEmpty) {
-      return MatchState.tossCompleted;
-    } else if (inningsIndex == 0) {
-      return MatchState.firstInnings;
-    } else if (inningsIndex == 1) {
+    } else if (inningsList.length == 2) {
       return MatchState.secondInnings;
+    } else if (inningsList.length == 1) {
+      return MatchState.firstInnings;
     } else {
-      return MatchState.completed;
+      return MatchState.tossCompleted;
     }
   }
 
@@ -134,36 +145,33 @@ class CricketMatch {
             completedToss.choice == TossChoice.bat)) {
       _isHomeInningsFirst = false;
     }
-
-    final battingTeam = _isHomeInningsFirst ? homeTeam : awayTeam;
-    final bowlingTeam = _isHomeInningsFirst ? awayTeam : homeTeam;
-    inningsList.add(
-      Innings(
-          battingTeam: battingTeam,
-          bowlingTeam: bowlingTeam,
-          maxOvers: maxOvers),
-    );
-    inningsIndex = 0;
+    // inningsIndex = 0;
     // matchState = MatchState.tossCompleted;
   }
 
   void progressMatch() {
-    if (currentInnings == firstInnings) {
-      startSecondInnings();
+    if (inningsList.isEmpty) {
+      _startFirstInnings();
+    } else if (currentInnings == firstInnings) {
+      _startSecondInnings();
     } else {
-      endSecondInnings();
+      _endMatch();
     }
   }
 
-  void startFirstInnings() {
-    // matchState = MatchState.firstInnings;
+  void _startFirstInnings() {
+    final battingTeam = _isHomeInningsFirst ? homeTeam : awayTeam;
+    final bowlingTeam = _isHomeInningsFirst ? awayTeam : homeTeam;
+    inningsList.add(
+      Innings(
+        battingTeam: battingTeam,
+        bowlingTeam: bowlingTeam,
+        maxOvers: maxOvers,
+      ),
+    );
   }
 
-  void startSecondInnings() {
-    // matchState = MatchState.secondInnings;
-    while (inningsList.length > 1) {
-      inningsList.removeLast();
-    }
+  void _startSecondInnings() {
     final battingTeam = _isHomeInningsFirst ? awayTeam : homeTeam;
     final bowlingTeam = _isHomeInningsFirst ? homeTeam : awayTeam;
     inningsList.add(
@@ -174,17 +182,16 @@ class CricketMatch {
         maxOvers: maxOvers,
       ),
     );
-    inningsIndex = 1;
+    // inningsIndex = 1;
   }
 
-  void endSecondInnings() {
-    // matchState = MatchState.completed;
-    inningsIndex = 2; // TODO
+  void _endMatch() {
+    // inningsIndex = 2; // TODO
+    _isCompleted = true;
   }
 
   void startSuperOver() {
     superOver = CricketMatch.superOver(parentMatch: this);
-
     superOver!.startMatch(
       Toss(homeTeam, _isHomeInningsFirst ? TossChoice.bowl : TossChoice.bat),
     ); // This ensures that the order of innings is swapped.

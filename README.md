@@ -211,7 +211,7 @@ Next in line is the **Recent Balls** list, where the latest balls bowled are dis
 The next row consists of two mostly unrelated interactions.
 
 1. The _End Innings_ button, which can also be called the _Declare_ button. Clicking this will, well, do nothing. You will see a small message pop-up which tells you exactly what you have to do — press and hold this button if you really want to end (or declare) the innings.
-2. The _Wicket_ tile, which lets you add a wicket to the ball that is currently being entered. On tapping this tile, you will be taken to a pretty self-explanatory screen where you choose the kind of dismissal (bowled, LBW, run-out etc.) and the players involved in said dismissal.
+2. The _Wicket_ tile, which lets you add a wicket to the ball that is currently being entered. On tapping this tile, you will be taken to a pretty self-explanatory screen where you choose the kind of dismissal (bowled, LBW, run-out etc.) and the players involved in said dismissal. Once a wicket is selected, press and hold this tile to remove the wicket before the ball is entered.
 
 ###### Extra Selector
 
@@ -239,7 +239,7 @@ The second button takes on various forms depending on the situation.
 1. In most cases, it is a _Next_ button, that submits the data entered from [Run Selector](#run-selector), [Extra Selector](#extra-selector) and [Add a wicket](#end-innings-and-add-wicket). This will cause the [ball](#ball) to be added into the [innings](#innings). As result of this, the scores for both the teams and all the players involved will be updated.
 2. When an over is completed, it is a _Select Bowler_ button. On clicking, you will be taken to the bowling squad to choose the next bowler.
 3. When a wicket falls, it is a _Select Batter_ button. On clicking, you will be taken to the batting squad to choose the next batter.
-4. When the quota of overs is completed, or when the _target_ for the second innings is achieved, it is an _End Innings_ button which will act the same as long pressing the [End Innings button](#end-innings-and-add-wicket).
+4. When the quota of overs is completed, or when the _target_ for the second innings is achieved, it is an _End Innings_ button which will act the same as long-pressing the [End Innings button](#end-innings-and-add-wicket).
 
 --- 
 

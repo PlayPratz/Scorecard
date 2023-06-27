@@ -44,6 +44,7 @@ A Cricket Match is represented by the falling constructs or concepts:
 5. [Statistics](#statistics)
 
 ### Cricket Match
+It's a match played between two teams. What more can I say? Maybe a lot more; will expand on this later on.
 
 ### Innings
 
@@ -127,8 +128,8 @@ The Home Screen consists of the following tabs:
 
 1. [Ongoing Matches](#ongoing-and-completed-matches)
 2. [Completed Matches](#ongoing-and-completed-matches)
-3. [Players](#player)
-4. [Statistics](#statistics)
+3. Players
+4. Statistics
 
 A new match can be created using the **+** button located at the center of the Bottom Navigation Bar.
 

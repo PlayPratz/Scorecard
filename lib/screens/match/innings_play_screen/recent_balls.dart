@@ -12,8 +12,8 @@ import 'package:scorecard/util/utils.dart';
 
 final recentBallsViewKey = GlobalKey<AnimatedListState>();
 
-class RecentBallsView extends StatelessWidget {
-  const RecentBallsView({super.key});
+class RecentBallsPane extends StatelessWidget {
+  const RecentBallsPane({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +55,9 @@ class RecentBallsView extends StatelessWidget {
                         final ballsReversed = innings.balls.reversed.toList();
                         final currentBall = ballsReversed[index];
                         Color? ballIndexColor;
-                        if (index > 0) {
+                        if (index < ballCount - 2) {
                           // At least two balls exist
-                          final previousBall = ballsReversed[index - 1];
+                          final previousBall = ballsReversed[index + 1];
                           if (previousBall.overIndex != currentBall.overIndex) {
                             ballIndexColor = innings.bowlingTeam.color;
                           }

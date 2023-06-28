@@ -66,7 +66,7 @@ class MatchInterface extends StatelessWidget {
             isHomeTeamBatting:
                 match.currentInnings.battingTeam == match.homeTeam,
           ),
-          const RecentBallsView(),
+          const RecentBallsPane(),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -122,9 +122,9 @@ class MatchInterface extends StatelessWidget {
 
   Widget _wUndoButton(InningsManager inningsManager) {
     return ElevatedButton.icon(
-      onPressed: inningsManager.canUndoMove
+      onPressed: inningsManager.canUndoBall
           ? () {
-              inningsManager.undoMove();
+              inningsManager.undoBall();
               recentBallsViewKey.currentState?.removeItem(
                 0,
                 (context, animation) => const SizedBox(),

@@ -96,20 +96,69 @@ class InningsManager with ChangeNotifier {
     innings.batterInnings;
   }
 
-  bool get canUndoMove => innings.balls.isNotEmpty;
+  bool get canUndoBall => innings.balls.isNotEmpty;
 
-  void undoMove() {
-    if (!canUndoMove) return;
+  void undoBall() {
+    if (!canUndoBall) return;
 
-    final ball = innings.popBall();
+    final ball = innings.popBall()!;
 
-    // TODO: Set strike
+    // Fix Batters
+    if (ball.isWicket) {
+      final battersOnPitch = _onPitchBatters;
+
+      if (battersOnPitch.any((batInn) => batInn.batter == batter1!.batter)) {
+        // This means that batter1 is still playing
+        batter2 = battersOnPitch
+            .firstWhere((batInn) => batInn.batter != batter1!.batter);
+        if (!battersOnPitch.any((batInn) => batInn.batter == striker!.batter)) {
+          striker = batter2;
+        }
+      } else {
+        // This means that batter2 is still playing
+        batter1 = battersOnPitch
+            .firstWhere((batInn) => batInn.batter != batter2!.batter);
+        if (!battersOnPitch.any((batInn) => batInn.batter == striker!.batter)) {
+          striker = batter1;
+        }
+      }
+
+      // if (ball.batter == batter1!.batter) {
+      //   // batter1 needs to be restored, batter2 is correct
+      //   if (batter2!.batter == battersOnPitch.first.batter) {
+      //     batter1 = _onPitchBatters.last;
+      //   } else {
+      //     batter1 = _onPitchBatters.first;
+      //   }
+      //   // Restore striker
+      //   if (striker != null && striker!.batter == ball.batter) {
+      //     striker = batter1;
+      //   }
+      // } else {
+      //   // batter2 needs to be restored, batter1 is correct
+      //   if (batter1!.batter == battersOnPitch.first.batter) {
+      //     batter2 = _onPitchBatters.last;
+      //   } else {
+      //     batter2 = _onPitchBatters.first;
+      //   }
+      //   // Restore striker
+      //   if (striker != null && striker!.batter == ball.batter) {
+      //     striker = batter2;
+      //   }
+      // }
+    } else {
+      // Restore striker
+      if (batter1!.batter == ball.batter) {
+        striker = batter1;
+      } else {
+        striker = batter2;
+      }
+    }
+
+    // Fix Bowler
+    setBowler(ball.bowler, isMidOverChange: true);
 
     _resetSelections();
-
-    // Prevent undo of first ball from triggering "Pick Bowler" NextInput
-    // _canSelectBowler = false;
-
     notifyListeners();
   }
 
@@ -142,11 +191,7 @@ class InningsManager with ChangeNotifier {
   void addBatter(Player batter) {
     // Check if the batter exists in the Batter Innings list
     BatterInnings? batterInnings = _getBatterInningsOfPlayer(batter);
-    if (batterInnings == null) {
-      // New batter
-      batterInnings = BatterInnings(batter: batter, innings: innings);
-      return;
-    }
+    batterInnings ??= BatterInnings(batter: batter, innings: innings);
     // New batter
 
     if (_onPitchBatters.first == batter1) {
@@ -206,13 +251,13 @@ class InningsManager with ChangeNotifier {
     notifyListeners();
   }
 
+  bool get canSetWicket => nextInput == NextInput.ball;
   void setWicket(Wicket? wicket) {
     this.wicket = wicket;
 
     if (wicket != null) {
       batterToReplace = _getBatterInningsOfPlayer(wicket.batter);
     }
-
     notifyListeners();
   }
 

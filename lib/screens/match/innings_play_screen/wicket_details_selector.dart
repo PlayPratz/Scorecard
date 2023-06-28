@@ -22,24 +22,27 @@ class WicketTile extends StatelessWidget {
     // String hint = Strings.matchScreenAddWicketHint;
     String hint = "";
 
-    final wicket = context.select<InningsManager, Wicket?>(
-        (inningsManager) => inningsManager.wicket);
+    final inningsManager =
+        context.watch<InningsManager>(); // TODO: Find a more efficient way
 
+    final wicket = inningsManager.wicket;
     if (wicket != null) {
       primary = wicket.batter.name;
       hint = Strings.getWicketDescription(wicket);
     }
     return GenericItemTile(
-        leading: const Icon(
-          Icons.gpp_bad,
-          color: Colors.redAccent,
-          size: 32,
-        ),
-        primaryHint: primary,
-        secondaryHint: hint,
-        trailing: Elements.forwardIcon,
-        onSelect: () => _onSelectWicket(context),
-        onLongPress: () => context.read<InningsManager>().setWicket(null));
+      leading: const Icon(
+        Icons.gpp_bad,
+        color: Colors.redAccent,
+        size: 32,
+      ),
+      primaryHint: primary,
+      secondaryHint: hint,
+      trailing: Elements.forwardIcon,
+      onSelect:
+          inningsManager.canSetWicket ? () => _onSelectWicket(context) : null,
+      onLongPress: () => context.read<InningsManager>().setWicket(null),
+    );
   }
 
   void _onSelectWicket(BuildContext context) async {

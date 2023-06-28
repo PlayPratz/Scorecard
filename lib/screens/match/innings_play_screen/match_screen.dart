@@ -173,10 +173,12 @@ class MatchInterface extends StatelessWidget {
 
   void _endInnings(BuildContext context) {
     // final inningsManager = context.read<InningsManager>();
-    if (match.matchState == MatchState.secondInnings) {
+    if (match.matchState == MatchState.secondInnings ||
+        match.matchState == MatchState.completed) {
       // TODO make this such that matchState need not be checked
       match.progressMatch();
       if (match.result.getVictoryType() == VictoryType.tie) {
+        // Show Super Over option
         showModalBottomSheet(
           context: context,
           builder: (context) => Material(
@@ -219,6 +221,7 @@ class MatchInterface extends StatelessWidget {
         return;
       }
 
+      // Show Scorecard for completed Match
       Utils.goToReplacementPage(Scorecard(match: match), context);
       return;
     }

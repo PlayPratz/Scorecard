@@ -17,7 +17,7 @@ class CricketMatch {
   final List<Innings> inningsList;
   // int inningsIndex = -1;
   bool _isCompleted = false;
-  bool get isCompleted => _isCompleted;
+  // bool get isCompleted => _isCompleted;
 
   // MatchState _matchState = MatchState.notStarted;
   bool _isHomeInningsFirst = true;

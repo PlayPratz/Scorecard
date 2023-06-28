@@ -152,7 +152,9 @@ class BowlerInnings {
   int get ballsBowled => balls.where((ball) => ball.isLegal).length;
 
   String get oversBowled =>
-      (ballsBowled ~/ 6).toString() + '.' + (ballsBowled % 6).toString();
+      (ballsBowled ~/ Constants.ballsPerOver).toString() +
+      '.' +
+      (ballsBowled % Constants.ballsPerOver).toString();
 
   double get economy => ballsBowled == 0
       ? 0

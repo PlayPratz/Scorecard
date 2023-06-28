@@ -36,12 +36,12 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Spacer(),
-            const Text(Strings.initInningsBatter),
+            const Text(Strings.initInningsStriker),
             _wBatterSelection(_batter, ((p) {
               _batter = p;
             })),
             const Spacer(),
-            const Text("Non Striker"), //TODO
+            const Text(Strings.initInningsNonStriker),
             _wBatterSelection(_batter2, ((p) {
               _batter2 = p;
             })),

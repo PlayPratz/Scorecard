@@ -32,7 +32,6 @@ class _MyAppState extends State<MyApp> {
             background: ColorStyles.background,
             surface: ColorStyles.background,
           ),
-          backgroundColor: ColorStyles.background,
           dividerTheme: const DividerThemeData(
             color: ColorStyles.highlight,
             thickness: 2,

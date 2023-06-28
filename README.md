@@ -1,4 +1,4 @@
-![scorecard](assets/icon/github.png)
+![scorecard](assets/icon/github.svg)
 
 # Scorecard
 

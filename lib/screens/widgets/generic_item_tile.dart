@@ -39,8 +39,6 @@ class _GenericItemTileState extends State<GenericItemTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      // TODO Minleadingwidth?
-      // minLeadingWidth: 32,
       title: FittedBox(
           alignment: Alignment.centerLeft,
           fit: BoxFit.scaleDown,

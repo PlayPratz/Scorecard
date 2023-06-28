@@ -111,7 +111,8 @@ class Strings {
 
   // Innings Init
   static const String initInningsTitle = "Let's Start The Innings";
-  static const String initInningsBatter = "Batter";
+  static const String initInningsStriker = "Striker";
+  static const String initInningsNonStriker = "Non-Striker";
   static const String initInningsBowler = "Bowler";
   static const String initInningsChooseBatter = "Choose a Batter";
   static const String initInningsChooseBatterHint = "It's scorin' time!";
@@ -245,7 +246,7 @@ class Strings {
   static String getBattingExtra(BattingExtra battingExtra) {
     switch (battingExtra) {
       case BattingExtra.bye:
-        return "Event"; // TODO Temporary
+        return "Bye (Event)";
       case BattingExtra.legBye:
         return "Leg Bye";
       default:

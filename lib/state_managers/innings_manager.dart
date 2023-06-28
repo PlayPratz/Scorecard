@@ -37,8 +37,10 @@ class InningsManager with ChangeNotifier {
 
   // Ball
 
-  // int _overIndex;
-  // int _ballIndex;
+  bool get canAddBall =>
+      striker != null &&
+      (striker == batter1 || striker == batter2) &&
+      bowler != null;
 
   void addBall() {
     final ball = Ball(
@@ -100,19 +102,16 @@ class InningsManager with ChangeNotifier {
     if (!canUndoMove) return;
 
     final ball = innings.popBall();
-    // if (ball!.runsScored % 2 == 1) _swapStrike();
-    // setStrike(_getBatterInningsOfPlayer(ball!.batter)!);
+
+    // TODO: Set strike
+
     _resetSelections();
 
     // Prevent undo of first ball from triggering "Pick Bowler" NextInput
-    _canSelectBowler = false;
+    // _canSelectBowler = false;
 
     notifyListeners();
   }
-
-  bool get canAddBall => true; // TODO _validateBallParams
-
-  // void endInnings() {} TODO
 
   // SELECTIONS
 
@@ -257,7 +256,7 @@ class InningsManager with ChangeNotifier {
       return NextInput.batter;
     }
     return NextInput.ball;
-  } //TODO
+  }
 
   // Helpers
   void _resetSelections() {

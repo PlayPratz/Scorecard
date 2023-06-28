@@ -20,7 +20,7 @@ class SeparatedWidgetPair extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             child: top,
           ),
-          const Divider(thickness: 1), // TODO change
+          const Divider(thickness: 1),
           bottom,
         ],
       ),

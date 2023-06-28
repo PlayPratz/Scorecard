@@ -11,15 +11,9 @@ class CricketMatch {
   final Team awayTeam;
   final int maxOvers;
 
-  // final Innings homeInnings;
-  // final Innings awayInnings;
-
   final List<Innings> inningsList;
-  // int inningsIndex = -1;
   bool _isCompleted = false;
-  // bool get isCompleted => _isCompleted;
 
-  // MatchState _matchState = MatchState.notStarted;
   bool _isHomeInningsFirst = true;
 
   Team get nextTeamToBat {
@@ -45,8 +39,6 @@ class CricketMatch {
     required this.awayTeam,
     required this.maxOvers,
   }) : inningsList = [];
-  // : homeInnings = Innings(battingTeam: homeTeam, bowlingTeam: awayTeam),
-  // awayInnings = Innings(battingTeam: awayTeam, bowlingTeam: homeTeam);
 
   CricketMatch.create({
     required homeTeam,
@@ -76,7 +68,6 @@ class CricketMatch {
     required this.homeTeam,
     required this.awayTeam,
     required this.inningsList,
-    // this.inningsIndex = -1,
   });
 
   bool get isTossCompleted => toss != null;
@@ -87,13 +78,17 @@ class CricketMatch {
     if (_isCompleted) {
       return MatchState.completed;
     } else if (toss == null || inningsList.isEmpty) {
+      // TODO remove the inningsList.isEmpty check
       // Toss has not completed
       return MatchState.notStarted;
     } else if (inningsList.length == 2) {
+      // The second innings is being played
       return MatchState.secondInnings;
     } else if (inningsList.length == 1) {
+      // The first innings is being played
       return MatchState.firstInnings;
     } else {
+      // The first innings has not started
       return MatchState.tossCompleted;
     }
   }
@@ -182,11 +177,9 @@ class CricketMatch {
         maxOvers: maxOvers,
       ),
     );
-    // inningsIndex = 1;
   }
 
   void _endMatch() {
-    // inningsIndex = 2; // TODO
     _isCompleted = true;
   }
 

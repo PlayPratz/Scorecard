@@ -10,16 +10,16 @@ Scorecard is a mobile application that helps you record matches on a ball-by-bal
 
 ## 🗂️ Contents
 
-- [Building the App](#-building-the-app)
-- [Core Concepts](#-core-concepts)
-- [Using the App](#-using-the-app)
-- [Colour Lookup](#-colour-lookup)
-- [Future Scope](#-in-the-future)
-- [Authors](#-authors)
+- [Building the App](#build-app)
+- [Core Concepts](#core-concepts)
+- [Using the App](#how-to-use)
+- [Colour Lookup](#colour-lookup)
+- [Future Scope](#future-scope)
+- [Authors](#authors)
 
 ---
 
-## 🔧 Building the App
+## 🔧 Building the App <a name = "build-app"/>
 
 As this application is programmed in Flutter, you can perform the common steps to build and run a flutter application.
 
@@ -38,21 +38,21 @@ flutter pub get
 flutter run
 ```
 
-## ⚙️ Core Concepts
+## ⚙️ Core Concepts <a name = "core-concepts"/>
 
 A Cricket Match is represented by the falling constructs or concepts:
 
-1. [Cricket Match](#-cricket-match)
-2. [Innings](#-innings)
-3. [Ball](#-ball)
-4. [Player](#-player)
-5. [Statistics](#-statistics)
+1. [Cricket Match](#cricket-match)
+2. [Innings](#innings)
+3. [Ball](#ball)
+4. [Player](#player)
+5. [Statistics](#statistics)
 
-### 🏏 Cricket Match
+### 🏏 Cricket Match <a name = "cricket-match"/>
 
 It's a match played between two teams. What more can I say? Maybe a lot more; will expand on this later on.
 
-### 🏏 Innings
+### 🏏 Innings <a name = "innings"/>
 
 An innings is one division of a cricket match where one team bats while the other team bowls and fields. Throughout this app, an "innings" refers only to a team's innings; _batter innings_ and _bowler innings_ are mentioned as such.
 
@@ -100,7 +100,7 @@ Using the above data, the following statistics can be calculated:
 2. Average `(runs conceded)÷(number of wickets taken)`
 3. Economy `[(runs conceded) * (number of balls per over)]÷(number of balls bowled)`
 
-### ⚾️ Ball
+### ⚾️ Ball <a name = "ball"/>
 
 A ball is the most atomic unit for scoring a cricket match. It consists of the following data
 
@@ -112,13 +112,13 @@ A ball is the most atomic unit for scoring a cricket match. It consists of the f
 
 Once this data is obtained for every ball of the match, the score as well as result (if the match is completed) can be derived.
 
-### 🤾 Player
+### 🤾 Player <a name = "player"/>
 
 A player is needed to play any sport. Players in cricket take up the role of a batter, bowler and fielder. Since players contribute in more than one ways, tying together their statistics provides a handy way of representing a player's career performance.
 
 TODO: This section will be expanded.
 
-### 📊 Statistics
+### 📊 Statistics <a name = "statistics"/>
 
 Once the above information is consolidated, statistics can be generated.
 
@@ -126,7 +126,7 @@ TODO: This section will be expanded
 
 ---
 
-## 📱 Using the App
+## 📱 Using the app <a name = "how-to-use"/>
 
 ### Home Screen
 
@@ -269,7 +269,7 @@ Finally, a _View Timeline_ button takes you to the [Innings Timeline](#innings-t
 
 ---
 
-#### Innings Timeline
+#### Innings Timeline <a name = "innings-timeline"/>
 
 This screen displays a vertical, chronological timeline of balls bowled in the innings, with the last ball at the bottom and the first ball at the top.
 
@@ -282,7 +282,7 @@ Each over's segment starts with the Over's ordinal index. Each row represents a 
 3. The Bowler and the Batter
 4. Wicket, if any
 
-###### Ball Symbol
+###### Ball Symbol <a name = "ball-symbol"/>
 
 I really couldn't come up with a better name, but it's the shorthand representation of the ball with the following data
 
@@ -314,7 +314,7 @@ In the future, filters and other parameters such as strike rates and averages wi
 
 ---
 
-### 🎨 Colour Lookup
+### 🎨 Colour Lookup <a name = "colour-lookup"/>
 
 With respect to a [Ball](#-ball):
 
@@ -337,7 +337,7 @@ The colours available for assigning to a Team:
 
 ---
 
-## 🔮 In the Future...
+## 🔮 In the Future... <a name = "future-scope"/>
 
 - Add screenshots to README.md
 - Add online syncing
@@ -350,6 +350,6 @@ The colours available for assigning to a Team:
 
 ---
 
-## ✍️ Authors
+## ✍️ Authors <a name = "authors"/>
 
 - [@PlayPratz](https://github.com/PlayPratz) - Ideation, Documentation and App Development

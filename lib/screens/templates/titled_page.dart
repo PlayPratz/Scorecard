@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/templates/base_screen.dart';
-import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/utils.dart';
 
 class TitledPage extends StatelessWidget {
@@ -11,20 +10,26 @@ class TitledPage extends StatelessWidget {
 
   final bool showBackButton;
 
-  const TitledPage({
-    Key? key,
-    this.title,
-    this.headerWidget,
-    this.toolbarHeight = kToolbarHeight,
-    required this.child,
-    this.showBackButton = true,
-  }) : super(key: key);
+  final Color? backgroundColor;
+  final Color? appBarColor;
+
+  const TitledPage(
+      {Key? key,
+      this.title,
+      this.headerWidget,
+      this.toolbarHeight = kToolbarHeight,
+      required this.child,
+      this.showBackButton = true,
+      this.backgroundColor,
+      this.appBarColor})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
+      background: backgroundColor,
       child: Scaffold(
-        backgroundColor: ColorStyles.background,
+        backgroundColor: backgroundColor,
         appBar: AppBar(
           title: title != null ? Text(title!) : null,
           leading: showBackButton
@@ -36,6 +41,7 @@ class TitledPage extends StatelessWidget {
           elevation: 0,
           flexibleSpace: headerWidget,
           toolbarHeight: toolbarHeight,
+          backgroundColor: appBarColor,
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

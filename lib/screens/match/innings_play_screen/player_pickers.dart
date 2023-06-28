@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/wicket.dart';
-import 'package:scorecard/screens/match/innings_play_screen/player_score_tile.dart';
+import 'package:scorecard/screens/match/innings_play_screen/players_in_action.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';

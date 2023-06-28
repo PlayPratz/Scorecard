@@ -163,10 +163,7 @@ class BowlerInnings {
   double get strikeRate => ballsBowled / wicketsTaken;
   double get average => runsConceded / wicketsTaken;
 
-  String get score =>
-      wicketsTaken.toString() +
-      Strings.separatorHyphen +
-      runsConceded.toString();
+  String get score => "$wicketsTaken-$runsConceded in $oversBowled";
 
   // void bowl(Over over) {
   //   overs.add(over);

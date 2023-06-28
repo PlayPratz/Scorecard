@@ -29,22 +29,49 @@ class MatchInterface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TitledPage(
-      headerWidget: Selector<InningsManager, int>(
-        selector: (context, inningsManager) =>
-            inningsManager.innings.balls.length,
-        builder: (context, inningsManager, child) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: InkWell(
-            onTap: () => Utils.goToPage(Scorecard(match: match), context),
+      backgroundColor: match.currentInnings.battingTeam.color.withOpacity(0.10),
+      appBarColor: Colors.transparent,
+      // headerWidget: Selector<InningsManager, int>(
+      //   selector: (context, inningsManager) =>
+      //       inningsManager.innings.balls.length,
+      //   builder: (context, inningsManager, child) => Padding(
+      //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      //     child: InkWell(
+      //       onTap: () => Utils.goToPage(Scorecard(match: match), context),
+      //       child: Row(
+      //         // mainAxisSize: MainAxisSize.min,
+      //         children: [
+      //           Expanded(
+      //             child: ScoreTile(
+      //                 team: match.homeTeam,
+      //                 battingInnings: match.currentInnings),
+      //           ),
+      //           // const SizedBox(width: 8),
+      //           Expanded(
+      //             child: ScoreTile(
+      //                 team: match.awayTeam,
+      //                 battingInnings: match.currentInnings),
+      //           ),
+      //         ],
+      //       ),
+      //     ),
+      //   ),
+      // ),
+      // toolbarHeight: 96,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          // RunRatePane(
+          //   showTarget: (match.currentInnings == match.secondInnings),
+          // ),
+          Card(
             child: Row(
-              // mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
                   child: ScoreTile(
                       team: match.homeTeam,
                       battingInnings: match.currentInnings),
                 ),
-                // const SizedBox(width: 8),
                 Expanded(
                   child: ScoreTile(
                       team: match.awayTeam,
@@ -53,57 +80,24 @@ class MatchInterface extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-      toolbarHeight: 96,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          RunRatePane(
-            showTarget: (match.currentInnings == match.secondInnings),
-          ),
           PlayersInActionPane(
             isHomeTeamBatting:
                 match.currentInnings.battingTeam == match.homeTeam,
           ),
           const RecentBallsPane(),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(
-                width: 100,
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            Strings.matchScreenEndInningsLongPressToEnd,
-                            style: TextStyle(color: Colors.white)),
-                        backgroundColor: ColorStyles.card,
-                        showCloseIcon: true,
-                        closeIconColor: Colors.white,
-                        dismissDirection: DismissDirection.horizontal,
-                        margin:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  onLongPress: () => _endInnings(context),
-                  icon: const Icon(Icons.cancel),
-                  label: const Text(Strings.matchScreenEndInningsShort),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: ColorStyles.remove,
-                    backgroundColor: ColorStyles.remove.withOpacity(0.1),
-                  ),
-                ),
-              ),
+              _wEndInningsButton(context),
               const Expanded(child: WicketTile()),
             ],
           ),
-          ExtraChooser(),
+          const SizedBox(height: 16),
+          ExtraSelector(),
+          const SizedBox(height: 16),
           RunSelector(),
+          const SizedBox(height: 16),
           Consumer<InningsManager>(
             builder: (context, inningsManager, child) => Row(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -120,6 +114,34 @@ class MatchInterface extends StatelessWidget {
     );
   }
 
+  Widget _wEndInningsButton(BuildContext context) => SizedBox(
+        width: 100,
+        height: 56,
+        child: ElevatedButton.icon(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(Strings.matchScreenEndInningsLongPressToEnd,
+                    style: TextStyle(color: Colors.white)),
+                backgroundColor: ColorStyles.card,
+                showCloseIcon: true,
+                closeIconColor: Colors.white,
+                dismissDirection: DismissDirection.horizontal,
+                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+          onLongPress: () => _endInnings(context),
+          icon: const Icon(Icons.cancel),
+          label: const Text(Strings.matchScreenEndInningsShort),
+          style: ElevatedButton.styleFrom(
+            foregroundColor: ColorStyles.remove,
+            backgroundColor: ColorStyles.remove.withOpacity(0.1),
+          ),
+        ),
+      );
+
   Widget _wUndoButton(InningsManager inningsManager) {
     return ElevatedButton.icon(
       onPressed: inningsManager.canUndoBall
@@ -133,8 +155,9 @@ class MatchInterface extends StatelessWidget {
             }
           : null,
       style: ElevatedButton.styleFrom(
-          foregroundColor: ColorStyles.remove,
-          backgroundColor: ColorStyles.remove.withOpacity(0.1)),
+        foregroundColor: ColorStyles.remove,
+        backgroundColor: ColorStyles.remove.withOpacity(0.1),
+      ),
       icon: const Icon(Icons.undo),
       label: const Text(Strings.matchScreenUndo),
     );

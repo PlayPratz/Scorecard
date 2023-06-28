@@ -67,8 +67,8 @@ class _RunSelection {
   }
 }
 
-class ExtraChooser extends StatelessWidget {
-  ExtraChooser({super.key});
+class ExtraSelector extends StatelessWidget {
+  ExtraSelector({super.key});
 
   final SingleSelectionToggle<BowlingExtra> _bowlingExtraSelection =
       SingleSelectionToggle.withWidgetifier(

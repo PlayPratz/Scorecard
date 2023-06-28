@@ -21,29 +21,25 @@ class RecentBallsPane extends StatelessWidget {
     return Selector<InningsManager, int>(
       selector: (context, inningsManager) =>
           inningsManager.innings.balls.length,
-      builder: (context, ballCount, child) => Container(
-          // height: 64,
-          decoration: BoxDecoration(
-            borderRadius:
-                const BorderRadius.horizontal(left: Radius.circular(8)),
-            border: Border.all(color: ColorStyles.highlight),
-          ),
-          child: InkWell(
-            onTap: ballCount == 0
-                ? null
-                : () => Utils.goToPage(
-                    InningsTimelineScreen(
-                      innings: context.read<InningsManager>().innings,
-                    ),
-                    context),
-            customBorder:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      builder: (context, ballCount, child) => Card(
+        surfaceTintColor: Colors.deepPurple,
+        child: InkWell(
+          onTap: ballCount == 0
+              ? null
+              : () => Utils.goToPage(
+                  InningsTimelineScreen(
+                    innings: context.read<InningsManager>().innings,
+                  ),
+                  context),
+          customBorder:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
             child: SizedBox(
               height: 56,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // const SizedBox(width: 4),
                   Expanded(
                     child: ListView.builder(
                       reverse: true,
@@ -63,7 +59,7 @@ class RecentBallsPane extends StatelessWidget {
                           }
                         }
                         return Padding(
-                            padding: const EdgeInsets.all(1),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: RecentBall(
                               ball: currentBall,
                               highlightBallIndex: ballIndexColor,
@@ -105,19 +101,22 @@ class RecentBallsPane extends StatelessWidget {
                   //     },
                   //   ),
                   // ),
-                  Container(
-                    color: ColorStyles.highlight,
-                    height: double.infinity,
-                    width: 36,
-                    child: const Icon(
-                      Icons.chevron_right,
-                      color: ColorStyles.background,
+                  const SizedBox(width: 4),
+                  IconButton(
+                    onPressed: null,
+                    icon: const Icon(Icons.timeline),
+                    disabledColor: Colors.white,
+                    style: IconButton.styleFrom(
+                      disabledBackgroundColor:
+                          Colors.deepPurple.shade900.withOpacity(0.7),
                     ),
                   ),
                 ],
               ),
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 }

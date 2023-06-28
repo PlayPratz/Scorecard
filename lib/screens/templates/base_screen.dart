@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../styles/color_styles.dart';
 
 class BaseScreen extends StatelessWidget {
   final Widget child;
 
-  const BaseScreen({required this.child, Key? key}) : super(key: key);
+  final Color? background;
+
+  const BaseScreen({super.key, required this.child, this.background});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Material(
-        color: ColorStyles.background,
+    return Material(
+      color: background,
+      child: SafeArea(
         child: child,
       ),
     );

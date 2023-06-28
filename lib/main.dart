@@ -6,17 +6,17 @@ import 'styles/color_styles.dart';
 import 'styles/text_styles.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ScorecardApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+class ScorecardApp extends StatefulWidget {
+  const ScorecardApp({Key? key}) : super(key: key);
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<ScorecardApp> createState() => _ScorecardAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _ScorecardAppState extends State<ScorecardApp> {
   // This widget is the root of your application.
 
   final Future _loadStorage = StorageService.init();
@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Scorecard',
         theme: ThemeData(
           // brightness: Brightness.dark,
           colorScheme: const ColorScheme.dark().copyWith(

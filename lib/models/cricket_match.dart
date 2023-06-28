@@ -77,8 +77,7 @@ class CricketMatch {
   MatchState get matchState {
     if (_isCompleted) {
       return MatchState.completed;
-    } else if (toss == null || inningsList.isEmpty) {
-      // TODO remove the inningsList.isEmpty check
+    } else if (toss == null) {
       // Toss has not completed
       return MatchState.notStarted;
     } else if (inningsList.length == 2) {

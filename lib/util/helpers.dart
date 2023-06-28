@@ -35,6 +35,8 @@ class SingleSelectionToggle<T> {
   List<Widget> get widgets =>
       dataList.map((data) => widgetifier(data, selection)).toList();
 
+  Set<T> get selectionSet => {dataList[index]};
+
   void clear() {
     index = allowNoSelection ? -1 : 0;
   }

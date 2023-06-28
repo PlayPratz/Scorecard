@@ -26,17 +26,17 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
   String? _name;
   ImageProvider? _playerPhoto;
 
-  final SingleToggleSelection<Arm> _batArm = SingleToggleSelection(
+  final SingleSelectionToggle<Arm> _batArm = SingleSelectionToggle(
       dataList: Arm.values,
       stringifier: Strings.getArm,
       allowNoSelection: false);
 
-  final SingleToggleSelection<Arm> _bowlArm = SingleToggleSelection(
+  final SingleSelectionToggle<Arm> _bowlArm = SingleSelectionToggle(
       dataList: Arm.values,
       stringifier: Strings.getArm,
       allowNoSelection: false);
 
-  final SingleToggleSelection<BowlStyle> _bowlStyle = SingleToggleSelection(
+  final SingleSelectionToggle<BowlStyle> _bowlStyle = SingleSelectionToggle(
       dataList: BowlStyle.values,
       stringifier: Strings.getBowlStyle,
       allowNoSelection: false);
@@ -120,7 +120,7 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
   }
 
   Widget _wToggleButtonWithLabel(
-      SingleToggleSelection toggleSelection, String heading) {
+      SingleSelectionToggle toggleSelection, String heading) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Column(

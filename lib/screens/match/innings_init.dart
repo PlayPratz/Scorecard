@@ -5,7 +5,7 @@ import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/util/strings.dart';
 import '../../models/cricket_match.dart';
 import '../../models/player.dart';
-import 'innings_play_screen/match_screen.dart';
+import 'innings_play_screen/match_interface.dart';
 import '../player/player_list.dart';
 import '../templates/titled_page.dart';
 import '../widgets/generic_item_tile.dart';

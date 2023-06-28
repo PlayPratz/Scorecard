@@ -4,14 +4,14 @@ class Helpers {
   Helpers._();
 }
 
-class SingleToggleSelection<T> {
+class SingleSelectionToggle<T> {
   final List<T> dataList;
   final bool allowNoSelection;
   final String Function(T data)? stringifier;
   final Widget Function(T data, T? selection) widgetifier;
   int index = -1;
 
-  SingleToggleSelection({
+  SingleSelectionToggle({
     required this.dataList,
     required this.stringifier,
     this.allowNoSelection = true,
@@ -19,7 +19,7 @@ class SingleToggleSelection<T> {
     clear();
   }
 
-  SingleToggleSelection.withWidgetifier(
+  SingleSelectionToggle.withWidgetifier(
       {required this.dataList,
       this.allowNoSelection = true,
       required this.widgetifier})

@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
-import 'package:scorecard/screens/match/innings_play_screen/players_on_pitch.dart';
+import 'package:scorecard/screens/match/innings_play_screen/players_in_action.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
-import 'package:scorecard/screens/match/innings_play_screen/input_choosers.dart';
+import 'package:scorecard/screens/match/innings_play_screen/ball_details_selector.dart';
+import 'package:scorecard/screens/match/innings_play_screen/wicket_details_selector.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
-import 'package:scorecard/screens/match/innings_play_screen/player_pick.dart';
+import 'package:scorecard/screens/match/innings_play_screen/player_pickers.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/services/storage_service.dart';
@@ -61,7 +62,7 @@ class MatchInterface extends StatelessWidget {
           RunRatePane(
             showTarget: (match.currentInnings == match.secondInnings),
           ),
-          PlayersOnPitchView(
+          PlayersInActionPane(
             isHomeTeamBatting:
                 match.currentInnings.battingTeam == match.homeTeam,
           ),
@@ -98,11 +99,11 @@ class MatchInterface extends StatelessWidget {
                   ),
                 ),
               ),
-              const Expanded(child: WicketChooser()),
+              const Expanded(child: WicketTile()),
             ],
           ),
           ExtraChooser(),
-          RunChooser(),
+          RunSelector(),
           Consumer<InningsManager>(
             builder: (context, inningsManager, child) => Row(
               crossAxisAlignment: CrossAxisAlignment.end,

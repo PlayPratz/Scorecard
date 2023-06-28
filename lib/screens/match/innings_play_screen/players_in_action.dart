@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/innings.dart';
-import 'package:scorecard/screens/match/innings_play_screen/player_pick.dart';
+import 'package:scorecard/screens/match/innings_play_screen/player_pickers.dart';
 import 'package:scorecard/screens/match/innings_play_screen/player_score_tile.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 
-class PlayersOnPitchView extends StatelessWidget {
+class PlayersInActionPane extends StatelessWidget {
   final bool isHomeTeamBatting;
-  const PlayersOnPitchView({super.key, required this.isHomeTeamBatting});
+  const PlayersInActionPane({super.key, required this.isHomeTeamBatting});
 
   @override
   Widget build(BuildContext context) {

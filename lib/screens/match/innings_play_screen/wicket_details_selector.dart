@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
+import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/util/elements.dart';
 import '../../../models/wicket.dart';
 import '../../templates/titled_page.dart';
@@ -11,12 +13,55 @@ import '../../widgets/item_list.dart';
 import '../../../util/strings.dart';
 import '../../../util/utils.dart';
 
-class WicketSelector extends StatefulWidget {
+class WicketTile extends StatelessWidget {
+  const WicketTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    String primary = Strings.matchScreenAddWicket;
+    // String hint = Strings.matchScreenAddWicketHint;
+    String hint = "";
+
+    final wicket = context.select<InningsManager, Wicket?>(
+        (inningsManager) => inningsManager.wicket);
+
+    if (wicket != null) {
+      primary = wicket.batter.name;
+      hint = Strings.getWicketDescription(wicket);
+    }
+    return GenericItemTile(
+        leading: const Icon(
+          Icons.gpp_bad,
+          color: Colors.redAccent,
+          size: 32,
+        ),
+        primaryHint: primary,
+        secondaryHint: hint,
+        trailing: Elements.forwardIcon,
+        onSelect: () => _onSelectWicket(context),
+        onLongPress: () => context.read<InningsManager>().setWicket(null));
+  }
+
+  void _onSelectWicket(BuildContext context) async {
+    final inningsManager = context.read<InningsManager>();
+    Wicket? selectedWicket = await Utils.goToPage(
+        WicketPicker(
+          bowler: inningsManager.bowler!.bowler,
+          striker: inningsManager.striker!.batter,
+          fieldingTeam: inningsManager.innings.bowlingTeam,
+          battingTeam: inningsManager.innings.battingTeam,
+        ),
+        context);
+    inningsManager.setWicket(selectedWicket);
+  }
+}
+
+class WicketPicker extends StatefulWidget {
   final Player bowler;
   final Player striker;
   final Team battingTeam;
   final Team fieldingTeam;
-  const WicketSelector({
+  const WicketPicker({
     Key? key,
     required this.bowler,
     required this.striker,
@@ -25,10 +70,10 @@ class WicketSelector extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<WicketSelector> createState() => _WicketSelectorState();
+  State<WicketPicker> createState() => _WicketPickerState();
 }
 
-class _WicketSelectorState extends State<WicketSelector> {
+class _WicketPickerState extends State<WicketPicker> {
   Dismissal? _dismissal;
   Player? _fielder;
   Player? _batter;

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/match_init.dart';
-import 'package:scorecard/screens/match/innings_play_screen/match_screen.dart';
+import 'package:scorecard/screens/match/innings_play_screen/match_interface.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';

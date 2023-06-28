@@ -9,11 +9,11 @@ import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
-class PickBatter extends StatelessWidget {
+class BatterPicker extends StatelessWidget {
   final List<Player> squad;
   final Player batterToReplace;
   final Wicket? wicket;
-  const PickBatter({
+  const BatterPicker({
     super.key,
     required this.squad,
     required this.batterToReplace,
@@ -52,7 +52,7 @@ class PickBatter extends StatelessWidget {
 
 void chooseBatter(BuildContext context, InningsManager inningsManager) async {
   final player = await Utils.goToPage(
-    PickBatter(
+    BatterPicker(
       squad: inningsManager.innings.battingTeam.squad,
       batterToReplace: inningsManager.batterToReplace!.batter,
       wicket: inningsManager.wicket,

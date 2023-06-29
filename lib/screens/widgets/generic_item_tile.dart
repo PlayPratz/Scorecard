@@ -44,12 +44,14 @@ class _GenericItemTileState extends State<GenericItemTile> {
           fit: BoxFit.scaleDown,
           child: Text(
             widget.primaryHint,
+            style: Theme.of(context).textTheme.titleMedium,
           )),
       subtitle: widget.secondaryHint.isNotEmpty
           ? Text(
               widget.secondaryHint,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
+              // style: Theme.of(context).textTheme.bodyMedium,
             )
           : null,
       leading: SizedBox(

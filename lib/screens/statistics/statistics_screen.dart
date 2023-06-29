@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/statistics.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
@@ -78,13 +79,7 @@ class StatisticsScreen extends StatelessWidget {
         .map(
           (battingStats) => Column(
             children: [
-              GenericInningsScore(
-                player: battingStats.batter,
-                secondary:
-                    "Strike Rate ${battingStats.strikeRate.toStringAsFixed(2)} | Average ${battingStats.average.toStringAsFixed(2)}",
-                trailPrimary: battingStats.runsScored.toString(),
-                trailSecondary: battingStats.numBallsFaced.toString(),
-              ),
+              BatterInningsScore(battingStats: battingStats),
               const SizedBox(height: 2),
             ],
           ),
@@ -97,14 +92,7 @@ class StatisticsScreen extends StatelessWidget {
         .map(
           (bowlingStats) => Column(
             children: [
-              GenericInningsScore(
-                player: bowlingStats.bowler,
-                secondary:
-                    "${bowlingStats.oversBowled} Overs at ${bowlingStats.economy.toStringAsFixed(2)} RPO",
-                trailPrimary:
-                    "${bowlingStats.wicketsTaken}/${bowlingStats.runsConceded.toString()}",
-                trailSecondary: "@${bowlingStats.average.toStringAsFixed(2)}",
-              ),
+              BowlerInningsScore(bowlerInnings: bowlingStats),
               const SizedBox(height: 2),
             ],
           ),
@@ -112,15 +100,15 @@ class StatisticsScreen extends StatelessWidget {
         .toList();
   }
 
-  List<BattingStatistics> _batterData() {
+  List<BattingStats> _batterData() {
     final matchList = StorageService.getAllMatches();
-    final Map<Player, BattingStatistics> battingStatisticsMap = {};
+    final Map<Player, BattingStats> battingStatisticsMap = {};
     for (final match in matchList) {
       for (final innings in match.inningsList) {
         for (final batInn in innings.batterInnings) {
           if (!battingStatisticsMap.containsKey(batInn.batter)) {
             battingStatisticsMap[batInn.batter] =
-                BattingStatistics(batInn.batter);
+                BattingStatsSimple(batInn.batter, balls: []);
           }
           battingStatisticsMap[batInn.batter]!.balls.addAll(batInn.balls);
         }
@@ -128,20 +116,20 @@ class StatisticsScreen extends StatelessWidget {
     }
     final battingStatisticsList = battingStatisticsMap.values.toList();
 
-    battingStatisticsList.sort((a, b) => b.runsScored - a.runsScored);
+    battingStatisticsList.sort((a, b) => b.runs - a.runs);
 
     return battingStatisticsList;
   }
 
-  List<BowlingStatistics> _bowlerData() {
+  List<BowlingStats> _bowlerData() {
     final matchList = StorageService.getAllMatches();
-    final Map<Player, BowlingStatistics> bowlingStatisticsMap = {};
+    final Map<Player, BowlingStats> bowlingStatisticsMap = {};
     for (final match in matchList) {
       for (final innings in match.inningsList) {
         for (final bowlInn in innings.bowlerInnings) {
           if (!bowlingStatisticsMap.containsKey(bowlInn.bowler)) {
             bowlingStatisticsMap[bowlInn.bowler] =
-                BowlingStatistics(bowlInn.bowler);
+                BowlingStatsSimple(bowlInn.bowler, balls: []);
           }
           bowlingStatisticsMap[bowlInn.bowler]!.balls.addAll(bowlInn.balls);
         }
@@ -157,6 +145,25 @@ class StatisticsScreen extends StatelessWidget {
     });
     return bowlingStatisticsList;
   }
+}
+
+// TODO How to instantiate Abstract classes on the spot?
+class BattingStatsSimple extends BattingStats {
+  final List<Ball> _balls;
+  BattingStatsSimple(super.batter, {required List<Ball> balls})
+      : _balls = balls;
+
+  @override
+  List<Ball> get balls => _balls;
+}
+
+class BowlingStatsSimple extends BowlingStats {
+  final List<Ball> _balls;
+  BowlingStatsSimple(super.bowler, {required List<Ball> balls})
+      : _balls = balls;
+
+  @override
+  List<Ball> get balls => _balls;
 }
 
 class StatisticsChip extends StatelessWidget {

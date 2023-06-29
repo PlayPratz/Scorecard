@@ -105,8 +105,8 @@ class MatchTile extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _wTeamNameChip(match.homeTeam),
-        _wTeamNameChip(match.awayTeam),
+        TeamChip(team: match.homeTeam),
+        TeamChip(team: match.awayTeam),
       ],
     );
   }
@@ -185,18 +185,6 @@ class MatchTile extends StatelessWidget {
         ),
       );
 
-  Widget _wTeamNameChip(Team team) => Container(
-        decoration: BoxDecoration(
-          color: team.color,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        constraints: const BoxConstraints(minWidth: 64),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(child: Text(team.name.toUpperCase())),
-        ),
-      );
-
   Widget _wSummaryLine(BuildContext context, MatchState matchState) {
     final textStyle = Theme.of(context).textTheme.labelLarge;
     // ?.merge(TextStyle(fontStyle: FontStyle.italic));
@@ -232,3 +220,23 @@ Widget _wBowlingOversText(BuildContext context, Innings innings,
       Strings.getOverBowledText(innings, short: short),
       style: Theme.of(context).textTheme.titleMedium,
     );
+
+class TeamChip extends StatelessWidget {
+  final Team team;
+  const TeamChip({super.key, required this.team});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: team.color,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      constraints: const BoxConstraints(minWidth: 64),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(child: Text(team.name.toUpperCase())),
+      ),
+    );
+  }
+}

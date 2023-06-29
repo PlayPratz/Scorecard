@@ -1,5 +1,6 @@
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/result.dart';
+import 'package:scorecard/models/statistics.dart';
 import 'package:scorecard/util/constants.dart';
 
 import '../models/ball.dart';
@@ -62,8 +63,12 @@ class Strings {
     return "${innings.runs} in ${innings.ballsFaced}";
   }
 
-  static String getBowlerInningsScore(BowlerInnings bowlerInnings) {
-    return "${bowlerInnings.wicketsTaken}-${bowlerInnings.runsConceded} in ${bowlerInnings.oversBowled}";
+  static String getBowlerInningsScore(BowlingStats bowlingStats) {
+    return "${bowlingStats.wicketsTaken}-${bowlingStats.runsConceded} in ${getBowlerInningsScore(bowlingStats)}";
+  }
+
+  static String getBowlerOversBowled(BowlingStats bowlingStats) {
+    return "${bowlingStats.ballsBowled ~/ Constants.ballsPerOver}.${bowlingStats.ballsBowled % Constants.ballsPerOver}";
   }
 
   static String getOverBowledText(Innings innings, {required bool short}) {
@@ -167,6 +172,7 @@ class Strings {
   static const String scorecardInningsWithSpace = " Innings";
 
   static const String goToTimeline = "View Timeline";
+  static const String innings = "Innings";
 
   // Choose
   static const String choosePlayer = "Choose a Player";

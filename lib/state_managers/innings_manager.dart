@@ -191,7 +191,7 @@ class InningsManager with ChangeNotifier {
   void addBatter(Player batter) {
     // Check if the batter exists in the Batter Innings list
     BatterInnings? batterInnings = _getBatterInningsOfPlayer(batter);
-    batterInnings ??= BatterInnings(batter: batter, innings: innings);
+    batterInnings ??= BatterInnings(batter, innings: innings);
     // New batter
 
     if (batter1 == batterToReplace) {
@@ -240,7 +240,7 @@ class InningsManager with ChangeNotifier {
   bool get canChangeBowler => true;
 
   void setBowler(Player bowler, {bool isMidOverChange = false}) {
-    this.bowler = BowlerInnings(bowler: bowler, innings: innings);
+    this.bowler = BowlerInnings(bowler, innings: innings);
 
     if (!isMidOverChange) {
       _swapStrike();

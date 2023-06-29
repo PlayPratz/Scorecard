@@ -95,14 +95,14 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
       onPressed: _canInitInnings
           ? () {
               widget.match.progressMatch();
-              final batter = BatterInnings(
-                  batter: _batter!, innings: widget.match.currentInnings);
+              final batter =
+                  BatterInnings(_batter!, innings: widget.match.currentInnings);
               final nsbatter = _batter2 == null
                   ? null
-                  : BatterInnings(
-                      batter: _batter2!, innings: widget.match.currentInnings);
-              final bowler = BowlerInnings(
-                  bowler: _bowler!, innings: widget.match.currentInnings);
+                  : BatterInnings(_batter2!,
+                      innings: widget.match.currentInnings);
+              final bowler =
+                  BowlerInnings(_bowler!, innings: widget.match.currentInnings);
               Utils.goToReplacementPage(
                   ChangeNotifierProvider(
                     create: (context) => InningsManager(

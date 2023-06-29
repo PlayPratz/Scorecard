@@ -13,16 +13,19 @@ class TitledPage extends StatelessWidget {
   final Color? backgroundColor;
   final Color? appBarColor;
 
-  const TitledPage(
-      {Key? key,
-      this.title,
-      this.headerWidget,
-      this.toolbarHeight = kToolbarHeight,
-      required this.child,
-      this.showBackButton = true,
-      this.backgroundColor,
-      this.appBarColor})
-      : super(key: key);
+  final List<Widget>? appBarActions;
+
+  const TitledPage({
+    super.key,
+    this.title,
+    this.headerWidget,
+    this.toolbarHeight = kToolbarHeight,
+    required this.child,
+    this.showBackButton = true,
+    this.backgroundColor,
+    this.appBarColor,
+    this.appBarActions,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +45,7 @@ class TitledPage extends StatelessWidget {
           flexibleSpace: headerWidget,
           toolbarHeight: toolbarHeight,
           backgroundColor: appBarColor,
+          actions: appBarActions,
         ),
         body: Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),

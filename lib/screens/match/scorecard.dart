@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/statistics.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
@@ -9,7 +10,6 @@ import 'package:scorecard/util/utils.dart';
 import '../../models/cricket_match.dart';
 import '../../models/innings.dart';
 import '../templates/titled_page.dart';
-import '../widgets/generic_item_tile.dart';
 
 class Scorecard extends StatelessWidget {
   final CricketMatch match;
@@ -30,218 +30,221 @@ class Scorecard extends StatelessWidget {
   }
 }
 
-class _ScorecardMatchPanel extends StatefulWidget {
+class _ScorecardMatchPanel extends StatelessWidget {
   final CricketMatch match;
-  final bool revertToParentMatch;
-  const _ScorecardMatchPanel(
-      {Key? key, required this.match, this.revertToParentMatch = true})
-      : super(key: key);
-
-  @override
-  State<_ScorecardMatchPanel> createState() => __ScorecardMatchPanelState();
-}
-
-class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
-  late final List<bool> _isInningsPanelOpen;
-  Widget? resultLine;
-
-  @override
-  void initState() {
-    super.initState();
-    _isInningsPanelOpen =
-        widget.match.inningsList.map((innings) => true).toList();
-  }
+  const _ScorecardMatchPanel({required this.match});
 
   @override
   Widget build(BuildContext context) {
-    if (widget.revertToParentMatch && widget.match.isSuperOver) {
-      return _ScorecardMatchPanel(match: widget.match.parentMatch!);
-    }
-
-    return Column(children: [
-      MatchTile(match: widget.match),
-      const SizedBox(height: 32),
-      if (resultLine != null) resultLine!,
-      ExpansionPanelList(
-        expandedHeaderPadding: const EdgeInsets.all(0),
-        dividerColor: Colors.transparent,
-        children: widget.match.inningsList
-            .map(
-              (innings) => _wInningsPanel(
-                innings,
-                innings.battingTeam.name + Strings.scorecardInningsWithSpace,
-                widget.match.inningsList.indexOf(innings),
-              ),
-            )
-            .toList(),
-        expansionCallback: (panelIndex, isExpanded) => setState(() {
-          _isInningsPanelOpen[panelIndex] = !isExpanded;
-        }),
-      ),
-      if (widget.match.hasSuperOver) ...[
-        const SizedBox(height: 32),
-        _ScorecardMatchPanel(
-          match: widget.match.superOver!,
-          revertToParentMatch: false,
-        ),
-      ]
-    ]);
-  }
-
-  ExpansionPanel _wInningsPanel(
-      Innings innings, String inningsTitle, int index) {
-    return ExpansionPanel(
-      backgroundColor: ColorStyles.background,
-      isExpanded: _isInningsPanelOpen[index],
-      headerBuilder: (context, isExpanded) => InkWell(
-          onTap: () => setState(() {
-                _isInningsPanelOpen[index] = !isExpanded;
-              }),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              inningsTitle.toUpperCase(),
-            ),
-          )),
-      body: innings.balls.isNotEmpty
-          ? Column(
-              children: [
-                const SizedBox(height: 16),
-                _wBattingPanel(innings),
-                const SizedBox(height: 16),
-                _wBowlingPanel(innings),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Utils.goToPage(
-                        InningsTimelineScreen(innings: innings), context),
-                    icon: const Icon(Icons.timeline),
-                    label: const Text(Strings.goToTimeline),
+    return Column(
+      children: [
+        MatchTile(match: match, showSummaryLine: true),
+        ...match.inningsList
+            .map((innings) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: Card(
+                    elevation: 2,
+                    surfaceTintColor: innings.battingTeam.color,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              TeamChip(team: innings.battingTeam),
+                              const Spacer(),
+                              ElevatedButton.icon(
+                                onPressed: () => Utils.goToPage(
+                                    InningsTimelineScreen(innings: innings),
+                                    context),
+                                icon: const Icon(Icons.timeline),
+                                label: const Text(Strings.goToTimeline),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _wBattingPanel(context, innings),
+                          const SizedBox(height: 16),
+                          _wBowlingPanel(context, innings),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            )
-          : Text("Not started"),
-    );
-  }
-
-  Widget _wBowlingPanel(Innings innings) {
-    return _innerPanel(
-        Strings.scorecardBowling,
-        innings.bowlingTeam.color,
-        innings.bowlerInnings
-            .map((bowlInn) => _BowlerInningsScore(bowlerInnings: bowlInn))
-            .toList());
-  }
-
-  Widget _wBattingPanel(Innings innings) {
-    return _innerPanel(
-      Strings.scorecardBatting,
-      innings.battingTeam.color,
-      innings.batterInnings
-          .map((batInn) => _BattingInningsScore(batterInnings: batInn))
-          .toList(),
-    );
-  }
-
-  Widget _innerPanel(String heading, Color color, List<Widget> playerTiles) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Text(
-              heading.toUpperCase(),
-              // style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...playerTiles.map((tile) => Column(
-                children: [
-                  const Divider(color: Colors.white30, thickness: 1),
-                  tile
-                ],
-              )),
-        ],
-      ),
+                ))
+            .toList()
+      ],
     );
   }
 }
 
-class _BowlerInningsScore extends StatelessWidget {
-  final BowlerInnings bowlerInnings;
-  const _BowlerInningsScore({required this.bowlerInnings});
+Widget _wBowlingPanel(BuildContext context, Innings innings) {
+  return _innerPanel(
+      context,
+      Strings.scorecardBowling,
+      innings.bowlingTeam.color,
+      innings.bowlerInnings
+          .map((bowlInn) => BowlerInningsScore(bowlerInnings: bowlInn))
+          .toList());
+}
+
+Widget _wBattingPanel(BuildContext context, Innings innings) {
+  return _innerPanel(
+    context,
+    Strings.scorecardBatting,
+    innings.battingTeam.color,
+    innings.batterInnings
+        .map((batInn) => BatterInningsScore(battingStats: batInn))
+        .toList(),
+  );
+}
+
+Widget _innerPanel(BuildContext context, String heading, Color color,
+    List<Widget> playerTiles) {
+  return Card(
+    surfaceTintColor: color,
+    color: color.withOpacity(0.3),
+    elevation: 4,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Text(
+            heading.toUpperCase(),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...playerTiles.map((tile) => Column(
+              children: [const Divider(color: Colors.black12), tile],
+            )),
+      ],
+    ),
+  );
+}
+
+class BowlerInningsScore extends StatelessWidget {
+  final BowlingStats bowlerInnings;
+  const BowlerInningsScore({super.key, required this.bowlerInnings});
 
   @override
   Widget build(BuildContext context) {
     final average = bowlerInnings.average;
+
     return GenericInningsScore(
-      player: bowlerInnings.bowler,
-      // secondary: "Economy: " + bowlerInnings.economy.toStringAsFixed(2),
-      secondary:
-          "${bowlerInnings.oversBowled} Overs at ${bowlerInnings.economy.toStringAsFixed(2)} RPO",
-      trailPrimary:
-          "${bowlerInnings.wicketsTaken.toString()}/${bowlerInnings.runsConceded.toString()}",
-      trailSecondary:
-          average == double.infinity ? "" : "@${average.toStringAsFixed(2)}",
-    );
+        player: bowlerInnings.bowler,
+        secondary:
+            "${Strings.getBowlerOversBowled(bowlerInnings)} Overs at ${bowlerInnings.economy.toStringAsFixed(2)} RPO",
+        highlights: const SizedBox(),
+        score: Column(
+          children: [
+            Text(
+                "${bowlerInnings.wicketsTaken.toString()}/${bowlerInnings.runsConceded.toString()}"),
+            Text(
+              average == double.infinity
+                  ? ""
+                  : "@${average.toStringAsFixed(2)}",
+            )
+          ],
+        ));
   }
 }
 
-class _BattingInningsScore extends StatelessWidget {
-  final BatterInnings batterInnings;
-  const _BattingInningsScore({required this.batterInnings});
+class BatterInningsScore extends StatelessWidget {
+  final BattingStats battingStats;
+  const BatterInningsScore({super.key, required this.battingStats});
 
   @override
   Widget build(BuildContext context) {
     return GenericInningsScore(
-      player: batterInnings.batter,
-      secondary: Strings.getWicketDescription(batterInnings.wicket),
-      trailPrimary: batterInnings.runs.toString(),
-      trailSecondary: batterInnings.ballsFaced.toString(),
-    );
+        player: battingStats.batter,
+        score: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              battingStats.runs.toString(),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              battingStats.ballsFaced.toString(),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.merge(const TextStyle(color: Colors.white70)),
+            ),
+          ],
+        ),
+        secondary: Strings.getWicketDescription(battingStats.wicket),
+        highlights: Row(
+          children: [
+            CircleAvatar(
+                backgroundColor: ColorStyles.ballFour.withOpacity(0.7),
+                foregroundColor: Colors.white,
+                radius: 16,
+                child: Text(battingStats.fours.toString())),
+            const SizedBox(width: 8),
+            CircleAvatar(
+                backgroundColor: ColorStyles.ballSix.withOpacity(0.7),
+                radius: 16,
+                foregroundColor: Colors.white,
+                child: Text(battingStats.sixes.toString())),
+          ],
+        ));
   }
 }
 
 class GenericInningsScore extends StatelessWidget {
-  final String secondary;
-  final String trailPrimary;
-  final String trailSecondary;
   final Player player;
+  final String secondary;
+  final Widget highlights;
+  final Widget score;
+
   const GenericInningsScore({
     super.key,
     required this.player,
     required this.secondary,
-    required this.trailPrimary,
-    required this.trailSecondary,
+    required this.highlights,
+    required this.score,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GenericItemTile(
-      leading: Elements.getPlayerIcon(player, 40),
-      primaryHint: player.name,
-      secondaryHint: secondary,
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            trailPrimary,
-            style: Theme.of(context).textTheme.titleLarge,
+          Elements.getPlayerIcon(player, 36),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  player.name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  secondary,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.merge(const TextStyle(color: Colors.white70)),
+                ),
+              ],
+            ),
           ),
-          Text(
-            trailSecondary,
-            // style: TextStyle(fontSize: 16),
-          ),
+          const SizedBox(width: 8),
+          highlights,
+          const SizedBox(width: 8),
+          SizedBox(width: 48, child: score)
         ],
       ),
     );

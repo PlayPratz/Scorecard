@@ -32,11 +32,11 @@ class _ScorecardAppState extends State<ScorecardApp> {
             background: ColorStyles.background,
             surface: ColorStyles.background,
           ),
-          dividerTheme: const DividerThemeData(
-            color: ColorStyles.highlight,
-            thickness: 2,
-            space: 2,
-          ),
+          // dividerTheme: const DividerThemeData(
+          //   color: ColorStyles.highlight,
+          //   thickness: 2,
+          //   space: 2,
+          // ),
           textTheme: TextStyles.theme,
           useMaterial3: true,
         ),

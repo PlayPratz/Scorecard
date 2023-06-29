@@ -1,7 +1,8 @@
 import 'dart:math';
 
+import 'package:scorecard/models/statistics.dart';
+
 import 'player.dart';
-import 'wicket.dart';
 import '../util/constants.dart';
 
 import 'ball.dart';
@@ -44,9 +45,7 @@ class Innings {
   // Score
 
   int get runs => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
-
   int get wickets => balls.where((ball) => ball.isWicket).length;
-
   int get ballsBowled => balls.where((ball) => ball.isLegal).length;
   bool get areOversCompleted =>
       maxOvers * Constants.ballsPerOver == ballsBowled;
@@ -71,7 +70,7 @@ class Innings {
         bowlerInningsMap[ball.bowler]!.balls.add(ball);
       } else {
         bowlerInningsMap[ball.bowler] =
-            BowlerInnings(bowler: ball.bowler, innings: this);
+            BowlerInnings(ball.bowler, innings: this);
       }
     }
 
@@ -87,7 +86,7 @@ class Innings {
         (batInn) => batInn.batter == ball.batter //&& !batInn.isOut
         ,
         orElse: () {
-          final batInn = BatterInnings(batter: ball.batter, innings: this);
+          final batInn = BatterInnings(ball.batter, innings: this);
           batterInnings.add(batInn);
           return batInn;
         },
@@ -99,26 +98,15 @@ class Innings {
   }
 }
 
-class BatterInnings {
-  Player batter;
+class BatterInnings extends BattingStats {
   Innings innings;
-  BatterInnings({required this.batter, required this.innings});
+  BatterInnings(super.batter, {required this.innings});
 
   // Wicket? wicket;
 
+  @override
   List<Ball> get balls =>
       innings.balls.where((ball) => ball.batter == batter).toList();
-
-  int get runs =>
-      balls.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
-
-  int get ballsFaced => balls
-      .where((ball) => ball.isLegal || ball.bowlingExtra == BowlingExtra.noBall)
-      .length;
-
-  double get strikeRate => 100 * runs / ballsFaced;
-
-  Wicket? get wicket => balls.isNotEmpty ? balls.last.wicket : null;
 
   bool get isOut => wicket != null;
 
@@ -130,36 +118,12 @@ class BatterInnings {
   }
 }
 
-class BowlerInnings {
-  Player bowler;
+class BowlerInnings extends BowlingStats {
   Innings innings;
-  BowlerInnings({required this.bowler, required this.innings});
 
+  BowlerInnings(super.bowler, {required this.innings});
+
+  @override
   List<Ball> get balls =>
       innings.balls.where((ball) => ball.bowler == bowler).toList();
-
-  int get runsConceded => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
-
-  int get wicketsTaken => balls.where((ball) => ball.isBowlerWicket).length;
-
-  // TODO
-  // int get maidensBowled => overs.where((over) => over.totalRuns == 0).length;
-
-  int get ballsBowled => balls.where((ball) => ball.isLegal).length;
-
-  String get oversBowled =>
-      (ballsBowled ~/ Constants.ballsPerOver).toString() +
-      '.' +
-      (ballsBowled % Constants.ballsPerOver).toString();
-
-  double get economy => ballsBowled == 0
-      ? 0
-      : Constants.ballsPerOver * runsConceded / ballsBowled;
-
-  double get strikeRate => ballsBowled / wicketsTaken;
-  double get average => runsConceded / wicketsTaken;
-
-  // void bowl(Over over) {
-  //   overs.add(over);
-  // }
 }

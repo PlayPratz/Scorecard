@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
@@ -51,20 +50,6 @@ class __ScorecardMatchPanelState extends State<_ScorecardMatchPanel> {
     super.initState();
     _isInningsPanelOpen =
         widget.match.inningsList.map((innings) => true).toList();
-    if (widget.match.matchState == MatchState.completed) {
-      String resultString;
-      final result = widget.match.result;
-      if (result.getVictoryType() == VictoryType.chasing) {
-        resultString =
-            "${result.winner.shortName} ${Strings.scoreWinWith} ${(result as ResultWinByChasing).ballsLeft} ${Strings.scoreWinByBallsToSpare}";
-      } else if (result.getVictoryType() == VictoryType.defending) {
-        resultString =
-            "${result.winner.shortName} ${Strings.scoreWinBy} ${(result as ResultWinByDefending).runsWonBy} ${Strings.scoreWinByRuns}";
-      } else {
-        resultString = Strings.scoreMatchTied;
-      }
-      resultLine = Text(resultString);
-    }
   }
 
   @override
@@ -220,8 +205,8 @@ class _BattingInningsScore extends StatelessWidget {
     return GenericInningsScore(
       player: batterInnings.batter,
       secondary: Strings.getWicketDescription(batterInnings.wicket),
-      trailPrimary: batterInnings.runsScored.toString(),
-      trailSecondary: batterInnings.numBallsFaced.toString(),
+      trailPrimary: batterInnings.runs.toString(),
+      trailSecondary: batterInnings.ballsFaced.toString(),
     );
   }
 }

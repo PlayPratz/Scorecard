@@ -44,7 +44,7 @@ class TitledPage extends StatelessWidget {
           backgroundColor: appBarColor,
         ),
         body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
           child: child,
         ),
       ),

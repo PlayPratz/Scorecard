@@ -1,4 +1,4 @@
-import 'package:scorecard/util/strings.dart';
+import 'dart:math';
 
 import 'player.dart';
 import 'wicket.dart';
@@ -48,17 +48,15 @@ class Innings {
   int get wickets => balls.where((ball) => ball.isWicket).length;
 
   int get ballsBowled => balls.where((ball) => ball.isLegal).length;
-
-  String get strScore => "$runs/$wickets";
-  String get strOvers =>
-      "${ballsBowled ~/ Constants.ballsPerOver}.${ballsBowled % Constants.ballsPerOver}";
+  bool get areOversCompleted =>
+      maxOvers * Constants.ballsPerOver == ballsBowled;
 
   // Calculations
 
   double get currentRunRate =>
       ballsBowled == 0 ? 0 : (runs / ballsBowled) * Constants.ballsPerOver;
   int get projectedRuns => (currentRunRate * maxOvers).floor();
-  int get requiredRuns => target != null ? (target! - runs) : 0;
+  int get requiredRuns => target != null ? max(0, (target! - runs)) : 0;
   int get ballsLeft => maxOvers * Constants.ballsPerOver - ballsBowled;
   double get requiredRunRate =>
       target != null ? (requiredRuns / ballsLeft) * Constants.ballsPerOver : 0;
@@ -111,20 +109,18 @@ class BatterInnings {
   List<Ball> get balls =>
       innings.balls.where((ball) => ball.batter == batter).toList();
 
-  int get runsScored =>
+  int get runs =>
       balls.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
-  int get numBallsFaced => balls
+
+  int get ballsFaced => balls
       .where((ball) => ball.isLegal || ball.bowlingExtra == BowlingExtra.noBall)
       .length;
 
-  double get strikeRate => 100 * runsScored / numBallsFaced;
+  double get strikeRate => 100 * runs / ballsFaced;
 
   Wicket? get wicket => balls.isNotEmpty ? balls.last.wicket : null;
 
   bool get isOut => wicket != null;
-
-  String get score =>
-      runsScored.toString() + Strings.scoreIn + numBallsFaced.toString();
 
   void play(Ball ball) {
     balls.add(ball);
@@ -162,8 +158,6 @@ class BowlerInnings {
 
   double get strikeRate => ballsBowled / wicketsTaken;
   double get average => runsConceded / wicketsTaken;
-
-  String get score => "$wicketsTaken-$runsConceded in $oversBowled";
 
   // void bowl(Over over) {
   //   overs.add(over);

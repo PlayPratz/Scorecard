@@ -119,9 +119,7 @@ class CricketMatch {
   }
 
   Innings? get firstInnings => inningsList.isNotEmpty ? inningsList[0] : null;
-  // Innings get firstInnings => _isHomeInningsFirst ? homeInnings : awayInnings;
   Innings? get secondInnings => inningsList.length > 1 ? inningsList[1] : null;
-  // Innings get secondInnings => _isHomeInningsFirst ? awayInnings : homeInnings;
 
   Innings? get homeInnings =>
       _isHomeInningsFirst ? firstInnings : secondInnings;

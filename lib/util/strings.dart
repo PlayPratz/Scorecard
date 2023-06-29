@@ -1,3 +1,7 @@
+import 'package:scorecard/models/innings.dart';
+import 'package:scorecard/models/result.dart';
+import 'package:scorecard/util/constants.dart';
+
 import '../models/ball.dart';
 import '../models/cricket_match.dart';
 import '../models/player.dart';
@@ -13,14 +17,9 @@ class Strings {
   static const String navbarStats = "Statistics";
 
   //Score
-  static const String scoreIn = " in ";
   static const String scoreYetToBat = "Yet to bat";
   static const String scoreWonToss = " has elected to ";
   static const String scoreMatchNotStarted = "This match hasn't started";
-  static const String scoreRequire = " requires ";
-  static const String scoreRunsIn = " runs in ";
-  static const String scoreRunsInSingle = " run in ";
-  static const String scoreBalls = " balls";
   static const String scoreAt = "\nat ";
   static const String scoreBallSingle = " ball";
   static const String scoreRunsPerOver = " RPO";
@@ -28,18 +27,58 @@ class Strings {
   static const String scoreWillScore = " will score ";
   static const String scoreRunsAtCurrentRate = " runs at ";
   static const String scoreOvers = " overs";
-  // Result
-  static const String scoreWinBy = " wins by ";
-  static const String scoreWinWith = "wins with";
+
   // static const String scoreWinByWickets = " wickets with ";
-  static const String scoreWinByWicketSingle = "wicket with";
-  static const String scoreWinByBallsToSpare = "balls to spare";
-  static const String scoreWinByBallsToSpareSingle = "ball to spare";
-  static const String scoreWinByRuns = " runs";
-  static const String scoreWinByRunSingle = " run";
+  // static const String scoreWinByWicketSingle = "wicket with";
   static const String scoreMatchTied = "Match Tied";
+  static const String scoreMatchDrawn = "Match Drawn";
+
+  static String getTossWinner(Toss toss) {
+    return "${toss.winningTeam.shortName} has elected to ${getTossChoice(toss.choice)}";
+  }
+
+  static String getChaseEquation(Innings innings) {
+    return "${innings.battingTeam.shortName} requires ${innings.requiredRuns} in ${innings.ballsLeft} balls";
+  }
+
+  static String getResult(Result result) {
+    if (result.victoryType == VictoryType.chasing) {
+      final ballString = (result as ResultWinByChasing).ballsLeft == 1
+          ? "ball to spare"
+          : "balls to spare";
+      return "${result.winner.shortName} wins with ${result.ballsLeft} $ballString";
+    } else if (result.victoryType == VictoryType.defending) {
+      final runString =
+          (result as ResultWinByDefending).runsWonBy == 1 ? "run" : "runs";
+      return "${result.winner.shortName} wins by ${result.runsWonBy} $runString";
+    } else if (result.victoryType == VictoryType.tie) {
+      return scoreMatchTied;
+    } else {
+      return scoreMatchDrawn;
+    }
+  }
+
+  static String getBatterInningsScore(BatterInnings innings) {
+    return "${innings.runs} in ${innings.ballsFaced}";
+  }
+
+  static String getBowlerInningsScore(BowlerInnings bowlerInnings) {
+    return "${bowlerInnings.wicketsTaken}-${bowlerInnings.runsConceded} in ${bowlerInnings.oversBowled}";
+  }
+
+  static String getOverBowledText(Innings innings, {required bool short}) {
+    final oversBowled =
+        "${innings.ballsBowled ~/ Constants.ballsPerOver}.${innings.ballsBowled % Constants.ballsPerOver}";
+    if (short) return "$oversBowled overs";
+    final overText = innings.maxOvers == 1 ? "over" : "overs";
+    return "$oversBowled/${innings.maxOvers} $overText";
+  }
+
+  static String getInningsScore(Innings innings) =>
+      "${innings.runs}/${innings.wickets}";
 
   static const String playerBatter = " Bat";
+
   // static const String playerBowler = " Bowl";
 
   // Creation
@@ -107,7 +146,7 @@ class Strings {
   static const String initMatchTossChoiceHint =
       "Win or Lose? Oh sorry - Bat or Field?";
   static const String initMatchTossChoiceTitle = "Win the toss and choose to";
-  static const String initMatchStartMatch = Strings.createMatchStartMatch;
+  static const String initMatchStartMatch = createMatchStartMatch;
 
   // Innings Init
   static const String initInningsTitle = "Let's Start The Innings";
@@ -260,40 +299,38 @@ class Strings {
 
   static String getWicketDescription(Wicket? wicket) {
     if (wicket == null) {
-      return Strings.wicketNotOut;
+      return wicketNotOut;
     }
     switch (wicket.dismissal) {
       case Dismissal.runout:
-        return Strings.wicketRunout + wicket.fielder!.name;
+        return wicketRunout + wicket.fielder!.name;
 
       case Dismissal.caught:
         if (wicket.bowler == wicket.fielder) {
-          return Strings.wicketCaughtAndBowled + wicket.fielder!.name;
+          return wicketCaughtAndBowled + wicket.fielder!.name;
         }
-        return Strings.wicketCaught +
+        return wicketCaught +
             wicket.fielder!.name +
             ' ' +
-            Strings.wicketBowled +
+            wicketBowled +
             wicket.bowler!.name;
 
       case Dismissal.stumped:
-        return Strings.wicketStumped +
+        return wicketStumped +
             wicket.fielder!.name +
             ' ' +
-            Strings.wicketBowled +
+            wicketBowled +
             wicket.bowler!.name;
 
       case Dismissal.lbw:
-        return Strings.wicketLbw + wicket.bowler!.name;
+        return wicketLbw + wicket.bowler!.name;
 
       case Dismissal.hitWicket:
-        return Strings.wicketHitWicket +
-            Strings.wicketBowled +
-            wicket.bowler!.name;
+        return wicketHitWicket + wicketBowled + wicket.bowler!.name;
 
       case Dismissal.bowled:
       default:
-        return Strings.wicketBowled + wicket.bowler!.name;
+        return wicketBowled + wicket.bowler!.name;
     }
   }
 }

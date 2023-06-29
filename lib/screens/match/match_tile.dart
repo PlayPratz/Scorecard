@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/team.dart';
+import 'package:scorecard/util/strings.dart';
 import '../../models/cricket_match.dart';
 
 class MatchTile extends StatelessWidget {
@@ -7,23 +9,22 @@ class MatchTile extends StatelessWidget {
 
   final void Function()? onTap;
   final void Function()? onLongPress;
-  // final bool isLive;
-  const MatchTile({
-    super.key,
-    required this.match,
-    this.onTap,
-    this.onLongPress,
-    // this.isLive = false,
-  });
+
+  final bool showSummaryLine;
+  const MatchTile(
+      {super.key,
+      required this.match,
+      this.onTap,
+      this.onLongPress,
+      this.showSummaryLine = true});
 
   @override
   Widget build(BuildContext context) {
     late final Team primaryTeam;
     late final Team secondaryTeam;
 
-    final hasStarted = match.inningsList.isNotEmpty;
-
-    switch (match.matchState) {
+    final matchState = match.matchState;
+    switch (matchState) {
       case MatchState.notStarted:
       case MatchState.tossCompleted:
         primaryTeam = match.homeTeam;
@@ -47,6 +48,7 @@ class MatchTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 32),
           child: Column(
@@ -59,13 +61,7 @@ class MatchTile extends StatelessWidget {
                       ),
                     ),
                 color: Colors.transparent,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _wTeamNameChip(match.homeTeam),
-                    _wTeamNameChip(match.awayTeam),
-                  ],
-                ),
+                child: _wTeamHeaders(),
               ),
               const SizedBox(height: 8),
               Padding(
@@ -73,55 +69,92 @@ class MatchTile extends StatelessWidget {
                 child: Row(
                   children: [
                     // const Spacer(),
-                    if (hasStarted)
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${match.currentInnings.strOvers}/${match.maxOvers} overs",
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            if (match.matchState == MatchState.secondInnings ||
-                                match.matchState == MatchState.completed)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: _wFirstInningsScore(context),
-                              )
-                          ],
-                        ),
-                      ),
+                    Expanded(
+                      child: _wTeamBlock(context, matchState, match.homeInnings,
+                          match.awayInnings,
+                          isRightAligned: false),
+                    ),
                     CircleAvatar(
-                      child: Text('v'),
+                      child: const Text('v'),
                       backgroundColor: secondaryTeam.color.withOpacity(0.25),
                       foregroundColor: Colors.white,
                     ),
-                    if (hasStarted)
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              match.currentInnings.strScore,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .displaySmall
-                                  ?.merge(
-                                    const TextStyle(color: Colors.white),
-                                  ),
-                            )
-                          ],
-                        ),
-                      ),
+
+                    Expanded(
+                      child: _wTeamBlock(context, matchState, match.awayInnings,
+                          match.homeInnings,
+                          isRightAligned: true),
+                    ),
                     // const Spacer(),
                   ],
                 ),
               ),
+              if (showSummaryLine)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24.0),
+                  child: _wSummaryLine(context, matchState),
+                )
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _wTeamHeaders() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _wTeamNameChip(match.homeTeam),
+        _wTeamNameChip(match.awayTeam),
+      ],
+    );
+  }
+
+  Widget _wTeamBlock(BuildContext context, MatchState matchState,
+      Innings? hereInnings, Innings? thereInnings,
+      {required bool isRightAligned}) {
+    final crossAxisAlignment =
+        isRightAligned ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+
+    // Match is completed
+    if (matchState == MatchState.completed) {
+      return Column(
+        crossAxisAlignment: crossAxisAlignment,
+        children: [
+          _wBattingScoreText(context, hereInnings!),
+          const SizedBox(height: 8),
+          _wBowlingOversText(context, hereInnings, short: true),
+        ],
+      );
+    }
+
+    // Here Team is batting
+    if (match.inningsList.isNotEmpty && match.currentInnings == hereInnings) {
+      return Column(
+        crossAxisAlignment: crossAxisAlignment,
+        children: [
+          _wBattingScoreText(context, match.currentInnings),
+        ],
+      );
+    }
+
+    // There Team is batting
+    if (match.inningsList.isNotEmpty && match.currentInnings == thereInnings) {
+      return Column(
+        crossAxisAlignment: crossAxisAlignment,
+        children: [
+          _wBowlingOversText(context, match.currentInnings),
+          if (match.matchState == MatchState.secondInnings)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: _wFirstInningsScore(context),
+            )
+        ],
+      );
+    } else {
+      return const Text(Strings.scoreYetToBat);
+    }
   }
 
   Widget _wFirstInningsScore(BuildContext context) => Text.rich(
@@ -137,14 +170,16 @@ class MatchTile extends StatelessWidget {
             ),
             const TextSpan(text: " "),
             TextSpan(
-              text: match.firstInnings!.strScore,
+              text: Strings.getInningsScore(match.firstInnings!),
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
                   ?.merge(const TextStyle(color: Colors.white)),
             ),
             const TextSpan(text: " in "),
-            TextSpan(text: match.firstInnings!.strOvers),
+            TextSpan(
+                text: Strings.getOverBowledText(match.firstInnings!,
+                    short: true)),
             // const TextSpan(text: " overs"),
           ],
         ),
@@ -161,4 +196,39 @@ class MatchTile extends StatelessWidget {
           child: Center(child: Text(team.name.toUpperCase())),
         ),
       );
+
+  Widget _wSummaryLine(BuildContext context, MatchState matchState) {
+    final textStyle = Theme.of(context).textTheme.labelLarge;
+    // ?.merge(TextStyle(fontStyle: FontStyle.italic));
+    switch (matchState) {
+      case MatchState.notStarted:
+        return Text(Strings.scoreMatchNotStarted, style: textStyle);
+      case MatchState.tossCompleted:
+      case MatchState.firstInnings:
+        return Text(
+          Strings.getTossWinner(match.toss!).toUpperCase(),
+          style: textStyle,
+        );
+      case MatchState.secondInnings:
+        return Text(
+            Strings.getChaseEquation(match.currentInnings).toUpperCase(),
+            style: textStyle);
+      case MatchState.completed:
+        return Text(Strings.getResult(match.result).toUpperCase(),
+            style: textStyle);
+    }
+  }
 }
+
+Widget _wBattingScoreText(BuildContext context, Innings innings) =>
+    Text(Strings.getInningsScore(innings),
+        style: Theme.of(context).textTheme.displaySmall?.merge(
+              const TextStyle(color: Colors.white),
+            ));
+
+Widget _wBowlingOversText(BuildContext context, Innings innings,
+        {bool short = false}) =>
+    Text(
+      Strings.getOverBowledText(innings, short: short),
+      style: Theme.of(context).textTheme.titleMedium,
+    );

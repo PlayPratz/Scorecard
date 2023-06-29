@@ -29,33 +29,6 @@ class MatchInterface extends StatelessWidget {
     return TitledPage(
       // backgroundColor: match.currentInnings.battingTeam.color.withOpacity(0.05),
       appBarColor: Colors.transparent,
-      // headerWidget: Selector<InningsManager, int>(
-      //   selector: (context, inningsManager) =>
-      //       inningsManager.innings.balls.length,
-      //   builder: (context, inningsManager, child) => Padding(
-      //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      //     child: InkWell(
-      //       onTap: () => Utils.goToPage(Scorecard(match: match), context),
-      //       child: Row(
-      //         // mainAxisSize: MainAxisSize.min,
-      //         children: [
-      //           Expanded(
-      //             child: ScoreTile(
-      //                 team: match.homeTeam,
-      //                 battingInnings: match.currentInnings),
-      //           ),
-      //           // const SizedBox(width: 8),
-      //           Expanded(
-      //             child: ScoreTile(
-      //                 team: match.awayTeam,
-      //                 battingInnings: match.currentInnings),
-      //           ),
-      //         ],
-      //       ),
-      //     ),
-      //   ),
-      // ),
-      // toolbarHeight: 96,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -65,6 +38,7 @@ class MatchInterface extends StatelessWidget {
           Consumer<InningsManager>(
             builder: (context, inningsManager, child) => MatchTile(
               match: match,
+              showSummaryLine: false,
               onTap: () => Utils.goToPage(Scorecard(match: match), context),
             ),
           ),
@@ -191,7 +165,7 @@ class MatchInterface extends StatelessWidget {
         match.matchState == MatchState.completed) {
       // TODO make this such that matchState need not be checked
       match.progressMatch();
-      if (match.result.getVictoryType() == VictoryType.tie) {
+      if (match.result.victoryType == VictoryType.tie) {
         // Show Super Over option
         showModalBottomSheet(
           context: context,

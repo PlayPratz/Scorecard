@@ -6,7 +6,7 @@ abstract class Result {
 
   Result({required this.winner, required this.loser});
 
-  VictoryType getVictoryType();
+  VictoryType get victoryType;
 }
 
 class ResultWinByDefending extends Result {
@@ -16,9 +16,7 @@ class ResultWinByDefending extends Result {
       {required super.winner, required super.loser, required this.runsWonBy});
 
   @override
-  VictoryType getVictoryType() {
-    return VictoryType.defending;
-  }
+  get victoryType => VictoryType.defending;
 }
 
 class ResultWinByChasing extends Result {
@@ -32,18 +30,14 @@ class ResultWinByChasing extends Result {
   });
 
   @override
-  VictoryType getVictoryType() {
-    return VictoryType.chasing;
-  }
+  get victoryType => VictoryType.chasing;
 }
 
 class ResultTie extends Result {
   ResultTie({required super.winner, required super.loser});
 
   @override
-  VictoryType getVictoryType() {
-    return VictoryType.tie;
-  }
+  get victoryType => VictoryType.tie;
 }
 
 enum VictoryType {

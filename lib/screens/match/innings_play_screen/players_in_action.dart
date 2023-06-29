@@ -7,6 +7,7 @@ import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/util/strings.dart';
 
 class PlayersInActionPane extends StatelessWidget {
   final bool isHomeTeamBatting;
@@ -35,7 +36,7 @@ class PlayersInActionPane extends StatelessWidget {
             PlayerScoreTile(
               player: inningsManager.bowler!.bowler,
               teamColor: inningsManager.innings.bowlingTeam.color,
-              score: inningsManager.bowler!.score,
+              score: Strings.getBowlerInningsScore(inningsManager.bowler!),
               onLongPress: () async {
                 if (inningsManager.canChangeBowler) {
                   final player = await getPlayerFromList(
@@ -124,7 +125,7 @@ class PlayersInActionPane extends StatelessWidget {
       BatterInnings batterInnings) {
     return PlayerScoreTile(
       player: batterInnings.batter,
-      score: batterInnings.score,
+      score: Strings.getBatterInningsScore(batterInnings),
       teamColor: inningsManager.innings.battingTeam.color,
       isOnline: batterInnings == inningsManager.striker,
       isOut: batterInnings.isOut,
@@ -189,7 +190,7 @@ class PlayerScoreTile extends StatelessWidget {
           onLongPress: onLongPress,
           leading: Elements.getPlayerIcon(player!, 32),
           horizontalTitleGap: 8,
-          visualDensity: VisualDensity(vertical: -2),
+          visualDensity: const VisualDensity(vertical: -2),
           title: Text(
             player!.name.toUpperCase(),
             style: Theme.of(context).textTheme.labelMedium,

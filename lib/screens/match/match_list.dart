@@ -50,8 +50,8 @@ class _MatchListState extends State<MatchList> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: MatchTile(
                 match: match,
-                onSelectMatch: (match) => handleOpenMatch(match, context),
-                onLongPress: (match) => {
+                onTap: () => handleOpenMatch(match, context),
+                onLongPress: () => {
                   showModalBottomSheet(
                       context: context,
                       builder: (context) => Material(

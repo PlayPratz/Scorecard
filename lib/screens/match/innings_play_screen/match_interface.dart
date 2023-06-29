@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/result.dart';
@@ -29,7 +27,7 @@ class MatchInterface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TitledPage(
-      backgroundColor: match.currentInnings.battingTeam.color.withOpacity(0.10),
+      // backgroundColor: match.currentInnings.battingTeam.color.withOpacity(0.05),
       appBarColor: Colors.transparent,
       // headerWidget: Selector<InningsManager, int>(
       //   selector: (context, inningsManager) =>
@@ -64,25 +62,16 @@ class MatchInterface extends StatelessWidget {
           // RunRatePane(
           //   showTarget: (match.currentInnings == match.secondInnings),
           // ),
-          Card(
-            child: Row(
-              children: [
-                Expanded(
-                  child: ScoreTile(
-                      team: match.homeTeam,
-                      battingInnings: match.currentInnings),
-                ),
-                Expanded(
-                  child: ScoreTile(
-                      team: match.awayTeam,
-                      battingInnings: match.currentInnings),
-                ),
-              ],
+          Consumer<InningsManager>(
+            builder: (context, inningsManager, child) => MatchTile(
+              match: match,
+              onTap: () => Utils.goToPage(Scorecard(match: match), context),
             ),
           ),
           PlayersInActionPane(
             isHomeTeamBatting:
                 match.currentInnings.battingTeam == match.homeTeam,
+            showChaseReq: match.matchState == MatchState.secondInnings,
           ),
           const RecentBallsPane(),
           const SizedBox(height: 16),
@@ -90,6 +79,7 @@ class MatchInterface extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               _wEndInningsButton(context),
+              const SizedBox(width: 4),
               const Expanded(child: WicketTile()),
             ],
           ),
@@ -250,55 +240,5 @@ class MatchInterface extends StatelessWidget {
       return;
     }
     Utils.goToReplacementPage(InningsInitScreen(match: match), context);
-  }
-}
-
-class RunRatePane extends StatelessWidget {
-  final bool showTarget;
-  const RunRatePane({super.key, this.showTarget = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final innings = context.watch<InningsManager>().innings;
-    final dataTextStyle = Theme.of(context).textTheme.headlineMedium;
-    return Row(
-      children: !showTarget
-          ? [
-              Expanded(
-                child: ScoreTileInner(
-                  teamName: "Run Rate",
-                  score: innings.currentRunRate.toStringAsFixed(2),
-                  color: Colors.blueGrey,
-                  dataTextStyle: dataTextStyle,
-                ),
-              ),
-              Expanded(
-                child: ScoreTileInner(
-                  teamName: "Projected",
-                  score: innings.projectedRuns.toString(),
-                  color: Colors.lime,
-                  dataTextStyle: dataTextStyle,
-                ),
-              ),
-            ]
-          : [
-              Expanded(
-                child: ScoreTileInner(
-                  teamName: "Required",
-                  score: max(innings.requiredRuns, 0).toString(),
-                  color: Colors.green,
-                  dataTextStyle: dataTextStyle,
-                ),
-              ),
-              Expanded(
-                child: ScoreTileInner(
-                  teamName: "Balls Left",
-                  score: innings.ballsLeft.toString(),
-                  color: Colors.red,
-                  dataTextStyle: dataTextStyle,
-                ),
-              ),
-            ],
-    );
   }
 }

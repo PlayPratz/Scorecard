@@ -194,17 +194,16 @@ class InningsManager with ChangeNotifier {
     batterInnings ??= BatterInnings(batter: batter, innings: innings);
     // New batter
 
-    if (_onPitchBatters.first == batter1) {
-      batter2 = batterInnings;
-    } else {
+    if (batter1 == batterToReplace) {
       batter1 = batterInnings;
+    } else {
+      batter2 = batterInnings;
     }
 
     if (striker != batter1 && striker != batter2) {
       striker = batterInnings;
     }
 
-    // _canSelectBatter = false;
     batterToReplace = null;
 
     notifyListeners();
@@ -285,13 +284,6 @@ class InningsManager with ChangeNotifier {
       return NextInput.end;
     }
 
-    // Change Bowler due to end of over
-    if (_canSelectBowler &&
-        innings.balls.isNotEmpty &&
-        innings.balls.last.ballIndex == Constants.ballsPerOver) {
-      return NextInput.bowler;
-    }
-
     // Change Batter due to fall of wicket
     if (
         // _canSelectBatter &&
@@ -299,6 +291,13 @@ class InningsManager with ChangeNotifier {
             innings.balls.last.isWicket &&
             batterToReplace != null) {
       return NextInput.batter;
+    }
+
+    // Change Bowler due to end of over
+    if (_canSelectBowler &&
+        innings.balls.isNotEmpty &&
+        innings.balls.last.ballIndex == Constants.ballsPerOver) {
+      return NextInput.bowler;
     }
     return NextInput.ball;
   }

@@ -26,7 +26,7 @@ class _HomeTabViewState extends State<HomeTabView> {
     return BaseScreen(
         child: Scaffold(
       body: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
+        padding: const EdgeInsets.only(bottom: 8.0, left: 16, right: 16),
         child: screens[_index],
       ),
       backgroundColor: ColorStyles.background,

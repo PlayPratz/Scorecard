@@ -1,56 +1,122 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/team.dart';
 import '../../models/cricket_match.dart';
-import '../../models/innings.dart';
-import '../../styles/color_styles.dart';
-import '../../util/strings.dart';
 
 class MatchTile extends StatelessWidget {
   final CricketMatch match;
-  final void Function(CricketMatch match)? onSelectMatch;
-  final void Function(CricketMatch match)? onLongPress;
 
+  final void Function()? onTap;
+  final void Function()? onLongPress;
+  // final bool isLive;
   const MatchTile({
+    super.key,
     required this.match,
-    this.onSelectMatch,
+    this.onTap,
     this.onLongPress,
-    Key? key,
-  }) : super(key: key);
+    // this.isLive = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Ink(
-      decoration: BoxDecoration(
-        color: ColorStyles.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
-      ),
+    late final Team primaryTeam;
+    late final Team secondaryTeam;
+
+    final hasStarted = match.inningsList.isNotEmpty;
+
+    switch (match.matchState) {
+      case MatchState.notStarted:
+      case MatchState.tossCompleted:
+        primaryTeam = match.homeTeam;
+        secondaryTeam = match.awayTeam;
+        break;
+      case MatchState.firstInnings:
+      case MatchState.secondInnings:
+        primaryTeam = match.currentInnings.battingTeam;
+        secondaryTeam = match.currentInnings.bowlingTeam;
+        break;
+      case MatchState.completed:
+        final result = match.result;
+        primaryTeam = result.winner;
+        secondaryTeam = result.loser;
+        break;
+    }
+
+    return Card(
+      elevation: 2,
+      surfaceTintColor: primaryTeam.color,
       child: InkWell(
-        onTap: onSelectMatch != null ? () => onSelectMatch!(match) : null,
-        onLongPress: onLongPress != null ? () => onLongPress!(match) : null,
-        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        onLongPress: onLongPress,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 32),
           child: Column(
             children: [
-              _wMatchDetails(),
-              Row(
-                children: [
-                  Expanded(
-                    child: _InningsTile(
-                      innings: match.homeInnings,
-                      team: match.homeTeam,
+              Material(
+                textStyle: Theme.of(context).textTheme.titleSmall?.merge(
+                      const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white70,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: _InningsTile(
-                      innings: match.awayInnings,
-                      team: match.awayTeam,
-                    ),
-                  ),
-                ],
+                color: Colors.transparent,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _wTeamNameChip(match.homeTeam),
+                    _wTeamNameChip(match.awayTeam),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8)
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Row(
+                  children: [
+                    // const Spacer(),
+                    if (hasStarted)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${match.currentInnings.strOvers}/${match.maxOvers} overs",
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            if (match.matchState == MatchState.secondInnings ||
+                                match.matchState == MatchState.completed)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: _wFirstInningsScore(context),
+                              )
+                          ],
+                        ),
+                      ),
+                    CircleAvatar(
+                      child: Text('v'),
+                      backgroundColor: secondaryTeam.color.withOpacity(0.25),
+                      foregroundColor: Colors.white,
+                    ),
+                    if (hasStarted)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              match.currentInnings.strScore,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displaySmall
+                                  ?.merge(
+                                    const TextStyle(color: Colors.white),
+                                  ),
+                            )
+                          ],
+                        ),
+                      ),
+                    // const Spacer(),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -58,104 +124,41 @@ class MatchTile extends StatelessWidget {
     );
   }
 
-  Widget _wMatchDetails() {
-    String text = match.isSuperOver
-        ? Strings.matchScreenSuperOver
-        : match.maxOvers.toString() + Strings.scoreOvers;
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Text(text),
-    );
-  }
-}
-
-class _InningsTile extends StatelessWidget {
-  final Innings? innings;
-  final Team team;
-
-  const _InningsTile({required this.innings, required this.team});
-
-  @override
-  Widget build(BuildContext context) {
-    if (innings == null) {
-      return ScoreTileInner(
-          teamName: team.shortName, score: "YTB", color: team.color);
-    }
-
-    return ScoreTileInner(
-      teamName: team.shortName,
-      score: innings!.strScore,
-      color: team.color,
-      // useShortName: true,
-    );
-  }
-}
-
-class ScoreTile extends StatelessWidget {
-  final Team team;
-  final Innings battingInnings;
-  final bool useShortName;
-
-  const ScoreTile({
-    super.key,
-    required this.team,
-    required this.battingInnings,
-    this.useShortName = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final score = team == battingInnings.battingTeam
-        ? battingInnings.strScore
-        : battingInnings.strOvers;
-    final teamName = useShortName ? team.shortName : team.name;
-    return ScoreTileInner(score: score, teamName: teamName, color: team.color);
-  }
-}
-
-class ScoreTileInner extends StatelessWidget {
-  final String teamName;
-  final String score;
-  final Color color;
-  final TextStyle? dataTextStyle;
-
-  const ScoreTileInner(
-      {super.key,
-      required this.teamName,
-      required this.score,
-      required this.color,
-      this.dataTextStyle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Container(
-        height: 96,
-        width: 24,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: color.withOpacity(0.8),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _wFirstInningsScore(BuildContext context) => Text.rich(
+        TextSpan(
+          style: Theme.of(context).textTheme.bodySmall,
           children: [
-            Text(
-              teamName,
-              style: Theme.of(context).textTheme.titleSmall?.merge(
-                    const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+            TextSpan(
+              text: match.firstInnings!.battingTeam.shortName,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.merge(const TextStyle(fontWeight: FontWeight.bold)),
             ),
-            Text(
-              score,
-              style: dataTextStyle ?? Theme.of(context).textTheme.displaySmall,
-            )
+            const TextSpan(text: " "),
+            TextSpan(
+              text: match.firstInnings!.strScore,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.merge(const TextStyle(color: Colors.white)),
+            ),
+            const TextSpan(text: " in "),
+            TextSpan(text: match.firstInnings!.strOvers),
+            // const TextSpan(text: " overs"),
           ],
         ),
-      ),
-    );
-  }
+      );
+
+  Widget _wTeamNameChip(Team team) => Container(
+        decoration: BoxDecoration(
+          color: team.color,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        constraints: const BoxConstraints(minWidth: 64),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Center(child: Text(team.name.toUpperCase())),
+        ),
+      );
 }

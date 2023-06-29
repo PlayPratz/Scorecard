@@ -5,6 +5,7 @@ import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
+import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/elements.dart';
 import '../../../models/wicket.dart';
 import '../../templates/titled_page.dart';
@@ -20,7 +21,7 @@ class WicketTile extends StatelessWidget {
   Widget build(BuildContext context) {
     String primary = Strings.matchScreenAddWicket;
     // String hint = Strings.matchScreenAddWicketHint;
-    String hint = "";
+    String hint = "Enter wicket details";
 
     final inningsManager =
         context.watch<InningsManager>(); // TODO: Find a more efficient way
@@ -30,18 +31,22 @@ class WicketTile extends StatelessWidget {
       primary = wicket.batter.name;
       hint = Strings.getWicketDescription(wicket);
     }
-    return GenericItemTile(
-      leading: const Icon(
-        Icons.gpp_bad,
-        color: Colors.redAccent,
-        size: 32,
+    return Card(
+      margin: const EdgeInsets.all(0),
+      surfaceTintColor: ColorStyles.wicket,
+      child: GenericItemTile(
+        leading: const Icon(
+          Icons.gpp_bad,
+          color: Colors.redAccent,
+          size: 32,
+        ),
+        primaryHint: primary,
+        secondaryHint: hint,
+        trailing: Elements.forwardIcon,
+        onSelect:
+            inningsManager.canSetWicket ? () => _onSelectWicket(context) : null,
+        onLongPress: () => context.read<InningsManager>().setWicket(null),
       ),
-      primaryHint: primary,
-      secondaryHint: hint,
-      trailing: Elements.forwardIcon,
-      onSelect:
-          inningsManager.canSetWicket ? () => _onSelectWicket(context) : null,
-      onLongPress: () => context.read<InningsManager>().setWicket(null),
     );
   }
 

@@ -10,13 +10,17 @@ import 'package:scorecard/util/elements.dart';
 
 class PlayersInActionPane extends StatelessWidget {
   final bool isHomeTeamBatting;
-  const PlayersInActionPane({super.key, required this.isHomeTeamBatting});
+
+  final bool showChaseReq;
+  const PlayersInActionPane(
+      {super.key, required this.isHomeTeamBatting, this.showChaseReq = false});
 
   @override
   Widget build(BuildContext context) {
-    final inningsManager = context.watch<InningsManager>();
+    final inningsManager =
+        context.watch<InningsManager>(); // TODO make more efficient
 
-    List<Widget> nowPlayingWidgets = [
+    List<Widget> playersInActionRow = [
       Expanded(
         child: Column(children: [
           _wBatterOnPitch(context, inningsManager, inningsManager.batter1!),
@@ -27,8 +31,6 @@ class PlayersInActionPane extends StatelessWidget {
       ),
       Expanded(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             PlayerScoreTile(
               player: inningsManager.bowler!.bowler,
@@ -44,15 +46,34 @@ class PlayersInActionPane extends StatelessWidget {
                 }
               },
             ),
-            const SizedBox(height: 8),
+            if (showChaseReq)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                      child: _wChaseRequire(
+                          context: context,
+                          color: inningsManager.innings.battingTeam.color,
+                          heading: "Require",
+                          value: inningsManager.innings.requiredRuns)),
+                  Expanded(
+                      child: _wChaseRequire(
+                          context: context,
+                          color: inningsManager.innings.bowlingTeam.color,
+                          heading: "Balls",
+                          value: inningsManager.innings.ballsLeft)),
+                ],
+              )
           ],
         ),
       ),
     ];
     return Card(
+      surfaceTintColor: inningsManager.innings.battingTeam.color,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Align(
               alignment: Alignment.centerLeft,
@@ -64,15 +85,40 @@ class PlayersInActionPane extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
               children: isHomeTeamBatting
-                  ? nowPlayingWidgets
-                  : nowPlayingWidgets.reversed.toList(),
+                  ? playersInActionRow
+                  : playersInActionRow.reversed.toList(),
             ),
           ],
         ),
       ),
     );
   }
+
+  Card _wChaseRequire(
+          {required Color color,
+          required String heading,
+          required int value,
+          required BuildContext context}) =>
+      Card(
+        elevation: 4,
+        color: color.withOpacity(0.3),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Text(heading.toUpperCase(),
+                  style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 4),
+              Text(
+                value.toString(),
+                style: Theme.of(context).textTheme.titleLarge,
+              )
+            ],
+          ),
+        ),
+      );
 
   Widget _wBatterOnPitch(BuildContext context, InningsManager inningsManager,
       BatterInnings batterInnings) {

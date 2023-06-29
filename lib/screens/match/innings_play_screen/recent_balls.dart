@@ -22,7 +22,8 @@ class RecentBallsPane extends StatelessWidget {
       selector: (context, inningsManager) =>
           inningsManager.innings.balls.length,
       builder: (context, ballCount, child) => Card(
-        surfaceTintColor: Colors.deepPurple,
+        surfaceTintColor:
+            context.read<InningsManager>().innings.bowlingTeam.color,
         child: InkWell(
           onTap: ballCount == 0
               ? null

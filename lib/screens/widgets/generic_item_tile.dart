@@ -40,12 +40,13 @@ class _GenericItemTileState extends State<GenericItemTile> {
   Widget build(BuildContext context) {
     return ListTile(
       title: FittedBox(
-          alignment: Alignment.centerLeft,
-          fit: BoxFit.scaleDown,
-          child: Text(
-            widget.primaryHint,
-            style: Theme.of(context).textTheme.titleMedium,
-          )),
+        alignment: Alignment.centerLeft,
+        fit: BoxFit.scaleDown,
+        child: Text(
+          widget.primaryHint,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+      ),
       subtitle: widget.secondaryHint.isNotEmpty
           ? Text(
               widget.secondaryHint,

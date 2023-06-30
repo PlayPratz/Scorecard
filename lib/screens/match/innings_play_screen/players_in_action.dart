@@ -11,10 +11,11 @@ import 'package:scorecard/util/strings.dart';
 
 class PlayersInActionPane extends StatelessWidget {
   final bool isHomeTeamBatting;
-
-  final bool showChaseReq;
+  final bool showChaseRequirement;
   const PlayersInActionPane(
-      {super.key, required this.isHomeTeamBatting, this.showChaseReq = false});
+      {super.key,
+      required this.isHomeTeamBatting,
+      this.showChaseRequirement = false});
 
   @override
   Widget build(BuildContext context) {
@@ -37,26 +38,44 @@ class PlayersInActionPane extends StatelessWidget {
       Expanded(
         child: Column(
           children: [
-            if (showChaseReq)
+            if (showChaseRequirement)
               Row(
                 children: [
                   Expanded(
-                      child: _wChaseRequire(
-                          context: context,
-                          color: inningsManager.innings.battingTeam.color,
-                          heading: Strings.scoreRequire,
-                          value: inningsManager.innings.requiredRuns)),
+                    child: _wRunRateBox(
+                        context: context,
+                        color: inningsManager.innings.battingTeam.color,
+                        heading: Strings.scoreRequire,
+                        value: inningsManager.innings.requiredRuns.toString()),
+                  ),
                   Expanded(
-                      child: _wChaseRequire(
+                      child: _wRunRateBox(
                           context: context,
                           color: inningsManager.innings.bowlingTeam.color,
                           heading: Strings.scoreBalls,
-                          value: inningsManager.innings.ballsLeft)),
+                          value: inningsManager.innings.ballsLeft.toString())),
                 ],
               )
             else
-              // Height of Players on Pitch, got this on FlutterDevTools
-              const SizedBox(height: 72),
+              Row(
+                children: [
+                  Expanded(
+                    child: _wRunRateBox(
+                        context: context,
+                        color: inningsManager.innings.battingTeam.color,
+                        heading: Strings.scoreCRR,
+                        value: inningsManager.innings.currentRunRate
+                            .toStringAsFixed(2)),
+                  ),
+                  Expanded(
+                      child: _wRunRateBox(
+                          context: context,
+                          color: inningsManager.innings.battingTeam.color,
+                          heading: Strings.scoreProjected,
+                          value:
+                              inningsManager.innings.projectedRuns.toString())),
+                ],
+              ),
             _wBowlerOnPitch(context),
           ],
         ),
@@ -89,24 +108,28 @@ class PlayersInActionPane extends StatelessWidget {
     );
   }
 
-  Card _wChaseRequire({
+  Card _wRunRateBox({
     required BuildContext context,
     required Color color,
     required String heading,
-    required int value,
+    required String value,
   }) =>
       Card(
-        elevation: 4,
+        elevation: 2,
         color: color.withOpacity(0.3),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              Text(heading.toUpperCase(),
-                  style: Theme.of(context).textTheme.bodySmall),
+              FittedBox(
+                child: Text(
+                  heading.toUpperCase(),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
-                value.toString(),
+                value,
                 style: Theme.of(context).textTheme.titleLarge,
               )
             ],
@@ -205,6 +228,7 @@ class PlayerScoreTile extends StatelessWidget {
           title: Text(
             player!.name.toUpperCase(),
             style: Theme.of(context).textTheme.labelMedium,
+            maxLines: 1,
           ),
           subtitle: Text(
             score,

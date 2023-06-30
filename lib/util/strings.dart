@@ -26,6 +26,11 @@ class Strings {
   static const String scoreRunsPerOver = "RPO";
   static const String scoreRequire = "Require";
   static const String scoreBalls = "Balls";
+  static const String scoreCRR = "CRR";
+  static const String scoreCurrentRunRate = "Current Run Rate";
+  static const String scoreRRR = "RRR";
+  static const String scoreRequiredRunRate = "Required Run Rate";
+  static const String scoreProjected = "Projected";
 
   // static const String scoreWinByWickets = " wickets with ";
   // static const String scoreWinByWicketSingle = "wicket with";

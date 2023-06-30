@@ -45,7 +45,7 @@ class MatchInterface extends StatelessWidget {
           PlayersInActionPane(
             isHomeTeamBatting:
                 match.currentInnings.battingTeam == match.homeTeam,
-            showChaseReq: match.matchState == MatchState.secondInnings,
+            showChaseRequirement: match.matchState == MatchState.secondInnings,
           ),
           const RecentBallsPane(),
           const SizedBox(height: 16),

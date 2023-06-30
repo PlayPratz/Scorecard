@@ -153,7 +153,10 @@ class MatchTile extends StatelessWidget {
         ],
       );
     } else {
-      return const Text(Strings.scoreYetToBat);
+      return Align(
+          alignment:
+              isRightAligned ? Alignment.centerRight : Alignment.centerLeft,
+          child: const Text(Strings.scoreYetToBat));
     }
   }
 

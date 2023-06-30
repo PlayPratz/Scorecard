@@ -64,7 +64,7 @@ class Strings {
   }
 
   static String getBowlerInningsScore(BowlingStats bowlingStats) {
-    return "${bowlingStats.wicketsTaken}-${bowlingStats.runsConceded} in ${getBowlerInningsScore(bowlingStats)}";
+    return "${bowlingStats.wicketsTaken}-${bowlingStats.runsConceded} in ${getBowlerOversBowled(bowlingStats)}";
   }
 
   static String getBowlerOversBowled(BowlingStats bowlingStats) {

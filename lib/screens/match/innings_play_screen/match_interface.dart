@@ -58,9 +58,9 @@ class MatchInterface extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          ExtraSelector(),
+          const ExtraSelector(),
           const SizedBox(height: 16),
-          RunSelector(),
+          const RunSelector(),
           const SizedBox(height: 16),
           Consumer<InningsManager>(
             builder: (context, inningsManager, child) => Row(

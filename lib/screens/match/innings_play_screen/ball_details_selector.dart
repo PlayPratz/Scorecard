@@ -3,145 +3,155 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/styles/color_styles.dart';
-import 'package:scorecard/util/helpers.dart';
 import 'package:scorecard/util/strings.dart';
 
+const _borderColor = Colors.white24;
+
 class RunSelector extends StatelessWidget {
-  RunSelector({super.key});
-  final _runSelection = _RunSelection();
+  const RunSelector({super.key});
+
+  static const List<int> runList = [0, 1, 2, 3, 4, 5, 6];
 
   @override
   Widget build(BuildContext context) {
     final selectedRuns = context
         .select<InningsManager, int>((inningsManager) => inningsManager.runs);
-    _runSelection._selectedRuns = selectedRuns;
-    return ToggleButtons(
-      onPressed: (int index) {
-        // The button that is tapped is set to true, and the others to false.
-        _runSelection.runIndex = index;
-        context.read<InningsManager>().setRuns(_runSelection.runs);
-      },
-      borderRadius: const BorderRadius.all(Radius.circular(8)),
-      fillColor: _runSelection.runs == 4
-          ? ColorStyles.ballFour
-          : _runSelection.runs == 6
-              ? ColorStyles.ballSix
-              : ColorStyles.highlight,
-      isSelected: _runSelection.booleans,
-      children: _runSelection.widgets,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: runList.map((run) {
+        final inningsManager = context.read<InningsManager>();
+        final battingTeam = inningsManager.innings.battingTeam;
+
+        late final Color foregroundColor;
+        late final Color backgroundColor;
+
+        if (selectedRuns == run) {
+          foregroundColor = Colors.white;
+          if (selectedRuns == 4) {
+            backgroundColor = ColorStyles.ballFour;
+          } else if (selectedRuns == 6) {
+            backgroundColor = ColorStyles.ballSix;
+          } else {
+            backgroundColor = battingTeam.color;
+          }
+        } else if (run == 4) {
+          foregroundColor = ColorStyles.ballFour;
+          backgroundColor = ColorStyles.background;
+        } else if (run == 6) {
+          foregroundColor = ColorStyles.ballSix;
+          backgroundColor = ColorStyles.background;
+        } else {
+          foregroundColor = Colors.white;
+          backgroundColor = ColorStyles.background;
+        }
+        return GestureDetector(
+          onTap: () => inningsManager.setRuns(run),
+          child: CircleAvatar(
+            radius: 20.5,
+            backgroundColor: _borderColor,
+            child: CircleAvatar(
+              radius: 20, // default
+              foregroundColor: foregroundColor,
+              backgroundColor: backgroundColor,
+              child: Text(Strings.getRunText(run)),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
 
-class _RunSelection {
-  static const List<int> runList = [0, 1, 2, 3, 4, 5, 6];
-  int _selectedRuns = 0;
-
-  List<bool> get booleans =>
-      runList.map((run) => run == _selectedRuns).toList();
-
-  List<Widget> get widgets => runList.map((run) {
-        Color color = Colors.white;
-        if (_selectedRuns == run) {
-          if (_selectedRuns == 4 || _selectedRuns == 6) {
-            color = Colors.white;
-          } else {
-            color = Colors.black;
-          }
-        } else if (run == 4) {
-          color = ColorStyles.ballFour;
-        } else if (run == 6) {
-          color = ColorStyles.ballSix;
-        }
-        return Text(
-          Strings.getRunText(run),
-          style: TextStyle(color: color),
-        );
-      }).toList();
-
-  int get runs => _selectedRuns;
-  set runIndex(int index) => _selectedRuns = runList[index];
-
-  void clear() {
-    _selectedRuns = 0;
-  }
-}
-
 class ExtraSelector extends StatelessWidget {
-  ExtraSelector({super.key});
-
-  final SingleSelectionToggle<BowlingExtra> _bowlingExtraSelection =
-      SingleSelectionToggle.withWidgetifier(
-          dataList: BowlingExtra.values,
-          widgetifier: (bowlingExtra, selection) {
-            Color color = ColorStyles.ballWide;
-            if (bowlingExtra == selection) {
-              color = Colors.black;
-            } else if (bowlingExtra == BowlingExtra.noBall) {
-              color = ColorStyles.ballNoBall;
-            }
-            return Text(
-              Strings.getBowlingExtra(bowlingExtra),
-              style: TextStyle(color: color),
-            );
-          });
-  final SingleSelectionToggle<BattingExtra> _battingExtraSelection =
-      SingleSelectionToggle(
-    dataList: BattingExtra.values,
-    stringifier: Strings.getBattingExtra,
-  );
+  const ExtraSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final battingExtra = context.select<InningsManager, BattingExtra?>(
-        (inningsManager) => inningsManager.battingExtra);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _wBattingExtraSelection(context),
+        _wBowlingExtraSelection(context),
+      ],
+    );
+  }
 
-    _battingExtraSelection.selection = battingExtra;
+  Widget _wBattingExtraSelection(BuildContext context) {
+    return Row(
+        children: BattingExtra.values.map((battingExtra) {
+      final inningsManager = context.read<InningsManager>();
+      final selectedBattingExtra =
+          context.select<InningsManager, BattingExtra?>(
+              (inningsManager) => inningsManager.battingExtra);
 
-    final bowlingExtra = context.select<InningsManager, BowlingExtra?>(
-        (inningsManager) => inningsManager.bowlingExtra);
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: FilterChip(
+            showCheckmark: false,
+            padding: const EdgeInsets.all(0),
+            side: const BorderSide(color: _borderColor, width: 0.5),
+            // selectedColor: backgroundColor,
+            label: Text(Strings.getBattingExtra(battingExtra),
+                style: Theme.of(context).textTheme.labelMedium
+                // ?.merge(TextStyle(color: foregroundColor)),
+                ),
+            selected: battingExtra == selectedBattingExtra,
+            onSelected: (isSelected) {
+              if (isSelected) {
+                inningsManager.setBattingExtra(battingExtra);
+              } else {
+                inningsManager.setBattingExtra(null);
+              }
+            }),
+      );
+    }).toList());
+  }
 
-    _bowlingExtraSelection.selection = bowlingExtra;
-    return Row(children: [
-      ToggleButtons(
-          onPressed: (index) {
-            if (index == _battingExtraSelection.index) {
-              _battingExtraSelection.clear();
-            } else {
-              _battingExtraSelection.index = index;
-            }
-            context
-                .read<InningsManager>()
-                .setBattingExtra(_battingExtraSelection.selection);
-          },
-          children: _battingExtraSelection.widgets,
-          isSelected: _battingExtraSelection.booleans,
-          constraints: const BoxConstraints(
-            minHeight: 40.0,
-            minWidth: 80.0,
-          )),
-      const Spacer(),
-      ToggleButtons(
-          onPressed: (index) {
-            if (index == _bowlingExtraSelection.index) {
-              _bowlingExtraSelection.clear();
-            } else {
-              _bowlingExtraSelection.index = index;
-            }
-            context
-                .read<InningsManager>()
-                .setBowlingExtra(_bowlingExtraSelection.selection);
-          },
-          children: _bowlingExtraSelection.widgets,
-          isSelected: _bowlingExtraSelection.booleans,
-          fillColor: _bowlingExtraSelection.selection != null
-              ? ColorStyles.getBowlingExtraColour(
-                  _bowlingExtraSelection.selection!)
-              : null,
-          constraints: const BoxConstraints(
-            minHeight: 40.0,
-            minWidth: 80.0,
-          )),
-    ]);
+  Widget _wBowlingExtraSelection(BuildContext context) {
+    return Row(
+        children: BowlingExtra.values.map((bowlingExtra) {
+      final inningsManager = context.read<InningsManager>();
+      final selectedBowlingExtra =
+          context.select<InningsManager, BowlingExtra?>(
+              (inningsManager) => inningsManager.bowlingExtra);
+      late final Color? backgroundColor;
+      late final Color foregroundColor;
+
+      if (bowlingExtra == selectedBowlingExtra) {
+        foregroundColor = ColorStyles.background;
+        if (bowlingExtra == BowlingExtra.noBall) {
+          backgroundColor = ColorStyles.ballNoBall;
+        } else {
+          // Wide
+          backgroundColor = Colors.white;
+        }
+      } else {
+        backgroundColor = ColorStyles.background;
+        foregroundColor = Colors.white;
+      }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: FilterChip(
+            // showCheckmark: false,
+            selectedColor: backgroundColor,
+            side: const BorderSide(color: _borderColor, width: 0.5),
+            label: Text(
+              Strings.getBowlingExtra(bowlingExtra),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.merge(TextStyle(color: foregroundColor)),
+            ),
+            selected: bowlingExtra == selectedBowlingExtra,
+            onSelected: (isSelected) {
+              if (isSelected) {
+                inningsManager.setBowlingExtra(bowlingExtra);
+              } else {
+                inningsManager.setBowlingExtra(null);
+              }
+            }),
+      );
+    }).toList());
   }
 }

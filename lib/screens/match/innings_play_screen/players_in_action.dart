@@ -23,12 +23,16 @@ class PlayersInActionPane extends StatelessWidget {
 
     List<Widget> playersInActionRow = [
       Expanded(
-        child: Column(children: [
-          _wBatterOnPitch(context, inningsManager, inningsManager.batter1!),
-          if (inningsManager.batter2 != null &&
-              inningsManager.batter2!.batter != inningsManager.batter1!.batter)
-            _wBatterOnPitch(context, inningsManager, inningsManager.batter2!),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _wBatterOnPitch(context, inningsManager, inningsManager.batter1!),
+            if (inningsManager.batter2 != null &&
+                inningsManager.batter2!.batter !=
+                    inningsManager.batter1!.batter)
+              _wBatterOnPitch(context, inningsManager, inningsManager.batter2!),
+          ],
+        ),
       ),
       Expanded(
         child: Column(
@@ -49,7 +53,6 @@ class PlayersInActionPane extends StatelessWidget {
             ),
             if (showChaseReq)
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                       child: _wChaseRequire(
@@ -86,7 +89,6 @@ class PlayersInActionPane extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
               children: isHomeTeamBatting
                   ? playersInActionRow
                   : playersInActionRow.reversed.toList(),
@@ -97,11 +99,12 @@ class PlayersInActionPane extends StatelessWidget {
     );
   }
 
-  Card _wChaseRequire(
-          {required Color color,
-          required String heading,
-          required int value,
-          required BuildContext context}) =>
+  Card _wChaseRequire({
+    required BuildContext context,
+    required Color color,
+    required String heading,
+    required int value,
+  }) =>
       Card(
         elevation: 4,
         color: color.withOpacity(0.3),

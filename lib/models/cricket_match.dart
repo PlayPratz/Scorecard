@@ -17,11 +17,14 @@ class CricketMatch {
   bool _isHomeInningsFirst = true;
 
   Team get nextTeamToBat {
-    if (inningsList.isEmpty && _isHomeInningsFirst) {
-      return homeTeam;
-    } else if (!_isHomeInningsFirst) {
-      return awayTeam;
+    if (inningsList.isEmpty) {
+      if (_isHomeInningsFirst) {
+        return homeTeam;
+      } else {
+        return awayTeam;
+      }
     }
+    // TODO: Fix this for unlimited overs
     return currentInnings.bowlingTeam;
   }
 

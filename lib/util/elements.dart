@@ -142,4 +142,18 @@ class Elements {
     size: 12,
     color: Colors.transparent,
   );
+
+  static void showSnackBar(BuildContext context, {required String text}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text, style: const TextStyle(color: Colors.white)),
+        backgroundColor: ColorStyles.card,
+        showCloseIcon: true,
+        closeIconColor: Colors.white,
+        dismissDirection: DismissDirection.horizontal,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 }

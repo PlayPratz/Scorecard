@@ -82,20 +82,8 @@ class MatchInterface extends StatelessWidget {
         width: 100,
         height: 56,
         child: ElevatedButton.icon(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(Strings.matchScreenEndInningsLongPressToEnd,
-                    style: TextStyle(color: Colors.white)),
-                backgroundColor: ColorStyles.card,
-                showCloseIcon: true,
-                closeIconColor: Colors.white,
-                dismissDirection: DismissDirection.horizontal,
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
+          onPressed: () => Elements.showSnackBar(context,
+              text: Strings.matchScreenEndInningsLongPressToEnd),
           onLongPress: () => _endInnings(context),
           icon: const Icon(Icons.cancel),
           label: const Text(Strings.matchScreenEndInningsShort),

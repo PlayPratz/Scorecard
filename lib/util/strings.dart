@@ -23,11 +23,9 @@ class Strings {
   static const String scoreMatchNotStarted = "This match hasn't started";
   static const String scoreAt = "\nat ";
   static const String scoreBallSingle = " ball";
-  static const String scoreRunsPerOver = " RPO";
-  static const String scoreRunsPerOverSingle = " RPO";
-  static const String scoreWillScore = " will score ";
-  static const String scoreRunsAtCurrentRate = " runs at ";
-  static const String scoreOvers = " overs";
+  static const String scoreRunsPerOver = "RPO";
+  static const String scoreRequire = "Require";
+  static const String scoreBalls = "Balls";
 
   // static const String scoreWinByWickets = " wickets with ";
   // static const String scoreWinByWicketSingle = "wicket with";

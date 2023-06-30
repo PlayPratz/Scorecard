@@ -79,7 +79,7 @@ class StatisticsScreen extends StatelessWidget {
         .map(
           (battingStats) => Column(
             children: [
-              BatterInningsScore(battingStats: battingStats),
+              // BatterInningsScore(battingStats: battingStats),
               const SizedBox(height: 2),
             ],
           ),

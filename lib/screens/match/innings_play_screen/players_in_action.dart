@@ -26,31 +26,17 @@ class PlayersInActionPane extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _wBatterOnPitch(context, inningsManager, inningsManager.batter1!),
+            _wBatterOnPitch(context, inningsManager.batter1!),
             if (inningsManager.batter2 != null &&
                 inningsManager.batter2!.batter !=
                     inningsManager.batter1!.batter)
-              _wBatterOnPitch(context, inningsManager, inningsManager.batter2!),
+              _wBatterOnPitch(context, inningsManager.batter2!),
           ],
         ),
       ),
       Expanded(
         child: Column(
           children: [
-            PlayerScoreTile(
-              player: inningsManager.bowler!.bowler,
-              teamColor: inningsManager.innings.bowlingTeam.color,
-              score: Strings.getBowlerInningsScore(inningsManager.bowler!),
-              onLongPress: () async {
-                if (inningsManager.canChangeBowler) {
-                  final player = await getPlayerFromList(
-                      inningsManager.innings.bowlingTeam.squad, context);
-                  if (player != null) {
-                    inningsManager.setBowler(player, isMidOverChange: true);
-                  }
-                }
-              },
-            ),
             if (showChaseReq)
               Row(
                 children: [
@@ -58,16 +44,20 @@ class PlayersInActionPane extends StatelessWidget {
                       child: _wChaseRequire(
                           context: context,
                           color: inningsManager.innings.battingTeam.color,
-                          heading: "Require",
+                          heading: Strings.scoreRequire,
                           value: inningsManager.innings.requiredRuns)),
                   Expanded(
                       child: _wChaseRequire(
                           context: context,
                           color: inningsManager.innings.bowlingTeam.color,
-                          heading: "Balls",
+                          heading: Strings.scoreBalls,
                           value: inningsManager.innings.ballsLeft)),
                 ],
               )
+            else
+              // Height of Players on Pitch, got this on FlutterDevTools
+              const SizedBox(height: 72),
+            _wBowlerOnPitch(context),
           ],
         ),
       ),
@@ -124,8 +114,8 @@ class PlayersInActionPane extends StatelessWidget {
         ),
       );
 
-  Widget _wBatterOnPitch(BuildContext context, InningsManager inningsManager,
-      BatterInnings batterInnings) {
+  Widget _wBatterOnPitch(BuildContext context, BatterInnings batterInnings) {
+    final inningsManager = context.read<InningsManager>();
     return PlayerScoreTile(
       player: batterInnings.batter,
       score: Strings.getBatterInningsScore(batterInnings),
@@ -135,6 +125,24 @@ class PlayersInActionPane extends StatelessWidget {
       onTap: () => inningsManager.setStrike(batterInnings),
       onLongPress: () => chooseBatter(
           context, inningsManager..batterToReplace = batterInnings),
+    );
+  }
+
+  Widget _wBowlerOnPitch(BuildContext context) {
+    final inningsManager = context.read<InningsManager>();
+    return PlayerScoreTile(
+      player: inningsManager.bowler!.bowler,
+      teamColor: inningsManager.innings.bowlingTeam.color,
+      score: Strings.getBowlerInningsScore(inningsManager.bowler!),
+      onLongPress: () async {
+        if (inningsManager.canChangeBowler) {
+          final player = await getPlayerFromList(
+              inningsManager.innings.bowlingTeam.squad, context);
+          if (player != null) {
+            inningsManager.setBowler(player, isMidOverChange: true);
+          }
+        }
+      },
     );
   }
 }

@@ -196,20 +196,19 @@ This is where the magic happens.
 
 On the top, you can see the **Score Summary** in the form of two tiles representing the _Home Team_ and _Away Team_. Depending on which innings is being played, the score `Runs/Wickets` is displayed for the batting team and the overs bowled `Over.Ball` is displayed for the bowling team. Tapping on the Score Summary will take you to the match's [scorecard](#match-scorecard).
 
-###### Run Rate Pane
-
-Next, we have the **Run Rate Pane**, which:
-
-1. For the first innings shows the _Run Rate_ and the _Projected Score_
-2. For the second innings shows the _Runs Required_, _Balls Left_ and the _Required Run Rate_. The _Required Run Rate_ may be omitted when very few balls are left.
 
 ###### Players in Action
 
-Thirdly, we have the **Players In Action** pane, which represents the two batters on the pitch and the bowler who is currently bowling. The two batters are represented as tiles laid out vertically, directly below their team's tile as in the Score Summary header. Similarly, the bowler's tile is placed vertically below the fielding team's tile. In other words, players are of the _Home Team_ are always on the _left_ while players of the _Away Team_ are always on the right, regardless of which team is batting in the ongoing innings.
+Next, we have the **Players In Action** pane, which represents the two batters on the pitch and the bowler who is currently bowling. The two batters are represented as tiles laid out vertically, directly below their team's tile as in the Score Summary header. Similarly, the bowler's tile is placed vertically below the fielding team's tile. In other words, players are of the _Home Team_ are always on the _left_ while players of the _Away Team_ are always on the right, regardless of which team is batting in the ongoing innings.
 
 The Batter Tiles serve an important purpose — selecting the player who is on strike. Usually, this is handled automatically — strike is rotated for odd number of runs and at the end of an over. However, there are possibilities of rules being altered and a '1D' or 3D' being added, in which case the strike will have to be changed manually. The score of each batter is displayed on the tile. For more details on the score, you can always open the [Scorecard](#match-scorecard).
 
 Each of these tiles Player Tiles can be long-pressed to replace the player. You will be taken to a list of players to choose a replacement from. This comes in handy if either a batter or the bowler (or all of them!) has to be replaced, like in the case of an injury. You must note that replacing a bowler will NOT skip or restart the over. Just like international matches, the over will continue to be bowled by a different bowler. If you want to restart the over, use the *Undo* button found in the [Submit Input](#submit-input) pane.
+
+But PlayPratz, you might wonder, there is another block of information in this pane! You're right — that's the **Run Rate Box**, which:
+
+1. For the first innings shows the _Current Run Rate (CRR)_ and the _Projected Score_
+2. For the second innings shows the _Runs Required_ and _Balls Left_. I'm planning to display the _Current_ and _Required Run Rate (RRR)_ as well; I just haven't figured out where to put it.
 
 ###### Recent Balls
 

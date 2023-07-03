@@ -105,7 +105,7 @@ class StatisticsScreen extends StatelessWidget {
     final Map<Player, BattingStats> battingStatisticsMap = {};
     for (final match in matchList) {
       for (final innings in match.inningsList) {
-        for (final batInn in innings.batterInnings) {
+        for (final batInn in innings.batterInningsList) {
           if (!battingStatisticsMap.containsKey(batInn.batter)) {
             battingStatisticsMap[batInn.batter] =
                 BattingStatsSimple(batInn.batter, balls: []);
@@ -126,7 +126,7 @@ class StatisticsScreen extends StatelessWidget {
     final Map<Player, BowlingStats> bowlingStatisticsMap = {};
     for (final match in matchList) {
       for (final innings in match.inningsList) {
-        for (final bowlInn in innings.bowlerInnings) {
+        for (final bowlInn in innings.bowlerInningsList) {
           if (!bowlingStatisticsMap.containsKey(bowlInn.bowler)) {
             bowlingStatisticsMap[bowlInn.bowler] =
                 BowlingStatsSimple(bowlInn.bowler, balls: []);

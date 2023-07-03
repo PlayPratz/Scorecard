@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:scorecard/models/statistics.dart';
+import 'package:scorecard/models/wicket.dart';
 
 import 'player.dart';
 import '../util/constants.dart';
@@ -15,32 +16,39 @@ class Innings {
   int? target;
   final int maxOvers;
 
-  Innings(
-      {required this.battingTeam,
-      required this.bowlingTeam,
-      required this.maxOvers})
-      : target = null;
+  Innings({
+    required this.battingTeam,
+    required this.bowlingTeam,
+    required this.maxOvers,
+    // this.bowlerInnings = const [],
+  }) : target = null;
 
-  Innings.target(
-      {required this.battingTeam,
-      required this.bowlingTeam,
-      required this.target,
-      required this.maxOvers});
+  Innings.target({
+    required this.battingTeam,
+    required this.bowlingTeam,
+    required this.target,
+    required this.maxOvers,
+    // this.bowlerInnings = const [],
+  });
 
   final List<Ball> balls = [];
 
   // OPERATIONS
 
-  void pushBall(Ball ball) {
+  void playBall(Ball ball) {
     balls.add(ball);
   }
 
-  Ball? popBall() {
-    if (balls.isNotEmpty) {
-      return balls.removeLast();
+  Ball? unPlayBall() {
+    if (balls.isEmpty) {
+      return null;
     }
-    return null;
+    final ball = balls.removeLast();
+    return ball;
   }
+
+  bool get isInitialized => batterInnings.isNotEmpty;
+  // && bowlerInnings.isNotEmpty; TODO
 
   // Score
 
@@ -62,47 +70,87 @@ class Innings {
 
   // Bowler
 
-  Iterable<BowlerInnings> get bowlerInnings {
-    final Map<Player, BowlerInnings> bowlerInningsMap = {};
+  // final List<BowlerInnings> bowlerInnings;
+  final Map<Player, BowlerInnings> bowlerInnings = {};
+  List<BowlerInnings> get bowlerInningsList => bowlerInnings.values.toList();
 
-    for (final ball in balls) {
-      if (bowlerInningsMap.containsKey(ball.bowler)) {
-        bowlerInningsMap[ball.bowler]!.balls.add(ball);
-      } else {
-        bowlerInningsMap[ball.bowler] =
-            BowlerInnings(ball.bowler, innings: this);
-      }
-    }
-
-    return bowlerInningsMap.values;
+  BowlerInnings addBowler(Player bowler) {
+    final bowlInn = BowlerInnings(bowler, innings: this);
+    bowlerInnings[bowler] = bowlInn; //TODO Check containsKey?
+    return bowlInn;
   }
+
+  BowlerInnings? getBowlerInnings(Player bowler) {
+    return bowlerInnings[bowler];
+  }
+
+  void removeBowler(BowlerInnings bowlInn) {
+    bowlerInnings.remove(bowlInn);
+  }
+
+  // Iterable<BowlerInnings> get bowlerInnings {
+  //   final Map<Player, BowlerInnings> bowlerInningsMap = {};
+  //
+  //   for (final ball in balls) {
+  //     if (bowlerInningsMap.containsKey(ball.bowler)) {
+  //       bowlerInningsMap[ball.bowler]!.balls.add(ball);
+  //     } else {
+  //       bowlerInningsMap[ball.bowler] =
+  //           BowlerInnings(ball.bowler, innings: this);
+  //     }
+  //   }
+  //
+  //   return bowlerInningsMap.values;
+  // }
 
   // Batter
 
-  Iterable<BatterInnings> get batterInnings {
-    final batterInnings = <BatterInnings>[];
-    for (final ball in balls) {
-      final batterInning = batterInnings.lastWhere(
-        (batInn) => batInn.batter == ball.batter //&& !batInn.isOut
-        ,
-        orElse: () {
-          final batInn = BatterInnings(ball.batter, innings: this);
-          batterInnings.add(batInn);
-          return batInn;
-        },
-      );
-      batterInning.play(ball);
-    }
+  // final List<BatterInnings> batterInnings = [];
+  final Map<Player, BatterInnings> batterInnings = {};
+  List<BatterInnings> get batterInningsList => batterInnings.values.toList();
 
-    return batterInnings;
+  Iterable<BatterInnings> get battersOnPitch =>
+      batterInnings.values.where((batInn) => !batInn.isOut).take(2);
+
+  BatterInnings addBatter(Player batter) {
+    final batInn = BatterInnings(batter, innings: this);
+    batterInnings[batter] = batInn; //TODO check containsKey?
+    return batInn;
   }
+
+  BatterInnings? getBatterInnings(Player batter) {
+    return batterInnings[batter];
+  }
+
+  void removeBatter(BatterInnings batInn) {
+    batterInnings.remove(batInn);
+  }
+
+  final fallOfWickets = <Ball, FallOfWicket>{};
+
+  // Iterable<BatterInnings> get batterInnings {
+  //   final batterInnings = <BatterInnings>[];
+  //   for (final ball in balls) {
+  //     final batterInning = batterInnings.lastWhere(
+  //       (batInn) => batInn.batter == ball.batter //&& !batInn.isOut
+  //       ,
+  //       orElse: () {
+  //         final batInn = BatterInnings(ball.batter, innings: this);
+  //         batterInnings.add(batInn);
+  //         return batInn;
+  //       },
+  //     );
+  //     batterInning.play(ball);
+  //   }
+  //
+  //   return batterInnings;
+  // }
 }
 
 class BatterInnings extends BattingStats {
   Innings innings;
   BatterInnings(super.batter, {required this.innings});
-
-  // Wicket? wicket;
+  Wicket? wicket;
 
   @override
   List<Ball> get balls =>
@@ -110,11 +158,23 @@ class BatterInnings extends BattingStats {
 
   bool get isOut => wicket != null;
 
+  // bool isRetired = false;
+  // bool get isPlaying => !isOut && !isRetired;
+
   void play(Ball ball) {
-    balls.add(ball);
-    // if (ball.isWicket && ball.wicket?.batter == batter) {
-    //   wicket = ball.wicket;
-    // }
+    if (ball.isWicket && ball.wicket!.batter == batter) {
+      wicket = ball.wicket;
+    }
+  }
+
+  void undo(Ball ball) {
+    if (ball.isWicket && ball.wicket!.batter == batter) {
+      wicket = null;
+    }
+  }
+
+  void retire() {
+    wicket = Wicket.retired(batter: batter);
   }
 }
 
@@ -126,4 +186,13 @@ class BowlerInnings extends BowlingStats {
   @override
   List<Ball> get balls =>
       innings.balls.where((ball) => ball.bowler == bowler).toList();
+}
+
+class FallOfWicket {
+  Ball ball;
+  BatterInnings inBatter;
+  BatterInnings outBatter;
+
+  FallOfWicket(
+      {required this.ball, required this.inBatter, required this.outBatter});
 }

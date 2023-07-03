@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/util/strings.dart';
 import '../../models/cricket_match.dart';
@@ -23,7 +22,7 @@ class InningsInitScreen extends StatefulWidget {
 }
 
 class _InningsInitScreenState extends State<InningsInitScreen> {
-  Player? _batter;
+  Player? _batter1;
   Player? _batter2;
   Player? _bowler;
 
@@ -37,8 +36,8 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
           children: [
             const Spacer(),
             const Text(Strings.initInningsStriker),
-            _wBatterSelection(_batter, ((p) {
-              _batter = p;
+            _wBatterSelection(_batter1, ((p) {
+              _batter1 = p;
             })),
             const Spacer(),
             const Text(Strings.initInningsNonStriker),
@@ -95,22 +94,20 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
       onPressed: _canInitInnings
           ? () {
               widget.match.progressMatch();
-              final batter =
-                  BatterInnings(_batter!, innings: widget.match.currentInnings);
-              final nsbatter = _batter2 == null
-                  ? null
-                  : BatterInnings(_batter2!,
-                      innings: widget.match.currentInnings);
-              final bowler =
-                  BowlerInnings(_bowler!, innings: widget.match.currentInnings);
+              // final batter =
+              //     BatterInnings(_batter!, innings: widget.match.currentInnings);
+              // final nsbatter = _batter2 == null
+              //     ? null
+              //     : BatterInnings(_batter2!,
+              //         innings: widget.match.currentInnings);
+              widget.match.currentInnings.addBatter(_batter1!);
+              widget.match.currentInnings.addBatter(_batter2!);
+              widget.match.currentInnings.addBowler(_bowler!);
+
               Utils.goToReplacementPage(
                   ChangeNotifierProvider(
-                    create: (context) => InningsManager(
-                      widget.match.currentInnings,
-                      batter1: batter,
-                      batter2: nsbatter,
-                      bowler: bowler,
-                    ),
+                    create: (context) =>
+                        InningsManager(widget.match.currentInnings),
                     child: MatchInterface(match: widget.match),
                   ),
                   context);
@@ -136,5 +133,5 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
         context);
   }
 
-  bool get _canInitInnings => _batter != null && _bowler != null;
+  bool get _canInitInnings => _batter1 != null && _bowler != null;
 }

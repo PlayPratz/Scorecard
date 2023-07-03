@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_in_action.dart';
@@ -11,7 +13,7 @@ import 'package:scorecard/util/utils.dart';
 
 class BatterPicker extends StatelessWidget {
   final List<Player> squad;
-  final Player batterToReplace;
+  final BatterInnings batterToReplace;
   final Wicket? wicket;
   const BatterPicker({
     super.key,
@@ -31,9 +33,10 @@ class BatterPicker extends StatelessWidget {
             flex: 2,
             child: SeparatedWidgetPair(
               top: PlayerScoreTile.wicket(
-                player: batterToReplace,
-                score:
-                    wicket != null ? Strings.getWicketDescription(wicket) : "",
+                player: batterToReplace.batter,
+                score: wicket != null
+                    ? Strings.getWicketDescription(wicket)
+                    : "null",
               ),
               bottom: Expanded(
                 child: PlayerList(
@@ -43,18 +46,19 @@ class BatterPicker extends StatelessWidget {
               ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 64),
         ],
       ),
     );
   }
 }
 
-void chooseBatter(BuildContext context, InningsManager inningsManager) async {
+void chooseBatter(BuildContext context, BatterInnings batterToReplace) async {
+  final inningsManager = context.read<InningsManager>();
   final player = await Utils.goToPage(
     BatterPicker(
       squad: inningsManager.innings.battingTeam.squad,
-      batterToReplace: inningsManager.batterToReplace!.batter,
+      batterToReplace: batterToReplace,
       wicket: inningsManager.wicket,
     ),
     context,
@@ -63,7 +67,7 @@ void chooseBatter(BuildContext context, InningsManager inningsManager) async {
   if (player == null) {
     return;
   }
-  inningsManager.addBatter(player);
+  inningsManager.addBatter(inBatter: player, outBatter: batterToReplace);
 }
 
 void chooseBowler(BuildContext context, InningsManager inningsManager) async {

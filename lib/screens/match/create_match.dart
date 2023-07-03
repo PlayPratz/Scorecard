@@ -126,10 +126,18 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     Team? currentTeam,
     Function(Team) onSelectTeam,
   ) async {
-    Team? chosenTeam = await Utils.goToPage(
+    final Team? chosenTeam = await Utils.goToPage(
       CreateTeamForm(team: currentTeam),
       context,
     );
+    // Team? chosenTeam = await Utils.goToPage(
+    //     TitledPage(
+    //       child: TeamList(
+    //         teamList: StorageService.getAllTeams(),
+    //         onSelectTeam: (team) => Utils.goBack(context, team),
+    //       ),
+    //     ),
+    //     context);
     if (chosenTeam != null) {
       setState(() {
         onSelectTeam(chosenTeam);

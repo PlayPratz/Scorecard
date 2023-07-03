@@ -10,8 +10,6 @@ import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
-final recentBallsViewKey = GlobalKey<AnimatedListState>();
-
 class RecentBallsPane extends StatelessWidget {
   const RecentBallsPane({super.key});
 
@@ -60,11 +58,14 @@ class RecentBallsPane extends StatelessWidget {
                           }
                         }
                         return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: RecentBall(
-                              ball: currentBall,
-                              highlightBallIndex: ballIndexColor,
-                            ));
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                          ),
+                          child: RecentBall(
+                            ball: currentBall,
+                            highlightBallIndex: ballIndexColor,
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -156,6 +157,7 @@ class RecentBall extends StatelessWidget {
       height: 56,
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircleAvatar(
             child: CircleAvatar(

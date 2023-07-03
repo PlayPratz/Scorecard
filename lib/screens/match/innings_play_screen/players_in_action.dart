@@ -146,8 +146,7 @@ class PlayersInActionPane extends StatelessWidget {
       isOnline: batterInnings == inningsManager.striker,
       isOut: batterInnings.isOut,
       onTap: () => inningsManager.setStrike(batterInnings),
-      onLongPress: () => chooseBatter(
-          context, inningsManager..batterToReplace = batterInnings),
+      onLongPress: () => chooseBatter(context, batterInnings),
     );
   }
 

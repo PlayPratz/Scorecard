@@ -100,7 +100,7 @@ class _WicketPickerState extends State<WicketPicker> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> options = [];
+    final List<Widget> options = [const Spacer()];
 
     _isDimissalSelected = false;
     _isBatterSelected = false;
@@ -140,7 +140,7 @@ class _WicketPickerState extends State<WicketPicker> {
     }
 
     options.addAll([
-      const Spacer(),
+      const SizedBox(height: 32),
       Elements.getConfirmButton(
           text: "Add Wicket", onPressed: canAddWicket ? _processWicket : null)
     ]);

@@ -177,20 +177,15 @@ class Strings {
   static const String goToTimeline = "View Timeline";
   static const String innings = "Innings";
 
+  static String getInningsHeaderForIndex(int i) {
+    if (i == 1) return "First Innings";
+    if (i == 2) return "Second Innings";
+    return "Innings";
+  }
+
   // Choose
   static const String choosePlayer = "Choose a Player";
   static const String chooseTeam = "Choose a Team";
-
-  // Wickets
-  static const String chooseWicket = "Choose a Wicket";
-  static const String wicketBowled = "b ";
-  static const String wicketCaught = "c ";
-  static const String wicketCaughtAndBowled = "c&b ";
-  static const String wicketLbw = "lbw ";
-  static const String wicketHitWicket = "hit-wicket ";
-  static const String wicketRunout = "run-out ";
-  static const String wicketStumped = "st ";
-  static const String wicketNotOut = "not out";
 
   // Match Screen
   static const String matchScreenAddWicket = "Add Wicket";
@@ -212,6 +207,7 @@ class Strings {
   static const String matchScreenSuperOver = "Super Over";
   static const String matchScreenSuperOverHint =
       "A quick one-over game to settle the scores.";
+  static const String addBall = "Add Ball";
 
   // Ball Selector
   static const String ballSelectorRuns = "Runs";
@@ -306,40 +302,53 @@ class Strings {
     return run.toString();
   }
 
+  // Wickets
+
+  static const String chooseWicket = "Choose a Wicket";
+
   static String getWicketDescription(Wicket? wicket) {
     if (wicket == null) {
-      return wicketNotOut;
+      // return wicketNotOut;
+      return "not out";
     }
     switch (wicket.dismissal) {
       case Dismissal.runout:
-        return wicketRunout + wicket.fielder!.name;
+        // return wicketRunout + wicket.fielder!.name;
+        return "run-out ${wicket.fielder!.name}";
 
       case Dismissal.caught:
         if (wicket.bowler == wicket.fielder) {
-          return wicketCaughtAndBowled + wicket.fielder!.name;
+          // return wicketCaughtAndBowled + wicket.fielder!.name;
+          return "c&b ${wicket.bowler!.name}";
         }
-        return wicketCaught +
-            wicket.fielder!.name +
-            ' ' +
-            wicketBowled +
-            wicket.bowler!.name;
+        return "c ${wicket.fielder!.name} b ${wicket.bowler!.name}";
 
       case Dismissal.stumped:
-        return wicketStumped +
-            wicket.fielder!.name +
-            ' ' +
-            wicketBowled +
-            wicket.bowler!.name;
+        return "st ${wicket.fielder!.name} b ${wicket.bowler!.name}";
 
       case Dismissal.lbw:
-        return wicketLbw + wicket.bowler!.name;
+        return "lbw ${wicket.bowler!.name}";
 
       case Dismissal.hitWicket:
-        return wicketHitWicket + wicketBowled + wicket.bowler!.name;
+        return "hit-wicket b ${wicket.bowler!.name}";
 
       case Dismissal.bowled:
+        return "b ${wicket.bowler!.name}";
+
+      case Dismissal.retired:
       default:
-        return wicketBowled + wicket.bowler!.name;
+        return "retired";
     }
   }
+
+  /*
+    static const String wicketBowled = "b ";
+    static const String wicketCaught = "c ";
+    static const String wicketCaughtAndBowled = "c&b ";
+    static const String wicketLbw = "lbw ";
+    static const String wicketHitWicket = "hit-wicket ";
+    static const String wicketRunout = "run-out ";
+    static const String wicketStumped = "st ";
+    static const String wicketNotOut = "not out";
+  */
 }

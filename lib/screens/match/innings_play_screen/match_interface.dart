@@ -32,9 +32,6 @@ class MatchInterface extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // RunRatePane(
-          //   showTarget: (match.currentInnings == match.secondInnings),
-          // ),
           Consumer<InningsManager>(
             builder: (context, inningsManager, child) => MatchTile(
               match: match,
@@ -48,7 +45,7 @@ class MatchInterface extends StatelessWidget {
             showChaseRequirement: match.matchState == MatchState.secondInnings,
           ),
           const RecentBallsPane(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -96,14 +93,9 @@ class MatchInterface extends StatelessWidget {
 
   Widget _wUndoButton(InningsManager inningsManager) {
     return ElevatedButton.icon(
-      onPressed: inningsManager.canUndoBall
+      onPressed: inningsManager.canUndo
           ? () {
-              inningsManager.undoBall();
-              recentBallsViewKey.currentState?.removeItem(
-                0,
-                (context, animation) => const SizedBox(),
-                duration: Duration.zero,
-              );
+              inningsManager.undo();
             }
           : null,
       style: ElevatedButton.styleFrom(
@@ -121,17 +113,20 @@ class MatchInterface extends StatelessWidget {
     VoidCallback onPressed;
     switch (inningsManager.nextInput) {
       case NextInput.ball:
-        text = Strings.buttonNext;
+        text = Strings.addBall;
         onPressed = () {
           inningsManager.addBall();
           StorageService.saveMatch(match);
-          recentBallsViewKey.currentState?.insertItem(0);
         };
         canClick = inningsManager.canAddBall;
         break;
       case NextInput.batter:
         text = Strings.matchScreenChooseBatter;
-        onPressed = () => chooseBatter(context, inningsManager);
+        final batterToReplace =
+            inningsManager.batter2 != null && inningsManager.batter2!.isOut
+                ? inningsManager.batter2
+                : inningsManager.batter1;
+        onPressed = () => chooseBatter(context, batterToReplace!);
         break;
       case NextInput.bowler:
         text = Strings.matchScreenChooseBowler;

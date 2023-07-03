@@ -35,23 +35,6 @@ class Scorecard extends StatelessWidget {
     );
   }
 }
-/*
-TODO: The way you have handled the batting scorecard:
-If Ishan and Rohit open
-Ishan gets out before Rohit ever faces a ball
-Virat faces his first ball before Rohit
-
-Then the scorecard will read:
-Ishan
-Virat
-Rohit (if he plays any balls, that is)
-
-Which brings us to the next problem
-A batter who faces 0 balls will never make it to the scorecard
-
-Regards,
-Past PlayPratz
- */
 
 class _ScorecardMatchPanel extends StatelessWidget {
   final CricketMatch match;
@@ -63,7 +46,8 @@ class _ScorecardMatchPanel extends StatelessWidget {
       children: [
         MatchTile(match: match, showSummaryLine: true),
         const SizedBox(height: 16),
-        ...match.inningsList.map((innings) => _InningsPanel(innings)).toList()
+        for (int i = 0; i < match.inningsList.length; i++)
+          _InningsPanel(match.inningsList[i], i + 1)
       ],
     );
   }
@@ -71,7 +55,8 @@ class _ScorecardMatchPanel extends StatelessWidget {
 
 class _InningsPanel extends StatelessWidget {
   final Innings innings;
-  const _InningsPanel(this.innings);
+  final int inningsIndex;
+  const _InningsPanel(this.innings, this.inningsIndex);
 
   @override
   Widget build(BuildContext context) {
@@ -80,14 +65,20 @@ class _InningsPanel extends StatelessWidget {
       elevation: 2,
       surfaceTintColor: innings.battingTeam.color,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
         child: Column(
           children: [
             const SizedBox(height: 16),
             Row(
-              //TODO WTF? It expands if not in a row
               children: [
+                const SizedBox(width: 4),
+                Text(
+                  Strings.getInningsHeaderForIndex(inningsIndex),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const Spacer(),
                 TeamChip(team: innings.battingTeam),
+                const SizedBox(width: 4),
               ],
             ),
             const SizedBox(height: 16),
@@ -136,13 +127,13 @@ class _BattingInningsPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...innings.batterInnings.map((batterInnings) => Column(
+          ...innings.batterInningsList.map((batterInnings) => Column(
                 children: [
                   const Divider(
                     color: Colors.black12,
                     height: 0,
                   ),
-                  BatterInningsScore(battingStats: batterInnings),
+                  BatterInningsScore(batterInnings: batterInnings),
                 ],
               ))
         ],
@@ -156,7 +147,7 @@ Widget _wBowlingPanel(BuildContext context, Innings innings) {
       context,
       Strings.scorecardBowling,
       innings.bowlingTeam.color,
-      innings.bowlerInnings
+      innings.bowlerInningsList
           .map((bowlInn) => BowlerInningsScore(bowlerInnings: bowlInn))
           .toList());
 }
@@ -247,12 +238,14 @@ class BowlerInningsScore extends StatelessWidget {
 }
 
 class BatterInningsScore extends StatelessWidget {
-  final BattingStats battingStats;
-  const BatterInningsScore({super.key, required this.battingStats});
+  final BatterInnings batterInnings;
+  const BatterInningsScore({super.key, required this.batterInnings});
 
   @override
   Widget build(BuildContext context) {
-    final player = battingStats.batter;
+    final player = batterInnings.batter;
+    final strikeRate = batterInnings.strikeRate;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       child: Row(
@@ -271,7 +264,7 @@ class BatterInningsScore extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 2.0),
                   child: Text(
-                    Strings.getWicketDescription(battingStats.wicket),
+                    Strings.getWicketDescription(batterInnings.wicket),
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall
@@ -287,12 +280,12 @@ class BatterInningsScore extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                battingStats.runs.toString(),
+                batterInnings.runs.toString(),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(width: 4),
               Text(
-                battingStats.ballsFaced.toString(),
+                batterInnings.ballsFaced.toString(),
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
@@ -307,7 +300,9 @@ class BatterInningsScore extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  battingStats.strikeRate.toStringAsFixed(2),
+                  strikeRate.isNaN
+                      ? ""
+                      : batterInnings.strikeRate.toStringAsFixed(2),
                   style: Theme.of(context)
                       .textTheme
                       .labelMedium
@@ -319,7 +314,7 @@ class BatterInningsScore extends StatelessWidget {
                     foregroundColor: Colors.white,
                     radius: 15,
                     child: Text(
-                      battingStats.fours.toString(),
+                      batterInnings.fours.toString(),
                       style: Theme.of(context).textTheme.bodyMedium,
                     )),
                 const SizedBox(width: 3),
@@ -327,7 +322,7 @@ class BatterInningsScore extends StatelessWidget {
                     backgroundColor: ColorStyles.ballSix.withOpacity(0.7),
                     radius: 15,
                     foregroundColor: Colors.white,
-                    child: Text(battingStats.sixes.toString(),
+                    child: Text(batterInnings.sixes.toString(),
                         style: Theme.of(context).textTheme.bodyMedium)),
               ],
             ),

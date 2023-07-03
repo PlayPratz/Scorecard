@@ -1,6 +1,5 @@
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/constants.dart';
 
 abstract class BattingStats {
@@ -16,8 +15,6 @@ abstract class BattingStats {
   int get ballsFaced => balls
       .where((ball) => ball.isLegal || ball.bowlingExtra == BowlingExtra.noBall)
       .length;
-
-  Wicket? get wicket => balls.isNotEmpty ? balls.last.wicket : null;
 
   int get wicketsFallen => balls.where((ball) => ball.isWicket).length;
 

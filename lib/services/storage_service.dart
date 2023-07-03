@@ -19,7 +19,7 @@ const String _teamBoxName = "teams";
 const int _teamTypeId = 102;
 
 // const String _matchBoxName = "matches"; //lmao "matchbox"
-const String _matchBoxName = "matches_store"; //lmao "matchbox"
+const String _matchBoxName = "matches"; //lmao "matchbox"
 const int _matchTypeId = 103;
 
 const int _inningsTypeId = 104;
@@ -53,6 +53,8 @@ class StorageService {
     // Hive NoSQL DB
     await Hive.initFlutter();
 
+    // Hive.deleteBoxFromDisk(_matchBoxName); // TODO Remove before commit
+
     // Register Adapters
     Hive.registerAdapter(_PlayerAdapter());
     Hive.registerAdapter(_TeamAdapter());
@@ -71,6 +73,11 @@ class StorageService {
     _matchBox = await Hive.openBox<CricketMatch>(_matchBoxName);
     _linkSuperOvers();
     _seriesBox = await Hive.openBox<Series>(_seriesBoxName);
+
+    // _playerBox.clear();
+    // _teamBox.clear();
+    _matchBox.clear();
+    _seriesBox.clear();
   }
 
   // Player
@@ -82,7 +89,7 @@ class StorageService {
   static Player getPlayerById(String id) {
     Player? player = _playerBox.get(id);
     if (player == null) {
-      throw UnimplementedError("A non-existent Player was accessed: " + id);
+      throw UnimplementedError("A non-existent Player [$id] was accessed.");
     }
     return player;
   }
@@ -117,7 +124,7 @@ class StorageService {
   static Team getTeamById(String id) {
     Team? team = _teamBox.get(id);
     if (team == null) {
-      throw UnimplementedError("A non-existent Team was accessed: " + id);
+      throw UnimplementedError("A non-existent Team [$id] was accessed.");
     }
     return team;
   }

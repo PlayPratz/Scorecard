@@ -9,30 +9,38 @@ class InningsManager with ChangeNotifier {
   final Innings innings;
   InningsManager(
     this.innings, {
-    this.batter1,
-    this.batter2,
-    this.bowler,
     int overIndex = 0,
     int ballIndex = 0,
-  }) : striker = batter1;
+  }) {
+    // Initialize batters
+    if (!innings.isInitialized) {
+      throw "Innings not Initialized"; // TODO make it "not embarrassing"
+    }
+    _initialize();
+  }
 
   factory InningsManager.resume(Innings innings) {
     final lastBall = innings.balls.last;
-    final batterInnings = innings.batterInnings
-        .where((batterInning) => !batterInning.isOut)
-        .toList()
-        .reversed
-        .take(2);
-
     return InningsManager(
       innings,
-      batter1: batterInnings.first,
-      batter2: batterInnings.last,
-      bowler: innings.bowlerInnings.singleWhere(
-          (bowlerInnings) => bowlerInnings.bowler == lastBall.bowler),
       overIndex: lastBall.overIndex,
       ballIndex: lastBall.ballIndex,
     );
+  }
+
+  void _initialize() {
+    final battersOnPitch = innings.battersOnPitch;
+    batter1 = battersOnPitch.first;
+    batter2 = battersOnPitch.last; // Length of battersOnPitch will always be 2
+
+    striker = batter1;
+
+    if (innings.balls.isEmpty) {
+      bowler = innings.bowlerInningsList.last;
+    } else {
+      // TODO is this needed
+      bowler = innings.bowlerInnings[innings.balls.last];
+    }
   }
 
   // Ball
@@ -53,6 +61,7 @@ class InningsManager with ChangeNotifier {
     );
 
     loadBallIntoInnings(ball);
+    loadBallIntoBatterInnings(ball);
 
     if (runs % 2 == 1) _swapStrike();
     _resetSelections();
@@ -61,7 +70,7 @@ class InningsManager with ChangeNotifier {
   }
 
   void loadBallIntoInnings(Ball ball) {
-    // Detemine ball and over index
+    // Determine ball and over index
     int overIndex = 0;
     int ballIndex = 1;
 
@@ -92,71 +101,55 @@ class InningsManager with ChangeNotifier {
     ball.ballIndex = ballIndex;
     ball.overIndex = overIndex;
 
-    innings.pushBall(ball);
-    innings.batterInnings;
+    innings.playBall(ball);
+    innings.batterInningsList;
   }
 
-  bool get canUndoBall => innings.balls.isNotEmpty;
+  void loadBallIntoBatterInnings(Ball ball) {
+    if (striker == null) return;
+    striker!.play(ball);
+  }
 
-  void undoBall() {
-    if (!canUndoBall) return;
+  bool get canUndo => innings.balls.isNotEmpty;
 
-    final ball = innings.popBall()!;
+  void undo() {
+    if (!canUndo) return;
 
-    // Fix Batters
-    if (ball.isWicket) {
-      final battersOnPitch = _onPitchBatters;
+    // Check if any event is associated with the current ball
+    final currentBall = innings.balls.lastOrNull;
+    if (ballToEventMap.containsKey(currentBall)) {
+      final eventList = ballToEventMap[currentBall]!;
+      final lastEvent = eventList.removeLast();
 
-      if (battersOnPitch.any((batInn) => batInn.batter == batter1!.batter)) {
-        // This means that batter1 is still playing
-        batter2 = battersOnPitch
-            .firstWhere((batInn) => batInn.batter != batter1!.batter);
-        if (!battersOnPitch.any((batInn) => batInn.batter == striker!.batter)) {
-          striker = batter2;
-        }
-      } else {
-        // This means that batter2 is still playing
-        batter1 = battersOnPitch
-            .firstWhere((batInn) => batInn.batter != batter2!.batter);
-        if (!battersOnPitch.any((batInn) => batInn.batter == striker!.batter)) {
-          striker = batter1;
-        }
+      if (lastEvent is _AddBatterEvent) {
+        undoBatter(lastEvent);
+      } else if (lastEvent is _ChangeBowlerEvent) {
+        undoBowler(lastEvent);
       }
 
-      // if (ball.batter == batter1!.batter) {
-      //   // batter1 needs to be restored, batter2 is correct
-      //   if (batter2!.batter == battersOnPitch.first.batter) {
-      //     batter1 = _onPitchBatters.last;
-      //   } else {
-      //     batter1 = _onPitchBatters.first;
-      //   }
-      //   // Restore striker
-      //   if (striker != null && striker!.batter == ball.batter) {
-      //     striker = batter1;
-      //   }
-      // } else {
-      //   // batter2 needs to be restored, batter1 is correct
-      //   if (batter1!.batter == battersOnPitch.first.batter) {
-      //     batter2 = _onPitchBatters.last;
-      //   } else {
-      //     batter2 = _onPitchBatters.first;
-      //   }
-      //   // Restore striker
-      //   if (striker != null && striker!.batter == ball.batter) {
-      //     striker = batter2;
-      //   }
-      // }
-    } else {
-      // Restore striker
-      if (batter1!.batter == ball.batter) {
-        striker = batter1;
-      } else {
-        striker = batter2;
+      // Remove the event list if it is empty
+      if (eventList.isEmpty) {
+        ballToEventMap.remove(currentBall);
       }
+
+      _resetSelections();
+      notifyListeners();
+      return;
     }
 
+    final ball = innings.unPlayBall()!;
+
     // Fix Bowler
-    setBowler(ball.bowler, isMidOverChange: true);
+    bowler = innings.bowlerInnings[ball.bowler];
+
+    // Fix Striker
+    if (batter2 != null && batter2!.batter == ball.batter) {
+      striker = batter2;
+    } else {
+      striker = batter1;
+    }
+
+    innings.batterInnings[ball.batter]?.undo(ball);
 
     _resetSelections();
     notifyListeners();
@@ -167,13 +160,6 @@ class InningsManager with ChangeNotifier {
   BatterInnings? batter1;
   BatterInnings? batter2;
   BatterInnings? striker;
-  BatterInnings? batterToReplace;
-
-  Iterable<BatterInnings> get _onPitchBatters => innings.batterInnings
-      .where((batterInning) => !batterInning.isOut)
-      .toList()
-      .reversed
-      .take(2);
 
   BowlerInnings? bowler;
 
@@ -188,25 +174,56 @@ class InningsManager with ChangeNotifier {
     notifyListeners();
   }
 
-  void addBatter(Player batter) {
-    // Check if the batter exists in the Batter Innings list
-    BatterInnings? batterInnings = _getBatterInningsOfPlayer(batter);
-    batterInnings ??= BatterInnings(batter, innings: innings);
-    // New batter
+  // TODO Split all these selections to different Managers (so that Selector doesn't have to be used)
 
-    if (batter1 == batterToReplace) {
-      batter1 = batterInnings;
+  final ballToEventMap = <Ball?, List<_InputEvent>>{};
+
+  void addBatter({required Player inBatter, required BatterInnings outBatter}) {
+    if (!outBatter.isOut) {
+      outBatter.retire();
+    }
+
+    final inBatterInnings = innings.addBatter(inBatter);
+
+    // Save the AddBatterEvent
+    final addBatterEvent =
+        _AddBatterEvent(inBatter: inBatterInnings, outBatter: outBatter);
+
+    ballToEventMap.update(
+        innings.balls.lastOrNull, (eventList) => eventList..add(addBatterEvent),
+        ifAbsent: () => [addBatterEvent]);
+
+    if (innings.balls.isNotEmpty) {
+      innings.fallOfWickets[innings.balls.last] = FallOfWicket(
+          ball: innings.balls.last,
+          inBatter: inBatterInnings,
+          outBatter: outBatter);
+    }
+
+    if (outBatter == batter2) {
+      batter2 = inBatterInnings;
     } else {
-      batter2 = batterInnings;
+      batter1 = inBatterInnings;
     }
-
     if (striker != batter1 && striker != batter2) {
-      striker = batterInnings;
+      striker = inBatterInnings;
     }
-
-    batterToReplace = null;
 
     notifyListeners();
+  }
+
+  void undoBatter(_AddBatterEvent addBatterEvent) {
+    if (batter2 == addBatterEvent.inBatter) {
+      batter2 = addBatterEvent.outBatter;
+    } else {
+      batter1 = addBatterEvent.outBatter;
+    }
+
+    if (striker != batter2 && striker != batter1) {
+      striker = addBatterEvent.outBatter;
+    }
+
+    innings.batterInnings.remove(addBatterEvent.inBatter);
   }
 
   void setStrike(BatterInnings batter) {
@@ -219,9 +236,10 @@ class InningsManager with ChangeNotifier {
   }
 
   void _swapStrike() {
-    // final swap = batter;
-    // batter = nsbatter;
-    // nsbatter = swap;
+    if (batter1 == null || batter2 == null) {
+      return;
+    }
+
     if (striker == batter1) {
       striker = batter2;
     } else {
@@ -229,19 +247,22 @@ class InningsManager with ChangeNotifier {
     }
   }
 
-  // void setBowler(BowlerInnings bowler) {
-  //   this.bowler = bowler;
-  //   _canSelectBowler = false;
-
-  //   notifyListeners();
-  // }
-
-  // bool get canChangeBowler => innings.ballsBowled % Constants.ballsPerOver == 0;
   bool get canChangeBowler => true;
 
   void setBowler(Player bowler, {bool isMidOverChange = false}) {
-    this.bowler = BowlerInnings(bowler, innings: innings);
+    final prevBowler = this.bowler;
 
+    final nextBowler = innings.addBowler(bowler);
+    final changeBowlerEvent =
+        _ChangeBowlerEvent(nextBowler: nextBowler, prevBowler: prevBowler);
+
+    ballToEventMap.update(
+      innings.balls.lastOrNull,
+      (eventList) => eventList..add(changeBowlerEvent),
+      ifAbsent: () => [changeBowlerEvent],
+    );
+
+    this.bowler = nextBowler;
     if (!isMidOverChange) {
       _swapStrike();
     }
@@ -250,13 +271,17 @@ class InningsManager with ChangeNotifier {
     notifyListeners();
   }
 
+  void undoBowler(_ChangeBowlerEvent changeBowlerEvent) {
+    bowler = changeBowlerEvent.prevBowler;
+
+    if (changeBowlerEvent.nextBowler.balls.isEmpty) {
+      innings.bowlerInnings.remove(changeBowlerEvent.nextBowler);
+    }
+  }
+
   bool get canSetWicket => nextInput == NextInput.ball;
   void setWicket(Wicket? wicket) {
     this.wicket = wicket;
-
-    if (wicket != null) {
-      batterToReplace = _getBatterInningsOfPlayer(wicket.batter);
-    }
     notifyListeners();
   }
 
@@ -270,7 +295,6 @@ class InningsManager with ChangeNotifier {
     notifyListeners();
   }
 
-  // bool _canSelectBatter = false;
   bool _canSelectBowler = false;
 
   NextInput get nextInput {
@@ -285,11 +309,8 @@ class InningsManager with ChangeNotifier {
     }
 
     // Change Batter due to fall of wicket
-    if (
-        // _canSelectBatter &&
-        innings.balls.isNotEmpty &&
-            innings.balls.last.isWicket &&
-            batterToReplace != null) {
+    if (batter1 != null && batter1!.isOut ||
+        batter2 != null && batter2!.isOut) {
       return NextInput.batter;
     }
 
@@ -311,16 +332,6 @@ class InningsManager with ChangeNotifier {
 
     // _canSelectBatter = true;
     _canSelectBowler = true;
-    // batterToReplace = null;
-  }
-
-  BatterInnings? _getBatterInningsOfPlayer(Player player) {
-    try {
-      return innings.batterInnings
-          .lastWhere((batInn) => batInn.batter == player);
-    } on StateError {
-      return null;
-    }
   }
 }
 
@@ -329,4 +340,20 @@ enum NextInput {
   batter,
   bowler,
   end,
+}
+
+abstract class _InputEvent {}
+
+class _AddBatterEvent extends _InputEvent {
+  final BatterInnings inBatter;
+  final BatterInnings? outBatter;
+
+  _AddBatterEvent({required this.inBatter, required this.outBatter});
+}
+
+class _ChangeBowlerEvent extends _InputEvent {
+  final BowlerInnings nextBowler;
+  final BowlerInnings? prevBowler;
+
+  _ChangeBowlerEvent({required this.nextBowler, required this.prevBowler});
 }

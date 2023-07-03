@@ -16,27 +16,13 @@ class CricketMatch {
 
   bool _isHomeInningsFirst = true;
 
-  Team get nextTeamToBat {
-    if (inningsList.isEmpty) {
-      if (_isHomeInningsFirst) {
-        return homeTeam;
-      } else {
-        return awayTeam;
-      }
-    }
-    // TODO: Fix this for unlimited overs
-    return currentInnings.bowlingTeam;
-  }
-
-  Team get nextTeamToBowl => nextTeamToBat == homeTeam ? awayTeam : homeTeam;
-
   // In case of super over
   CricketMatch? superOver;
   CricketMatch? parentMatch;
 
   Toss? toss;
 
-  CricketMatch({
+  CricketMatch._({
     required this.id,
     required this.homeTeam,
     required this.awayTeam,
@@ -47,14 +33,14 @@ class CricketMatch {
     required homeTeam,
     required awayTeam,
     required maxOvers,
-  }) : this(
+  }) : this._(
             id: Utils.generateUniqueId(),
             homeTeam: homeTeam,
             awayTeam: awayTeam,
             maxOvers: maxOvers);
 
   factory CricketMatch.superOver({required CricketMatch parentMatch}) {
-    CricketMatch superOverMatch = CricketMatch(
+    CricketMatch superOverMatch = CricketMatch._(
         id: parentMatch.id + "_superover",
         homeTeam: parentMatch.homeTeam,
         awayTeam: parentMatch.awayTeam,
@@ -76,6 +62,20 @@ class CricketMatch {
   bool get isTossCompleted => toss != null;
 
   Innings get currentInnings => inningsList.last;
+
+  Team get nextTeamToBat {
+    if (inningsList.isEmpty) {
+      if (_isHomeInningsFirst) {
+        return homeTeam;
+      } else {
+        return awayTeam;
+      }
+    }
+    // TODO: Fix this for unlimited overs
+    return currentInnings.bowlingTeam;
+  }
+
+  Team get nextTeamToBowl => nextTeamToBat == homeTeam ? awayTeam : homeTeam;
 
   MatchState get matchState {
     if (_isCompleted) {

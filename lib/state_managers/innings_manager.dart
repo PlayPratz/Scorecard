@@ -193,13 +193,6 @@ class InningsManager with ChangeNotifier {
         innings.balls.lastOrNull, (eventList) => eventList..add(addBatterEvent),
         ifAbsent: () => [addBatterEvent]);
 
-    if (innings.balls.isNotEmpty) {
-      innings.fallOfWickets[innings.balls.last] = FallOfWicket(
-          ball: innings.balls.last,
-          inBatter: inBatterInnings,
-          outBatter: outBatter);
-    }
-
     if (outBatter == batter2) {
       batter2 = inBatterInnings;
     } else {

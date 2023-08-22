@@ -125,26 +125,6 @@ class Innings {
   void removeBatter(BatterInnings batInn) {
     batterInnings.remove(batInn);
   }
-
-  final fallOfWickets = <Ball, FallOfWicket>{};
-
-  // Iterable<BatterInnings> get batterInnings {
-  //   final batterInnings = <BatterInnings>[];
-  //   for (final ball in balls) {
-  //     final batterInning = batterInnings.lastWhere(
-  //       (batInn) => batInn.batter == ball.batter //&& !batInn.isOut
-  //       ,
-  //       orElse: () {
-  //         final batInn = BatterInnings(ball.batter, innings: this);
-  //         batterInnings.add(batInn);
-  //         return batInn;
-  //       },
-  //     );
-  //     batterInning.play(ball);
-  //   }
-  //
-  //   return batterInnings;
-  // }
 }
 
 class BatterInnings extends BattingStats {

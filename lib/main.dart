@@ -27,10 +27,9 @@ class _ScorecardAppState extends State<ScorecardApp> {
         title: 'Scorecard',
         theme: ThemeData(
           // brightness: Brightness.dark,
-          colorScheme: const ColorScheme.dark().copyWith(
-            secondary: ColorStyles.selected,
-            background: ColorStyles.background,
-            surface: ColorStyles.background,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.green,
+            brightness: Brightness.dark,
           ),
           // dividerTheme: const DividerThemeData(
           //   color: ColorStyles.highlight,

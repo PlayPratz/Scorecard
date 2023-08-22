@@ -32,6 +32,9 @@ class MatchInterface extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          // RunRatePane(
+          //   showTarget: (match.currentInnings == match.secondInnings),
+          // ),
           Consumer<InningsManager>(
             builder: (context, inningsManager, child) => MatchTile(
               match: match,
@@ -45,7 +48,7 @@ class MatchInterface extends StatelessWidget {
             showChaseRequirement: match.matchState == MatchState.secondInnings,
           ),
           const RecentBallsPane(),
-          const SizedBox(height: 4),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [

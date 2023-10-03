@@ -189,8 +189,7 @@ class Strings {
 
   // Match Screen
   static const String matchScreenAddWicket = "Add Wicket";
-  static const String matchScreenAddWicketHint =
-      "Specify the game-changing incident";
+  static const String matchScreenAddWicketHint = "Specify wicket details";
   static const String matchScreenEndInnings = "End Innings";
   static const String matchScreenEndInningsShort = "End";
   static const String matchScreenEndInningsLongPressToEnd =

@@ -1,120 +1,113 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
 class RecentBallsPane extends StatelessWidget {
-  const RecentBallsPane({super.key});
+  final Innings innings;
+
+  const RecentBallsPane({super.key, required this.innings});
 
   @override
   Widget build(BuildContext context) {
-    // final innings = context.read<InningsManager>();
-    return Selector<InningsManager, int>(
-      selector: (context, inningsManager) =>
-          inningsManager.innings.balls.length,
-      builder: (context, ballCount, child) => Card(
-        surfaceTintColor:
-            context.read<InningsManager>().innings.bowlingTeam.color,
-        child: InkWell(
-          onTap: ballCount == 0
-              ? null
-              : () => Utils.goToPage(
-                  InningsTimelineScreen(
-                    innings: context.read<InningsManager>().innings,
-                  ),
-                  context),
-          customBorder:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              height: 56,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      reverse: true,
-                      scrollDirection: Axis.horizontal,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: ballCount,
-                      itemBuilder: (context, index) {
-                        final innings = context.read<InningsManager>().innings;
-                        final ballsReversed = innings.balls.reversed.toList();
-                        final currentBall = ballsReversed[index];
-                        Color? ballIndexColor;
-                        if (index < ballCount - 2) {
-                          // At least two balls exist
-                          final previousBall = ballsReversed[index + 1];
-                          if (previousBall.overIndex != currentBall.overIndex) {
-                            ballIndexColor = innings.bowlingTeam.color;
-                          }
+    return Card(
+      surfaceTintColor: innings.bowlingTeam.color,
+      child: InkWell(
+        onTap: innings.balls.isEmpty
+            ? null
+            : () => Utils.goToPage(
+                InningsTimelineScreen(
+                  innings: innings,
+                ),
+                context),
+        customBorder:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            height: 56,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    reverse: true,
+                    scrollDirection: Axis.horizontal,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: innings.balls.length,
+                    itemBuilder: (context, index) {
+                      final ballsReversed = innings.balls.reversed.toList();
+                      final currentBall = ballsReversed[index];
+                      Color? ballIndexColor;
+                      if (index < ballsReversed.length - 2) {
+                        // At least two balls exist
+                        final previousBall = ballsReversed[index + 1];
+                        if (previousBall.overIndex != currentBall.overIndex) {
+                          ballIndexColor = innings.bowlingTeam.color;
                         }
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                          ),
-                          child: RecentBall(
-                            ball: currentBall,
-                            highlightBallIndex: ballIndexColor,
-                          ),
-                        );
-                      },
-                    ),
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                        ),
+                        child: RecentBall(
+                          ball: currentBall,
+                          highlightBallIndex: ballIndexColor,
+                        ),
+                      );
+                    },
                   ),
-                  // Expanded(
-                  //   child: AnimatedList(
-                  //     key: recentBallsViewKey,
-                  //     reverse: true,
-                  //     initialItemCount: ballCount,
-                  //     scrollDirection: Axis.horizontal,
-                  //     itemBuilder: (context, index, animation) {
-                  //       final innings = context.read<InningsManager>().innings;
-                  //       final ballsReversed = innings.balls.reversed.toList();
-                  //       final currentBall = ballsReversed[index];
-                  //       Color? ballIndexColor;
-                  //       if (index > 0) {
-                  //         // At least two balls exist
-                  //         final previousBall = ballsReversed[index - 1];
-                  //         if (previousBall.overIndex != currentBall.overIndex) {
-                  //           ballIndexColor = innings.bowlingTeam.color;
-                  //         }
-                  //       }
-                  //       return SlideTransition(
-                  //         position: animation.drive(
-                  //           Tween<Offset>(
-                  //             begin: const Offset(1, 0),
-                  //             end: const Offset(0, 0),
-                  //           ),
-                  //         ),
-                  //         child: RecentBall(
-                  //           ball: currentBall,
-                  //           highlightBallIndex: ballIndexColor,
-                  //         ),
-                  //       );
-                  //     },
-                  //     },
-                  //   ),
-                  // ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    onPressed: null,
-                    icon: const Icon(Icons.timeline),
-                    disabledColor: Colors.white,
-                    style: IconButton.styleFrom(
-                      disabledBackgroundColor:
-                          Colors.deepPurple.shade900.withOpacity(0.7),
-                    ),
+                ),
+                // Expanded(
+                //   child: AnimatedList(
+                //     key: recentBallsViewKey,
+                //     reverse: true,
+                //     initialItemCount: ballCount,
+                //     scrollDirection: Axis.horizontal,
+                //     itemBuilder: (context, index, animation) {
+                //       final innings = context.read<InningsManager>().innings;
+                //       final ballsReversed = innings.balls.reversed.toList();
+                //       final currentBall = ballsReversed[index];
+                //       Color? ballIndexColor;
+                //       if (index > 0) {
+                //         // At least two balls exist
+                //         final previousBall = ballsReversed[index - 1];
+                //         if (previousBall.overIndex != currentBall.overIndex) {
+                //           ballIndexColor = innings.bowlingTeam.color;
+                //         }
+                //       }
+                //       return SlideTransition(
+                //         position: animation.drive(
+                //           Tween<Offset>(
+                //             begin: const Offset(1, 0),
+                //             end: const Offset(0, 0),
+                //           ),
+                //         ),
+                //         child: RecentBall(
+                //           ball: currentBall,
+                //           highlightBallIndex: ballIndexColor,
+                //         ),
+                //       );
+                //     },
+                //     },
+                //   ),
+                // ),
+                const SizedBox(width: 4),
+                IconButton(
+                  onPressed: null,
+                  icon: const Icon(Icons.timeline),
+                  disabledColor: Colors.white,
+                  style: IconButton.styleFrom(
+                    disabledBackgroundColor:
+                        Colors.deepPurple.shade900.withOpacity(0.7),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

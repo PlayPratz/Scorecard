@@ -243,3 +243,84 @@ class TeamChip extends StatelessWidget {
     );
   }
 }
+
+class RunRatePane extends StatelessWidget {
+  final bool showChaseRequirement;
+  final Innings innings;
+
+  const RunRatePane(
+      {super.key, required this.showChaseRequirement, required this.innings});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        if (showChaseRequirement)
+          Row(
+            children: [
+              Expanded(
+                child: _wRunRateBox(
+                    context: context,
+                    color: innings.battingTeam.color,
+                    heading: Strings.scoreRequire,
+                    value: innings.requiredRuns.toString()),
+              ),
+              Expanded(
+                  child: _wRunRateBox(
+                      context: context,
+                      color: innings.bowlingTeam.color,
+                      heading: Strings.scoreBalls,
+                      value: innings.ballsLeft.toString())),
+            ],
+          )
+        else
+          Row(
+            children: [
+              Expanded(
+                child: _wRunRateBox(
+                    context: context,
+                    color: innings.battingTeam.color,
+                    heading: Strings.scoreCRR,
+                    value: innings.currentRunRate.toStringAsFixed(2)),
+              ),
+              Expanded(
+                  child: _wRunRateBox(
+                      context: context,
+                      color: innings.battingTeam.color,
+                      heading: Strings.scoreProjected,
+                      value: innings.projectedRuns.toString())),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Card _wRunRateBox({
+    required BuildContext context,
+    required Color color,
+    required String heading,
+    required String value,
+  }) =>
+      Card(
+        elevation: 2,
+        color: color.withOpacity(0.3),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              FittedBox(
+                child: Text(
+                  heading.toUpperCase(),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.titleLarge,
+              )
+            ],
+          ),
+        ),
+      );
+}

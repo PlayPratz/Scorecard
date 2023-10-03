@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/wicket.dart';
@@ -7,7 +6,6 @@ import 'package:scorecard/screens/match/innings_play_screen/players_in_action.da
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
-import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
@@ -53,29 +51,27 @@ class BatterPicker extends StatelessWidget {
   }
 }
 
-void chooseBatter(BuildContext context, BatterInnings batterToReplace) async {
-  final inningsManager = context.read<InningsManager>();
+Future<Player?> chooseBatter(
+  BuildContext context,
+  Innings innings,
+  BatterInnings batterToReplace,
+  Wicket? wicket,
+) async {
   final player = await Utils.goToPage(
     BatterPicker(
-      squad: inningsManager.innings.battingTeam.squad,
+      squad: innings.battingTeam.squad,
       batterToReplace: batterToReplace,
-      wicket: inningsManager.wicket,
+      wicket: wicket,
     ),
     context,
   );
 
-  if (player == null) {
-    return;
-  }
-  inningsManager.addBatter(inBatter: player, outBatter: batterToReplace);
+  return player;
 }
 
-void chooseBowler(BuildContext context, InningsManager inningsManager) async {
-  final player =
-      await choosePlayer(context, inningsManager.innings.bowlingTeam.squad);
-  if (player != null) {
-    inningsManager.setBowler(player);
-  }
+Future<Player?> chooseBowler(BuildContext context, Innings innings) async {
+  final player = await choosePlayer(context, innings.bowlingTeam.squad);
+  return player;
 }
 
 Future<Player?> choosePlayer(BuildContext context, List<Player> squad) async {

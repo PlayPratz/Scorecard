@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/util/strings.dart';
-import '../../models/cricket_match.dart';
-import '../../models/player.dart';
+import 'package:scorecard/models/cricket_match.dart';
+import 'package:scorecard/models/player.dart';
 import 'innings_play_screen/match_interface.dart';
-import '../player/player_list.dart';
-import '../templates/titled_page.dart';
-import '../widgets/generic_item_tile.dart';
-import '../../util/elements.dart';
-import '../../util/utils.dart';
+import 'package:scorecard/screens/player/player_list.dart';
+import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/util/utils.dart';
 
 import '../player/player_tile.dart';
 
@@ -100,17 +98,11 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
               //     ? null
               //     : BatterInnings(_batter2!,
               //         innings: widget.match.currentInnings);
-              widget.match.currentInnings.addBatter(_batter1!);
-              widget.match.currentInnings.addBatter(_batter2!);
-              widget.match.currentInnings.addBowler(_bowler!);
+              widget.match.currentInnings.initialize(
+                  batter1: _batter1!, batter2: _batter2, bowler: _bowler!);
 
               Utils.goToReplacementPage(
-                  ChangeNotifierProvider(
-                    create: (context) =>
-                        InningsManager(widget.match.currentInnings),
-                    child: MatchInterface(match: widget.match),
-                  ),
-                  context);
+                  MatchInterface(match: widget.match), context);
             }
           : null,
     );

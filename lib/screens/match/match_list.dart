@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/match_init.dart';
 import 'package:scorecard/screens/match/innings_play_screen/match_interface.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import 'package:scorecard/state_managers/innings_manager.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/services/storage_service.dart';
-import 'create_match.dart';
-import '../widgets/item_list.dart';
-import 'match_tile.dart';
-import '../../util/strings.dart';
-import '../../util/utils.dart';
+import 'package:scorecard/screens/match/create_match.dart';
+import 'package:scorecard/screens/widgets/item_list.dart';
+import 'package:scorecard/screens/match/match_tile.dart';
+import 'package:scorecard/util/strings.dart';
+import 'package:scorecard/util/utils.dart';
 
 class MatchList extends StatefulWidget {
   // final List<CricketMatch> matchList;
@@ -120,13 +118,6 @@ void handleOpenMatch(CricketMatch match, BuildContext context) {
         handleOpenMatch(match, context);
         return;
       }
-      Utils.goToPage(
-          ChangeNotifierProvider<InningsManager>(
-            create: (context) => InningsManager.resume(
-              match.currentInnings,
-            ),
-            child: MatchInterface(match: match),
-          ),
-          context);
+      Utils.goToPage(MatchInterface(match: match), context);
   }
 }

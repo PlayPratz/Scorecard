@@ -1,66 +1,71 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
-import 'package:scorecard/state_managers/innings_manager.dart';
+import 'package:scorecard/states/controllers/ball_details_state.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/elements.dart';
-import '../../../models/wicket.dart';
-import '../../templates/titled_page.dart';
-import '../../widgets/generic_item_tile.dart';
-import '../../widgets/item_list.dart';
-import '../../../util/strings.dart';
-import '../../../util/utils.dart';
+
+import 'package:scorecard/models/wicket.dart';
+import 'package:scorecard/util/strings.dart';
+import 'package:scorecard/util/utils.dart';
+import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/screens/widgets/item_list.dart';
 
 class WicketTile extends StatelessWidget {
-  const WicketTile({super.key});
+  final BallDetailsStateController stateController;
+  final Innings innings;
+
+  const WicketTile(
+      {super.key, required this.stateController, required this.innings});
 
   @override
   Widget build(BuildContext context) {
     String primary = Strings.matchScreenAddWicket;
-    // String hint = Strings.matchScreenAddWicketHint;
-    String hint = "Enter wicket details";
+    String hint = Strings.matchScreenAddWicketHint;
 
-    final inningsManager =
-        context.watch<InningsManager>(); // TODO: Find a more efficient way
-
-    final wicket = inningsManager.wicket;
-    if (wicket != null) {
-      primary = wicket.batter.name;
-      hint = Strings.getWicketDescription(wicket);
-    }
-    return Card(
-      margin: const EdgeInsets.all(0),
-      surfaceTintColor: ColorStyles.wicket,
-      child: GenericItemTile(
-        leading: const Icon(
-          Icons.gpp_bad,
-          color: Colors.redAccent,
-          size: 32,
-        ),
-        primaryHint: primary,
-        secondaryHint: hint,
-        trailing: Elements.forwardIcon,
-        onSelect:
-            inningsManager.canSetWicket ? () => _onSelectWicket(context) : null,
-        onLongPress: () => context.read<InningsManager>().setWicket(null),
-      ),
+    return StreamBuilder(
+      stream: stateController.wicketStateSteam,
+      builder: (context, snapshot) {
+        final wicket = snapshot.data;
+        if (wicket != null) {
+          primary = wicket.batter.name;
+          hint = Strings.getWicketDescription(wicket);
+        }
+        return Card(
+          margin: const EdgeInsets.all(0),
+          surfaceTintColor: ColorStyles.wicket,
+          child: GenericItemTile(
+            leading: const Icon(
+              Icons.gpp_bad,
+              color: Colors.redAccent,
+              size: 32,
+            ),
+            primaryHint: primary,
+            secondaryHint: hint,
+            trailing: Elements.forwardIcon,
+            onSelect: () => _onSelectWicket(context, innings),
+            onLongPress: () => stateController.selectWicket(null),
+          ),
+        );
+      },
     );
   }
 
-  void _onSelectWicket(BuildContext context) async {
-    final inningsManager = context.read<InningsManager>();
+  void _onSelectWicket(BuildContext context, Innings innings) async {
+    final playersInAction = innings.playersInAction;
     Wicket? selectedWicket = await Utils.goToPage(
         WicketPicker(
-          bowler: inningsManager.bowler!.bowler,
-          striker: inningsManager.striker!.batter,
-          fieldingTeam: inningsManager.innings.bowlingTeam,
-          battingTeam: inningsManager.innings.battingTeam,
+          bowler: playersInAction.bowler!.bowler,
+          striker: playersInAction.striker!.batter,
+          fieldingTeam: innings.bowlingTeam,
+          battingTeam: innings.battingTeam,
         ),
         context);
-    inningsManager.setWicket(selectedWicket);
+    stateController.selectWicket(selectedWicket);
   }
 }
 
@@ -86,7 +91,7 @@ class _WicketPickerState extends State<WicketPicker> {
   Player? _fielder;
   Player? _batter;
 
-  bool _isDimissalSelected = false;
+  bool _isDismissalSelected = false;
   bool _isBatterSelected = false;
   bool _isFielderSelected = false;
 
@@ -102,14 +107,14 @@ class _WicketPickerState extends State<WicketPicker> {
   Widget build(BuildContext context) {
     final List<Widget> options = [const Spacer()];
 
-    _isDimissalSelected = false;
+    _isDismissalSelected = false;
     _isBatterSelected = false;
     _isFielderSelected = false;
 
     if (_dismissal == null) {
       options.add(_wDismissalChooser());
     } else {
-      _isDimissalSelected = true;
+      _isDismissalSelected = true;
       options.add(_wDismissalViewer());
 
       if (_requiresBatter(_dismissal)) {
@@ -193,7 +198,7 @@ class _WicketPickerState extends State<WicketPicker> {
   }
 
   bool get canAddWicket =>
-      _isDimissalSelected && _isFielderSelected && _isBatterSelected;
+      _isDismissalSelected && _isFielderSelected && _isBatterSelected;
 
   bool _requiresBatter(Dismissal? dismissal) {
     if (dismissal == Dismissal.runout || dismissal == Dismissal.retired) {
@@ -264,7 +269,7 @@ class _WicketPickerState extends State<WicketPicker> {
 
   Widget _wFielderChooser() => GenericItemTile(
       primaryHint: "Select a Fielder",
-      secondaryHint: "Which Fielder gave their hand?",
+      secondaryHint: "Which fielder gave their hand?",
       onSelect: _onSelectFielder);
 
   void _onSelectFielder() => Utils.goToPage(

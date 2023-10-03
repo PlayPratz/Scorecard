@@ -19,11 +19,21 @@ class ItemList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      // padding: const EdgeInsets.symmetric(horizontal: 12),
-      reverse: true,
+    final reversedItemList = itemList.reversed.toList();
+    return Column(
       children: [
-        ...itemList,
+        Expanded(
+          child: ListView.separated(
+            itemBuilder: (context, index) => reversedItemList[index],
+            separatorBuilder: (context, index) => const Divider(
+              indent: 72,
+              endIndent: 24,
+              height: 0,
+            ),
+            itemCount: itemList.length,
+            reverse: true,
+          ),
+        ),
         if (createItem != null)
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -41,7 +51,7 @@ class ItemList extends StatelessWidget {
                   }
                 }),
           ),
-      ].reversed.toList(),
+      ],
     );
   }
 }

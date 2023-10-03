@@ -3,26 +3,26 @@ import 'wicket.dart';
 
 class Ball {
   /// The bowler who bowled the delivery
-  Player bowler;
+  final Player bowler;
 
   /// The batter who faced the delivery
-  Player batter;
+  final Player batter;
 
   /// Runs awarded to the batting team by facing this [Ball].
   /// <br/> Note: Do not specify the runs due to a bowling extra.
-  int runsScored;
+  final int runsScored;
 
   /// The type of [BowlingExtra] if applicable
-  BowlingExtra? bowlingExtra;
+  final BowlingExtra? bowlingExtra;
 
   /// The type of [BattingExtra] if applicable
-  BattingExtra? battingExtra;
+  final BattingExtra? battingExtra;
 
   /// The [Wicket], if any, which was taken on this [Ball]
-  Wicket? wicket;
+  final Wicket? wicket;
 
   // bool _shouldCountBall = true;
-  bool isEventOnly = false;
+  final bool isEventOnly = false;
 
   /// Zero-based index of the over this ball is bowled in
   int overIndex;
@@ -31,7 +31,7 @@ class Ball {
   /// It could be zero if the first ball is a bowling extra
   int ballIndex;
 
-  DateTime timestamp;
+  final DateTime timestamp;
 
   Ball({
     required this.bowler,
@@ -54,11 +54,6 @@ class Ball {
       this.overIndex = 0,
       this.ballIndex = 0,
       required this.timestamp});
-
-  void assignIndexes({required int over, required int ball}) {
-    overIndex = over;
-    ballIndex = ball;
-  }
 
   int get totalRuns => runsScored + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;

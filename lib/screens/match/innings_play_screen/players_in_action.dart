@@ -3,6 +3,7 @@ import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/util/strings.dart';
 
 class PlayersInActionPane extends StatelessWidget {
   final Innings innings;
@@ -108,7 +109,21 @@ class PlayersInActionPane extends StatelessWidget {
     final bowlerInnings = innings.playersInAction.bowler!;
     return PlayerScoreTile(
       player: bowlerInnings.bowler,
-      score: const Text(""), //TODO Move
+      score: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            Strings.getBowlerFigures(bowlerInnings),
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            Strings.getBowlerOversBowled(bowlerInnings),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ), //TODO Move
       description: Text(
         "ECON ${bowlerInnings.economy.toStringAsFixed(1)}", //TODO move
         style: Theme.of(context).textTheme.bodySmall,

@@ -1,16 +1,19 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/team.dart';
+import 'package:scorecard/screens/match/create_match.dart';
+import 'package:scorecard/screens/player/player_list.dart';
+import 'package:scorecard/screens/player/player_tile.dart';
+import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
 import 'package:scorecard/services/storage_service.dart';
-
-import '../../models/player.dart';
-import '../../models/team.dart';
-import '../../util/strings.dart';
-import '../../util/elements.dart';
-import '../../util/utils.dart';
-import '../player/player_list.dart';
-import '../templates/titled_page.dart';
-import '../player/player_tile.dart';
+import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/util/strings.dart';
+import 'package:scorecard/util/utils.dart';
 
 class CreateTeamForm extends StatefulWidget {
   final Team team;
@@ -202,4 +205,161 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
       ),
     );
   }
+}
+
+class CreateQuickTeamsForm extends StatelessWidget {
+  final List<Player> playerPool;
+
+  const CreateQuickTeamsForm({super.key, required this.playerPool});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = CreateQuickTeamsFormController(playerPool: playerPool);
+    final shuffledTemplates = [...genTeamTemplates]..shuffle();
+    final colors = shuffledTemplates
+        .take(2)
+        .map((teamTemplate) => teamTemplate.color.withOpacity(0.2))
+        .toList();
+    return TitledPage(
+      title: "Quick Teams",
+      child: ListenableBuilder(
+        listenable: controller,
+        builder: (context, child) => Column(
+          children: [
+            _wTeamPool(context, controller, colors.first,
+                "Team ${controller.team1}", controller.squad1, false, true),
+            _wTeamPool(context, controller, null, "Pool", controller.playerPool,
+                true, true),
+            _wTeamPool(context, controller, colors.last,
+                "Team ${controller.team2}", controller.squad2, true, false),
+            Elements.getConfirmButton(
+              text: Strings.buttonNext,
+              onPressed: controller.canSubmit
+                  ? () => _handleSubmitTeams(
+                      context, controller, colors.first, colors.last)
+                  : null,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleSubmitTeams(BuildContext context,
+      CreateQuickTeamsFormController controller, Color teamA, Color teamB) {
+    final team1 = Team.create(
+      name: controller.team1,
+      shortName: controller.team1.substring(0, 3).toUpperCase(),
+      squad: controller.squad1,
+      color: teamA,
+    );
+    final team2 = Team.create(
+      name: controller.team2,
+      shortName: controller.team2.substring(0, 3).toUpperCase(),
+      squad: controller.squad2,
+      color: teamB,
+    );
+
+    Utils.goToPage(
+        CreateMatchForm(
+          homeTeam: team1,
+          awayTeam: team2,
+        ),
+        context);
+  }
+
+  Widget _wTeamPool(
+    BuildContext context,
+    CreateQuickTeamsFormController controller,
+    Color? color,
+    String title,
+    List<Player> players,
+    bool showUp,
+    bool showDown,
+  ) =>
+      Expanded(
+        child: SeparatedWidgetPair(
+          top: Text(
+            title.toUpperCase(),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          bottom: Expanded(
+              child: ItemList(
+            itemList: players
+                .map((player) => ListTile(
+                      leading: IconButton(
+                        onPressed:
+                            showUp ? () => controller.moveUp(player) : null,
+                        icon: Visibility(
+                          visible: showUp,
+                          child: Transform.rotate(
+                              angle: pi / 2,
+                              child: const Icon(Icons.arrow_circle_left)),
+                        ),
+                      ),
+                      title: Row(
+                        children: [
+                          Elements.getPlayerIcon(player, 32),
+                          const SizedBox(width: 16),
+                          Text(player.name),
+                        ],
+                      ),
+                      trailing: showDown
+                          ? IconButton(
+                              onPressed: showDown
+                                  ? () => controller.moveDown(player)
+                                  : null,
+                              icon: Visibility(
+                                visible: showDown,
+                                child: Transform.rotate(
+                                    angle: -pi / 2,
+                                    child: const Icon(Icons.arrow_circle_left)),
+                              ),
+                            )
+                          : null,
+                    ))
+                .toList(),
+          )),
+          color: color,
+        ),
+      );
+}
+
+class CreateQuickTeamsFormController with ChangeNotifier {
+  final List<Player> playerPool;
+
+  CreateQuickTeamsFormController({required this.playerPool});
+
+  final List<Player> squad1 = [];
+  final List<Player> squad2 = [];
+
+  void moveUp(Player player) {
+    if (squad2.contains(player)) {
+      squad2.remove(player);
+      playerPool.add(player);
+      playerPool.sort((a, b) => a.name.compareTo(b.name));
+    } else if (playerPool.contains(player)) {
+      playerPool.remove(player);
+      squad1.add(player);
+    }
+    notifyListeners();
+  }
+
+  void moveDown(Player player) {
+    if (squad1.contains(player)) {
+      squad1.remove(player);
+      playerPool.add(player);
+      playerPool.sort((a, b) => a.name.compareTo(b.name));
+    } else if (playerPool.contains(player)) {
+      playerPool.remove(player);
+      squad2.add(player);
+    }
+    notifyListeners();
+  }
+
+  String get team1 => squad1.isNotEmpty ? squad1.first.name : "A";
+  String get team2 => squad2.isNotEmpty ? squad2.first.name : "B";
+
+  bool get canSubmit =>
+      playerPool.isEmpty && squad1.isNotEmpty && squad2.isNotEmpty;
 }

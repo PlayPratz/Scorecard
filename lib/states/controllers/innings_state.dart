@@ -58,7 +58,8 @@ class InningsStateController {
     // Change Bowler due to end of over
     if (innings.balls.isNotEmpty &&
         innings.balls.last.ballIndex == Constants.ballsPerOver &&
-        _inningsEventHistory.last is! SetBowlerEvent) {
+        (_inningsEventHistory.isEmpty || // TODO Jugaad
+            _inningsEventHistory.last is! SetBowlerEvent)) {
       return AddBowlerState(innings: innings, selections: _selections);
     }
 

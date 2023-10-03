@@ -32,7 +32,10 @@ class _MatchInitScreenState extends State<MatchInitScreen> {
         child: Column(
           children: [
             const Spacer(),
-            const Text(Strings.initMatchHeadingToss),
+            Text(
+              Strings.initMatchHeadingToss,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             const SizedBox(height: 32),
             _wTossWinningTeam(),
             const SizedBox(height: 32),

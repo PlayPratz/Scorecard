@@ -26,9 +26,10 @@ class ItemList extends StatelessWidget {
           child: ListView.separated(
             itemBuilder: (context, index) => reversedItemList[index],
             separatorBuilder: (context, index) => const Divider(
-              indent: 72,
-              endIndent: 24,
-              height: 0,
+              indent: 8,
+              endIndent: 8,
+              height: 8,
+              thickness: 0,
             ),
             itemCount: itemList.length,
             reverse: true,

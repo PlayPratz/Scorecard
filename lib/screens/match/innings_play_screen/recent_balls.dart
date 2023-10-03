@@ -16,7 +16,8 @@ class RecentBallsPane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      surfaceTintColor: innings.bowlingTeam.color,
+      // color: innings.battingTeam.color,
+      surfaceTintColor: innings.battingTeam.color,
       child: InkWell(
         onTap: innings.balls.isEmpty
             ? null
@@ -48,7 +49,8 @@ class RecentBallsPane extends StatelessWidget {
                         // At least two balls exist
                         final previousBall = ballsReversed[index + 1];
                         if (previousBall.overIndex != currentBall.overIndex) {
-                          ballIndexColor = innings.bowlingTeam.color;
+                          ballIndexColor =
+                              innings.bowlingTeam.color.withOpacity(1);
                         }
                       }
                       return Padding(

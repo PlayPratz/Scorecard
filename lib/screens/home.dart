@@ -57,7 +57,7 @@ class _HomeTabViewState extends State<HomeTabView> {
                 shape: BoxShape.circle),
             child: IconButton(
               onPressed: () => Utils.goToPage(
-                const CreateMatchForm(),
+                const CreateQuickMatchForm(),
                 context,
               ),
               icon: const Icon(Icons.add),
@@ -86,7 +86,7 @@ class _HomeTabViewState extends State<HomeTabView> {
         MatchList(
           getMatchList: () => StorageService.getCompletedMatches(),
         ),
-        const CreateMatchForm(),
+        const CreateQuickMatchForm(),
         PlayerList(
           playerList: StorageService.getAllPlayers(),
           onSelectPlayer: (player) => Utils.goToPage(

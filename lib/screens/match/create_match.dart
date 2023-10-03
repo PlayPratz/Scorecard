@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/player.dart';
+import 'package:scorecard/screens/player/player_list.dart';
+import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/screens/team/team_list.dart';
 import 'package:scorecard/screens/widgets/number_picker.dart';
 import 'package:scorecard/services/storage_service.dart';
@@ -158,4 +161,49 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
 
   bool get _canCreateMatch =>
       _selectedHomeTeam != null && _selectedAwayTeam != null && _overs > 0;
+}
+
+class CreateQuickMatchForm extends StatelessWidget {
+  const CreateQuickMatchForm({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = SelectablePlayerController();
+    return TitledPage(
+      title: "Quick Match",
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          Text("Select Players",
+              style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: SelectablePlayerList(
+                players: StorageService.getAllPlayers(sortAlphabetically: true),
+                controller: controller,
+              ),
+            ),
+          ),
+          ListenableBuilder(
+            listenable: controller, // TODO Remove Jugaad
+            builder: (context, child) => Elements.getConfirmButton(
+              text: Strings.buttonNext,
+              onPressed: controller.selectedPlayers.length >= 2
+                  ? () => _handleCreateQuickTeams(
+                      context, controller.selectedPlayers)
+                  : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleCreateQuickTeams(
+      BuildContext context, List<Player> selectedPlayers) {
+    Utils.goToPage(CreateQuickTeamsForm(playerPool: selectedPlayers), context);
+  }
 }

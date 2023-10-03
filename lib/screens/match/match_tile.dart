@@ -257,7 +257,7 @@ class RunRatePane extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: showRRR,
-      builder: (context, value, child) => Row(
+      builder: (context, _, child) => Row(
         children: [
           Expanded(
             child: showRRR.value
@@ -272,7 +272,7 @@ class RunRatePane extends StatelessWidget {
                     color: innings.battingTeam.color,
                     heading: Strings.scoreCRR,
                     value: innings.currentRunRate.toStringAsFixed(2),
-                    onTap: _handleToggle),
+                    onTap: showChaseRequirement ? _handleToggle : null),
           ),
           if (showChaseRequirement) ...<Widget>[
             Expanded(

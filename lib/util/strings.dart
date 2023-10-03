@@ -74,6 +74,10 @@ class Strings {
     return "${bowlingStats.ballsBowled ~/ Constants.ballsPerOver}.${bowlingStats.ballsBowled % Constants.ballsPerOver}";
   }
 
+  static String getBowlerFigures(BowlingStats bowlingStats) {
+    return "${bowlingStats.wicketsTaken}-${bowlingStats.runsConceded}";
+  }
+
   static String getOverBowledText(Innings innings, {required bool short}) {
     final oversBowled =
         "${innings.ballsBowled ~/ Constants.ballsPerOver}.${innings.ballsBowled % Constants.ballsPerOver}";

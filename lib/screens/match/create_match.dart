@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/screens/team/create_team.dart';
+import 'package:scorecard/screens/team/team_list.dart';
 import 'package:scorecard/screens/widgets/number_picker.dart';
 import 'package:scorecard/services/storage_service.dart';
 
@@ -126,18 +126,18 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     Team? currentTeam,
     Function(Team) onSelectTeam,
   ) async {
-    final Team? chosenTeam = await Utils.goToPage(
-      CreateTeamForm(team: currentTeam),
-      context,
-    );
-    // Team? chosenTeam = await Utils.goToPage(
-    //     TitledPage(
-    //       child: TeamList(
-    //         teamList: StorageService.getAllTeams(),
-    //         onSelectTeam: (team) => Utils.goBack(context, team),
-    //       ),
-    //     ),
-    //     context);
+    // final Team? chosenTeam = await Utils.goToPage(
+    //   CreateTeamForm(team: currentTeam),
+    //   context,
+    // );
+    Team? chosenTeam = await Utils.goToPage(
+        TitledPage(
+          child: TeamList(
+            teamList: StorageService.getAllTeams(),
+            onSelectTeam: (team) => Utils.goBack(context, team),
+          ),
+        ),
+        context);
     if (chosenTeam != null) {
       setState(() {
         onSelectTeam(chosenTeam);

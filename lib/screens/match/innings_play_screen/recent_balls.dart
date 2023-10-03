@@ -198,7 +198,7 @@ class InningsTimelineScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(DateFormat('h:m').format(ball.timestamp.toLocal())),
+                    Text(DateFormat('hh:mm').format(ball.timestamp.toLocal())),
                     Text(DateFormat('a').format(ball.timestamp.toLocal())),
                   ],
                 ),
@@ -207,7 +207,8 @@ class InningsTimelineScreen extends StatelessWidget {
                 child: GenericItemTile(
                   // contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   leading: RecentBall(ball: ball),
-                  primaryHint: "${ball.bowler.name} to ${ball.batter.name}",
+                  primaryHint:
+                      "${ball.bowler.name} to ${ball.batter.name}", // TODO move strings
                   secondaryHint: ball.isWicket
                       ? " ${Strings.getWicketDescription(ball.wicket)}"
                       : " ",
@@ -221,9 +222,9 @@ class InningsTimelineScreen extends StatelessWidget {
           if (index == balls.length - 1) {
             return _wOverHeader(balls.first);
           }
-          if (index > 1) {
-            final currentBall = balls[balls.length - index - 1];
-            final previousBall = balls[balls.length - index];
+          if (index > 2) {
+            final currentBall = balls[balls.length - index - 2];
+            final previousBall = balls[balls.length - index - 1];
             if (currentBall.overIndex != previousBall.overIndex) {
               return Column(
                 children: [
@@ -246,7 +247,7 @@ class InningsTimelineScreen extends StatelessWidget {
   Widget _wOverHeader(Ball ball) => Align(
         alignment: Alignment.centerLeft,
         child: Padding(
-          padding: const EdgeInsets.only(left: 36.0, bottom: 8),
+          padding: const EdgeInsets.only(left: 48.0, bottom: 8),
           child: Chip(
             label: Text("Over ${ball.overIndex + 1}"),
             backgroundColor: innings.bowlingTeam.color,

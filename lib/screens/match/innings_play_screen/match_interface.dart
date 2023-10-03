@@ -245,9 +245,9 @@ class MatchInterface extends StatelessWidget {
       }
 
       // Show Scorecard for completed Match
-      Utils.goToReplacementPage(Scorecard(match: match), context);
+      Utils.goToPage(Scorecard(match: match), context);
       return;
     }
-    Utils.goToReplacementPage(InningsInitScreen(match: match), context);
+    Utils.goToPage(InningsInitScreen(match: match), context);
   }
 }

@@ -45,7 +45,7 @@ class _ScorecardMatchPanel extends StatelessWidget {
     return Column(
       children: [
         MatchTile(match: match, showSummaryLine: true),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         for (int i = 0; i < match.inningsList.length; i++)
           _InningsPanel(match.inningsList[i], i + 1)
       ],
@@ -61,7 +61,7 @@ class _InningsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(0),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 2,
       surfaceTintColor: innings.battingTeam.color,
       child: Padding(
@@ -74,7 +74,7 @@ class _InningsPanel extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   Strings.getInningsHeaderForIndex(inningsIndex),
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const Spacer(),
                 TeamChip(team: innings.battingTeam),

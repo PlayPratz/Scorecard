@@ -61,14 +61,14 @@ class Strings {
       return scoreMatchDrawn;
     }
   }
+  //
+  // static String getBatterInningsScore(BatterInnings innings) {
+  //   return "${innings.runs} in ${innings.ballsFaced}";
+  // }
 
-  static String getBatterInningsScore(BatterInnings innings) {
-    return "${innings.runs} in ${innings.ballsFaced}";
-  }
-
-  static String getBowlerInningsScore(BowlingStats bowlingStats) {
-    return "${bowlingStats.wicketsTaken}-${bowlingStats.runsConceded} in ${getBowlerOversBowled(bowlingStats)}";
-  }
+  // static String getBowlerInningsScore(BowlingStats bowlingStats) {
+  //   return "${bowlingStats.wicketsTaken}-${bowlingStats.runsConceded} in ${getBowlerOversBowled(bowlingStats)}";
+  // }
 
   static String getBowlerOversBowled(BowlingStats bowlingStats) {
     return "${bowlingStats.ballsBowled ~/ Constants.ballsPerOver}.${bowlingStats.ballsBowled % Constants.ballsPerOver}";
@@ -77,7 +77,7 @@ class Strings {
   static String getOverBowledText(Innings innings, {required bool short}) {
     final oversBowled =
         "${innings.ballsBowled ~/ Constants.ballsPerOver}.${innings.ballsBowled % Constants.ballsPerOver}";
-    if (short) return "$oversBowled overs";
+    if (short) return "$oversBowled ov";
     final overText = innings.maxOvers == 1 ? "over" : "overs";
     return "$oversBowled/${innings.maxOvers} $overText";
   }

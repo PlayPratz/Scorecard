@@ -53,7 +53,7 @@ class Innings {
 
     if (batter2 != null) {
       final batterInnings2 = BatterInnings(batter2, innings: this);
-      _batterInnings[batter2] = batterInnings1;
+      _batterInnings[batter2] = batterInnings2;
       playersInAction.batter2 = batterInnings2;
     }
   }
@@ -159,7 +159,7 @@ class Innings {
   }
 
   void removeBowler(BowlerInnings bowlInn) {
-    _bowlerInnings.remove(bowlInn);
+    _bowlerInnings.remove(bowlInn.bowler);
   }
 
   // Batter
@@ -196,7 +196,7 @@ class Innings {
   }
 
   void removeBatter(BatterInnings batInn) {
-    _batterInnings.remove(batInn);
+    _batterInnings.remove(batInn.batter);
   }
 
   void setStrike(BatterInnings batter) {

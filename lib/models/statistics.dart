@@ -18,7 +18,9 @@ abstract class BattingStats {
 
   int get wicketsFallen => balls.where((ball) => ball.isWicket).length;
 
-  double get strikeRate => 100 * runs / ballsFaced;
+  double get strikeRate => ballsFaced == 0
+      ? 0
+      : 100 * runs / ballsFaced; // TODO handle divideby0 case better
   double get average => runs / wicketsFallen;
   int get fours => balls.where((ball) => ball.runsScored == 4).length;
   int get sixes => balls.where((ball) => ball.runsScored == 6).length;
@@ -38,7 +40,9 @@ abstract class BowlingStats {
   // TODO
   // int get maidensBowled => overs.where((over) => over.totalRuns == 0).length;
 
-  double get economy => Constants.ballsPerOver * runsConceded / ballsBowled;
+  double get economy => ballsBowled == 0
+      ? 0
+      : Constants.ballsPerOver * runsConceded / ballsBowled;
   double get strikeRate => ballsBowled / wicketsTaken;
   double get average => runsConceded / wicketsTaken;
 }

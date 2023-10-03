@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/screens/match/innings_play_screen/player_pickers.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/util/strings.dart';
 
 class PlayersInActionPane extends StatelessWidget {
   final Innings innings;
@@ -76,12 +74,33 @@ class PlayersInActionPane extends StatelessWidget {
   ) {
     return PlayerScoreTile(
       player: batterInnings.batter,
-      score: Strings.getBatterInningsScore(batterInnings),
+      score: Column(
+        //TODO Remove duplicate code from Scorecard.dart
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            batterInnings.runs.toString(),
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          Text(
+            batterInnings.ballsFaced.toString(),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.merge(const TextStyle(color: Colors.white70)),
+          ),
+        ],
+      ),
+      description: Text(
+        "SR ${batterInnings.strikeRate.toStringAsFixed(0)}",
+        style: Theme.of(context).textTheme.bodySmall,
+      ), //TODO move
       teamColor: innings.battingTeam.color,
       isOnline: batterInnings == innings.playersInAction.striker,
       isOut: batterInnings.isOut,
       onTap: () => onTapBatter(batterInnings),
-      onLongPress: () => onLongTapBatter(batterInnings), //TODO
+      onLongPress: () => onLongTapBatter(batterInnings),
     );
   }
 
@@ -89,8 +108,12 @@ class PlayersInActionPane extends StatelessWidget {
     final bowlerInnings = innings.playersInAction.bowler!;
     return PlayerScoreTile(
       player: bowlerInnings.bowler,
+      score: const Text(""), //TODO Move
+      description: Text(
+        "ECON ${bowlerInnings.economy.toStringAsFixed(1)}", //TODO move
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
       teamColor: innings.bowlingTeam.color,
-      score: Strings.getBowlerInningsScore(bowlerInnings),
       onLongPress: () => onTapBowler(bowlerInnings),
     );
   }
@@ -98,7 +121,8 @@ class PlayersInActionPane extends StatelessWidget {
 
 class PlayerScoreTile extends StatelessWidget {
   final Player? player;
-  final String score;
+  final Widget? score;
+  final Widget? description;
   final bool isOnline;
   final Color teamColor;
   final bool isOut;
@@ -110,6 +134,7 @@ class PlayerScoreTile extends StatelessWidget {
     Key? key,
     required this.player,
     required this.score,
+    required this.description,
     required this.teamColor,
     this.isOut = false,
     this.isOnline = false,
@@ -121,6 +146,7 @@ class PlayerScoreTile extends StatelessWidget {
     super.key,
     required this.player,
     required this.score,
+    this.description,
     this.onTap,
     this.onLongPress,
   })  : isOut = true,
@@ -150,16 +176,21 @@ class PlayerScoreTile extends StatelessWidget {
           onLongPress: onLongPress,
           leading: Elements.getPlayerIcon(player!, 32),
           horizontalTitleGap: 8,
-          visualDensity: const VisualDensity(vertical: -2),
-          title: Text(
-            player!.name.toUpperCase(),
-            style: Theme.of(context).textTheme.labelLarge,
-            maxLines: 1,
+          // visualDensity: const VisualDensity(vertical: -2),
+          title: Align(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                player!.name.toUpperCase(),
+                style: Theme.of(context).textTheme.labelLarge,
+                maxLines: 1,
+              ),
+            ),
           ),
-          subtitle: Text(
-            score,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          subtitle: description,
+          trailing: score,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         ),
       ),
     );

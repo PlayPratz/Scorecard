@@ -33,8 +33,8 @@ class BatterPicker extends StatelessWidget {
               top: PlayerScoreTile.wicket(
                 player: batterToReplace.batter,
                 score: wicket != null
-                    ? Strings.getWicketDescription(wicket)
-                    : "null",
+                    ? Text(Strings.getWicketDescription(wicket))
+                    : const SizedBox(),
               ),
               bottom: Expanded(
                 child: PlayerList(

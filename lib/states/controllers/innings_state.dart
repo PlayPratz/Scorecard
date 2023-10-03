@@ -67,8 +67,7 @@ class InningsStateController {
     return AddBallState(innings: innings, selections: _selections);
   }
 
-  InningsState get initialState =>
-      AddBallState(innings: innings, selections: _selections);
+  InningsState get initialState => _deduceState();
 
   void addBall() {
     // Create a ball from the current selections
@@ -107,37 +106,37 @@ class InningsStateController {
   }
 
   void _updateIndexes(Ball ball) {
-    // if (innings.balls.isEmpty) {
-    //   ball.overIndex = 0;
-    //   ball.ballIndex = 1;
-    // } else {
-    //   final lastBall = innings.balls.last;
-    //   if (lastBall.ballIndex == Constants.ballsPerOver) {
-    //     ball.overIndex = lastBall.overIndex + 1;
-    //     ball.ballIndex = 1;
-    //   } else {
-    //     ball.overIndex = lastBall.overIndex;
-    //     ball.ballIndex = lastBall.ballIndex + 1;
-    //   }
-    // }
-    // if (!ball.isLegal) {
-    //   ball.ballIndex--;
-    // }
-
-    int overIndex = innings.balls.isEmpty ? 0 : innings.balls.last.overIndex;
-    int ballIndex = innings.balls.isEmpty ? 0 : innings.balls.last.ballIndex;
-
-    if (ball.isLegal) {
-      ballIndex++;
-
-      if (ballIndex > Constants.ballsPerOver) {
-        ballIndex = 0;
-        overIndex++;
+    if (innings.balls.isEmpty) {
+      ball.overIndex = 0;
+      ball.ballIndex = 1;
+    } else {
+      final lastBall = innings.balls.last;
+      if (lastBall.ballIndex == Constants.ballsPerOver) {
+        ball.overIndex = lastBall.overIndex + 1;
+        ball.ballIndex = 1;
+      } else {
+        ball.overIndex = lastBall.overIndex;
+        ball.ballIndex = lastBall.ballIndex + 1;
       }
     }
+    if (!ball.isLegal) {
+      ball.ballIndex--;
+    }
 
-    ball.overIndex = overIndex;
-    ball.ballIndex = ballIndex;
+    // int overIndex = innings.balls.isEmpty ? 0 : innings.balls.last.overIndex;
+    // int ballIndex = innings.balls.isEmpty ? 0 : innings.balls.last.ballIndex;
+    //
+    // if (ball.isLegal) {
+    //   ballIndex++;
+    //
+    //   if (ballIndex > Constants.ballsPerOver) {
+    //     ballIndex = 0;
+    //     overIndex++;
+    //   }
+    // }
+    //
+    // ball.overIndex = overIndex;
+    // ball.ballIndex = ballIndex;
   }
 
   void _swapStrike() {
@@ -164,12 +163,17 @@ class InningsStateController {
         ? innings.getBowlerInnings(innings.balls.last.bowler)
         : null;
 
+    // TODO Jugaad: Swapping strike on every bowler change instead of end of over
+    _swapStrike();
+
     _inningsEventController.add(
         SetBowlerEvent(inBowler: inBowlerInnings, outBowler: outBowlerInnings));
   }
 
   void _undoSetBowler(SetBowlerEvent setBowlerEvent) {
     innings.removeBowler(setBowlerEvent.inBowler);
+
+    _swapStrike();
 
     innings.playersInAction.bowler = setBowlerEvent.outBowler;
   }

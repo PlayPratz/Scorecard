@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/util/strings.dart';
-import '../../models/cricket_match.dart';
+import 'package:scorecard/models/cricket_match.dart';
 
 class MatchTile extends StatelessWidget {
   final CricketMatch match;
@@ -248,50 +248,57 @@ class RunRatePane extends StatelessWidget {
   final bool showChaseRequirement;
   final Innings innings;
 
-  const RunRatePane(
+  RunRatePane(
       {super.key, required this.showChaseRequirement, required this.innings});
+
+  final showRRR = ValueNotifier(false);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (showChaseRequirement)
-          Row(
-            children: [
-              Expanded(
-                child: _wRunRateBox(
+    return ValueListenableBuilder(
+      valueListenable: showRRR,
+      builder: (context, value, child) => Row(
+        children: [
+          Expanded(
+            child: showRRR.value
+                ? _wRunRateBox(
                     context: context,
                     color: innings.battingTeam.color,
-                    heading: Strings.scoreRequire,
-                    value: innings.requiredRuns.toString()),
-              ),
-              Expanded(
-                  child: _wRunRateBox(
-                      context: context,
-                      color: innings.bowlingTeam.color,
-                      heading: Strings.scoreBalls,
-                      value: innings.ballsLeft.toString())),
-            ],
-          )
-        else
-          Row(
-            children: [
-              Expanded(
-                child: _wRunRateBox(
+                    heading: Strings.scoreRRR,
+                    value: innings.requiredRunRate.toStringAsFixed(2),
+                    onTap: _handleToggle)
+                : _wRunRateBox(
                     context: context,
                     color: innings.battingTeam.color,
                     heading: Strings.scoreCRR,
-                    value: innings.currentRunRate.toStringAsFixed(2)),
-              ),
-              Expanded(
-                  child: _wRunRateBox(
-                      context: context,
-                      color: innings.battingTeam.color,
-                      heading: Strings.scoreProjected,
-                      value: innings.projectedRuns.toString())),
-            ],
+                    value: innings.currentRunRate.toStringAsFixed(2),
+                    onTap: _handleToggle),
           ),
-      ],
+          if (showChaseRequirement) ...<Widget>[
+            Expanded(
+              child: _wRunRateBox(
+                  context: context,
+                  color: innings.battingTeam.color,
+                  heading: Strings.scoreRequire,
+                  value: innings.requiredRuns.toString()),
+            ),
+            Expanded(
+              child: _wRunRateBox(
+                  context: context,
+                  color: innings.bowlingTeam.color,
+                  heading: Strings.scoreBalls,
+                  value: innings.ballsLeft.toString()),
+            ),
+          ] else
+            Expanded(
+              child: _wRunRateBox(
+                  context: context,
+                  color: innings.battingTeam.color,
+                  heading: Strings.scoreProjected,
+                  value: innings.projectedRuns.toString()),
+            ),
+        ],
+      ),
     );
   }
 
@@ -300,27 +307,38 @@ class RunRatePane extends StatelessWidget {
     required Color color,
     required String heading,
     required String value,
+    VoidCallback? onTap,
   }) =>
       Card(
         elevation: 2,
         color: color.withOpacity(0.3),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              FittedBox(
-                child: Text(
-                  heading.toUpperCase(),
-                  style: Theme.of(context).textTheme.bodySmall,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                FittedBox(
+                  child: Text(
+                    heading.toUpperCase(),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.titleLarge,
-              )
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleLarge,
+                )
+              ],
+            ),
           ),
         ),
       );
+
+  void _handleToggle() {
+    if (showChaseRequirement == true) {
+      showRRR.value = !showRRR.value;
+    }
+  }
 }

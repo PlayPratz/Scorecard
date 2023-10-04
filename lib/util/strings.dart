@@ -89,6 +89,15 @@ class Strings {
   static String getInningsScore(Innings innings) =>
       "${innings.runs}/${innings.wickets}";
 
+  static String getOverSummary(Over over) {
+    int runs = over.totalRuns;
+    int wickets = over.totalWickets;
+    final runsString = runs == 1 ? "RUN" : "RUNS";
+    final wicketString = wickets == 1 ? "WICKET" : "WICKETS";
+
+    return "$runs $runsString, $wickets $wicketString";
+  }
+
   static const String playerBatter = " Bat";
 
   // static const String playerBowler = " Bowl";
@@ -177,6 +186,7 @@ class Strings {
   static const String scorecardBatting = "Batting";
   static const String scorecardBowling = "Bowling";
   static const String scorecardInningsWithSpace = " Innings";
+  static const String scorecardFallOfWickets = "Fall Of Wickets";
 
   static const String goToTimeline = "View Timeline";
   static const String innings = "Innings";
@@ -293,7 +303,7 @@ class Strings {
   static String getBattingExtra(BattingExtra battingExtra) {
     switch (battingExtra) {
       case BattingExtra.bye:
-        return "Bye (Event)";
+        return "Bye";
       case BattingExtra.legBye:
         return "Leg Bye";
       default:

@@ -245,11 +245,18 @@ class InningsTimelineScreen extends StatelessWidget {
   Widget _wOverHeader(Over over) => Align(
         alignment: Alignment.centerLeft,
         child: Padding(
-          padding: const EdgeInsets.only(left: 48.0, bottom: 8),
-          child: Chip(
-            label: Text("Over ${over.balls.first.overIndex + 1}"),
-            backgroundColor: innings.bowlingTeam.color.withOpacity(0.7),
-            side: const BorderSide(color: Colors.white10, width: 0),
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              // const SizedBox(width: 40),
+              Chip(
+                label: Text("Over ${over.balls.first.overIndex + 1}"),
+                backgroundColor: innings.bowlingTeam.color.withOpacity(0.7),
+                side: const BorderSide(color: Colors.white10, width: 0),
+              ),
+              const Spacer(),
+              Text(Strings.getOverSummary(over))
+            ],
           ),
         ),
       );

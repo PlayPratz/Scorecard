@@ -79,6 +79,7 @@ class InningsStateController {
       battingExtra: _selections.battingExtra,
       bowlingExtra: _selections.bowlingExtra,
       wicket: _selections.wicket,
+      isEventOnly: _selections.isEvent,
     );
 
     // Update the over and ball index for the ball (ex: 4.2, 19.6)

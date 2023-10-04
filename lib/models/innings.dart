@@ -83,6 +83,15 @@ class Innings {
 
     _bowlerInnings[ball.bowler]!.deliver(ball);
     _batterInnings[ball.batter]!.face(ball);
+
+    if (ball.isWicket) {
+      _fallOfWickets.add(
+        FallOfWicket(ball: ball, runsAtWicket: runs, wicketsAtWicket: wickets),
+      );
+      if (ball.wicket!.batter != ball.batter) {
+        _batterInnings[ball.wicket!.batter]!.setWicket(ball.wicket!);
+      }
+    }
   }
 
   /// Remove the given [ball] from this innings.
@@ -137,10 +146,9 @@ class Innings {
       target != null ? (requiredRuns / ballsLeft) * Constants.ballsPerOver : 0;
 
   // Fall of Wickets
+  final List<FallOfWicket> _fallOfWickets = [];
   UnmodifiableListView<FallOfWicket> get fallOfWickets =>
-      UnmodifiableListView(balls
-          .where((ball) => ball.isWicket)
-          .map((ball) => FallOfWicket(ball: ball, outBatter: ball.batter)));
+      UnmodifiableListView(_fallOfWickets);
 
   // Players In Action
   late final PlayersInAction playersInAction;
@@ -247,6 +255,10 @@ class BatterInnings extends BattingStats {
     }
   }
 
+  void setWicket(Wicket wicket) {
+    this.wicket = wicket;
+  }
+
   void retire() {
     wicket = Wicket.retired(batter: batter);
   }
@@ -274,12 +286,18 @@ class FallOfWicket {
   Ball ball;
   // BatterInnings inBatter;
   // BatterInnings outBatter;
-  Player outBatter;
 
-  FallOfWicket(
-      {required this.ball,
-      // required this.inBatter,
-      required this.outBatter});
+  final int runsAtWicket;
+  final int wicketsAtWicket;
+
+  Wicket get wicket => ball.wicket!;
+
+  FallOfWicket({
+    required this.ball,
+    // required this.inBatter,
+    required this.runsAtWicket,
+    required this.wicketsAtWicket,
+  });
 }
 
 /// The [Player]s that are currently on pitch

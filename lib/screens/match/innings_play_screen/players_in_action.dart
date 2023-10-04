@@ -38,9 +38,19 @@ class PlayersInActionPane extends StatelessWidget {
           ],
         ),
       ),
-      Expanded(
-        child: _wBowlerInAction(context),
-      ),
+      // Expanded(
+      //   child: Column(
+      //     children: [
+      //       _wBowlerInAction(context),
+      //       GenericItemTile(
+      //         primaryHint: "This Over",
+      //         secondaryHint: "This Over",
+      //         trailing: null,
+      //       ),
+      //     ],
+      //   ),
+      // ),
+      Expanded(child: _wBowlerInAction(context))
     ];
     return Card(
       surfaceTintColor: innings.battingTeam.color,
@@ -73,6 +83,11 @@ class PlayersInActionPane extends StatelessWidget {
     BuildContext context,
     BatterInnings batterInnings,
   ) {
+    // TODO get this from event instead of this duplicate logic
+    final isOut = batterInnings.isOut ||
+        (innings.balls.isNotEmpty &&
+            innings.balls.last.isWicket &&
+            innings.balls.last.wicket!.batter == batterInnings.batter);
     return PlayerScoreTile(
       player: batterInnings.batter,
       score: Column(
@@ -99,7 +114,7 @@ class PlayersInActionPane extends StatelessWidget {
       ), //TODO move
       teamColor: innings.battingTeam.color,
       isOnline: batterInnings == innings.playersInAction.striker,
-      isOut: batterInnings.isOut,
+      isOut: isOut,
       onTap: () => onTapBatter(batterInnings),
       onLongPress: () => onLongTapBatter(batterInnings),
     );

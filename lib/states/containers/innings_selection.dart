@@ -7,4 +7,6 @@ class InningsSelections {
   Wicket? wicket;
   BowlingExtra? bowlingExtra;
   BattingExtra? battingExtra;
+
+  bool isEvent = false;
 }

@@ -17,6 +17,7 @@ import 'package:scorecard/screens/widgets/item_list.dart';
 
 class WicketTile extends StatelessWidget {
   final BallDetailsStateController stateController;
+
   final Innings innings;
 
   const WicketTile(
@@ -63,6 +64,7 @@ class WicketTile extends StatelessWidget {
           striker: playersInAction.striker!.batter,
           fieldingTeam: innings.bowlingTeam,
           battingTeam: innings.battingTeam,
+          playersInAction: innings.playersInAction,
         ),
         context);
     stateController.selectWicket(selectedWicket);
@@ -74,12 +76,14 @@ class WicketPicker extends StatefulWidget {
   final Player striker;
   final Team battingTeam;
   final Team fieldingTeam;
+  final PlayersInAction playersInAction;
   const WicketPicker({
     Key? key,
     required this.bowler,
     required this.striker,
     required this.battingTeam,
     required this.fieldingTeam,
+    required this.playersInAction,
   }) : super(key: key);
 
   @override
@@ -255,17 +259,23 @@ class _WicketPickerState extends State<WicketPicker> {
         onSelect: _onSelectBatter,
       );
 
-  void _onSelectBatter() => Utils.goToPage(
-      TitledPage(
-          title: Strings.choosePlayer,
-          child: PlayerList(
-            playerList: widget.battingTeam.squad,
-            onSelectPlayer: (batter) => setState(() {
-              _batter = batter;
-              Utils.goBack(context);
-            }),
-          )),
-      context);
+  void _onSelectBatter() {
+    Utils.goToPage(
+        TitledPage(
+            title: Strings.choosePlayer,
+            child: PlayerList(
+              playerList: [
+                widget.playersInAction.batter1!.batter,
+                if (widget.playersInAction.batter2 != null)
+                  widget.playersInAction.batter2!.batter
+              ],
+              onSelectPlayer: (batter) => setState(() {
+                _batter = batter;
+                Utils.goBack(context);
+              }),
+            )),
+        context);
+  }
 
   Widget _wFielderChooser() => GenericItemTile(
       primaryHint: "Select a Fielder",

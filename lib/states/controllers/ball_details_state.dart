@@ -27,6 +27,10 @@ class BallDetailsStateController {
   void selectBowlingExtra(BowlingExtra? bowlingExtra) {
     _selections.bowlingExtra = bowlingExtra;
     _bowlingExtraStreamController.add(bowlingExtra);
+
+    if (bowlingExtra != null) {
+      setEvent(false);
+    }
   }
 
   final _battingExtraStreamController = StreamController<BattingExtra?>();
@@ -36,6 +40,24 @@ class BallDetailsStateController {
   void selectBattingExtra(BattingExtra? battingExtra) {
     _selections.battingExtra = battingExtra;
     _battingExtraStreamController.add(battingExtra);
+
+    if (battingExtra != null) {
+      setEvent(false);
+    }
+  }
+
+  final _ballIsEventStreamController = StreamController<bool>();
+  Stream<bool> get ballIsEventStreamController =>
+      _ballIsEventStreamController.stream;
+
+  void setEvent(bool isEvent) {
+    _selections.isEvent = isEvent;
+    _ballIsEventStreamController.add(isEvent);
+
+    if (isEvent) {
+      selectBattingExtra(null);
+      selectBowlingExtra(null);
+    }
   }
 
   final _wicketStreamController = StreamController<Wicket?>();
@@ -51,6 +73,7 @@ class BallDetailsStateController {
     selectBowlingExtra(null);
     selectBattingExtra(null);
     selectWicket(null);
+    setEvent(false);
   }
 }
 

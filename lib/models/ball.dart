@@ -23,8 +23,7 @@ class Ball {
   /// The [Wicket], if any, which was taken on this [Ball]
   final Wicket? wicket;
 
-  // bool _shouldCountBall = true;
-  final bool isEventOnly = false;
+  final bool isEventOnly;
 
   /// Zero-based index of the over this ball is bowled in
   int overIndex;
@@ -44,18 +43,21 @@ class Ball {
     this.bowlingExtra,
     this.overIndex = 0,
     this.ballIndex = 0,
+    this.isEventOnly = false,
   }) : timestamp = DateTime.timestamp();
 
-  Ball.load(
-      {required this.bowler,
-      required this.batter,
-      required this.runsScored,
-      this.wicket,
-      this.battingExtra,
-      this.bowlingExtra,
-      this.overIndex = 0,
-      this.ballIndex = 0,
-      required this.timestamp});
+  Ball.load({
+    required this.bowler,
+    required this.batter,
+    required this.runsScored,
+    this.wicket,
+    this.battingExtra,
+    this.bowlingExtra,
+    this.overIndex = 0,
+    this.ballIndex = 0,
+    this.isEventOnly = false,
+    required this.timestamp,
+  });
 
   int get totalRuns => runsScored + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;
@@ -80,7 +82,7 @@ class Over {
   // List<Ball> get bowlingExtraBalls =>
   //     balls.where((ball) => ball.isBowlingExtra).toList();
   //
-  // List<Ball> get wicketBalls => balls.where((ball) => ball.isWicket).toList();
+  List<Ball> get wicketBalls => balls.where((ball) => ball.isWicket).toList();
 
   int get numOfLegalBalls => legalBalls.length;
   // int get numOfBowlingExtras => bowlingExtraBalls.length;
@@ -89,9 +91,9 @@ class Over {
   bool get isCompleted => numOfBallsLeft == 0;
 
   // int get totalRuns => statistics.runsConceded;
-  // int get totalRuns => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
+  int get totalRuns => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
   // int get bowlerWickets => balls.where((ball) => ball.isBowlerWicket).length;
-  // int get totalWickets => wicketBalls.length;
+  int get totalWickets => wicketBalls.length;
 
   void addBall(Ball ball) {
     if (isCompleted) {

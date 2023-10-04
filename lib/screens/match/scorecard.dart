@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/cricket_match.dart';
+import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/statistics.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
+import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/styles/color_styles.dart';
-import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
-import '../../models/cricket_match.dart';
-import '../../models/innings.dart';
-import '../templates/titled_page.dart';
 
 class Scorecard extends StatelessWidget {
   final CricketMatch match;
@@ -84,6 +84,8 @@ class _InningsPanel extends StatelessWidget {
             const SizedBox(height: 16),
             _BattingInningsPanel(innings),
             const SizedBox(height: 16),
+            _FallOfWicketsPanel(innings),
+            const SizedBox(height: 16),
             _wBowlingPanel(context, innings),
             const SizedBox(height: 16),
             Align(
@@ -142,6 +144,85 @@ class _BattingInningsPanel extends StatelessWidget {
   }
 }
 
+// TODO Abstract common code from _BattingInningsPanel
+class _FallOfWicketsPanel extends StatelessWidget {
+  final Innings innings;
+
+  const _FallOfWicketsPanel(this.innings);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      surfaceTintColor: innings.battingTeam.color,
+      color: innings.battingTeam.color.withOpacity(0.4),
+      elevation: 4,
+      margin: const EdgeInsets.all(0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Text(
+              Strings.scorecardFallOfWickets.toUpperCase(),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: DefaultTextStyle(
+              style: Theme.of(context).textTheme.titleMedium!,
+              child: Table(
+                // defaultColumnWidth: FlexColumnWidth(1),
+                columnWidths: const {
+                  2: FlexColumnWidth(2),
+                  3: FlexColumnWidth(3),
+                },
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                border: const TableBorder(
+                    horizontalInside: BorderSide(color: Colors.black12)),
+                children: [
+                  for (final fallOfWicket in innings.fallOfWickets)
+                    TableRow(
+                      children: [
+                        SizedBox(
+                          height: 36, // To space the rows
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                "${fallOfWicket.ball.overIndex}.${fallOfWicket.ball.ballIndex}"),
+                          ),
+                        ), //TODO Abstract
+                        Text(
+                            "${fallOfWicket.runsAtWicket}/${fallOfWicket.wicketsAtWicket}"),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(fallOfWicket.wicket.batter.name),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(Strings.getWicketDescription(
+                                  fallOfWicket.wicket))),
+                        ),
+                      ],
+                    )
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// TODO Convert to Stateless Widget
 Widget _wBowlingPanel(BuildContext context, Innings innings) {
   return _innerPanel(
       context,

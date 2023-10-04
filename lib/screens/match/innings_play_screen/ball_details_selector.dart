@@ -20,6 +20,7 @@ class BallDetailsSelector extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _BattingExtraSelector(stateController: stateController),
+            _BallIsEventSelector(stateController: stateController),
             _BowlingExtraSelector(stateController: stateController),
           ],
         ),
@@ -143,6 +144,8 @@ class _BowlingExtraSelector extends StatelessWidget {
                         ?.merge(TextStyle(color: foregroundColor)),
                   ),
                   selected: bowlingExtra == selectedBowlingExtra,
+                  // checkmarkColor: Colors.black,
+                  showCheckmark: false,
                   onSelected: (isSelected) {
                     if (isSelected) {
                       stateController.selectBowlingExtra(bowlingExtra);
@@ -191,5 +194,32 @@ class _BattingExtraSelector extends StatelessWidget {
             );
           }).toList());
         });
+  }
+}
+
+class _BallIsEventSelector extends StatelessWidget {
+  final BallDetailsStateController stateController;
+
+  const _BallIsEventSelector({required this.stateController});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: stateController.ballIsEventStreamController,
+      initialData: false,
+      builder: (context, snapshot) {
+        final isEvent = snapshot.data;
+        return FilterChip(
+            label: Text("Event",
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium), // TODO Abstract Move
+            selected: isEvent!,
+            showCheckmark: false,
+            selectedColor: ColorStyles.ballEvent,
+            side: const BorderSide(color: _borderColor, width: 0.5),
+            onSelected: (isSelected) => stateController.setEvent(!isEvent));
+      },
+    );
   }
 }

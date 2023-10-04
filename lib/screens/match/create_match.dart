@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/team.dart';
+import 'package:scorecard/screens/match/match_init.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/team/create_team.dart';
-import 'package:scorecard/screens/team/team_list.dart';
+import 'package:scorecard/screens/team/team_dummy_tile.dart';
+import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/number_picker.dart';
 import 'package:scorecard/services/storage_service.dart';
-
-import '../../models/cricket_match.dart';
-import '../../models/team.dart';
-import '../../util/elements.dart';
-import '../../util/strings.dart';
-import '../../util/utils.dart';
-import '../templates/titled_page.dart';
-import '../team/team_dummy_tile.dart';
-import 'match_init.dart';
+import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/util/strings.dart';
+import 'package:scorecard/util/utils.dart';
 
 class CreateMatchForm extends StatefulWidget {
   final void Function(CricketMatch match)? onCreateMatch;
@@ -36,6 +35,8 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   Team? _selectedAwayTeam;
   int _overs = 5;
 
+  CricketMatch? _match;
+
   @override
   void initState() {
     super.initState();
@@ -57,7 +58,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
                   ? _wSelectTeam(
                       _selectedHomeTeam!.name,
                       _selectedHomeTeam!.shortName,
-                      _selectedHomeTeam!.color,
+                      _selectedHomeTeam!.color.withOpacity(0.8),
                       true,
                     )
                   : _wSelectTeam(
@@ -71,7 +72,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
                   ? _wSelectTeam(
                       _selectedAwayTeam!.name,
                       _selectedAwayTeam!.shortName,
-                      _selectedAwayTeam!.color,
+                      _selectedAwayTeam!.color.withOpacity(0.8),
                       false,
                     )
                   : _wSelectTeam(
@@ -129,18 +130,18 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     Team? currentTeam,
     Function(Team) onSelectTeam,
   ) async {
-    // final Team? chosenTeam = await Utils.goToPage(
-    //   CreateTeamForm(team: currentTeam),
-    //   context,
-    // );
-    Team? chosenTeam = await Utils.goToPage(
-        TitledPage(
-          child: TeamList(
-            teamList: StorageService.getAllTeams(),
-            onSelectTeam: (team) => Utils.goBack(context, team),
-          ),
-        ),
-        context);
+    final Team? chosenTeam = await Utils.goToPage(
+      CreateTeamForm(team: currentTeam),
+      context,
+    );
+    // Team? chosenTeam = await Utils.goToPage(
+    //     TitledPage(
+    //       child: TeamList(
+    //         teamList: StorageService.getAllTeams(),
+    //         onSelectTeam: (team) => Utils.goBack(context, team),
+    //       ),
+    //     ),
+    //     context);
     if (chosenTeam != null) {
       setState(() {
         onSelectTeam(chosenTeam);
@@ -149,13 +150,18 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   }
 
   void _createMatch() {
+    if (_match != null) {
+      StorageService.deleteMatch(_match!);
+      _match = null;
+    }
     CricketMatch match = CricketMatch.create(
       homeTeam: _selectedHomeTeam!,
       awayTeam: _selectedAwayTeam!,
       maxOvers: _overs,
     );
     StorageService.saveMatch(match);
-    Utils.goToReplacementPage(MatchInitScreen(match: match), context);
+    _match = match;
+    Utils.goToPage(MatchInitScreen(match: match), context);
     widget.onCreateMatch?.call(match);
   }
 
@@ -168,7 +174,7 @@ class CreateQuickMatchForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = SelectablePlayerController();
+    final controller = SelectableItemController<Player>();
     return TitledPage(
       title: "Quick Match",
       child: Column(
@@ -191,9 +197,9 @@ class CreateQuickMatchForm extends StatelessWidget {
             listenable: controller, // TODO Remove Jugaad
             builder: (context, child) => Elements.getConfirmButton(
               text: Strings.buttonNext,
-              onPressed: controller.selectedPlayers.length >= 2
-                  ? () => _handleCreateQuickTeams(
-                      context, controller.selectedPlayers)
+              onPressed: controller.selectedItems.length >= 2
+                  ? () =>
+                      _handleCreateQuickTeams(context, controller.selectedItems)
                   : null,
             ),
           ),

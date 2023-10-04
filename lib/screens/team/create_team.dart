@@ -41,6 +41,8 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   final TextEditingController _shortTeamNameController =
       TextEditingController();
 
+  late Color _color;
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +50,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     Team team = widget.team;
     _teamNameController.text = team.name;
     _shortTeamNameController.text = team.shortName;
+    _color = team.color;
 
     if (widget.team.squadSize > 0) {
       _selectedCaptain = team.squad[0];
@@ -81,7 +84,8 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     team.name = _teamNameController.text;
     team.shortName = _shortTeamNameController.text;
     team.squad = [_selectedCaptain!, ..._selectedPlayerList];
-    team.color = genTeamTemplates[genTeamIndex % genTeamTemplates.length].color;
+    team.color = _color;
+    // team.color = genTeamTemplates[genTeamIndex % genTeamTemplates.length].color;
     StorageService.saveTeam(team);
     Utils.goBack(context, team);
   }
@@ -111,11 +115,10 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             child: GestureDetector(
           onTap: () => setState(() {
             genTeamIndex++;
+            _color =
+                genTeamTemplates[genTeamIndex % genTeamTemplates.length].color;
           }),
-          child: CircleAvatar(
-            backgroundColor:
-                genTeamTemplates[genTeamIndex % genTeamTemplates.length].color,
-          ),
+          child: CircleAvatar(backgroundColor: _color),
         )),
         Expanded(
           flex: 2,
@@ -260,7 +263,7 @@ class CreateQuickTeamsForm extends StatelessWidget {
       color: teamB,
     );
 
-    Utils.goToPage(
+    Utils.goToReplacementPage(
         CreateMatchForm(
           homeTeam: team1,
           awayTeam: team2,
@@ -284,42 +287,45 @@ class CreateQuickTeamsForm extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           bottom: Expanded(
-              child: ItemList(
-            itemList: players
-                .map((player) => ListTile(
-                      leading: IconButton(
-                        onPressed:
-                            showUp ? () => controller.moveUp(player) : null,
-                        icon: Visibility(
-                          visible: showUp,
-                          child: Transform.rotate(
-                              angle: pi / 2,
-                              child: const Icon(Icons.arrow_circle_left)),
+            child: ItemList(
+              itemList: players
+                  .map((player) => ListTile(
+                        leading: IconButton(
+                          onPressed:
+                              showUp ? () => controller.moveUp(player) : null,
+                          icon: Visibility(
+                            visible: showUp,
+                            child: Transform.rotate(
+                                angle: pi / 2,
+                                child: const Icon(Icons.arrow_circle_left)),
+                          ),
                         ),
-                      ),
-                      title: Row(
-                        children: [
-                          Elements.getPlayerIcon(player, 32),
-                          const SizedBox(width: 16),
-                          Text(player.name),
-                        ],
-                      ),
-                      trailing: showDown
-                          ? IconButton(
-                              onPressed: showDown
-                                  ? () => controller.moveDown(player)
-                                  : null,
-                              icon: Visibility(
-                                visible: showDown,
-                                child: Transform.rotate(
-                                    angle: -pi / 2,
-                                    child: const Icon(Icons.arrow_circle_left)),
-                              ),
-                            )
-                          : null,
-                    ))
-                .toList(),
-          )),
+                        title: Row(
+                          children: [
+                            Elements.getPlayerIcon(player, 32),
+                            const SizedBox(width: 16),
+                            Text(player.name),
+                          ],
+                        ),
+                        trailing: showDown
+                            ? IconButton(
+                                onPressed: showDown
+                                    ? () => controller.moveDown(player)
+                                    : null,
+                                icon: Visibility(
+                                  visible: showDown,
+                                  child: Transform.rotate(
+                                      angle: -pi / 2,
+                                      child:
+                                          const Icon(Icons.arrow_circle_left)),
+                                ),
+                              )
+                            : null,
+                      ))
+                  .toList(),
+              alignToBottom: false,
+            ),
+          ),
           color: color,
         ),
       );
@@ -357,7 +363,8 @@ class CreateQuickTeamsFormController with ChangeNotifier {
     notifyListeners();
   }
 
-  String get team1 => squad1.isNotEmpty ? squad1.first.name : "A";
+  String get team1 =>
+      squad1.isNotEmpty ? squad1.first.name : "A"; // TODO move hardcoded
   String get team2 => squad2.isNotEmpty ? squad2.first.name : "B";
 
   bool get canSubmit =>

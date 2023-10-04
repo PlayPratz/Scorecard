@@ -8,7 +8,6 @@ import 'package:scorecard/util/constants.dart';
 
 class InningsStateController {
   final _inningsEventController = StreamController<InningsEvent>();
-  // get inningsEventStream => _inningsEventController.stream;
 
   final _inningsEventHistory = <InningsEvent>[];
 

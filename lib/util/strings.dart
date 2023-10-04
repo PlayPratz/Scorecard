@@ -154,7 +154,7 @@ class Strings {
   static const String initMatchHeadingToss = "Toss";
   static const String initMatchTossTeamPrimary = "Toss Winner";
   static const String initMatchTossTeamHint = "Specify which team was luckier";
-  static const String initMatchTossChoicePrimary = "Choose to?";
+  static const String initMatchTossChoicePrimary = "Choose to...";
   static const String initMatchTossChoiceHint =
       "Win or Lose? Oh sorry - Bat or Field?";
   static const String initMatchTossChoiceTitle = "Win the toss and choose to";
@@ -165,7 +165,7 @@ class Strings {
   static const String initInningsStriker = "Striker";
   static const String initInningsNonStriker = "Non-Striker";
   static const String initInningsBowler = "Bowler";
-  static const String initInningsChooseBatter = "Choose a Batter";
+  static const String initInningsChooseBatter = "Choose Openers";
   static const String initInningsChooseBatterHint = "It's scorin' time!";
   static const String initInningsChooseBowler = "Choose a Bowler";
   static const String initInningsChooseBowlerHint = "It's wicketin' time!";

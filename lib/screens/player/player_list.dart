@@ -66,9 +66,10 @@ Future<Player?> getPlayerFromList(
   return player;
 }
 
+// TODO Migrate to SelectableItemList?
 class SelectablePlayerList extends StatelessWidget {
   final List<Player> players;
-  final SelectablePlayerController controller;
+  final SelectableItemController<Player> controller;
 
   const SelectablePlayerList(
       {super.key, required this.players, required this.controller});
@@ -81,7 +82,7 @@ class SelectablePlayerList extends StatelessWidget {
         itemList: players
             //Not using PlayerTile because need "selected" param
             .map((player) {
-          final isSelected = controller.selectedPlayers.contains(player);
+          final isSelected = controller.selectedItems.contains(player);
           return ListTile(
             selected: isSelected,
             selectedTileColor:
@@ -90,26 +91,13 @@ class SelectablePlayerList extends StatelessWidget {
             leading: Elements.getPlayerIcon(player, 48),
             trailing:
                 isSelected ? const Icon(Icons.check_circle) : const SizedBox(),
-            onTap: () => controller.selectPlayer(player),
+            onTap: () => controller.selectItem(player),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           );
         }).toList(),
+        alignToBottom: false,
       ),
     );
-  }
-}
-
-// TODO should move to new file?
-class SelectablePlayerController with ChangeNotifier {
-  final selectedPlayers = <Player>[];
-
-  void selectPlayer(Player player) {
-    if (selectedPlayers.contains(player)) {
-      selectedPlayers.remove(player);
-    } else {
-      selectedPlayers.add(player);
-    }
-    notifyListeners();
   }
 }

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/home.dart';
 import 'package:scorecard/services/storage_service.dart';
-
-import 'screens/home.dart';
-import 'styles/color_styles.dart';
-import 'styles/text_styles.dart';
+import 'package:scorecard/styles/text_styles.dart';
 
 void main() {
   runApp(const ScorecardApp());

@@ -53,7 +53,7 @@ class _TeamTemplate {
 final List<_TeamTemplate> genTeamTemplates = [
   _TeamTemplate(name: "Aqua", shortName: "AQU", color: Colors.blue),
   _TeamTemplate(name: "Lava", shortName: "LAV", color: Colors.deepOrange),
-  _TeamTemplate(name: "Smoke", shortName: "SMK", color: Colors.grey.shade700),
+  _TeamTemplate(name: "Smoke", shortName: "SMK", color: Colors.black12),
   _TeamTemplate(name: "Grass", shortName: "GRA", color: Colors.green),
   _TeamTemplate(name: "Mint", shortName: "MIN", color: Colors.cyan),
   _TeamTemplate(name: "Cookie", shortName: "CKE", color: Colors.brown),

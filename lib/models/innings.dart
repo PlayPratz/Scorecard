@@ -171,13 +171,6 @@ class Innings {
     final inBatter = BatterInnings(batter, innings: this);
     _batterInnings[batter] = inBatter; //TODO check containsKey?
 
-    // Add to PlayersInAction
-    // if (batterToReplace == playersInAction.batter2) {
-    //   playersInAction.batter2 = inBatter;
-    // } else {
-    //   playersInAction.batter1 = inBatter;
-    // }
-
     if (outBatter == playersInAction.batter2) {
       playersInAction.batter2 = inBatter;
     } else {

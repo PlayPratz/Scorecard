@@ -35,6 +35,9 @@ class Innings {
   final List<Ball> _balls = [];
   UnmodifiableListView<Ball> get balls => UnmodifiableListView(_balls);
 
+  final List<Over> _overs = [];
+  UnmodifiableListView<Over> get overs => UnmodifiableListView(_overs);
+
   void initialize(
       {required Player batter1,
       required Player? batter2,
@@ -64,13 +67,20 @@ class Innings {
   ///
   /// This function serves as an entry point
   void play(Ball ball) {
-    _balls.add(ball);
     if (!_bowlerInnings.containsKey(ball.bowler)) {
       throw StateError("Ball delivered by unregistered bowler");
     }
     if (!_batterInnings.containsKey(ball.batter)) {
       throw StateError("Ball faced by unregistered batter");
     }
+
+    _balls.add(ball);
+
+    if (_overs.isEmpty || _overs.last.isCompleted) {
+      _overs.add(Over());
+    }
+    _overs.last.addBall(ball);
+
     _bowlerInnings[ball.bowler]!.deliver(ball);
     _batterInnings[ball.batter]!.face(ball);
   }
@@ -86,6 +96,7 @@ class Innings {
     if (_balls.last != ball) {
       throw StateError("Attempted to remove ball other than last ball");
     }
+
     _balls.removeLast();
 
     if (!_bowlerInnings.containsKey(ball.bowler)) {
@@ -93,6 +104,11 @@ class Innings {
     }
     if (!_batterInnings.containsKey(ball.batter)) {
       throw StateError("Ball faced by unregistered batter");
+    }
+
+    _overs.last.removeBall(ball);
+    if (overs.last.balls.isEmpty) {
+      _overs.removeLast();
     }
 
     _bowlerInnings[ball.bowler]!.unDeliver(ball);

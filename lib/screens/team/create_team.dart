@@ -205,6 +205,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             },
           ),
         ),
+        color: _color.withOpacity(0.1),
       ),
     );
   }

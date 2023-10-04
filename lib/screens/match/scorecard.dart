@@ -112,7 +112,7 @@ class _BattingInningsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       surfaceTintColor: innings.battingTeam.color,
-      color: innings.battingTeam.color.withOpacity(0.5),
+      color: innings.battingTeam.color.withOpacity(0.4),
       elevation: 4,
       margin: const EdgeInsets.all(0),
       child: Column(
@@ -157,7 +157,7 @@ Widget _innerPanel(BuildContext context, String heading, Color color,
   return Card(
     margin: const EdgeInsets.all(0),
     surfaceTintColor: color,
-    color: color.withOpacity(0.5),
+    color: color.withOpacity(0.4),
     elevation: 4,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,

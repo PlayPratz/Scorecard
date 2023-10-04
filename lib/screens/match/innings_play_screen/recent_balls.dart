@@ -184,76 +184,72 @@ class InningsTimelineScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final balls = innings.balls;
-
+    final overs = innings.overs.reversed.toList();
     return TitledPage(
       title: Strings.inningsTimelineTitle,
-      child: ListView.separated(
-        itemCount: balls.length + 1,
-        itemBuilder: (context, index) {
-          if (index == balls.length) return const SizedBox();
-          final ball = balls[balls.length - index - 1];
-          return Row(
-            children: [
-              Material(
-                textStyle: Theme.of(context).textTheme.bodySmall,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(DateFormat('hh:mm').format(ball.timestamp.toLocal())),
-                    Text(DateFormat('a').format(ball.timestamp.toLocal())),
-                  ],
+      child: ListView.builder(
+        itemCount: overs.length,
+        itemBuilder: (context, overIndex) => Card(
+          color: innings.battingTeam.color.withOpacity(0.1),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Column(
+              children: [
+                _wOverHeader(overs[overIndex]),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, ballIndex) {
+                    final ball = overs[overIndex].balls[ballIndex];
+                    return Row(
+                      children: [
+                        DefaultTextStyle(
+                          style: Theme.of(context).textTheme.bodySmall!,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(DateFormat('hh:mm')
+                                  .format(ball.timestamp.toLocal())),
+                              Text(DateFormat('a')
+                                  .format(ball.timestamp.toLocal())),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: GenericItemTile(
+                            // contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                            leading: RecentBall(ball: ball),
+                            primaryHint:
+                                "${ball.bowler.name} to ${ball.batter.name}", // TODO move strings
+                            secondaryHint: ball.isWicket
+                                ? " ${Strings.getWicketDescription(ball.wicket)}"
+                                : " ",
+                            trailing: null,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  itemCount: overs[overIndex].balls.length,
                 ),
-              ),
-              Expanded(
-                child: GenericItemTile(
-                  // contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  leading: RecentBall(ball: ball),
-                  primaryHint:
-                      "${ball.bowler.name} to ${ball.batter.name}", // TODO move strings
-                  secondaryHint: ball.isWicket
-                      ? " ${Strings.getWicketDescription(ball.wicket)}"
-                      : " ",
-                  trailing: null,
-                ),
-              ),
-            ],
-          );
-        },
-        separatorBuilder: (context, index) {
-          if (index == balls.length - 1) {
-            return _wOverHeader(balls.first);
-          }
-          if (index > 2) {
-            final currentBall = balls[balls.length - index - 2];
-            final previousBall = balls[balls.length - index - 1];
-            if (currentBall.overIndex != previousBall.overIndex) {
-              return Column(
-                children: [
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  _wOverHeader(previousBall),
-                ],
-              );
-            }
-          }
-          return const SizedBox();
-        },
-        // shrinkWrap: true,
+              ],
+            ),
+          ),
+        ),
         reverse: true,
       ),
     );
   }
 
-  Widget _wOverHeader(Ball ball) => Align(
+  Widget _wOverHeader(Over over) => Align(
         alignment: Alignment.centerLeft,
         child: Padding(
           padding: const EdgeInsets.only(left: 48.0, bottom: 8),
           child: Chip(
-            label: Text("Over ${ball.overIndex + 1}"),
-            backgroundColor: innings.bowlingTeam.color,
-            side: const BorderSide(),
+            label: Text("Over ${over.balls.first.overIndex + 1}"),
+            backgroundColor: innings.bowlingTeam.color.withOpacity(0.7),
+            side: const BorderSide(color: Colors.white10, width: 0),
           ),
         ),
       );

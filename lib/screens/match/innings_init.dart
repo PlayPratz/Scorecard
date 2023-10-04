@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/screens/match/innings_play_screen/match_interface.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
@@ -9,8 +10,6 @@ import 'package:scorecard/screens/widgets/separated_widgets.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
-
-import 'innings_play_screen/match_interface.dart';
 
 class InningsInitScreen extends StatefulWidget {
   final CricketMatch match;
@@ -35,7 +34,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
           children: [
             Expanded(
               child: SeparatedWidgetPair(
-                color: widget.match.nextTeamToBat.color.withOpacity(0.3),
+                color: widget.match.nextTeamToBat.color.withOpacity(0.1),
                 top: const GenericItemTile(
                   leading: Icon(Icons.sports_cricket),
                   primaryHint: Strings.initInningsChooseBatter,
@@ -52,7 +51,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
             ),
             Expanded(
                 child: SeparatedWidgetPair(
-              color: widget.match.nextTeamToBowl.color.withOpacity(0.3),
+              color: widget.match.nextTeamToBowl.color.withOpacity(0.1),
               top: const GenericItemTile(
                 leading: Icon(Icons.sports_baseball),
                 primaryHint: Strings.initInningsChooseBowler,
@@ -94,8 +93,10 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
               widget.match.currentInnings.initialize(
                   batter1: batter1, batter2: batter2, bowler: bowler);
 
-              Utils.goToReplacementPage(
-                  MatchInterface(match: widget.match), context);
+              //TODO Move
+              Navigator.popUntil(
+                  context, ModalRoute.withName(Navigator.defaultRouteName));
+              Utils.goToPage(MatchInterface(match: widget.match), context);
             }
           : null,
     );

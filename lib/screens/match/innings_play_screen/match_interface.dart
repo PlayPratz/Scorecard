@@ -6,6 +6,7 @@ import 'package:scorecard/screens/match/innings_play_screen/ball_details_selecto
 import 'package:scorecard/screens/match/innings_play_screen/player_pickers.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_in_action.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
+import 'package:scorecard/screens/match/innings_play_screen/run_rate_pane.dart';
 import 'package:scorecard/screens/match/innings_play_screen/wicket_details_selector.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/match/scorecard.dart';

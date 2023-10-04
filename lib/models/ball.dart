@@ -1,3 +1,5 @@
+import 'package:scorecard/util/constants.dart';
+
 import 'player.dart';
 import 'wicket.dart';
 
@@ -67,39 +69,44 @@ class Ball {
   bool get isLegal => !isBowlingExtra && !isEventOnly;
 }
 
-// class Over {
-//   Player bowler;
-//   List<Ball> balls = [];
-//   // BowlingStatistics statistics = BowlingStatistics();
-//
-//   Over(this.bowler);
-//
-//   List<Ball> get legalBalls => balls.where((ball) => ball.isLegal).toList();
-//
-//   List<Ball> get bowlingExtraBalls =>
-//       balls.where((ball) => ball.isBowlingExtra).toList();
-//
-//   List<Ball> get wicketBalls => balls.where((ball) => ball.isWicket).toList();
-//
-//   int get numOfLegalBalls => legalBalls.length;
-//   int get numOfBowlingExtras => bowlingExtraBalls.length;
-//   int get numOfBallsLeft => Constants.ballsPerOver - numOfLegalBalls;
-//   int get numOfBallsBowled => balls.length;
-//   bool get isCompleted => numOfBallsLeft == 0;
-//
-//   // int get totalRuns => statistics.runsConceded;
-//   int get totalRuns => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
-//   int get bowlerWickets => balls.where((ball) => ball.isBowlerWicket).length;
-//   int get totalWickets => wicketBalls.length;
-//
-//   void addBall(Ball ball) {
-//     if (isCompleted) {
-//       // Exception
-//       return;
-//     }
-//     balls.add(ball);
-//   }
-// }
+class Over {
+  List<Ball> balls = [];
+  // BowlingStatistics statistics = BowlingStatistics();
+
+  Over();
+
+  List<Ball> get legalBalls => balls.where((ball) => ball.isLegal).toList();
+
+  // List<Ball> get bowlingExtraBalls =>
+  //     balls.where((ball) => ball.isBowlingExtra).toList();
+  //
+  // List<Ball> get wicketBalls => balls.where((ball) => ball.isWicket).toList();
+
+  int get numOfLegalBalls => legalBalls.length;
+  // int get numOfBowlingExtras => bowlingExtraBalls.length;
+  int get numOfBallsLeft => Constants.ballsPerOver - numOfLegalBalls;
+  // int get numOfBallsBowled => balls.length;
+  bool get isCompleted => numOfBallsLeft == 0;
+
+  // int get totalRuns => statistics.runsConceded;
+  // int get totalRuns => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
+  // int get bowlerWickets => balls.where((ball) => ball.isBowlerWicket).length;
+  // int get totalWickets => wicketBalls.length;
+
+  void addBall(Ball ball) {
+    if (isCompleted) {
+      throw StateError("Attempted to add ball to completed over");
+    }
+    balls.add(ball);
+  }
+
+  void removeBall(Ball ball) {
+    if (balls.lastOrNull != ball) {
+      throw StateError("Attempted to add ball to completed over");
+    }
+    balls.remove(ball);
+  }
+}
 
 /// Possible types of extras by the batting team
 enum BattingExtra {

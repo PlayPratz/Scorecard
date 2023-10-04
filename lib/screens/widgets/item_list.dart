@@ -34,7 +34,7 @@ class ItemList extends StatelessWidget {
               thickness: 0,
             ),
             itemCount: itemList.length,
-            reverse: false,
+            reverse: alignToBottom,
           ),
         ),
         if (createItem != null)

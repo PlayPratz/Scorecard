@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/series.dart';
@@ -26,174 +27,169 @@ const int _tossTypeId = 107;
 const int _seriesTypeId = 108;
 const String _seriesBoxName = "series";
 
-// class StorageService {
-//   StorageService._();
-//
-//   // Hive NoSQL DB
-//   late final Box<Player> _playerBox;
-//   late final Box<Team> _teamBox;
-//   late final Box<CricketMatch> _matchBox; //lmao "matchbox"
-//   late final Box<Series> _seriesBox;
-//
-//   // AppData
-//   late final Directory _appDataDirectory;
-//
-//   Future<void> init() async {
-//     // App Data directory
-//     _appDataDirectory = await getApplicationDocumentsDirectory();
-//     await Directory(pathPlayerPhotos).create(recursive: true);
-//
-//     // Hive NoSQL DB
-//     await Hive.initFlutter();
-//
-//     // Hive.deleteBoxFromDisk(_matchBoxName); // TODO Remove before commit
-//
-//     // Register Adapters
-//     Hive.registerAdapter(_PlayerAdapter());
-//     Hive.registerAdapter(_TeamAdapter());
-//
-//     Hive.registerAdapter(_WicketAdapter());
-//     Hive.registerAdapter(_BallAdapter());
-//     Hive.registerAdapter(_InningsAdapter());
-//     Hive.registerAdapter(_TossAdapter());
-//     Hive.registerAdapter(_CricketMatchAdapter());
-//     Hive.registerAdapter(_SeriesAdapter());
-//
-//     // Open Boxes
-//     _playerBox = await Hive.openBox<Player>(_playerBoxName);
-//
-//     _teamBox = await Hive.openBox<Team>(_teamBoxName);
-//     _matchBox = await Hive.openBox<CricketMatch>(_matchBoxName);
-//     _linkSuperOvers();
-//     _seriesBox = await Hive.openBox<Series>(_seriesBoxName);
-//
-//     // _playerBox.clear();
-//     // _teamBox.clear();
-//     _matchBox.clear();
-//     _seriesBox.clear();
-//   }
-//
-//   // Player
-//
-//   List<Player> getAllPlayers() {
-//     return _playerBox.values.toList();
-//   }
-//
-//   Player getPlayerById(String id) {
-//     Player? player = _playerBox.get(id);
-//     if (player == null) {
-//       throw UnimplementedError("A non-existent Player [$id] was accessed.");
-//     }
-//     return player;
-//   }
-//
-//   void savePlayer(Player player) {
-//     _playerBox.put(player.id, player);
-//   }
-//
-//   // static void deletePlayer(Player player) {
-//   //   _playerBox.delete(player.id);
-//   // }
-//
-//   ImageProvider? getPlayerPhoto(Player player) {
-//     File photoFile = File(_getProfilePhotoPath(player.id));
-//     if (!photoFile.existsSync()) {
-//       return null;
-//     }
-//     return FileImage(photoFile);
-//   }
-//
-//   Future<void> savePlayerPhoto(String playerId, File profilePhoto) async {
-//     await profilePhoto.copy(_getProfilePhotoPath(playerId));
-//   }
-//
-//   // Team
-//
-//   List<Team> getAllTeams() {
-//     return _teamBox.values.toList();
-//   }
-//
-//   Team getTeamById(String id) {
-//     Team? team = _teamBox.get(id);
-//     if (team == null) {
-//       throw UnimplementedError("A non-existent Team [$id] was accessed.");
-//     }
-//     return team;
-//   }
-//
-//   void saveTeam(Team team) {
-//     _teamBox.put(team.id, team);
-//   }
-//
-//   // static void deleteTeam(Team team) {
-//   //   _teamBox.delete(team);
-//   // }
-//
-//   // Match
-//   List<CricketMatch> getAllMatches() {
-//     return _matchBox.values
-//         .where((match) => !match.id.endsWith("_superover"))
-//         .toList();
-//   }
-//
-//   List<CricketMatch> getOngoingMatches() {
-//     return _matchBox.values
-//         .where((match) =>
-//             !match.id.endsWith("_superover") &&
-//             match.matchState != MatchState.completed)
-//         .toList();
-//   }
-//
-//   List<CricketMatch> getCompletedMatches() {
-//     return _matchBox.values
-//         .where((match) =>
-//             !match.id.endsWith("_superover") &&
-//             match.matchState == MatchState.completed)
-//         .toList();
-//   }
-//
-//   CricketMatch getMatchById(String id) {
-//     CricketMatch? match = _matchBox.get(id);
-//     if (match == null) {
-//       throw UnimplementedError("A non-existent Match was accessed: " + id);
-//     }
-//     return match;
-//   }
-//
-//   void saveMatch(CricketMatch match) {
-//     _matchBox.put(match.id, match);
-//   }
-//
-//   void deleteMatch(CricketMatch match) {
-//     _matchBox.delete(match.id);
-//   }
-//
-//   // Series
-//   List<Series> getAllSeries() {
-//     return _seriesBox.values.toList();
-//   }
-//
-//   void saveSeries(Series series) {
-//     _seriesBox.put(series.id, series);
-//   }
-//
-//   // Misc
-//
-//   void _linkSuperOvers() {
-//     for (CricketMatch match in _matchBox.values) {
-//       String superOverId = match.id + "_superover";
-//       if (_matchBox.containsKey(superOverId)) {
-//         match.superOver = getMatchById(superOverId);
-//         match.superOver!.parentMatch = match;
-//       }
-//     }
-//   }
-//
-//   String _getProfilePhotoPath(String playerId) =>
-//       pathPlayerPhotos + '/' + playerId;
-//
-//   String get pathPlayerPhotos => _appDataDirectory.path + "/photos/players";
-// }
+class HiveStorageService {
+  // HiveStorageService._();
+
+  // Hive NoSQL DB
+  late final Box<Player> _playerBox;
+  late final Box<Team> _teamBox;
+  late final Box<CricketMatch> _matchBox; //lmao "matchbox"
+  late final Box<Series> _seriesBox;
+
+  // AppData
+  late final Directory _appDataDirectory;
+
+  Future<void> init() async {
+    // App Data directory
+    // _appDataDirectory = await getApplicationDocumentsDirectory();
+    // await Directory(pathPlayerPhotos).create(recursive: true);
+
+    // Hive NoSQL DB
+    await Hive.initFlutter();
+
+    // Hive.deleteBoxFromDisk(_matchBoxName); // TODO Remove before commit
+
+    // Register Adapters
+    Hive.registerAdapter(_PlayerAdapter());
+    Hive.registerAdapter(_TeamAdapter());
+
+    // Hive.registerAdapter(_WicketAdapter());
+    // Hive.registerAdapter(_BallAdapter());
+    // Hive.registerAdapter(_InningsAdapter());
+    // Hive.registerAdapter(_TossAdapter());
+    // Hive.registerAdapter(_CricketMatchAdapter());
+    // Hive.registerAdapter(_SeriesAdapter());
+
+    // Open Boxes
+    _playerBox = await Hive.openBox<Player>(_playerBoxName);
+    _teamBox = await Hive.openBox<Team>(_teamBoxName);
+
+    // _matchBox = await Hive.openBox<CricketMatch>(_matchBoxName);
+    // _linkSuperOvers();
+    // _seriesBox = await Hive.openBox<Series>(_seriesBoxName);
+  }
+
+  // Player
+
+  List<Player> getAllPlayers() {
+    return _playerBox.values.toList();
+  }
+
+  Player getPlayerById(String id) {
+    Player? player = _playerBox.get(id);
+    if (player == null) {
+      throw UnimplementedError("A non-existent Player [$id] was accessed.");
+    }
+    return player;
+  }
+
+  void savePlayer(Player player) {
+    _playerBox.put(player.id, player);
+  }
+
+  // static void deletePlayer(Player player) {
+  //   _playerBox.delete(player.id);
+  // }
+
+  ImageProvider? getPlayerPhoto(Player player) {
+    File photoFile = File(_getProfilePhotoPath(player.id));
+    if (!photoFile.existsSync()) {
+      return null;
+    }
+    return FileImage(photoFile);
+  }
+
+  Future<void> savePlayerPhoto(String playerId, File profilePhoto) async {
+    await profilePhoto.copy(_getProfilePhotoPath(playerId));
+  }
+
+  // Team
+
+  List<Team> getAllTeams() {
+    return _teamBox.values.toList();
+  }
+
+  Team getTeamById(String id) {
+    Team? team = _teamBox.get(id);
+    if (team == null) {
+      throw UnimplementedError("A non-existent Team [$id] was accessed.");
+    }
+    return team;
+  }
+
+  void saveTeam(Team team) {
+    _teamBox.put(team.id, team);
+  }
+
+  // static void deleteTeam(Team team) {
+  //   _teamBox.delete(team);
+  // }
+
+  // Match
+  List<CricketMatch> getAllMatches() {
+    return _matchBox.values
+        .where((match) => !match.id.endsWith("_superover"))
+        .toList();
+  }
+
+  List<CricketMatch> getOngoingMatches() {
+    return _matchBox.values
+        .where((match) =>
+            !match.id.endsWith("_superover") &&
+            match.matchState != MatchState.completed)
+        .toList();
+  }
+
+  List<CricketMatch> getCompletedMatches() {
+    return _matchBox.values
+        .where((match) =>
+            !match.id.endsWith("_superover") &&
+            match.matchState == MatchState.completed)
+        .toList();
+  }
+
+  CricketMatch getMatchById(String id) {
+    CricketMatch? match = _matchBox.get(id);
+    if (match == null) {
+      throw UnimplementedError("A non-existent Match was accessed: " + id);
+    }
+    return match;
+  }
+
+  void saveMatch(CricketMatch match) {
+    _matchBox.put(match.id, match);
+  }
+
+  void deleteMatch(CricketMatch match) {
+    _matchBox.delete(match.id);
+  }
+
+  // Series
+  List<Series> getAllSeries() {
+    return _seriesBox.values.toList();
+  }
+
+  void saveSeries(Series series) {
+    _seriesBox.put(series.id, series);
+  }
+
+  // Misc
+
+  void _linkSuperOvers() {
+    for (CricketMatch match in _matchBox.values) {
+      String superOverId = match.id + "_superover";
+      if (_matchBox.containsKey(superOverId)) {
+        match.superOver = getMatchById(superOverId);
+        match.superOver!.parentMatch = match;
+      }
+    }
+  }
+
+  String _getProfilePhotoPath(String playerId) =>
+      pathPlayerPhotos + '/' + playerId;
+
+  String get pathPlayerPhotos => _appDataDirectory.path + "/photos/players";
+}
 
 // class StorageServiceDummy implements StorageService {
 final StorageService = StorageServiceDummy();
@@ -204,6 +200,13 @@ class StorageServiceDummy {
   final teams = <String, Team>{};
   final series = <String, Series>{};
 
+  late final HiveStorageService hive;
+
+  Future<void> init() async {
+    hive = HiveStorageService();
+    await hive.init();
+  }
+
   void deleteMatch(CricketMatch match) {
     matches.remove(match.id);
   }
@@ -212,8 +215,13 @@ class StorageServiceDummy {
     return matches.values.toList();
   }
 
-  List<Player> getAllPlayers() {
-    return players.values.toList();
+  List<Player> getAllPlayers({bool sortAlphabetically = true}) {
+    // final playerList = players.values.toList();
+    final playerList = hive.getAllPlayers();
+    if (sortAlphabetically) {
+      playerList.sort((a, b) => a.name.compareTo(b.name));
+    }
+    return playerList;
   }
 
   List<Series> getAllSeries() {
@@ -241,7 +249,8 @@ class StorageServiceDummy {
   }
 
   Player getPlayerById(String id) {
-    return players[id]!;
+    return hive.getPlayerById(id);
+    // return players[id]!;
   }
 
   ImageProvider<Object>? getPlayerPhoto(Player player) {
@@ -249,10 +258,9 @@ class StorageServiceDummy {
   }
 
   Team getTeamById(String id) {
-    return teams[id]!;
+    return hive.getTeamById(id);
+    // return teams[id]!;
   }
-
-  Future<void> init() async {}
 
   // TODO: implement pathPlayerPhotos
   String get pathPlayerPhotos => throw UnimplementedError();
@@ -262,7 +270,8 @@ class StorageServiceDummy {
   }
 
   void savePlayer(Player player) {
-    players[player.id] = player;
+    // players[player.id] = player;
+    hive.savePlayer(player);
   }
 
   Future<void> savePlayerPhoto(String playerId, File profilePhoto) async {}
@@ -272,65 +281,66 @@ class StorageServiceDummy {
   }
 
   void saveTeam(Team team) {
-    teams[team.id] = team;
+    // teams[team.id] = team;
+    hive.saveTeam(team);
   }
 }
-//
-// class _PlayerAdapter extends TypeAdapter<Player> {
-//   @override
-//   int get typeId => _playerTypeId;
-//
-//   @override
-//   Player read(BinaryReader reader) {
-//     Player player = Player(
-//       id: reader.readString(),
-//       name: reader.readString(),
-//       batArm: Arm.values[reader.readInt()],
-//       bowlArm: Arm.values[reader.readInt()],
-//       bowlStyle: BowlStyle.values[reader.readInt()],
-//     );
-//     return player;
-//   }
-//
-//   @override
-//   void write(BinaryWriter writer, Player player) {
-//     writer
-//       ..writeString(player.id)
-//       ..writeString(player.name)
-//       ..writeInt(player.batArm.index)
-//       ..writeInt(player.bowlArm.index)
-//       ..writeInt(player.bowlStyle.index);
-//   }
-// }
-//
-// class _TeamAdapter extends TypeAdapter<Team> {
-//   @override
-//   int get typeId => _teamTypeId;
-//
-//   @override
-//   Team read(BinaryReader reader) {
-//     return Team(
-//       id: reader.readString(),
-//       name: reader.readString(),
-//       shortName: reader.readString(),
-//       squad: reader
-//           .readStringList()
-//           .map((playerId) => StorageService.getPlayerById(playerId))
-//           .toList(),
-//       color: Color(reader.readInt()),
-//     );
-//   }
-//
-//   @override
-//   void write(BinaryWriter writer, Team team) {
-//     writer
-//       ..writeString(team.id)
-//       ..writeString(team.name)
-//       ..writeString(team.shortName)
-//       ..writeStringList(team.squad.map((player) => player.id).toList())
-//       ..writeInt(team.color.value);
-//   }
-// }
+
+class _PlayerAdapter extends TypeAdapter<Player> {
+  @override
+  int get typeId => _playerTypeId;
+
+  @override
+  Player read(BinaryReader reader) {
+    Player player = Player(
+      id: reader.readString(),
+      name: reader.readString(),
+      batArm: Arm.values[reader.readInt()],
+      bowlArm: Arm.values[reader.readInt()],
+      bowlStyle: BowlStyle.values[reader.readInt()],
+    );
+    return player;
+  }
+
+  @override
+  void write(BinaryWriter writer, Player player) {
+    writer
+      ..writeString(player.id)
+      ..writeString(player.name)
+      ..writeInt(player.batArm.index)
+      ..writeInt(player.bowlArm.index)
+      ..writeInt(player.bowlStyle.index);
+  }
+}
+
+class _TeamAdapter extends TypeAdapter<Team> {
+  @override
+  int get typeId => _teamTypeId;
+
+  @override
+  Team read(BinaryReader reader) {
+    return Team(
+      id: reader.readString(),
+      name: reader.readString(),
+      shortName: reader.readString(),
+      squad: reader
+          .readStringList()
+          .map((playerId) => StorageService.getPlayerById(playerId))
+          .toList(),
+      color: Color(reader.readInt()),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Team team) {
+    writer
+      ..writeString(team.id)
+      ..writeString(team.name)
+      ..writeString(team.shortName)
+      ..writeStringList(team.squad.map((player) => player.id).toList())
+      ..writeInt(team.color.value);
+  }
+}
 //
 // class _InningsAdapter extends TypeAdapter<Innings> {
 //   @override

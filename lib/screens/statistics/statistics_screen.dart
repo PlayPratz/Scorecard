@@ -79,7 +79,7 @@ class StatisticsScreen extends StatelessWidget {
         .map(
           (battingStats) => Column(
             children: [
-              // BatterInningsScore(battingStats: battingStats),
+              BatterInningsScore(battingStats: battingStats),
               const SizedBox(height: 2),
             ],
           ),
@@ -191,7 +191,7 @@ class StatisticsChip extends StatelessWidget {
         selected: selected,
         onSelected: onSelected,
         selectedColor: color,
-        labelPadding: EdgeInsets.all(0),
+        labelPadding: const EdgeInsets.all(0),
         label: Row(
           children: [
             leading,

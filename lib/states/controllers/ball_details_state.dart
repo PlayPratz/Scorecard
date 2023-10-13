@@ -4,8 +4,6 @@ import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/states/containers/innings_selection.dart';
 
-// TODO split into three managers?
-
 class BallDetailsStateController {
   final InningsSelections _selections;
 

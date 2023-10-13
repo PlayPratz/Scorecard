@@ -16,13 +16,13 @@ class TeamList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ItemList(
+    return ItemList<Team>(
       itemList: _getTeamList(),
       createItem: onCreateTeam != null
           ? CreateItemEntry(
-              page: CreateTeamForm(),
+              form: CreateTeamForm(),
               string: Strings.createTeamCreate,
-              onCreateItem: (item) => onCreateTeam!(item),
+              onCreate: (item) => onCreateTeam!(item),
             )
           : null,
     );

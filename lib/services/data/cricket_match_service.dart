@@ -12,24 +12,23 @@ class CricketMatchService {
 
   Future<void> initialize() async {}
 
-  Future<UnmodifiableListView<CricketMatch>> getAllCricketMatches() async {
+  Future<List<CricketMatch>> _getSortedByDate() async {
     final cricketMatches = await _cricketMatchRepository.getAll();
 
     // Sort teams by the timestamp of creation
     // TODO sort by updatedAt instead of createdAt
-    cricketMatches.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return UnmodifiableListView(cricketMatches);
+    cricketMatches.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return cricketMatches;
   }
 
-  Future<UnmodifiableListView<CricketMatch>> getOngoingCricketMatches() async {
-    final cricketMatches = await _cricketMatchRepository.getAll();
+  Future<UnmodifiableListView<CricketMatch>> getOngoing() async {
+    final cricketMatches = await _getSortedByDate();
     return UnmodifiableListView(
         cricketMatches.where((cricketMatch) => !cricketMatch.isCompleted));
   }
 
-  Future<UnmodifiableListView<CricketMatch>>
-      getCompletedCricketMatches() async {
-    final cricketMatches = await _cricketMatchRepository.getAll();
+  Future<UnmodifiableListView<CricketMatch>> getCompleted() async {
+    final cricketMatches = await _getSortedByDate();
     return UnmodifiableListView(
         cricketMatches.where((cricketMatch) => cricketMatch.isCompleted));
   }

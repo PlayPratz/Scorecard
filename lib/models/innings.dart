@@ -19,7 +19,7 @@ class Innings {
     required this.battingTeam,
     required this.bowlingTeam,
     required this.maxOvers,
-    this.target,
+    required this.target,
     required List<Ball> balls,
     required List<Player> batters,
     required List<Player> bowlers,

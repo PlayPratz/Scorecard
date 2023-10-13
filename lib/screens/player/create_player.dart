@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/models/player.dart';
+import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/services/data/player_service.dart';
-
-import '../../models/player.dart';
-import '../../util/strings.dart';
-import '../../util/elements.dart';
-import '../../util/helpers.dart';
-import '../../util/utils.dart';
-import '../templates/titled_page.dart';
+import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/util/helpers.dart';
+import 'package:scorecard/util/strings.dart';
+import 'package:scorecard/util/utils.dart';
 
 class CreatePlayerForm extends StatefulWidget {
   final Player? player;
@@ -157,27 +156,20 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
   }
 
   void _onCreatePlayer(BuildContext context) {
-    Player player;
-    if (widget.player != null) {
-      player = widget.player!;
-      player.name = _name!;
-      player.batArm = _batArm.selection!;
-      player.bowlArm = _bowlArm.selection!;
-      player.bowlStyle = _bowlStyle.selection!;
-    } else {
-      player = Player.create(
-          name: _name!,
-          batArm: _batArm.selection!,
-          bowlArm: _bowlArm.selection!,
-          bowlStyle: _bowlStyle.selection!);
-    }
+    final player = Player(
+      id: widget.player?.id ?? Utils.generateUniqueId(),
+      name: _name!,
+      batArm: _batArm.selection!,
+      bowlArm: _bowlArm.selection!,
+      bowlStyle: _bowlStyle.selection!,
+    );
+
     if (_playerPhoto != null) {
       context.read<PlayerService>().saveProfilePhoto(
             playerId: player.id,
             profilePhoto: (_playerPhoto as FileImage).file,
           );
     }
-    context.read<PlayerService>().save(player);
     Utils.goBack(context, player);
   }
 

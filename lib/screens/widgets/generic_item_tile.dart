@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class GenericItemTile extends StatefulWidget {
   final String primaryHint;
-  final String secondaryHint;
+  final String secondaryHint; // TODO Convert to nullable
   final Widget? leading;
 
   // final ItemSize? size;
@@ -17,19 +17,19 @@ class GenericItemTile extends StatefulWidget {
   final ShapeBorder? shape;
   final EdgeInsetsGeometry? contentPadding;
 
-  const GenericItemTile(
-      {Key? key,
-      required this.primaryHint,
-      required this.secondaryHint,
-      this.leading,
-      this.onSelect,
-      this.onLongPress,
-      this.color,
-      this.shape,
-      this.contentPadding,
-      // this.size = ItemSize.normal,
-      this.trailing = const Icon(Icons.chevron_right)})
-      : super(key: key);
+  const GenericItemTile({
+    Key? key,
+    required this.primaryHint,
+    required this.secondaryHint,
+    this.leading,
+    this.onSelect,
+    this.onLongPress,
+    this.color,
+    this.shape,
+    this.contentPadding,
+    // this.size = ItemSize.normal,
+    this.trailing = const Icon(Icons.chevron_right),
+  }) : super(key: key);
 
   @override
   State<GenericItemTile> createState() => _GenericItemTileState();

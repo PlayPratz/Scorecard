@@ -9,9 +9,9 @@ class PlayersInActionPane extends StatelessWidget {
   final Innings innings;
   final bool isHomeTeamBatting;
 
-  final Function(BatterInnings batter) onTapBatter;
-  final Function(BatterInnings batter) onLongTapBatter;
-  final Function(BowlerInnings bowler) onTapBowler;
+  final void Function(BatterInnings batter) onTapBatter;
+  final void Function(BatterInnings batter) onLongTapBatter;
+  final void Function(BowlerInnings bowler) onTapBowler;
 
   const PlayersInActionPane({
     super.key,
@@ -31,7 +31,7 @@ class PlayersInActionPane extends StatelessWidget {
           children: [
             _wBatterInAction(
               context,
-              innings.playersInAction.batter1!,
+              innings.playersInAction.batter1,
             ),
             if (innings.playersInAction.batter2 != null)
               _wBatterInAction(context, innings.playersInAction.batter2!),
@@ -121,7 +121,7 @@ class PlayersInActionPane extends StatelessWidget {
   }
 
   Widget _wBowlerInAction(BuildContext context) {
-    final bowlerInnings = innings.playersInAction.bowler!;
+    final bowlerInnings = innings.playersInAction.bowler;
     return PlayerScoreTile(
       player: bowlerInnings.bowler,
       score: Column(

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/match/match_init.dart';
+import 'package:scorecard/screens/match/match_list.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/screens/team/team_dummy_tile.dart';
@@ -11,20 +11,16 @@ import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/common_builders.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/number_picker.dart';
-import 'package:scorecard/services/data/cricket_match_service.dart';
 import 'package:scorecard/services/data/player_service.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
 class CreateMatchForm extends StatefulWidget {
-  final void Function(CricketMatch match)? onCreateMatch;
-
   final TeamSquad? home;
   final TeamSquad? away;
   const CreateMatchForm({
     Key? key,
-    this.onCreateMatch,
     this.home,
     this.away,
   }) : super(key: key);
@@ -132,7 +128,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
 
   void _chooseTeam(
     TeamSquad? currentTeam,
-    Function(TeamSquad) onSelectTeam,
+    void Function(TeamSquad) onSelectTeam,
   ) async {
     final TeamSquad? chosenTeam = await Utils.goToPage(
       CreateTeamForm(team: currentTeam),
@@ -154,20 +150,14 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   }
 
   void _createMatch(BuildContext context) {
-    if (_match != null) {
-      // TODO This is shit logic
-      context.read<CricketMatchService>().delete(_match!);
-      _match = null;
-    }
     final match = CricketMatch.create(
+      id: _match?.id ?? Utils.generateUniqueId(),
       home: _selectedHomeTeam!,
       away: _selectedAwayTeam!,
       maxOvers: _overs,
     );
-    context.read<CricketMatchService>().save(match);
-    _match = match;
-    Utils.goToPage(MatchInitScreen(match: match), context);
-    widget.onCreateMatch?.call(match);
+
+    Utils.goBack(context, match);
   }
 
   bool get _canCreateMatch =>
@@ -180,7 +170,7 @@ class CreateQuickMatchForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = SelectableItemController<Player>();
-    final playersFuture = context.read<PlayerService>().getAllPlayers();
+    final playersFuture = context.read<PlayerService>().getAll();
     return TitledPage(
       title: "Quick Match",
       child: SimplifiedFutureBuilder(
@@ -189,8 +179,14 @@ class CreateQuickMatchForm extends StatelessWidget {
           return Column(
             children: [
               const SizedBox(height: 16),
-              Text("Select Players",
-                  style: Theme.of(context).textTheme.headlineSmall),
+              ListenableBuilder(
+                listenable: controller, //TODO Jugaad
+                builder: (context, child) => Text(
+                    controller.selectedItems.isEmpty
+                        ? "Select Players"
+                        : "Selected ${controller.selectedItems.length} players",
+                    style: Theme.of(context).textTheme.headlineSmall),
+              ),
               const SizedBox(height: 16),
               const SizedBox(height: 8),
               Expanded(
@@ -220,7 +216,13 @@ class CreateQuickMatchForm extends StatelessWidget {
   }
 
   void _handleCreateQuickTeams(
-      BuildContext context, List<Player> selectedPlayers) {
-    Utils.goToPage(CreateQuickTeamsForm(playerPool: selectedPlayers), context);
+      BuildContext context, List<Player> selectedPlayers) async {
+    final <TeamSquad>[home, away] = await Utils.goToPage(
+        CreateQuickTeamsForm(playerPool: selectedPlayers), context);
+    final match = await Utils.goToPage(
+      CreateMatchForm(home: home, away: away),
+      context,
+    );
+    handleOpenMatch(context, match);
   }
 }

@@ -4,7 +4,7 @@ import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/innings_play_screen/ball_details_selector.dart';
-import 'package:scorecard/screens/match/innings_play_screen/player_pickers.dart';
+import 'package:scorecard/screens/player/player_pickers.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_in_action.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/innings_play_screen/run_rate_pane.dart';
@@ -37,6 +37,8 @@ class MatchInterface extends StatelessWidget {
     );
     final ballDetailsStateController =
         BallDetailsStateController(selections: selections);
+
+    final runRatePaneStateController = RunRatePaneStateController();
     return TitledPage(
       // backgroundColor: match.currentInnings.battingTeam.color.withOpacity(0.05),
       // toolbarHeight: 0,
@@ -55,6 +57,7 @@ class MatchInterface extends StatelessWidget {
                   onTap: () => Utils.goToPage(Scorecard(match: match), context),
                 ),
                 RunRatePane(
+                  stateController: runRatePaneStateController,
                   innings: inningsState.innings,
                   showChaseRequirement:
                       inningsState.innings == match.secondInnings,

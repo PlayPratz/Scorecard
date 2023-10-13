@@ -112,10 +112,6 @@ class Strings {
 
   // Hacks
   static const String empty = "";
-  static const String separatorHyphen = '-';
-  static const String separatorSlash = '/';
-  static const String bracketOpenWithSpace = " (";
-  static const String bracketClose = ")";
   static const String versus = "v";
 
   // Create Team

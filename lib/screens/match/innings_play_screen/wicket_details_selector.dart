@@ -60,8 +60,8 @@ class WicketTile extends StatelessWidget {
     final playersInAction = innings.playersInAction;
     Wicket? selectedWicket = await Utils.goToPage(
         WicketPicker(
-          bowler: playersInAction.bowler!.bowler,
-          striker: playersInAction.striker!.batter,
+          bowler: playersInAction.bowler.bowler,
+          striker: playersInAction.striker.batter,
           fieldingTeam: innings.bowlingTeam,
           battingTeam: innings.battingTeam,
           playersInAction: innings.playersInAction,
@@ -265,11 +265,11 @@ class _WicketPickerState extends State<WicketPicker> {
             title: Strings.choosePlayer,
             child: PlayerList(
               playerList: [
-                widget.playersInAction.batter1!.batter,
+                widget.playersInAction.batter1.batter,
                 if (widget.playersInAction.batter2 != null)
                   widget.playersInAction.batter2!.batter
               ],
-              onSelectPlayer: (batter) => setState(() {
+              onSelect: (batter) => setState(() {
                 _batter = batter;
                 Utils.goBack(context);
               }),
@@ -287,7 +287,7 @@ class _WicketPickerState extends State<WicketPicker> {
           title: Strings.choosePlayer,
           child: PlayerList(
             playerList: widget.fieldingTeam.squad,
-            onSelectPlayer: (fielder) => setState(() {
+            onSelect: (fielder) => setState(() {
               _fielder = fielder;
               Utils.goBack(context);
             }),

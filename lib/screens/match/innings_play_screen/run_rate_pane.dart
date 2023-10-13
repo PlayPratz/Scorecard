@@ -3,22 +3,26 @@ import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/util/strings.dart';
 
 class RunRatePane extends StatelessWidget {
+  final RunRatePaneStateController stateController;
+
   final bool showChaseRequirement;
   final Innings innings;
 
-  RunRatePane(
-      {super.key, required this.showChaseRequirement, required this.innings});
-
-  final showRRR = ValueNotifier(false);
+  const RunRatePane({
+    super.key,
+    required this.stateController,
+    required this.showChaseRequirement,
+    required this.innings,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: showRRR,
-      builder: (context, _, child) => Row(
+    return ListenableBuilder(
+      listenable: stateController,
+      builder: (context, _) => Row(
         children: [
           Expanded(
-            child: showRRR.value
+            child: stateController.showRequiredRunRate
                 ? _wRunRateBox(
                     context: context,
                     color: innings.battingTeam.team.color,
@@ -96,7 +100,17 @@ class RunRatePane extends StatelessWidget {
 
   void _handleToggle() {
     if (showChaseRequirement == true) {
-      showRRR.value = !showRRR.value;
+      stateController.toggleRequiredRunRate();
     }
+  }
+}
+
+class RunRatePaneStateController with ChangeNotifier {
+  bool _showRequiredRunRate = false;
+  bool get showRequiredRunRate => _showRequiredRunRate;
+
+  void toggleRequiredRunRate() {
+    _showRequiredRunRate = !_showRequiredRunRate;
+    notifyListeners();
   }
 }

@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
+import 'package:scorecard/util/utils.dart';
 
-import '../../util/elements.dart';
-import '../../util/utils.dart';
-
-class ItemList extends StatelessWidget {
+class ItemList<T> extends StatelessWidget {
   final List<Widget> itemList;
-  final CreateItemEntry? createItem;
+  final CreateItemEntry<T>? createItem;
   final Icon? trailingIcon;
   final bool alignToBottom;
 
   const ItemList({
-    Key? key,
+    super.key,
     required this.itemList,
     this.createItem,
     this.trailingIcon = const Icon(Icons.chevron_right),
     this.alignToBottom = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,31 +40,31 @@ class ItemList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: GenericItemTile(
-                primaryHint: createItem!.string,
-                secondaryHint: Strings.empty,
-                leading: Elements.addIcon,
-                trailing: trailingIcon,
-                onSelect: () {
-                  if (createItem!.onCreateItem != null) {
-                    Utils.goToPage(createItem!.page, context)
-                        .then((item) => createItem!.onCreateItem!(item));
-                  } else {
-                    Utils.goToPage(createItem!.page, context);
-                  }
-                }),
+              primaryHint: createItem!.string,
+              secondaryHint: Strings.empty,
+              leading: Elements.addIcon,
+              trailing: trailingIcon,
+              onSelect: () async {
+                final item = await Utils.goToPage(createItem!.form, context);
+                createItem!.onCreate(item);
+              },
+            ),
           ),
       ],
     );
   }
 }
 
-class CreateItemEntry {
-  final Widget page;
+class CreateItemEntry<T> {
+  final Widget form;
   final String string;
-  final void Function(dynamic item)? onCreateItem;
+  final void Function(T item) onCreate;
 
-  CreateItemEntry(
-      {required this.page, required this.string, this.onCreateItem});
+  CreateItemEntry({
+    required this.form,
+    required this.string,
+    required this.onCreate,
+  });
 }
 
 class SelectableItemList<T> extends StatelessWidget {

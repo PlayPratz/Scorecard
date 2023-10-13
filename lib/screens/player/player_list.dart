@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/screens/player/create_player.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
-import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/screens/widgets/common_builders.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/services/data/player_service.dart';
 import 'package:scorecard/util/elements.dart';
@@ -12,43 +12,37 @@ import 'package:scorecard/util/utils.dart';
 
 class PlayerList extends StatelessWidget {
   final List<Player> playerList;
-  final Function(Player player)? onSelectPlayer;
-  final Function(Player? player)? onCreatePlayer;
+
+  final void Function(Player player)? onSelect;
+  final void Function(Player? player)? onCreate;
   final Icon? trailingIcon;
 
   const PlayerList({
     Key? key,
     required this.playerList,
-    this.onSelectPlayer,
     this.trailingIcon,
-    this.onCreatePlayer,
+    this.onSelect,
+    this.onCreate,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ItemList(
-        itemList: getPlayerList(),
-        createItem: onCreatePlayer != null
+    return ItemList<Player>(
+        itemList: [
+          for (Player player in playerList)
+            PlayerTile(
+              player,
+              onSelect: onSelect,
+              trailing: trailingIcon,
+            )
+        ],
+        createItem: onCreate != null
             ? CreateItemEntry(
-                page: const CreatePlayerForm(),
+                form: const CreatePlayerForm(),
                 string: Strings.addNewPlayer,
-                onCreateItem: onCreatePlayer != null
-                    ? (item) => onCreatePlayer!(item)
-                    : null,
+                onCreate: (item) => onCreate!(item),
               )
             : null);
-  }
-
-  List<Widget> getPlayerList() {
-    List<PlayerTile> playerTiles = [];
-    for (Player player in playerList) {
-      playerTiles.add(PlayerTile(
-        player,
-        onSelect: onSelectPlayer,
-        trailing: trailingIcon,
-      ));
-    }
-    return playerTiles;
   }
 }
 
@@ -57,44 +51,53 @@ class AllPlayersList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final playersFuture = context.read<PlayerService>().getAllPlayers();
-    return FutureBuilder(
-        future: playersFuture,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            // TODO Handle loading and errors properly
-            return const Center(child: CircularProgressIndicator());
-          }
-          final players = snapshot.data!;
+    final controller =
+        PlayerController(playerService: context.read<PlayerService>());
+
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, child) => SimplifiedFutureBuilder(
+        future: controller.players,
+        builder: (context, players) {
           return PlayerList(
             playerList: players,
-            onCreatePlayer: (player) {
+            onCreate: (player) {
               if (player != null) {
-                context.read<PlayerService>().save(player);
+                controller.save(player);
               }
             },
-            onSelectPlayer: (player) {
-              Utils.goToPage(CreatePlayerForm.update(player: player), context);
+            onSelect: (player) async {
+              final updatedPlayer = await Utils.goToPage(
+                CreatePlayerForm.update(player: player),
+                context,
+              );
+              if (updatedPlayer != null) {
+                controller.save(updatedPlayer);
+              }
             },
           );
-        });
+        },
+      ),
+    );
   }
 }
 
-Future<Player?> getPlayerFromList(
-    List<Player> playerList, BuildContext context) async {
-  Player? player = await Utils.goToPage(
-    TitledPage(
-      title: Strings.choosePlayer,
-      child: PlayerList(
-        playerList: playerList,
-        onSelectPlayer: (player) => Utils.goBack(context, player),
-        onCreatePlayer: (player) => Utils.goBack(context, player),
-      ),
-    ),
-    context,
-  );
-  return player;
+class PlayerController with ChangeNotifier {
+  final PlayerService playerService;
+
+  PlayerController({required this.playerService});
+
+  Future<List<Player>> get players => playerService.getAll();
+
+  Future<void> save(Player player) async {
+    await playerService.save(player);
+    notifyListeners();
+  }
+
+// Future<void> delete(Player player) async {
+//   await playerService.delete(player);
+//   notifyListeners();
+// }
 }
 
 // TODO Migrate to SelectableItemList?

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/match/create_match.dart';
+import 'package:scorecard/screens/player/player_pickers.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
@@ -12,7 +12,6 @@ import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
 import 'package:scorecard/services/data/player_service.dart';
-import 'package:scorecard/services/data/team_service.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
@@ -93,16 +92,14 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
       squad: [_selectedCaptain!, ..._selectedPlayerList],
     );
 
-    context.read<TeamService>().save(teamSquad.team);
-
     Utils.goBack(context, teamSquad);
   }
 
   bool get _canSubmitTeam => _selectedCaptain != null;
 
   void _chooseCaptain() async {
-    final players = await context.read<PlayerService>().getAllPlayers();
-    Player? chosenCaptain = await getPlayerFromList(players, context);
+    final players = await context.read<PlayerService>().getAll();
+    Player? chosenCaptain = await choosePlayer(context, players);
     if (chosenCaptain != null) {
       if (_selectedPlayerList.contains(chosenCaptain)) {
         _selectedPlayerList.remove(chosenCaptain);
@@ -187,12 +184,11 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             trailing: Elements.addIcon,
             onSelect: () async {
               List<Player> filteredPlayerList =
-                  await context.read<PlayerService>().getAllPlayers();
+                  await context.read<PlayerService>().getAll();
               filteredPlayerList.removeWhere(
                   (player) => _selectedPlayerList.contains(player));
               filteredPlayerList.remove(_selectedCaptain);
-              Player? player =
-                  await getPlayerFromList(filteredPlayerList, context);
+              Player? player = await choosePlayer(context, filteredPlayerList);
               if (player != null) {
                 setState(() {
                   if (_selectedCaptain == null) {
@@ -207,7 +203,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
           child: PlayerList(
             playerList: _selectedPlayerList,
             trailingIcon: Elements.removeIcon,
-            onSelectPlayer: (Player player) {
+            onSelect: (Player player) {
               setState(() {
                 _selectedPlayerList.remove(player);
               });
@@ -278,12 +274,10 @@ class CreateQuickTeamsForm extends StatelessWidget {
       squad: controller.squad2,
     );
 
-    Utils.goToReplacementPage(
-        CreateMatchForm(
-          home: team1,
-          away: team2,
-        ),
-        context);
+    Utils.goBack(
+      context,
+      [team1, team2],
+    );
   }
 
   Widget _wTeamPool(

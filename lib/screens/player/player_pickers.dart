@@ -39,7 +39,7 @@ class BatterPicker extends StatelessWidget {
               bottom: Expanded(
                 child: PlayerList(
                   playerList: squad,
-                  onSelectPlayer: (player) => Utils.goBack(context, player),
+                  onSelect: (player) => Utils.goBack(context, player),
                 ),
               ),
             ),
@@ -80,7 +80,7 @@ Future<Player?> choosePlayer(BuildContext context, List<Player> squad) async {
         title: Strings.choosePlayer,
         child: PlayerList(
           playerList: squad,
-          onSelectPlayer: (player) => Utils.goBack(context, player),
+          onSelect: (player) => Utils.goBack(context, player),
         ),
       ),
       context);

@@ -9,16 +9,17 @@ import 'package:scorecard/util/elements.dart';
 
 class PlayerTile extends StatelessWidget {
   final Player player;
-  final Function(Player player)? onSelect;
+  final void Function(Player player)? onSelect;
   final String? detail;
   final Widget? trailing;
 
-  const PlayerTile(this.player,
-      {Key? key,
-      this.onSelect,
-      this.detail,
-      this.trailing = Elements.forwardIcon})
-      : super(key: key);
+  const PlayerTile(
+    this.player, {
+    Key? key,
+    this.onSelect,
+    this.detail,
+    this.trailing = Elements.forwardIcon,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

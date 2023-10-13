@@ -113,7 +113,7 @@ class CricketMatchDTO {
     required IRepository<Team> teamRepository,
     required IRepository<Player> playerRepository,
   }) async =>
-      CricketMatch(
+      CricketMatch.load(
         id: id,
         home: await home.toTeamSquad(
           teamRepository: teamRepository,
@@ -283,6 +283,7 @@ class InningsDTO {
         bowlingTeam: await bowlingTeam.toTeamSquad(
             teamRepository: teamRepository, playerRepository: playerRepository),
         maxOvers: maxOvers,
+        target: target,
         balls: [
           for (final ballDTO in balls)
             await ballDTO.toBall(playerRepository: playerRepository)

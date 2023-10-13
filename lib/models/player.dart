@@ -1,5 +1,3 @@
-import '../util/utils.dart';
-
 class Player {
   final String id;
   String name;
@@ -7,12 +5,12 @@ class Player {
   Arm bowlArm;
   BowlStyle bowlStyle;
 
-  Player.create({
-    required this.name,
-    required this.batArm,
-    required this.bowlArm,
-    required this.bowlStyle,
-  }) : id = Utils.generateUniqueId();
+  // Player.create({
+  //   required this.name,
+  //   required this.batArm,
+  //   required this.bowlArm,
+  //   required this.bowlStyle,
+  // }) : id = Utils.generateUniqueId();
 
   Player({
     required this.id,

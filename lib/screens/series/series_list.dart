@@ -13,8 +13,8 @@ class SeriesList extends StatelessWidget {
     return ItemList(
       itemList: series.map((series) => SeriesTile(series: series)).toList(),
       createItem: CreateItemEntry(
-          page: const CreateSeries(),
-          onCreateItem: (series) => {},
+          form: const CreateSeries(),
+          onCreate: (series) => {},
           string: "Create new series"),
     );
   }

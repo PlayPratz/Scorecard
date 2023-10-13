@@ -19,7 +19,7 @@ class PlayerService {
   }
 
   /// Get all players that are accessible to the currently logged-in user.
-  Future<UnmodifiableListView<Player>> getAllPlayers() async {
+  Future<UnmodifiableListView<Player>> getAll() async {
     // Fetch players from the repository
     final players = await _playerRepository.getAll();
 

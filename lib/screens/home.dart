@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/screens/match/create_match.dart';
 import 'package:scorecard/screens/match/match_list.dart';
 import 'package:scorecard/screens/player/player_list.dart';
+import 'package:scorecard/screens/settings/settings_screen.dart';
 import 'package:scorecard/screens/statistics/statistics_screen.dart';
 import 'package:scorecard/screens/templates/base_screen.dart';
 import 'package:scorecard/styles/color_styles.dart';
@@ -30,44 +31,41 @@ class _HomeTabViewState extends State<HomeTabView> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         backgroundColor: ColorStyles.card,
-
-        // type: BottomNavigationBarType.fixed,
         destinations: [
           const NavigationDestination(
             icon: Icon(Icons.live_tv),
             label: "Ongoing",
           ),
           const NavigationDestination(
-            icon: Icon(Icons.event_available),
-            label: "Completed", //TODO Abstract
-          ),
-          // NavigationDestination(
-          //   icon: Icon(Icons.add),
-          //   label: "Create",
-          // ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.tealAccent,
-                width: 2,
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              onPressed: () => Utils.goToPage(
-                const CreateQuickMatchForm(),
-                context,
-              ),
-              icon: const Icon(Icons.add),
-            ),
-          ),
-          const NavigationDestination(
             icon: Icon(Icons.person),
             label: Strings.navbarPlayers,
+          ),
+          IconButton(
+            onPressed: () => Utils.goToPage(
+              const CreateQuickMatchForm(),
+              context,
+            ),
+            icon: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.tealAccent,
+                  width: 2,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Icon(Icons.add),
+              ),
+            ),
           ),
           const NavigationDestination(
             icon: Icon(Icons.leaderboard),
             label: Strings.navbarStats,
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.settings),
+            label: Strings.navbarSettings,
           ),
         ],
         onDestinationSelected: (selectedIndex) => setState(() {
@@ -78,10 +76,10 @@ class _HomeTabViewState extends State<HomeTabView> {
   }
 
   List<Widget> get screens => [
-        const OngoingCricketMatches(),
-        const CompletedCricketMatches(),
-        const CreateQuickMatchForm(),
+        const OngoingCricketMatchList(),
         const AllPlayersList(),
-        const StatisticsScreen()
+        const CreateQuickMatchForm(),
+        const StatisticsScreen(),
+        const SettingsScreen()
       ];
 }

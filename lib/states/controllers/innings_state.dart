@@ -18,8 +18,10 @@ class InningsStateController {
   final Innings innings;
   final InningsSelections _selections;
 
-  InningsStateController({required this.innings, required selections})
-      : _selections = selections {
+  InningsStateController({
+    required this.innings,
+    required InningsSelections selections,
+  }) : _selections = selections {
     _inningsEventController.stream.listen((event) {
       if (event.shouldAddToHistory) {
         _inningsEventHistory.add(event);
@@ -41,11 +43,12 @@ class InningsStateController {
 
     // Change Batter due to fall of wicket
     final playerInAction = innings.playersInAction;
-    if (playerInAction.batter1 != null && playerInAction.batter1!.isOut) {
+    if (playerInAction.batter1.isOut) {
       return AddBatterState(
-          innings: innings,
-          selections: _selections,
-          batterToReplace: playerInAction.batter1!);
+        innings: innings,
+        selections: _selections,
+        batterToReplace: playerInAction.batter1,
+      );
     }
 
     if (playerInAction.batter2 != null && playerInAction.batter2!.isOut) {
@@ -74,8 +77,8 @@ class InningsStateController {
     // Create a ball from the current selections
     final playersInAction = innings.playersInAction;
     final ball = Ball.create(
-      bowler: playersInAction.bowler!.bowler,
-      batter: playersInAction.striker!.batter,
+      bowler: playersInAction.bowler.bowler,
+      batter: playersInAction.striker.batter,
       runsScored: _selections.runs,
       battingExtra: _selections.battingExtra,
       bowlingExtra: _selections.bowlingExtra,

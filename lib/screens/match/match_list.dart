@@ -5,6 +5,7 @@ import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/match_init.dart';
 import 'package:scorecard/screens/match/innings_play_screen/match_interface.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
+import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/common_builders.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/services/data/cricket_match_service.dart';
@@ -15,7 +16,7 @@ import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
-void handleOpenMatch(CricketMatch match, BuildContext context) {
+void handleOpenMatch(BuildContext context, CricketMatch match) {
   switch (match.matchState) {
     case MatchState.notStarted:
       Utils.goToPage(MatchInitScreen(match: match), context);
@@ -29,7 +30,7 @@ void handleOpenMatch(CricketMatch match, BuildContext context) {
     default:
       if (match.currentInnings.balls.isEmpty) {
         match.inningsList.removeLast();
-        handleOpenMatch(match, context);
+        handleOpenMatch(context, match);
         return;
       }
       Utils.goToPage(MatchInterface(match: match), context);
@@ -38,10 +39,20 @@ void handleOpenMatch(CricketMatch match, BuildContext context) {
 
 class CricketMatchList extends StatelessWidget {
   final List<CricketMatch> cricketMatches;
-  final bool showCreateMatch;
 
-  const CricketMatchList(
-      {super.key, required this.cricketMatches, required this.showCreateMatch});
+  final void Function(CricketMatch cricketMatch)? onCreate;
+  final void Function(CricketMatch cricketMatch) onSelect;
+  final void Function(CricketMatch cricketMatch) onDelete;
+  final void Function(CricketMatch cricketMatch) onRematch;
+
+  const CricketMatchList({
+    super.key,
+    required this.cricketMatches,
+    this.onCreate,
+    required this.onSelect,
+    required this.onDelete,
+    required this.onRematch,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +63,7 @@ class CricketMatchList extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: MatchTile(
               match: cricketMatch,
-              onTap: () => handleOpenMatch(cricketMatch, context),
+              onTap: () => onSelect(cricketMatch),
               onLongPress: () => {
                 showModalBottomSheet(
                     context: context,
@@ -70,13 +81,7 @@ class CricketMatchList extends StatelessWidget {
                                 primaryHint: Strings.matchListRematch,
                                 secondaryHint:
                                     Strings.matchListRematchDescription,
-                                onSelect: () => Utils.goToReplacementPage(
-                                  CreateMatchForm(
-                                    home: cricketMatch.home,
-                                    away: cricketMatch.away,
-                                  ),
-                                  context,
-                                ),
+                                onSelect: () => onRematch(cricketMatch),
                               ),
                               const SizedBox(height: 24),
                               GenericItemTile(
@@ -87,12 +92,7 @@ class CricketMatchList extends StatelessWidget {
                                 primaryHint: Strings.matchListDelete,
                                 secondaryHint:
                                     Strings.matchListDeleteDescription,
-                                onSelect: () async {
-                                  await context
-                                      .read<CricketMatchService>()
-                                      .delete(cricketMatch);
-                                  Utils.goBack(context);
-                                },
+                                onSelect: () => onDelete(cricketMatch),
                               ),
                               const SizedBox(height: 128),
                             ],
@@ -102,49 +102,123 @@ class CricketMatchList extends StatelessWidget {
             ),
           )
       ],
-      createItem: showCreateMatch
-          ? CreateItemEntry(
-              page: CreateMatchForm(
-                onCreateMatch: (match) => {
-                  // TODO
-                  throw UnimplementedError("Bhai create match ka sort kar!")
-                },
-              ),
+      createItem: onCreate == null
+          ? null
+          : CreateItemEntry<CricketMatch>(
+              form: const CreateMatchForm(),
               string: Strings.matchlistCreateNewMatch,
-            )
-          : null,
+              onCreate: onCreate!,
+            ),
     );
   }
 }
 
-class OngoingCricketMatches extends StatelessWidget {
-  const OngoingCricketMatches({super.key});
+class OngoingCricketMatchList extends StatelessWidget {
+  const OngoingCricketMatchList({super.key});
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: [
+          Expanded(
+            child: _FutureCricketMatchList(
+                controller: _OngoingMatchListController(
+                    cricketMatchService: context.read<CricketMatchService>())),
+          ),
+          const SizedBox(height: 12),
+          GenericItemTile(
+            leading: const Icon(
+              Icons.task,
+              color: ColorStyles.online,
+            ),
+            primaryHint: "Show completed matches",
+            secondaryHint: Strings.empty,
+            onSelect: () {
+              Utils.goToPage(
+                const TitledPage(
+                  title: "Completed Matches",
+                  child: CompletedCricketMatchList(),
+                ),
+                context,
+              );
+            },
+          )
+        ],
+      );
+}
+
+class _OngoingMatchListController extends _CricketMatchListController {
+  _OngoingMatchListController({required super.cricketMatchService});
+
+  @override
+  Future<List<CricketMatch>> get cricketMatches =>
+      cricketMatchService.getOngoing();
+}
+
+class CompletedCricketMatchList extends StatelessWidget {
+  const CompletedCricketMatchList({super.key});
+
+  @override
+  Widget build(BuildContext context) => _FutureCricketMatchList(
+      controller: _CompletedMatchListController(
+          cricketMatchService: context.read<CricketMatchService>()));
+}
+
+class _CompletedMatchListController extends _CricketMatchListController {
+  _CompletedMatchListController({required super.cricketMatchService});
+
+  @override
+  Future<List<CricketMatch>> get cricketMatches =>
+      cricketMatchService.getCompleted();
+}
+
+class _FutureCricketMatchList extends StatelessWidget {
+  final _CricketMatchListController controller;
+
+  const _FutureCricketMatchList({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    final ongoingCricketMatchesFuture =
-        context.read<CricketMatchService>().getOngoingCricketMatches();
-    return SimplifiedFutureBuilder(
-        future: ongoingCricketMatchesFuture,
-        builder: (context, ongoingCricketMatches) => CricketMatchList(
-              cricketMatches: ongoingCricketMatches,
-              showCreateMatch: false,
-            ));
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) => SimplifiedFutureBuilder(
+        future: controller.cricketMatches,
+        builder: (context, cricketMatchList) => CricketMatchList(
+          cricketMatches: cricketMatchList,
+          // onCreate: (cricketMatch) {},
+          onSelect: (cricketMatch) => handleOpenMatch(context, cricketMatch),
+          onRematch: (cricketMatch) {
+            Utils.goToReplacementPage(
+              CreateMatchForm(
+                home: cricketMatch.home,
+                away: cricketMatch.away,
+              ),
+              context,
+            );
+            controller.refresh();
+          },
+          onDelete: (cricketMatch) {
+            controller.delete(cricketMatch);
+            Utils.goBack(context);
+          },
+        ),
+      ),
+    );
   }
 }
 
-class CompletedCricketMatches extends StatelessWidget {
-  const CompletedCricketMatches({super.key});
+abstract class _CricketMatchListController with ChangeNotifier {
+  final CricketMatchService cricketMatchService;
 
-  @override
-  Widget build(BuildContext context) {
-    final completedCricketMatchesFuture =
-        context.read<CricketMatchService>().getCompletedCricketMatches();
-    return SimplifiedFutureBuilder(
-        future: completedCricketMatchesFuture,
-        builder: (context, completedCricketMatches) => CricketMatchList(
-              cricketMatches: completedCricketMatches,
-              showCreateMatch: false,
-            ));
+  _CricketMatchListController({required this.cricketMatchService});
+
+  Future<List<CricketMatch>> get cricketMatches;
+
+  Future<void> delete(CricketMatch cricketMatch) async {
+    await cricketMatchService.delete(cricketMatch);
+    notifyListeners();
+  }
+
+  void refresh() {
+    notifyListeners();
   }
 }

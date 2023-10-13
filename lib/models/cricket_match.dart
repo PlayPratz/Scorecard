@@ -1,5 +1,4 @@
 import 'package:scorecard/util/constants.dart';
-import 'package:scorecard/util/utils.dart';
 
 import 'innings.dart';
 import 'result.dart';
@@ -27,7 +26,7 @@ class CricketMatch {
 
   final DateTime createdAt;
 
-  CricketMatch({
+  CricketMatch.load({
     required this.id,
     required this.home,
     required this.away,
@@ -43,11 +42,11 @@ class CricketMatch {
         _isHomeInningsFirst = isHomeInningsFirst;
 
   CricketMatch.create({
+    required this.id,
     required this.home,
     required this.away,
     required this.maxOvers,
-  })  : id = Utils.generateUniqueId(),
-        createdAt = DateTime.timestamp(),
+  })  : createdAt = DateTime.timestamp(),
         inningsList = [];
 
   bool get isTossCompleted => toss != null;

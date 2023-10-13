@@ -4,7 +4,16 @@ class NumberPicker extends StatefulWidget {
   final int min;
   final int max;
   final void Function(int value)? onChange;
-  const NumberPicker({super.key, this.min = 0, this.max = 128, this.onChange});
+
+  final List<int>? cycle;
+
+  const NumberPicker({
+    super.key,
+    this.min = 0,
+    this.max = 128,
+    this.onChange,
+    this.cycle,
+  });
 
   @override
   State<NumberPicker> createState() => _NumberPickerState();
@@ -12,6 +21,8 @@ class NumberPicker extends StatefulWidget {
 
 class _NumberPickerState extends State<NumberPicker> {
   int number = 0;
+  int cycleIndex = -1;
+
   @override
   void initState() {
     super.initState();
@@ -38,9 +49,19 @@ class _NumberPickerState extends State<NumberPicker> {
               )),
         ),
         // PageView(),
-        Text(
-          number.toString(),
-          style: Theme.of(context).textTheme.displayMedium,
+        GestureDetector(
+          onTap: () {
+            if (widget.cycle != null) {
+              setState(() {
+                cycleIndex = (cycleIndex + 1) % widget.cycle!.length;
+                number = widget.cycle![cycleIndex];
+              });
+            }
+          },
+          child: Text(
+            number.toString(),
+            style: Theme.of(context).textTheme.displayMedium,
+          ),
         ),
         InkWell(
           onLongPress: () => setState(() {

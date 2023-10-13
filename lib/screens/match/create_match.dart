@@ -107,7 +107,11 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
       width: 192,
       child: Column(children: [
         const Text(Strings.createMatchOvers),
-        NumberPicker(min: 1, onChange: (value) => _overs = value)
+        NumberPicker(
+          min: 1,
+          onChange: (value) => _overs = value,
+          cycle: const [5, 10, 20, 50],
+        )
       ]),
     );
   }

@@ -186,15 +186,16 @@ class _FutureCricketMatchList extends StatelessWidget {
           cricketMatches: cricketMatchList,
           // onCreate: (cricketMatch) {},
           onSelect: (cricketMatch) => handleOpenMatch(context, cricketMatch),
-          onRematch: (cricketMatch) {
-            Utils.goToReplacementPage(
+          onRematch: (cricketMatch) async {
+            final cricketRematch = await Utils.goToReplacementPage(
               CreateMatchForm(
                 home: cricketMatch.home,
                 away: cricketMatch.away,
               ),
               context,
             );
-            controller.refresh();
+            controller.save(cricketMatch);
+            handleOpenMatch(context, cricketRematch);
           },
           onDelete: (cricketMatch) {
             controller.delete(cricketMatch);
@@ -213,12 +214,13 @@ abstract class _CricketMatchListController with ChangeNotifier {
 
   Future<List<CricketMatch>> get cricketMatches;
 
-  Future<void> delete(CricketMatch cricketMatch) async {
-    await cricketMatchService.delete(cricketMatch);
+  Future<void> save(CricketMatch cricketMatch) async {
+    await cricketMatchService.save(cricketMatch);
     notifyListeners();
   }
 
-  void refresh() {
+  Future<void> delete(CricketMatch cricketMatch) async {
+    await cricketMatchService.delete(cricketMatch);
     notifyListeners();
   }
 }

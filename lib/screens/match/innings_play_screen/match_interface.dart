@@ -227,6 +227,7 @@ class MatchInterface extends StatelessWidget {
                   primaryHint: Strings.matchScreenEndTiedMatch,
                   secondaryHint: Strings.matchScreenEndTiedMatchHint,
                   onSelect: () {
+                    context.read<CricketMatchService>().save(match);
                     Utils.goBack(context);
                     Utils.goToReplacementPage(Scorecard(match: match), context);
                   },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
@@ -11,7 +12,7 @@ import 'package:scorecard/screens/match/innings_play_screen/wicket_details_selec
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import 'package:scorecard/services/storage_service.dart';
+import 'package:scorecard/services/data/cricket_match_service.dart';
 import 'package:scorecard/states/containers/innings_selection.dart';
 import 'package:scorecard/states/controllers/ball_details_state.dart';
 import 'package:scorecard/states/controllers/innings_state.dart';
@@ -148,8 +149,9 @@ class MatchInterface extends StatelessWidget {
           text: Strings.addBall,
           onPressed: () {
             stateController.addBall();
-            StorageService.saveMatch(match); // TODO move
             ballDetailsStateController.reset();
+            //TODO Find a better place
+            context.read<CricketMatchService>().save(match); // T
           },
         );
       case AddBatterState():
@@ -234,8 +236,9 @@ class MatchInterface extends StatelessWidget {
                   onSelect: () {
                     match.startSuperOver();
                     Utils.goBack(context);
-                    Utils.goToReplacementPage(
-                        InningsInitScreen(match: match.superOver!), context);
+                    // Utils.goToReplacementPage(
+                    //     InningsInitScreen(match: match.superOver!), context);
+                    //
                   },
                 ),
               ],

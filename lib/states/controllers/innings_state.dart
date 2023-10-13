@@ -12,6 +12,7 @@ class InningsStateController {
   final _inningsEventHistory = <InningsEvent>[];
 
   final _inningsStateController = StreamController<InningsState>();
+
   Stream<InningsState> get stateStream => _inningsStateController.stream;
 
   final Innings innings;
@@ -72,7 +73,7 @@ class InningsStateController {
   void addBall() {
     // Create a ball from the current selections
     final playersInAction = innings.playersInAction;
-    final ball = Ball(
+    final ball = Ball.create(
       bowler: playersInAction.bowler!.bowler,
       batter: playersInAction.striker!.batter,
       runsScored: _selections.runs,
@@ -142,12 +143,12 @@ class InningsStateController {
 
   void _swapStrike() {
     final playersInAction = innings.playersInAction;
-    if (playersInAction.batter1 == null || playersInAction.batter2 == null) {
+    if (playersInAction.batter2 == null) {
       return;
     }
     // TODO move to innings?
     if (playersInAction.striker == playersInAction.batter1) {
-      playersInAction.striker = playersInAction.batter2;
+      playersInAction.striker = playersInAction.batter2!;
     } else {
       playersInAction.striker = playersInAction.batter1;
     }
@@ -167,16 +168,22 @@ class InningsStateController {
     // TODO Jugaad: Swapping strike on every bowler change instead of end of over
     _swapStrike();
 
-    _inningsEventController.add(
-        SetBowlerEvent(inBowler: inBowlerInnings, outBowler: outBowlerInnings));
+    _inningsEventController.add(SetBowlerEvent(
+      inBowler: inBowlerInnings,
+      outBowler: outBowlerInnings,
+    ));
   }
 
   void _undoSetBowler(SetBowlerEvent setBowlerEvent) {
+    if (setBowlerEvent.outBowler == null) {
+      return;
+    }
+
     innings.removeBowler(setBowlerEvent.inBowler);
 
     _swapStrike();
 
-    innings.playersInAction.bowler = setBowlerEvent.outBowler;
+    innings.playersInAction.bowler = setBowlerEvent.outBowler!;
   }
 
   void addBatter(
@@ -239,6 +246,10 @@ class InningsStateController {
 
   void undo() {
     if (_inningsEventHistory.isEmpty) {
+      if (innings.balls.isNotEmpty) {
+        _undoAddBall(AddBallEvent(ball: innings.balls.last));
+        _inningsStateController.add(_deduceState());
+      }
       return;
     }
     final lastEvent = _inningsEventHistory.removeLast();
@@ -290,7 +301,7 @@ class SetBowlerEvent extends InningsEvent {
   final BowlerInnings inBowler;
   final BowlerInnings? outBowler;
 
-  SetBowlerEvent({required this.inBowler, this.outBowler});
+  SetBowlerEvent({required this.inBowler, required this.outBowler});
 }
 
 class ChangeStrikeEvent extends InningsEvent {

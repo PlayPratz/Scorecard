@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/match/create_match.dart';
-import 'package:scorecard/screens/player/create_player.dart';
+import 'package:scorecard/screens/match/match_list.dart';
+import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/statistics/statistics_screen.dart';
-import 'package:scorecard/services/storage_service.dart';
-
-import '../styles/color_styles.dart';
-import '../util/strings.dart';
-import '../util/utils.dart';
-import 'templates/base_screen.dart';
-import 'match/match_list.dart';
-import 'player/player_list.dart';
+import 'package:scorecard/screens/templates/base_screen.dart';
+import 'package:scorecard/styles/color_styles.dart';
+import 'package:scorecard/util/strings.dart';
+import 'package:scorecard/util/utils.dart';
 
 class HomeTabView extends StatefulWidget {
   const HomeTabView({Key? key}) : super(key: key);
@@ -42,7 +39,7 @@ class _HomeTabViewState extends State<HomeTabView> {
           ),
           const NavigationDestination(
             icon: Icon(Icons.event_available),
-            label: "Completed",
+            label: "Completed", //TODO Abstract
           ),
           // NavigationDestination(
           //   icon: Icon(Icons.add),
@@ -50,11 +47,12 @@ class _HomeTabViewState extends State<HomeTabView> {
           // ),
           DecoratedBox(
             decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.tealAccent,
-                  width: 2,
-                ),
-                shape: BoxShape.circle),
+              border: Border.all(
+                color: Colors.tealAccent,
+                width: 2,
+              ),
+              shape: BoxShape.circle,
+            ),
             child: IconButton(
               onPressed: () => Utils.goToPage(
                 const CreateQuickMatchForm(),
@@ -80,21 +78,10 @@ class _HomeTabViewState extends State<HomeTabView> {
   }
 
   List<Widget> get screens => [
-        MatchList(
-          getMatchList: () => StorageService.getOngoingMatches(),
-        ),
-        MatchList(
-          getMatchList: () => StorageService.getCompletedMatches(),
-        ),
+        const OngoingCricketMatches(),
+        const CompletedCricketMatches(),
         const CreateQuickMatchForm(),
-        PlayerList(
-          playerList: StorageService.getAllPlayers(),
-          onSelectPlayer: (player) => Utils.goToPage(
-            CreatePlayerForm.update(player: player),
-            context,
-          ).then((_) => setState(() {})),
-          onCreatePlayer: (player) => setState(() {}),
-        ),
+        const AllPlayersList(),
         const StatisticsScreen()
       ];
 }

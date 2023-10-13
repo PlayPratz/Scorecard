@@ -16,9 +16,8 @@ class Scorecard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String title = match.homeTeam.shortName +
-        Strings.separatorVersus +
-        match.awayTeam.shortName;
+    String title =
+        "${match.home.team.shortName} ${Strings.versus} ${match.away.team.shortName}";
 
     return TitledPage(
       appBarActions: [
@@ -63,7 +62,7 @@ class _InningsPanel extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 2,
-      surfaceTintColor: innings.battingTeam.color,
+      surfaceTintColor: innings.battingTeam.team.color,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
         child: Column(
@@ -77,7 +76,7 @@ class _InningsPanel extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const Spacer(),
-                TeamChip(team: innings.battingTeam),
+                TeamChip(team: innings.battingTeam.team),
                 const SizedBox(width: 4),
               ],
             ),
@@ -113,8 +112,8 @@ class _BattingInningsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      surfaceTintColor: innings.battingTeam.color,
-      color: innings.battingTeam.color.withOpacity(0.4),
+      surfaceTintColor: innings.battingTeam.team.color,
+      color: innings.battingTeam.team.color.withOpacity(0.4),
       elevation: 4,
       margin: const EdgeInsets.all(0),
       child: Column(
@@ -153,8 +152,8 @@ class _FallOfWicketsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      surfaceTintColor: innings.battingTeam.color,
-      color: innings.battingTeam.color.withOpacity(0.4),
+      surfaceTintColor: innings.battingTeam.team.color,
+      color: innings.battingTeam.team.color.withOpacity(0.4),
       elevation: 4,
       margin: const EdgeInsets.all(0),
       child: Column(
@@ -227,7 +226,7 @@ Widget _wBowlingPanel(BuildContext context, Innings innings) {
   return _innerPanel(
       context,
       Strings.scorecardBowling,
-      innings.bowlingTeam.color,
+      innings.bowlingTeam.team.color,
       innings.bowlerInningsList
           .map((bowlInn) => BowlerInningsScore(bowlerInnings: bowlInn))
           .toList());
@@ -272,7 +271,7 @@ class BowlerInningsScore extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Elements.getPlayerIcon(player, 36),
+          Elements.getPlayerIcon(player, 36, null), //TODO
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -332,7 +331,7 @@ class BatterInningsScore extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Elements.getPlayerIcon(player, 36),
+          Elements.getPlayerIcon(player, 36, null), //TODO
           const SizedBox(width: 12),
           Expanded(
             child: Column(

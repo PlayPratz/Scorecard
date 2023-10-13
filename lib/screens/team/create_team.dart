@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/match/create_match.dart';
@@ -10,22 +11,23 @@ import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
-import 'package:scorecard/services/storage_service.dart';
+import 'package:scorecard/services/data/player_service.dart';
+import 'package:scorecard/services/data/team_service.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
 class CreateTeamForm extends StatefulWidget {
-  final Team team;
+  final TeamSquad team;
 
-  factory CreateTeamForm({Team? team}) {
+  factory CreateTeamForm({TeamSquad? team}) {
     if (team == null) {
       return CreateTeamForm.blank();
     }
     return CreateTeamForm.update(team: team);
   }
 
-  CreateTeamForm.blank({super.key}) : team = Team.generate();
+  CreateTeamForm.blank({super.key}) : team = TeamSquad.generate();
 
   const CreateTeamForm.update({super.key, required this.team});
 
@@ -47,14 +49,14 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
   void initState() {
     super.initState();
 
-    Team team = widget.team;
-    _teamNameController.text = team.name;
-    _shortTeamNameController.text = team.shortName;
-    _color = team.color;
+    TeamSquad teamSquad = widget.team;
+    _teamNameController.text = teamSquad.team.name;
+    _shortTeamNameController.text = teamSquad.team.shortName;
+    _color = teamSquad.team.color;
 
-    if (widget.team.squadSize > 0) {
-      _selectedCaptain = team.squad[0];
-      _selectedPlayerList.addAll(team.squad.sublist(1));
+    if (teamSquad.squadSize > 0) {
+      _selectedCaptain = teamSquad.squad[0];
+      _selectedPlayerList.addAll(teamSquad.squad.sublist(1));
     }
   }
 
@@ -71,30 +73,36 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             const SizedBox(height: 16),
             _wSquadChooser(),
             Elements.getConfirmButton(
-                text: Strings.createTeamSave,
-                onPressed: _canSubmitTeam ? _submitTeam : null),
+              text: Strings.createTeamSave,
+              onPressed: _canSubmitTeam ? _submitTeamSquad : null,
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _submitTeam() {
-    Team team = widget.team;
-    team.name = _teamNameController.text;
-    team.shortName = _shortTeamNameController.text;
-    team.squad = [_selectedCaptain!, ..._selectedPlayerList];
-    team.color = _color;
-    // team.color = genTeamTemplates[genTeamIndex % genTeamTemplates.length].color;
-    StorageService.saveTeam(team);
-    Utils.goBack(context, team);
+  void _submitTeamSquad() {
+    final teamSquad = TeamSquad(
+      team: Team(
+        id: widget.team.team.id,
+        name: _teamNameController.text,
+        shortName: _shortTeamNameController.text,
+        color: _color,
+      ),
+      squad: [_selectedCaptain!, ..._selectedPlayerList],
+    );
+
+    context.read<TeamService>().save(teamSquad.team);
+
+    Utils.goBack(context, teamSquad);
   }
 
   bool get _canSubmitTeam => _selectedCaptain != null;
 
   void _chooseCaptain() async {
-    Player? chosenCaptain =
-        await getPlayerFromList(StorageService.getAllPlayers(), context);
+    final players = await context.read<PlayerService>().getAllPlayers();
+    Player? chosenCaptain = await getPlayerFromList(players, context);
     if (chosenCaptain != null) {
       if (_selectedPlayerList.contains(chosenCaptain)) {
         _selectedPlayerList.remove(chosenCaptain);
@@ -178,7 +186,8 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             secondaryHint: Strings.createTeamSquadHint,
             trailing: Elements.addIcon,
             onSelect: () async {
-              List<Player> filteredPlayerList = StorageService.getAllPlayers();
+              List<Player> filteredPlayerList =
+                  await context.read<PlayerService>().getAllPlayers();
               filteredPlayerList.removeWhere(
                   (player) => _selectedPlayerList.contains(player));
               filteredPlayerList.remove(_selectedCaptain);
@@ -251,23 +260,28 @@ class CreateQuickTeamsForm extends StatelessWidget {
 
   void _handleSubmitTeams(BuildContext context,
       CreateQuickTeamsFormController controller, Color teamA, Color teamB) {
-    final team1 = Team.create(
-      name: controller.team1,
-      shortName: controller.team1.substring(0, 3).toUpperCase(),
+    final team1 = TeamSquad(
+      team: Team.create(
+        name: controller.team1,
+        shortName: controller.team1.substring(0, 3).toUpperCase(),
+        color: teamA,
+      ),
       squad: controller.squad1,
-      color: teamA,
     );
-    final team2 = Team.create(
-      name: controller.team2,
-      shortName: controller.team2.substring(0, 3).toUpperCase(),
+
+    final team2 = TeamSquad(
+      team: Team.create(
+        name: controller.team2,
+        shortName: controller.team2.substring(0, 3).toUpperCase(),
+        color: teamB,
+      ),
       squad: controller.squad2,
-      color: teamB,
     );
 
     Utils.goToReplacementPage(
         CreateMatchForm(
-          homeTeam: team1,
-          awayTeam: team2,
+          home: team1,
+          away: team2,
         ),
         context);
   }
@@ -290,39 +304,42 @@ class CreateQuickTeamsForm extends StatelessWidget {
           bottom: Expanded(
             child: ItemList(
               itemList: players
-                  .map((player) => ListTile(
-                        leading: IconButton(
-                          onPressed:
-                              showUp ? () => controller.moveUp(player) : null,
-                          icon: Visibility(
-                            visible: showUp,
-                            child: Transform.rotate(
-                                angle: pi / 2,
-                                child: const Icon(Icons.arrow_circle_left)),
-                          ),
+                  .map(
+                    (player) => ListTile(
+                      leading: IconButton(
+                        onPressed:
+                            showUp ? () => controller.moveUp(player) : null,
+                        icon: Visibility(
+                          visible: showUp,
+                          child: Transform.rotate(
+                              angle: pi / 2,
+                              child: const Icon(Icons.arrow_circle_left)),
                         ),
-                        title: Row(
-                          children: [
-                            Elements.getPlayerIcon(player, 32),
-                            const SizedBox(width: 16),
-                            Text(player.name),
-                          ],
-                        ),
-                        trailing: showDown
-                            ? IconButton(
-                                onPressed: showDown
-                                    ? () => controller.moveDown(player)
-                                    : null,
-                                icon: Visibility(
-                                  visible: showDown,
-                                  child: Transform.rotate(
-                                      angle: -pi / 2,
-                                      child:
-                                          const Icon(Icons.arrow_circle_left)),
-                                ),
-                              )
-                            : null,
-                      ))
+                      ),
+                      title: Row(
+                        children: [
+                          Elements.getPlayerIcon(player, 32, null), //TODO
+                          const SizedBox(width: 12),
+                          Text(player.name),
+                        ],
+                      ),
+                      trailing: showDown
+                          ? IconButton(
+                              onPressed: showDown
+                                  ? () => controller.moveDown(player)
+                                  : null,
+                              icon: Visibility(
+                                visible: showDown,
+                                child: Transform.rotate(
+                                    angle: -pi / 2,
+                                    child: const Icon(Icons.arrow_circle_left)),
+                              ),
+                            )
+                          : null,
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                  )
                   .toList(),
               alignToBottom: false,
             ),

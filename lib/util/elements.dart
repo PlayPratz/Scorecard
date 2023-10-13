@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/services/storage_service.dart';
-
-import '../styles/color_styles.dart';
+import 'package:scorecard/styles/color_styles.dart';
 
 class Elements {
   Elements._();
@@ -101,18 +99,17 @@ class Elements {
     );
   }
 
-  static Widget getPlayerIcon(Player player, double size) {
-    ImageProvider? _profilePhoto = StorageService.getPlayerPhoto(player);
-
+  static Widget getPlayerIcon(
+      Player player, double size, ImageProvider? profilePhoto) {
     return CircleAvatar(
       backgroundColor: ColorStyles.card,
       // foregroundColor: Colors.white,
       radius: (size / 2),
-      child: _profilePhoto != null
+      child: profilePhoto != null
           ? FittedBox(
               fit: BoxFit.contain,
               child: CircleAvatar(
-                foregroundImage: _profilePhoto,
+                foregroundImage: profilePhoto,
                 backgroundColor: Colors.transparent,
                 radius: size / 2 - 1,
               ),

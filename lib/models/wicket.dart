@@ -40,8 +40,8 @@ class Wicket {
 
   Wicket(
       {required this.batter,
-      this.bowler,
-      this.fielder,
+      required this.bowler,
+      required this.fielder,
       required this.dismissal});
 }
 

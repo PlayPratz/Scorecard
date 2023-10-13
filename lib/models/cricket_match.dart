@@ -1,81 +1,72 @@
 import 'package:scorecard/util/constants.dart';
+import 'package:scorecard/util/utils.dart';
 
-import '../util/utils.dart';
 import 'innings.dart';
 import 'result.dart';
 import 'team.dart';
 
 class CricketMatch {
   final String id;
-  final Team homeTeam;
-  final Team awayTeam;
+  final TeamSquad home;
+  final TeamSquad away;
   final int maxOvers;
 
   final List<Innings> inningsList;
+
   bool _isCompleted = false;
+  bool get isCompleted => _isCompleted; // TODO Duplicate of MatchState?
 
   bool _isHomeInningsFirst = true;
-
-  // In case of super over
-  CricketMatch? superOver;
-  CricketMatch? parentMatch;
+  bool get isHomeInningsFirst => _isHomeInningsFirst;
 
   Toss? toss;
 
-  CricketMatch._({
+  // In case of super over
+  // CricketMatch? superOver;
+  // CricketMatch? parentMatch;
+
+  final DateTime createdAt;
+
+  CricketMatch({
     required this.id,
-    required this.homeTeam,
-    required this.awayTeam,
+    required this.home,
+    required this.away,
     required this.maxOvers,
-  }) : inningsList = [];
+    required this.inningsList,
+    required this.toss,
+    required this.createdAt,
+    // required this.superOver,
+    // required this.parentMatch,
+    required bool isCompleted,
+    required bool isHomeInningsFirst,
+  })  : _isCompleted = isCompleted,
+        _isHomeInningsFirst = isHomeInningsFirst;
 
   CricketMatch.create({
-    required homeTeam,
-    required awayTeam,
-    required maxOvers,
-  }) : this._(
-            id: Utils.generateUniqueId(),
-            homeTeam: homeTeam,
-            awayTeam: awayTeam,
-            maxOvers: maxOvers);
-
-  factory CricketMatch.superOver({required CricketMatch parentMatch}) {
-    CricketMatch superOverMatch = CricketMatch._(
-        id: parentMatch.id + "_superover",
-        homeTeam: parentMatch.homeTeam,
-        awayTeam: parentMatch.awayTeam,
-        maxOvers: 1);
-    superOverMatch.startMatch(
-        Toss(parentMatch.secondInnings!.battingTeam, TossChoice.bat));
-    superOverMatch.parentMatch = parentMatch;
-    return superOverMatch;
-  }
-
-  CricketMatch.load({
-    required this.id,
+    required this.home,
+    required this.away,
     required this.maxOvers,
-    required this.homeTeam,
-    required this.awayTeam,
-    required this.inningsList,
-  });
+  })  : id = Utils.generateUniqueId(),
+        createdAt = DateTime.timestamp(),
+        inningsList = [];
 
   bool get isTossCompleted => toss != null;
 
   Innings get currentInnings => inningsList.last;
 
-  Team get nextTeamToBat {
+  TeamSquad get nextTeamToBat {
     if (inningsList.isEmpty) {
       if (_isHomeInningsFirst) {
-        return homeTeam;
+        return home;
       } else {
-        return awayTeam;
+        return away;
       }
     }
     // TODO: Fix this for unlimited overs
     return currentInnings.bowlingTeam;
   }
 
-  Team get nextTeamToBowl => nextTeamToBat == homeTeam ? awayTeam : homeTeam;
+  TeamSquad get nextTeamToBowl => nextTeamToBat == home ? away : home;
 
   MatchState get matchState {
     if (_isCompleted) {
@@ -117,7 +108,7 @@ class CricketMatch {
       );
     } else {
       // Match ties, TODO fix jugaad
-      return ResultTie(winner: homeTeam, loser: awayTeam);
+      return ResultTie(winner: home, loser: away);
     }
   }
 
@@ -129,14 +120,14 @@ class CricketMatch {
   Innings? get awayInnings =>
       _isHomeInningsFirst ? secondInnings : firstInnings;
 
-  bool get isSuperOver => parentMatch != null;
-  bool get hasSuperOver => superOver != null;
+  // bool get isSuperOver => parentMatch != null;
+  // bool get hasSuperOver => superOver != null;
 
   void startMatch(Toss completedToss) {
     toss = completedToss;
-    if ((completedToss.winningTeam == homeTeam &&
+    if ((completedToss.winningTeam == home.team &&
             completedToss.choice == TossChoice.bowl) ||
-        (completedToss.winningTeam == awayTeam &&
+        (completedToss.winningTeam == away.team &&
             completedToss.choice == TossChoice.bat)) {
       _isHomeInningsFirst = false;
     }
@@ -155,10 +146,10 @@ class CricketMatch {
   }
 
   void _startFirstInnings() {
-    final battingTeam = _isHomeInningsFirst ? homeTeam : awayTeam;
-    final bowlingTeam = _isHomeInningsFirst ? awayTeam : homeTeam;
+    final battingTeam = _isHomeInningsFirst ? home : away;
+    final bowlingTeam = _isHomeInningsFirst ? away : home;
     inningsList.add(
-      Innings(
+      Innings.create(
         battingTeam: battingTeam,
         bowlingTeam: bowlingTeam,
         maxOvers: maxOvers,
@@ -167,14 +158,14 @@ class CricketMatch {
   }
 
   void _startSecondInnings() {
-    final battingTeam = _isHomeInningsFirst ? awayTeam : homeTeam;
-    final bowlingTeam = _isHomeInningsFirst ? homeTeam : awayTeam;
+    final battingTeam = _isHomeInningsFirst ? away : home;
+    final bowlingTeam = _isHomeInningsFirst ? home : away;
     inningsList.add(
-      Innings.target(
+      Innings.create(
         battingTeam: battingTeam,
         bowlingTeam: bowlingTeam,
-        target: firstInnings!.runs + 1,
         maxOvers: maxOvers,
+        target: firstInnings!.runs + 1,
       ),
     );
   }
@@ -184,10 +175,11 @@ class CricketMatch {
   }
 
   void startSuperOver() {
-    superOver = CricketMatch.superOver(parentMatch: this);
-    superOver!.startMatch(
-      Toss(homeTeam, _isHomeInningsFirst ? TossChoice.bowl : TossChoice.bat),
-    ); // This ensures that the order of innings is swapped.
+    // superOver = CricketMatch.superOver(parentMatch: this);
+    // superOver!.startMatch(
+    //   Toss(homeTeam, _isHomeInningsFirst ? TossChoice.bowl : TossChoice.bat),
+    // ); // This ensures that the order of innings is swapped.
+    throw UnimplementedError("Super over not implemented!");
   }
 }
 

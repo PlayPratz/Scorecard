@@ -38,26 +38,26 @@ class Ball {
     required this.bowler,
     required this.batter,
     required this.runsScored,
-    this.wicket,
-    this.battingExtra,
-    this.bowlingExtra,
-    this.overIndex = 0,
-    this.ballIndex = 0,
-    this.isEventOnly = false,
-  }) : timestamp = DateTime.timestamp();
+    required this.wicket,
+    required this.battingExtra,
+    required this.bowlingExtra,
+    required this.overIndex,
+    required this.ballIndex,
+    required this.isEventOnly,
+    required this.timestamp,
+  });
 
-  Ball.load({
+  Ball.create({
     required this.bowler,
     required this.batter,
     required this.runsScored,
-    this.wicket,
-    this.battingExtra,
-    this.bowlingExtra,
-    this.overIndex = 0,
-    this.ballIndex = 0,
-    this.isEventOnly = false,
-    required this.timestamp,
-  });
+    required this.wicket,
+    required this.battingExtra,
+    required this.bowlingExtra,
+    required this.isEventOnly,
+  })  : timestamp = DateTime.timestamp(),
+        overIndex = 0,
+        ballIndex = 0;
 
   int get totalRuns => runsScored + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;

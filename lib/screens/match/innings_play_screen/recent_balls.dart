@@ -17,7 +17,7 @@ class RecentBallsPane extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       // color: innings.battingTeam.color,
-      surfaceTintColor: innings.battingTeam.color,
+      surfaceTintColor: innings.battingTeam.team.color,
       child: InkWell(
         onTap: innings.balls.isEmpty
             ? null
@@ -50,7 +50,7 @@ class RecentBallsPane extends StatelessWidget {
                         final previousBall = ballsReversed[index + 1];
                         if (previousBall.overIndex != currentBall.overIndex) {
                           ballIndexColor =
-                              innings.bowlingTeam.color.withOpacity(1);
+                              innings.bowlingTeam.team.color.withOpacity(1);
                         }
                       }
                       return Padding(
@@ -190,7 +190,7 @@ class InningsTimelineScreen extends StatelessWidget {
       child: ListView.builder(
         itemCount: overs.length,
         itemBuilder: (context, overIndex) => Card(
-          color: innings.battingTeam.color.withOpacity(0.1),
+          color: innings.battingTeam.team.color.withOpacity(0.1),
           child: Padding(
             padding:
                 const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -251,7 +251,8 @@ class InningsTimelineScreen extends StatelessWidget {
               // const SizedBox(width: 40),
               Chip(
                 label: Text("Over ${over.balls.first.overIndex + 1}"),
-                backgroundColor: innings.bowlingTeam.color.withOpacity(0.7),
+                backgroundColor:
+                    innings.bowlingTeam.team.color.withOpacity(0.7),
                 side: const BorderSide(color: Colors.white10, width: 0),
               ),
               const Spacer(),

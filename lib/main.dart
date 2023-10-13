@@ -1,53 +1,116 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:scorecard/repositories/cricket_match_repository.dart';
+import 'package:scorecard/repositories/player_repository.dart';
+import 'package:scorecard/repositories/team_repository.dart';
 import 'package:scorecard/screens/home.dart';
-import 'package:scorecard/services/storage_service.dart';
+import 'package:scorecard/screens/widgets/common_builders.dart';
+import 'package:scorecard/services/data/cricket_match_service.dart';
+import 'package:scorecard/services/data/player_service.dart';
+import 'package:scorecard/services/data/team_service.dart';
 import 'package:scorecard/styles/text_styles.dart';
 
 void main() {
   runApp(const ScorecardApp());
 }
 
-class ScorecardApp extends StatefulWidget {
-  const ScorecardApp({Key? key}) : super(key: key);
+final _appStartup = AppStartup();
+final _initializeApp = _appStartup.initializeApp();
 
-  @override
-  State<ScorecardApp> createState() => _ScorecardAppState();
-}
-
-class _ScorecardAppState extends State<ScorecardApp> {
-  // This widget is the root of your application.
-
-  final Future _loadStorage = StorageService.init();
+class ScorecardApp extends StatelessWidget {
+  const ScorecardApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Scorecard',
-        theme: ThemeData(
-          // brightness: Brightness.dark,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.green,
-            brightness: Brightness.dark,
-          ),
-          // dividerTheme: const DividerThemeData(
-          //   color: ColorStyles.highlight,
-          //   thickness: 2,
-          //   space: 2,
-          // ),
-          textTheme: TextStyles.theme,
-          useMaterial3: true,
+      title: 'Scorecard',
+      theme: ThemeData(
+        // brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.green,
+          brightness: Brightness.dark,
         ),
-        home: FutureBuilder(
-          future: _loadStorage,
-          builder: ((context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return const HomeTabView();
-            } else {
-              return const SafeArea(
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-          }),
-        ));
+        // dividerTheme: const DividerThemeData(
+        //   color: ColorStyles.highlight,
+        //   thickness: 2,
+        //   space: 2,
+        // ),
+        textTheme: TextStyles.theme,
+        useMaterial3: true,
+      ),
+      home: const HomeTabView(),
+      builder: (context, route) => SimplifiedFutureBuilder(
+        future: _initializeApp,
+        builder: ((context, snapshot) {
+          return MultiProvider(
+            providers: [
+              Provider(create: (context) => _appStartup.playerService),
+              Provider(create: (context) => _appStartup.teamService),
+              Provider(create: (context) => _appStartup.cricketMatchService),
+            ],
+            builder: (context, child) => route!,
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class AppStartup {
+  // Repositories
+  late final PlayerRepository playerRepository;
+  late final TeamRepository teamRepository;
+  late final CricketMatchRepository cricketMatchRepository;
+
+  // Services
+  late final PlayerService playerService;
+  late final TeamService teamService;
+  late final CricketMatchService cricketMatchService;
+
+  bool _isInitialized = false;
+
+  Future<bool> initializeApp() async {
+    if (_isInitialized) {
+      return false;
+    }
+
+    // Hive DB
+    await Hive.initFlutter();
+
+    // Repositories
+    await _initializeRepositories();
+
+    // Services
+    await _initializeServices();
+
+    _isInitialized = true;
+    return true;
+  }
+
+  Future<void> _initializeRepositories() async {
+    playerRepository = PlayerRepository();
+    await playerRepository.initialize();
+
+    teamRepository = TeamRepository();
+    await teamRepository.initialize();
+
+    cricketMatchRepository = CricketMatchRepository(
+      playerRepository: playerRepository,
+      teamRepository: teamRepository,
+    );
+    await cricketMatchRepository.initialize();
+  }
+
+  Future<void> _initializeServices() async {
+    playerService = PlayerService(playerRepository: playerRepository);
+    await playerService.initialize();
+
+    teamService = TeamService(teamRepository: teamRepository);
+    await teamService.initialize();
+
+    cricketMatchService =
+        CricketMatchService(cricketMatchRepository: cricketMatchRepository);
+    await cricketMatchService.initialize();
   }
 }

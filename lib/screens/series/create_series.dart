@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/team/team_list.dart';
 import 'package:scorecard/screens/team/team_tile.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
+import 'package:scorecard/services/data/team_service.dart';
 import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/services/storage_service.dart';
 import 'package:scorecard/util/utils.dart';
 
 class CreateSeries extends StatefulWidget {
@@ -61,7 +62,7 @@ class _CreateSeriesState extends State<CreateSeries> {
         TitledPage(
           title: "Choose team",
           child: TeamList(
-            teamList: StorageService.getAllTeams()
+            teamList: (await context.read<TeamService>().getAllTeams())
                 .where((team) => !_selectedTeams.contains(team))
                 .toList(),
             onSelectTeam: (team) => Utils.goBack(context, team),

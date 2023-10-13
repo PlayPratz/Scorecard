@@ -34,7 +34,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
           children: [
             Expanded(
               child: SeparatedWidgetPair(
-                color: widget.match.nextTeamToBat.color.withOpacity(0.1),
+                color: widget.match.nextTeamToBat.team.color.withOpacity(0.1),
                 top: const GenericItemTile(
                   leading: Icon(Icons.sports_cricket),
                   primaryHint: Strings.initInningsChooseBatter,
@@ -51,7 +51,7 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
             ),
             Expanded(
                 child: SeparatedWidgetPair(
-              color: widget.match.nextTeamToBowl.color.withOpacity(0.1),
+              color: widget.match.nextTeamToBowl.team.color.withOpacity(0.1),
               top: const GenericItemTile(
                 leading: Icon(Icons.sports_baseball),
                 primaryHint: Strings.initInningsChooseBowler,

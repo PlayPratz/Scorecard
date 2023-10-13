@@ -36,4 +36,17 @@ class Utils {
     }
     return FileImage(File(pickedPhoto.path));
   }
+
+  static Map<String, dynamic> castMap(Map<dynamic, dynamic> map) {
+    for (final key in map.keys) {
+      if (map[key] is Map) {
+        map[key] = castMap(map[key]);
+      } else if (map[key] is List) {
+        if ((map[key] as List).any((element) => element is Map)) {
+          map[key] = [for (final element in map[key]) castMap(element)];
+        }
+      }
+    }
+    return map.cast<String, dynamic>();
+  }
 }

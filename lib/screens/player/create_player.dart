@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/services/storage_service.dart';
+import 'package:provider/provider.dart';
+import 'package:scorecard/services/data/player_service.dart';
 
 import '../../models/player.dart';
 import '../../util/strings.dart';
@@ -46,7 +47,14 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
     super.initState();
     if (widget.player != null) {
       _name = widget.player!.name;
-      _playerPhoto = StorageService.getPlayerPhoto(widget.player!);
+      context
+          .read<PlayerService>()
+          .getProfilePhoto(widget.player!.id)
+          .then((photoFile) {
+        if (photoFile != null) {
+          _playerPhoto = FileImage(photoFile);
+        }
+      });
     }
 
     if (widget.player != null) {
@@ -114,7 +122,8 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
             ),
             Elements.getConfirmButton(
                 text: Strings.createPlayerSave,
-                onPressed: _canCreatePlayer ? _onCreatePlayer : null),
+                onPressed:
+                    _canCreatePlayer ? () => _onCreatePlayer(context) : null),
           ],
         ));
   }
@@ -147,7 +156,7 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
     );
   }
 
-  void _onCreatePlayer() {
+  void _onCreatePlayer(BuildContext context) {
     Player player;
     if (widget.player != null) {
       player = widget.player!;
@@ -163,10 +172,12 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
           bowlStyle: _bowlStyle.selection!);
     }
     if (_playerPhoto != null) {
-      StorageService.savePlayerPhoto(
-          player.id, (_playerPhoto as FileImage).file);
+      context.read<PlayerService>().saveProfilePhoto(
+            playerId: player.id,
+            profilePhoto: (_playerPhoto as FileImage).file,
+          );
     }
-    StorageService.savePlayer(player);
+    context.read<PlayerService>().save(player);
     Utils.goBack(context, player);
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
@@ -7,9 +8,11 @@ import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/team/create_team.dart';
 import 'package:scorecard/screens/team/team_dummy_tile.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/screens/widgets/common_builders.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/number_picker.dart';
-import 'package:scorecard/services/storage_service.dart';
+import 'package:scorecard/services/data/cricket_match_service.dart';
+import 'package:scorecard/services/data/player_service.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
@@ -17,13 +20,13 @@ import 'package:scorecard/util/utils.dart';
 class CreateMatchForm extends StatefulWidget {
   final void Function(CricketMatch match)? onCreateMatch;
 
-  final Team? homeTeam;
-  final Team? awayTeam;
+  final TeamSquad? home;
+  final TeamSquad? away;
   const CreateMatchForm({
     Key? key,
     this.onCreateMatch,
-    this.homeTeam,
-    this.awayTeam,
+    this.home,
+    this.away,
   }) : super(key: key);
 
   @override
@@ -31,8 +34,8 @@ class CreateMatchForm extends StatefulWidget {
 }
 
 class _CreateMatchFormState extends State<CreateMatchForm> {
-  Team? _selectedHomeTeam;
-  Team? _selectedAwayTeam;
+  TeamSquad? _selectedHomeTeam;
+  TeamSquad? _selectedAwayTeam;
   int _overs = 5;
 
   CricketMatch? _match;
@@ -40,8 +43,8 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   @override
   void initState() {
     super.initState();
-    _selectedHomeTeam = widget.homeTeam;
-    _selectedAwayTeam = widget.awayTeam;
+    _selectedHomeTeam = widget.home;
+    _selectedAwayTeam = widget.away;
   }
 
   @override
@@ -56,9 +59,9 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
               const Spacer(),
               _selectedHomeTeam != null
                   ? _wSelectTeam(
-                      _selectedHomeTeam!.name,
-                      _selectedHomeTeam!.shortName,
-                      _selectedHomeTeam!.color.withOpacity(0.8),
+                      _selectedHomeTeam!.team.name,
+                      _selectedHomeTeam!.team.shortName,
+                      _selectedHomeTeam!.team.color.withOpacity(0.8),
                       true,
                     )
                   : _wSelectTeam(
@@ -70,9 +73,9 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
               const SizedBox(height: 32),
               _selectedAwayTeam != null
                   ? _wSelectTeam(
-                      _selectedAwayTeam!.name,
-                      _selectedAwayTeam!.shortName,
-                      _selectedAwayTeam!.color.withOpacity(0.8),
+                      _selectedAwayTeam!.team.name,
+                      _selectedAwayTeam!.team.shortName,
+                      _selectedAwayTeam!.team.color.withOpacity(0.8),
                       false,
                     )
                   : _wSelectTeam(
@@ -86,7 +89,8 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
               const Spacer(),
               Elements.getConfirmButton(
                   text: Strings.createMatchStartMatch,
-                  onPressed: _canCreateMatch ? () => _createMatch() : null),
+                  onPressed:
+                      _canCreateMatch ? () => _createMatch(context) : null),
             ],
           ),
         ));
@@ -127,10 +131,10 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   // (This is what happens when you develop in TypeScript and Dart simulatenously.)
 
   void _chooseTeam(
-    Team? currentTeam,
-    Function(Team) onSelectTeam,
+    TeamSquad? currentTeam,
+    Function(TeamSquad) onSelectTeam,
   ) async {
-    final Team? chosenTeam = await Utils.goToPage(
+    final TeamSquad? chosenTeam = await Utils.goToPage(
       CreateTeamForm(team: currentTeam),
       context,
     );
@@ -149,17 +153,18 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
     }
   }
 
-  void _createMatch() {
+  void _createMatch(BuildContext context) {
     if (_match != null) {
-      StorageService.deleteMatch(_match!);
+      // TODO This is shit logic
+      context.read<CricketMatchService>().delete(_match!);
       _match = null;
     }
-    CricketMatch match = CricketMatch.create(
-      homeTeam: _selectedHomeTeam!,
-      awayTeam: _selectedAwayTeam!,
+    final match = CricketMatch.create(
+      home: _selectedHomeTeam!,
+      away: _selectedAwayTeam!,
       maxOvers: _overs,
     );
-    StorageService.saveMatch(match);
+    context.read<CricketMatchService>().save(match);
     _match = match;
     Utils.goToPage(MatchInitScreen(match: match), context);
     widget.onCreateMatch?.call(match);
@@ -175,35 +180,41 @@ class CreateQuickMatchForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = SelectableItemController<Player>();
+    final playersFuture = context.read<PlayerService>().getAllPlayers();
     return TitledPage(
       title: "Quick Match",
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          Text("Select Players",
-              style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 16),
-          const SizedBox(height: 8),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SelectablePlayerList(
-                players: StorageService.getAllPlayers(sortAlphabetically: true),
-                controller: controller,
+      child: SimplifiedFutureBuilder(
+        future: playersFuture,
+        builder: (context, playerList) {
+          return Column(
+            children: [
+              const SizedBox(height: 16),
+              Text("Select Players",
+                  style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: SelectablePlayerList(
+                    players: playerList,
+                    controller: controller,
+                  ),
+                ),
               ),
-            ),
-          ),
-          ListenableBuilder(
-            listenable: controller, // TODO Remove Jugaad
-            builder: (context, child) => Elements.getConfirmButton(
-              text: Strings.buttonNext,
-              onPressed: controller.selectedItems.length >= 2
-                  ? () =>
-                      _handleCreateQuickTeams(context, controller.selectedItems)
-                  : null,
-            ),
-          ),
-        ],
+              ListenableBuilder(
+                listenable: controller, // TODO Remove Jugaad
+                builder: (context, child) => Elements.getConfirmButton(
+                  text: Strings.buttonNext,
+                  onPressed: controller.selectedItems.length >= 2
+                      ? () => _handleCreateQuickTeams(
+                          context, controller.selectedItems)
+                      : null,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

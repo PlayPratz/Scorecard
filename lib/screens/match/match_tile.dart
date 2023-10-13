@@ -27,18 +27,18 @@ class MatchTile extends StatelessWidget {
     switch (matchState) {
       case MatchState.notStarted:
       case MatchState.tossCompleted:
-        primaryTeam = match.homeTeam;
-        secondaryTeam = match.awayTeam;
+        primaryTeam = match.home.team;
+        secondaryTeam = match.away.team;
         break;
       case MatchState.firstInnings:
       case MatchState.secondInnings:
-        primaryTeam = match.currentInnings.battingTeam;
-        secondaryTeam = match.currentInnings.bowlingTeam;
+        primaryTeam = match.currentInnings.battingTeam.team;
+        secondaryTeam = match.currentInnings.bowlingTeam.team;
         break;
       case MatchState.completed:
         final result = match.result;
-        primaryTeam = result.winner;
-        secondaryTeam = result.loser;
+        primaryTeam = result.winner.team;
+        secondaryTeam = result.loser.team;
         break;
     }
 
@@ -75,7 +75,7 @@ class MatchTile extends StatelessWidget {
                           isRightAligned: false),
                     ),
                     CircleAvatar(
-                      child: const Text('v'),
+                      child: const Text(Strings.versus),
                       backgroundColor: secondaryTeam.color.withOpacity(0.25),
                       foregroundColor: Colors.white,
                     ),
@@ -105,8 +105,8 @@ class MatchTile extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        TeamChip(team: match.homeTeam),
-        TeamChip(team: match.awayTeam),
+        TeamChip(team: match.home.team),
+        TeamChip(team: match.away.team),
       ],
     );
   }
@@ -165,7 +165,7 @@ class MatchTile extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
           children: [
             TextSpan(
-              text: match.firstInnings!.battingTeam.shortName,
+              text: match.firstInnings!.battingTeam.team.shortName,
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
@@ -238,7 +238,7 @@ class TeamChip extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 64),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Center(child: Text(team.name.toUpperCase())),
+        child: Center(child: Text(team.shortName.toUpperCase())),
       ),
     );
   }

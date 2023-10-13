@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
-
-import '../util/utils.dart';
-import 'player.dart';
+import 'package:scorecard/models/player.dart';
+import 'package:scorecard/util/utils.dart';
 
 int genTeamIndex = -1;
 
 class Team {
   final String id;
 
-  String name;
-  String shortName;
-  List<Player> squad;
-  Color color;
+  final String name;
+  final String shortName;
+  final Color color;
 
-  Team(
-      {required this.id,
-      required this.name,
-      required this.shortName,
-      required this.squad,
-      required this.color});
+  Team({
+    required this.id,
+    required this.name,
+    required this.shortName,
+    required this.color,
+  });
 
   Team.create(
-      {required this.name,
-      required this.shortName,
-      required this.squad,
-      required this.color})
+      {required this.name, required this.shortName, required this.color})
       : id = Utils.generateUniqueId();
 
   factory Team.generate() {
@@ -33,12 +28,8 @@ class Team {
     return Team.create(
         name: template.name,
         shortName: template.shortName,
-        squad: [],
         color: template.color);
   }
-
-  int get squadSize => squad.length;
-  Player get captain => squad.first;
 }
 
 class _TeamTemplate {
@@ -60,3 +51,17 @@ final List<_TeamTemplate> genTeamTemplates = [
   _TeamTemplate(name: "Lemon", shortName: "LEM", color: Colors.lime),
   _TeamTemplate(name: "Blackberry", shortName: "BLB", color: Colors.deepPurple),
 ];
+
+class TeamSquad {
+  final Team team;
+  final List<Player> squad;
+
+  TeamSquad({required this.team, required this.squad});
+
+  TeamSquad.generate()
+      : team = Team.generate(),
+        squad = [];
+
+  Player get captain => squad.first;
+  int get squadSize => squad.length;
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
@@ -6,7 +7,7 @@ import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
-import 'package:scorecard/services/storage_service.dart';
+import 'package:scorecard/services/data/cricket_match_service.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
@@ -15,7 +16,7 @@ class MatchInitScreen extends StatelessWidget {
   final CricketMatch match;
   MatchInitScreen({Key? key, required this.match}) : super(key: key);
 
-  final teamController = SelectableItemController<Team>(maxItems: 1);
+  final teamSquadController = SelectableItemController<TeamSquad>(maxItems: 1);
   final tossChoiceController =
       SelectableItemController<TossChoice>(maxItems: 1);
 
@@ -40,32 +41,32 @@ class MatchInitScreen extends StatelessWidget {
                   trailing: null,
                 ),
                 bottom: Expanded(
-                  child: SelectableItemList<Team>(
-                    items: [match.homeTeam, match.awayTeam],
-                    controller: teamController,
-                    onBuild: (team) => ListTile(
+                  child: SelectableItemList<TeamSquad>(
+                    items: [match.home, match.away],
+                    controller: teamSquadController,
+                    onBuild: (teamSquad) => ListTile(
                       leading: Icon(Icons.people,
-                          color: team.color.withOpacity(0.7)),
-                      title: Text(team.name),
+                          color: teamSquad.team.color.withOpacity(0.7)),
+                      title: Text(teamSquad.team.name),
                       trailing: const SizedBox(),
-                      onTap: () => teamController
-                          .selectItem(team), //TODO decide where to handle this
+                      onTap: () => teamSquadController.selectItem(
+                          teamSquad), //TODO decide where to handle this
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
-                    onBuildSelected: (team) => ListTile(
+                    onBuildSelected: (teamSquad) => ListTile(
                       selected: true,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      selectedTileColor: team.color.withOpacity(0.1),
-                      selectedColor: team.color.withOpacity(1),
-                      leading:
-                          Icon(Icons.people, color: team.color.withOpacity(1)),
-                      title: Text(team.name),
+                      selectedTileColor: teamSquad.team.color.withOpacity(0.1),
+                      selectedColor: teamSquad.team.color.withOpacity(1),
+                      leading: Icon(Icons.people,
+                          color: teamSquad.team.color.withOpacity(1)),
+                      title: Text(teamSquad.team.name),
                       trailing: Icon(Icons.check_circle,
-                          color: team.color.withOpacity(1)),
-                      onTap: () => teamController.selectItem(
-                          team), // TODO maybe move to SelectableItemList
+                          color: teamSquad.team.color.withOpacity(1)),
+                      onTap: () => teamSquadController.selectItem(
+                          teamSquad), // TODO maybe move to SelectableItemList
                     ),
                   ),
                 ),
@@ -112,7 +113,7 @@ class MatchInitScreen extends StatelessWidget {
             const SizedBox(height: 128),
             ListenableBuilder(
                 // TODO Please solve this nested jugaad
-                listenable: teamController,
+                listenable: teamSquadController,
                 builder: (context, child) => ListenableBuilder(
                     listenable: tossChoiceController,
                     builder: (context, child) => _wConfirmButton(context))),
@@ -125,10 +126,10 @@ class MatchInitScreen extends StatelessWidget {
       text: Strings.initMatchStartMatch,
       onPressed: _canCreateMatch
           ? () {
-              final tossWinner = teamController.selectedItems.single;
+              final tossWinner = teamSquadController.selectedItems.single;
               final tossChoice = tossChoiceController.selectedItems.single;
-              match.startMatch(Toss(tossWinner, tossChoice));
-              StorageService.saveMatch(match); // TODO move
+              match.startMatch(Toss(tossWinner.team, tossChoice));
+              context.read<CricketMatchService>().save(match); // TODO move
               Utils.goToReplacementPage(
                   InningsInitScreen(match: match), context);
             }
@@ -137,6 +138,6 @@ class MatchInitScreen extends StatelessWidget {
   }
 
   bool get _canCreateMatch =>
-      teamController.selectedItems.singleOrNull != null &&
+      teamSquadController.selectedItems.singleOrNull != null &&
       tossChoiceController.selectedItems.singleOrNull != null;
 }

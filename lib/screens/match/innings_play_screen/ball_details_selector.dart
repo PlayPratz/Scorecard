@@ -27,7 +27,7 @@ class BallDetailsSelector extends StatelessWidget {
         const SizedBox(height: 8),
         _RunSelector(
             stateController: stateController,
-            battingTeamColor: innings.battingTeam.color),
+            battingTeamColor: innings.battingTeam.team.color),
       ],
     );
   }

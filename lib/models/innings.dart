@@ -1,35 +1,59 @@
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:scorecard/models/ball.dart';
+import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/statistics.dart';
+import 'package:scorecard/models/team.dart';
 import 'package:scorecard/models/wicket.dart';
-
-import 'player.dart';
-import '../util/constants.dart';
-
-import 'ball.dart';
-import 'team.dart';
+import 'package:scorecard/util/constants.dart';
 
 class Innings {
-  final Team battingTeam;
-  final Team bowlingTeam;
+  final TeamSquad battingTeam;
+  final TeamSquad bowlingTeam;
 
   int? target;
   final int maxOvers;
 
-  Innings({
+  Innings.load({
     required this.battingTeam,
     required this.bowlingTeam,
     required this.maxOvers,
-    // this.bowlerInnings = const [],
-  }) : target = null;
+    this.target,
+    required List<Ball> balls,
+    required List<Player> batters,
+    required List<Player> bowlers,
+    // Players in Action
+    required Player batter1,
+    required Player? batter2,
+    required Player striker,
+    required Player bowler,
+  }) {
+    for (final batter in batters) {
+      _addBatterToBatterInnings(batter);
+    }
 
-  Innings.target({
+    for (final bowler in bowlers) {
+      _addBowlerToBowlerInnings(bowler);
+    }
+
+    for (final ball in balls) {
+      play(ball);
+    }
+
+    playersInAction = PlayersInAction(
+      batter1: _batterInnings[batter1]!,
+      batter2: batter2 == null ? null : _batterInnings[batter2],
+      striker: _batterInnings[striker]!,
+      bowler: _bowlerInnings[bowler]!,
+    );
+  }
+
+  Innings.create({
     required this.battingTeam,
     required this.bowlingTeam,
-    required this.target,
     required this.maxOvers,
-    // this.bowlerInnings = const [],
+    this.target,
   });
 
   final List<Ball> _balls = [];
@@ -38,10 +62,11 @@ class Innings {
   final List<Over> _overs = [];
   UnmodifiableListView<Over> get overs => UnmodifiableListView(_overs);
 
-  void initialize(
-      {required Player batter1,
-      required Player? batter2,
-      required Player bowler}) {
+  void initialize({
+    required Player batter1,
+    required Player? batter2,
+    required Player bowler,
+  }) {
     final bowlerInnings = BowlerInnings(bowler, innings: this);
     _bowlerInnings[bowler] = bowlerInnings;
 
@@ -50,9 +75,11 @@ class Innings {
         batterInnings1; //TODO Remove duplicate code from [addBatter]
 
     playersInAction = PlayersInAction(
-        batter1: batterInnings1,
-        striker: batterInnings1,
-        bowler: bowlerInnings);
+      batter1: batterInnings1,
+      batter2: null,
+      striker: batterInnings1,
+      bowler: bowlerInnings,
+    );
 
     if (batter2 != null) {
       final batterInnings2 = BatterInnings(batter2, innings: this);
@@ -158,24 +185,23 @@ class Innings {
   final Map<Player, BowlerInnings> _bowlerInnings = {};
   List<BowlerInnings> get bowlerInningsList => _bowlerInnings.values.toList();
 
-  // BowlerInnings addBowler(Player bowler) {
-  //   final bowlInn = BowlerInnings(bowler, innings: this);
-  //   _bowlerInnings[bowler] = bowlInn; //TODO Check containsKey?
-  //   return bowlInn;
-  // }
-
   BowlerInnings setBowler(Player bowler) {
     // Check if bowler is not already registered
     if (!_bowlerInnings.containsKey(bowler)) {
       // Add bowler to bowlerInnings
-      final bowlInn = BowlerInnings(bowler, innings: this);
-      _bowlerInnings[bowler] = bowlInn;
+      _addBowlerToBowlerInnings(bowler);
     }
 
     // Set bowler as the current bowler
-    playersInAction.bowler = _bowlerInnings[bowler];
+    playersInAction.bowler = _bowlerInnings[bowler]!;
 
     return _bowlerInnings[bowler]!;
+  }
+
+  BowlerInnings _addBowlerToBowlerInnings(Player bowler) {
+    final bowlerInn = BowlerInnings(bowler, innings: this);
+    _bowlerInnings[bowler] = bowlerInn;
+    return bowlerInn;
   }
 
   BowlerInnings? getBowlerInnings(Player bowler) {
@@ -192,8 +218,7 @@ class Innings {
   List<BatterInnings> get batterInningsList => _batterInnings.values.toList();
 
   BatterInnings addBatter(Player batter, BatterInnings outBatter) {
-    final inBatter = BatterInnings(batter, innings: this);
-    _batterInnings[batter] = inBatter; //TODO check containsKey?
+    final inBatter = _addBatterToBatterInnings(batter);
 
     if (outBatter == playersInAction.batter2) {
       playersInAction.batter2 = inBatter;
@@ -204,6 +229,13 @@ class Innings {
         playersInAction.striker != playersInAction.batter2) {
       playersInAction.striker = inBatter;
     }
+
+    return inBatter;
+  }
+
+  BatterInnings _addBatterToBatterInnings(Player batter) {
+    final inBatter = BatterInnings(batter, innings: this);
+    _batterInnings[batter] = inBatter; //TODO check containsKey?
 
     return inBatter;
   }
@@ -304,15 +336,16 @@ class FallOfWicket {
 ///
 /// It's a handy class to represent the two batters and a bowler
 class PlayersInAction {
-  BatterInnings? batter1;
+  BatterInnings batter1;
   BatterInnings? batter2;
-  BatterInnings? striker;
+  BatterInnings striker;
 
-  BowlerInnings? bowler;
+  BowlerInnings bowler;
 
-  PlayersInAction(
-      {required this.batter1,
-      this.batter2,
-      required this.striker,
-      required this.bowler});
+  PlayersInAction({
+    required this.batter1,
+    required this.batter2,
+    required this.striker,
+    required this.bowler,
+  });
 }

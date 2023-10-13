@@ -1,12 +1,11 @@
+import 'package:scorecard/models/ball.dart';
+import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/innings.dart';
+import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/result.dart';
 import 'package:scorecard/models/statistics.dart';
+import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/constants.dart';
-
-import '../models/ball.dart';
-import '../models/cricket_match.dart';
-import '../models/player.dart';
-import '../models/wicket.dart';
 
 class Strings {
   Strings._();
@@ -42,7 +41,7 @@ class Strings {
   }
 
   static String getChaseEquation(Innings innings) {
-    return "${innings.battingTeam.shortName} requires ${innings.requiredRuns} in ${innings.ballsLeft} balls";
+    return "${innings.battingTeam.team.shortName} requires ${innings.requiredRuns} in ${innings.ballsLeft} balls";
   }
 
   static String getResult(Result result) {
@@ -50,11 +49,11 @@ class Strings {
       final ballString = (result as ResultWinByChasing).ballsLeft == 1
           ? "ball to spare"
           : "balls to spare";
-      return "${result.winner.shortName} wins with ${result.ballsLeft} $ballString";
+      return "${result.winner.team.shortName} wins with ${result.ballsLeft} $ballString";
     } else if (result.victoryType == VictoryType.defending) {
       final runString =
           (result as ResultWinByDefending).runsWonBy == 1 ? "run" : "runs";
-      return "${result.winner.shortName} wins by ${result.runsWonBy} $runString";
+      return "${result.winner.team.shortName} wins by ${result.runsWonBy} $runString";
     } else if (result.victoryType == VictoryType.tie) {
       return scoreMatchTied;
     } else {
@@ -117,7 +116,7 @@ class Strings {
   static const String separatorSlash = '/';
   static const String bracketOpenWithSpace = " (";
   static const String bracketClose = ")";
-  static const String separatorVersus = " v ";
+  static const String versus = "v";
 
   // Create Team
   static const String createTeamSelectCaptain = "Select a captain";

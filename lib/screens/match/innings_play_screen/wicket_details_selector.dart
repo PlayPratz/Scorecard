@@ -74,8 +74,8 @@ class WicketTile extends StatelessWidget {
 class WicketPicker extends StatefulWidget {
   final Player bowler;
   final Player striker;
-  final Team battingTeam;
-  final Team fieldingTeam;
+  final TeamSquad battingTeam;
+  final TeamSquad fieldingTeam;
   final PlayersInAction playersInAction;
   const WicketPicker({
     Key? key,

@@ -1,8 +1,8 @@
 import 'team.dart';
 
 abstract class Result {
-  final Team winner;
-  final Team loser;
+  final TeamSquad winner;
+  final TeamSquad loser;
 
   Result({required this.winner, required this.loser});
 

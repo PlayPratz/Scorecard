@@ -1,105 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/screens/match/innings_init.dart';
 import 'package:scorecard/screens/match/match_init.dart';
 import 'package:scorecard/screens/match/innings_play_screen/match_interface.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
+import 'package:scorecard/screens/widgets/common_builders.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/services/data/cricket_match_service.dart';
 import 'package:scorecard/styles/color_styles.dart';
-import 'package:scorecard/services/storage_service.dart';
 import 'package:scorecard/screens/match/create_match.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
-
-class MatchList extends StatefulWidget {
-  // final List<CricketMatch> matchList;
-
-  final List<CricketMatch> Function() getMatchList;
-  final bool allowCreateMatch;
-  const MatchList(
-      {Key? key, required this.getMatchList, this.allowCreateMatch = false})
-      : super(key: key);
-
-  @override
-  State<MatchList> createState() => _MatchListState();
-}
-
-class _MatchListState extends State<MatchList> {
-  @override
-  Widget build(BuildContext context) {
-    return ItemList(
-        itemList: getMatchList(context),
-        createItem: widget.allowCreateMatch
-            ? CreateItemEntry(
-                page:
-                    CreateMatchForm(onCreateMatch: (match) => setState(() {})),
-                string: Strings.matchlistCreateNewMatch,
-              )
-            : null);
-  }
-
-  List<Widget> getMatchList(BuildContext context) {
-    return widget
-        .getMatchList()
-        .reversed
-        .map((match) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: MatchTile(
-                match: match,
-                onTap: () => handleOpenMatch(match, context),
-                onLongPress: () => {
-                  showModalBottomSheet(
-                      context: context,
-                      builder: (context) => Material(
-                            color: ColorStyles.background,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(height: 64),
-                                GenericItemTile(
-                                  leading: const Icon(
-                                    Icons.replay,
-                                    color: ColorStyles.selected,
-                                  ),
-                                  primaryHint: Strings.matchListRematch,
-                                  secondaryHint:
-                                      Strings.matchListRematchDescription,
-                                  onSelect: () => setState(() {
-                                    Utils.goBack(context);
-                                    Utils.goToPage(
-                                        CreateMatchForm(
-                                          homeTeam: match.homeTeam,
-                                          awayTeam: match.awayTeam,
-                                        ),
-                                        context);
-                                  }),
-                                ),
-                                const SizedBox(height: 24),
-                                GenericItemTile(
-                                  leading: const Icon(
-                                    Icons.delete_forever,
-                                    color: ColorStyles.remove,
-                                  ),
-                                  primaryHint: Strings.matchListDelete,
-                                  secondaryHint:
-                                      Strings.matchListDeleteDescription,
-                                  onSelect: () => setState(() {
-                                    StorageService.deleteMatch(match);
-                                    Utils.goBack(context);
-                                  }),
-                                ),
-                                const SizedBox(height: 128),
-                              ],
-                            ),
-                          ))
-                },
-              ),
-            ))
-        .toList();
-  }
-}
 
 void handleOpenMatch(CricketMatch match, BuildContext context) {
   switch (match.matchState) {
@@ -119,5 +33,118 @@ void handleOpenMatch(CricketMatch match, BuildContext context) {
         return;
       }
       Utils.goToPage(MatchInterface(match: match), context);
+  }
+}
+
+class CricketMatchList extends StatelessWidget {
+  final List<CricketMatch> cricketMatches;
+  final bool showCreateMatch;
+
+  const CricketMatchList(
+      {super.key, required this.cricketMatches, required this.showCreateMatch});
+
+  @override
+  Widget build(BuildContext context) {
+    return ItemList(
+      itemList: [
+        for (final cricketMatch in cricketMatches)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: MatchTile(
+              match: cricketMatch,
+              onTap: () => handleOpenMatch(cricketMatch, context),
+              onLongPress: () => {
+                showModalBottomSheet(
+                    context: context,
+                    builder: (context) => Material(
+                          color: ColorStyles.background,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 64),
+                              GenericItemTile(
+                                leading: const Icon(
+                                  Icons.replay,
+                                  color: ColorStyles.selected,
+                                ),
+                                primaryHint: Strings.matchListRematch,
+                                secondaryHint:
+                                    Strings.matchListRematchDescription,
+                                onSelect: () => Utils.goToReplacementPage(
+                                  CreateMatchForm(
+                                    home: cricketMatch.home,
+                                    away: cricketMatch.away,
+                                  ),
+                                  context,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              GenericItemTile(
+                                leading: const Icon(
+                                  Icons.delete_forever,
+                                  color: ColorStyles.remove,
+                                ),
+                                primaryHint: Strings.matchListDelete,
+                                secondaryHint:
+                                    Strings.matchListDeleteDescription,
+                                onSelect: () async {
+                                  await context
+                                      .read<CricketMatchService>()
+                                      .delete(cricketMatch);
+                                  Utils.goBack(context);
+                                },
+                              ),
+                              const SizedBox(height: 128),
+                            ],
+                          ),
+                        ))
+              },
+            ),
+          )
+      ],
+      createItem: showCreateMatch
+          ? CreateItemEntry(
+              page: CreateMatchForm(
+                onCreateMatch: (match) => {
+                  // TODO
+                  throw UnimplementedError("Bhai create match ka sort kar!")
+                },
+              ),
+              string: Strings.matchlistCreateNewMatch,
+            )
+          : null,
+    );
+  }
+}
+
+class OngoingCricketMatches extends StatelessWidget {
+  const OngoingCricketMatches({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ongoingCricketMatchesFuture =
+        context.read<CricketMatchService>().getOngoingCricketMatches();
+    return SimplifiedFutureBuilder(
+        future: ongoingCricketMatchesFuture,
+        builder: (context, ongoingCricketMatches) => CricketMatchList(
+              cricketMatches: ongoingCricketMatches,
+              showCreateMatch: false,
+            ));
+  }
+}
+
+class CompletedCricketMatches extends StatelessWidget {
+  const CompletedCricketMatches({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final completedCricketMatchesFuture =
+        context.read<CricketMatchService>().getCompletedCricketMatches();
+    return SimplifiedFutureBuilder(
+        future: completedCricketMatchesFuture,
+        builder: (context, completedCricketMatches) => CricketMatchList(
+              cricketMatches: completedCricketMatches,
+              showCreateMatch: false,
+            ));
   }
 }

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/services/data/player_service.dart';
+import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/elements.dart';
 

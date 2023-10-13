@@ -7,6 +7,8 @@ import 'package:scorecard/repositories/hive_constants.dart';
 class TeamRepository implements IRepository<Team> {
   late final Box<TeamDTO> _teamBox;
 
+  final Map<String, Team> _cache = {};
+
   @override
   Future<void> initialize() async {
     // Register the TypeAdapter
@@ -20,15 +22,23 @@ class TeamRepository implements IRepository<Team> {
   Future<void> add(Team team) async {
     final teamDTO = TeamDTO.of(team);
     await _teamBox.put(teamDTO.id, teamDTO);
+    _cache[team.id] = team;
   }
 
   @override
   Future<Team> get(String id) async {
+    if (_cache.containsKey(id)) {
+      return _cache[id]!;
+    }
+
     final teamDTO = _teamBox.get(id);
     if (teamDTO == null) {
       throw StateError("Team not found in the Database! (id: $id)");
     }
     final team = teamDTO.toTeam();
+
+    _cache[id] = team;
+
     return team;
   }
 

@@ -12,7 +12,7 @@ import 'package:scorecard/screens/match/innings_play_screen/wicket_details_selec
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/match/scorecard.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
-import 'package:scorecard/services/data/cricket_match_service.dart';
+import 'package:scorecard/services/cricket_match_service.dart';
 import 'package:scorecard/states/containers/innings_selection.dart';
 import 'package:scorecard/states/controllers/ball_details_state.dart';
 import 'package:scorecard/states/controllers/innings_state.dart';

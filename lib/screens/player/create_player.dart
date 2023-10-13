@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
-import 'package:scorecard/services/data/player_service.dart';
+import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/helpers.dart';
 import 'package:scorecard/util/strings.dart';

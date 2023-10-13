@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/handlers/share_handler.dart';
 import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/team_repository.dart';
 import 'package:scorecard/screens/home.dart';
 import 'package:scorecard/screens/widgets/common_builders.dart';
-import 'package:scorecard/services/data/cricket_match_service.dart';
-import 'package:scorecard/services/data/player_service.dart';
-import 'package:scorecard/services/data/team_service.dart';
+import 'package:scorecard/services/cricket_match_service.dart';
+import 'package:scorecard/services/player_service.dart';
+import 'package:scorecard/services/team_service.dart';
 import 'package:scorecard/styles/text_styles.dart';
 
 void main() {
@@ -63,6 +64,9 @@ class AppStartup {
   late final TeamRepository teamRepository;
   late final CricketMatchRepository cricketMatchRepository;
 
+  // Handlers
+  late final ShareHandler shareHandler;
+
   // Services
   late final PlayerService playerService;
   late final TeamService teamService;
@@ -80,6 +84,9 @@ class AppStartup {
 
     // Repositories
     await _initializeRepositories();
+
+    // Handlers
+    await _initializeHandlers();
 
     // Services
     await _initializeServices();
@@ -102,6 +109,11 @@ class AppStartup {
     await cricketMatchRepository.initialize();
   }
 
+  Future<void> _initializeHandlers() async {
+    shareHandler = ShareHandler();
+    await shareHandler.initialize();
+  }
+
   Future<void> _initializeServices() async {
     playerService = PlayerService(playerRepository: playerRepository);
     await playerService.initialize();
@@ -109,8 +121,10 @@ class AppStartup {
     teamService = TeamService(teamRepository: teamRepository);
     await teamService.initialize();
 
-    cricketMatchService =
-        CricketMatchService(cricketMatchRepository: cricketMatchRepository);
+    cricketMatchService = CricketMatchService(
+      cricketMatchRepository: cricketMatchRepository,
+      shareHandler: shareHandler,
+    );
     await cricketMatchService.initialize();
   }
 }

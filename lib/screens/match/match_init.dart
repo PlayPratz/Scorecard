@@ -7,7 +7,7 @@ import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
-import 'package:scorecard/services/data/cricket_match_service.dart';
+import 'package:scorecard/services/cricket_match_service.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';

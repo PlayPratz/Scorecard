@@ -65,7 +65,8 @@ class CricketMatch {
     return currentInnings.bowlingTeam;
   }
 
-  TeamSquad get nextTeamToBowl => nextTeamToBat == home ? away : home;
+  TeamSquad get nextTeamToBowl =>
+      nextTeamToBat.team.id == home.team.id ? away : home;
 
   MatchState get matchState {
     if (_isCompleted) {

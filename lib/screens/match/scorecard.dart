@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/innings.dart';
@@ -7,6 +8,7 @@ import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/services/cricket_match_service.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
@@ -18,14 +20,14 @@ class Scorecard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String title =
-        "${match.home.team.shortName} ${Strings.versus} ${match.away.team.shortName}";
+    String title = Strings.getCricketMatchTitle(match);
 
     return TitledPage(
       appBarActions: [
         IconButton(
-          onPressed: () =>
-              Elements.showSnackBar(context, text: "Coming soon™!"),
+          onPressed: () {
+            context.read<CricketMatchService>().share(match);
+          },
           icon: const Icon(Icons.share),
         )
       ],
@@ -66,7 +68,7 @@ class _InningsPanel extends StatelessWidget {
       elevation: 2,
       surfaceTintColor: innings.battingTeam.team.color,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
         child: Column(
           children: [
             const SizedBox(height: 16),
@@ -269,7 +271,7 @@ class _YetToBatPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final playersThatDidNotBat = innings.battingTeam.squad;
+    final playersThatDidNotBat = [...innings.battingTeam.squad];
     for (final batterInnings in innings.batterInningsList) {
       playersThatDidNotBat.remove(batterInnings.batter);
     }
@@ -315,7 +317,6 @@ class _FallOfWicketsPanel extends StatelessWidget {
         child: DefaultTextStyle(
           style: Theme.of(context).textTheme.titleMedium!,
           child: Table(
-            // defaultColumnWidth: FlexColumnWidth(1),
             columnWidths: const {
               2: FlexColumnWidth(2),
               3: FlexColumnWidth(3),

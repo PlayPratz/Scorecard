@@ -1,14 +1,18 @@
 import 'dart:collection';
+import 'package:scorecard/handlers/share_handler.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
 
 /// Services all tasks related to a [CricketMatch]es.
 class CricketMatchService {
   final IRepository<CricketMatch> _cricketMatchRepository;
+  final ShareHandler _shareHandler;
 
-  CricketMatchService(
-      {required IRepository<CricketMatch> cricketMatchRepository})
-      : _cricketMatchRepository = cricketMatchRepository;
+  CricketMatchService({
+    required IRepository<CricketMatch> cricketMatchRepository,
+    required ShareHandler shareHandler,
+  })  : _cricketMatchRepository = cricketMatchRepository,
+        _shareHandler = shareHandler;
 
   Future<void> initialize() async {}
 
@@ -39,5 +43,9 @@ class CricketMatchService {
 
   Future<void> delete(CricketMatch cricketMatch) async {
     await _cricketMatchRepository.delete(cricketMatch.id);
+  }
+
+  Future<void> share(CricketMatch cricketMatch) async {
+    _shareHandler.shareCricketMatch(cricketMatch);
   }
 }

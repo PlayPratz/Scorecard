@@ -169,8 +169,9 @@ class Innings {
   int get projectedRuns => (currentRunRate * maxOvers).floor();
   int get requiredRuns => target != null ? max(0, (target! - runs)) : 0;
   int get ballsLeft => maxOvers * Constants.ballsPerOver - ballsBowled;
-  double get requiredRunRate =>
-      target != null ? (requiredRuns / ballsLeft) * Constants.ballsPerOver : 0;
+  double get requiredRunRate => target != null && ballsLeft != 0
+      ? (requiredRuns / ballsLeft) * Constants.ballsPerOver
+      : 0;
 
   // Fall of Wickets
   final List<FallOfWicket> _fallOfWickets = [];

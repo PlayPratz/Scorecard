@@ -97,6 +97,10 @@ class Strings {
     return "$runs $runsString, $wickets $wicketString";
   }
 
+  static String getCricketMatchTitle(CricketMatch cricketMatch) {
+    return "${cricketMatch.home.team.shortName} ${Strings.versus} ${cricketMatch.away.team.shortName}";
+  }
+
   static const String playerBatter = " Bat";
 
   // static const String playerBowler = " Bowl";

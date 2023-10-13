@@ -20,7 +20,7 @@ class GenericItemTile extends StatefulWidget {
   const GenericItemTile({
     Key? key,
     required this.primaryHint,
-    required this.secondaryHint,
+    this.secondaryHint = "",
     this.leading,
     this.onSelect,
     this.onLongPress,

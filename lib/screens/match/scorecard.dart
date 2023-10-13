@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/statistics.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/elements.dart';
 import 'package:scorecard/util/strings.dart';
@@ -83,9 +85,11 @@ class _InningsPanel extends StatelessWidget {
             const SizedBox(height: 16),
             _BattingInningsPanel(innings),
             const SizedBox(height: 16),
+            _YetToBatPanel(innings),
+            const SizedBox(height: 16),
             _FallOfWicketsPanel(innings),
             const SizedBox(height: 16),
-            _wBowlingPanel(context, innings),
+            _BowlingInningsPanel(innings),
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
@@ -111,206 +115,48 @@ class _BattingInningsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      surfaceTintColor: innings.battingTeam.team.color,
-      color: innings.battingTeam.team.color.withOpacity(0.4),
-      elevation: 4,
-      margin: const EdgeInsets.all(0),
+    final extras = innings.balls
+        .where((ball) => ball.isBowlingExtra || ball.isBattingExtra);
+    final wides =
+        extras.where((ball) => ball.bowlingExtra == BowlingExtra.wide);
+    final noBalls =
+        extras.where((ball) => ball.bowlingExtra == BowlingExtra.noBall);
+    final byes = extras.where((ball) => ball.battingExtra == BattingExtra.bye);
+    final legByes =
+        extras.where((ball) => ball.battingExtra == BattingExtra.legBye);
+    return _GenericInningsPanel(
+      title: Strings.scorecardBatting.toUpperCase(),
+      color: innings.battingTeam.team.color,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Text(
-              Strings.scorecardBatting.toUpperCase(),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...innings.batterInningsList.map((batterInnings) => Column(
-                children: [
-                  const Divider(
-                    color: Colors.black12,
-                    height: 0,
-                  ),
-                  BatterInningsScore(battingStats: batterInnings),
-                ],
-              ))
-        ],
-      ),
-    );
-  }
-}
-
-// TODO Abstract common code from _BattingInningsPanel
-class _FallOfWicketsPanel extends StatelessWidget {
-  final Innings innings;
-
-  const _FallOfWicketsPanel(this.innings);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      surfaceTintColor: innings.battingTeam.team.color,
-      color: innings.battingTeam.team.color.withOpacity(0.4),
-      elevation: 4,
-      margin: const EdgeInsets.all(0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Text(
-              Strings.scorecardFallOfWickets.toUpperCase(),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: DefaultTextStyle(
-              style: Theme.of(context).textTheme.titleMedium!,
-              child: Table(
-                // defaultColumnWidth: FlexColumnWidth(1),
-                columnWidths: const {
-                  2: FlexColumnWidth(2),
-                  3: FlexColumnWidth(3),
-                },
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                border: const TableBorder(
-                    horizontalInside: BorderSide(color: Colors.black12)),
-                children: [
-                  for (final fallOfWicket in innings.fallOfWickets)
-                    TableRow(
-                      children: [
-                        SizedBox(
-                          height: 36, // To space the rows
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                                "${fallOfWicket.ball.overIndex}.${fallOfWicket.ball.ballIndex}"),
-                          ),
-                        ), //TODO Abstract
-                        Text(
-                            "${fallOfWicket.runsAtWicket}/${fallOfWicket.wicketsAtWicket}"),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(fallOfWicket.wicket.batter.name),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(Strings.getWicketDescription(
-                                  fallOfWicket.wicket))),
-                        ),
-                      ],
-                    )
-                ],
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-// TODO Convert to Stateless Widget
-Widget _wBowlingPanel(BuildContext context, Innings innings) {
-  return _innerPanel(
-      context,
-      Strings.scorecardBowling,
-      innings.bowlingTeam.team.color,
-      innings.bowlerInningsList
-          .map((bowlInn) => BowlerInningsScore(bowlerInnings: bowlInn))
-          .toList());
-}
-
-Widget _innerPanel(BuildContext context, String heading, Color color,
-    List<Widget> playerTiles) {
-  return Card(
-    margin: const EdgeInsets.all(0),
-    surfaceTintColor: color,
-    color: color.withOpacity(0.4),
-    elevation: 4,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: Text(
-            heading.toUpperCase(),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...playerTiles.map((tile) => Column(
-              children: [const Divider(color: Colors.black12, height: 0), tile],
-            )),
-      ],
-    ),
-  );
-}
-
-class BowlerInningsScore extends StatelessWidget {
-  final BowlingStats bowlerInnings;
-  const BowlerInningsScore({super.key, required this.bowlerInnings});
-
-  @override
-  Widget build(BuildContext context) {
-    final player = bowlerInnings.bowler;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Elements.getPlayerIcon(player, 36, null), //TODO
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          for (final batterInnings in innings.batterInningsList)
+            Column(
               children: [
-                Text(
-                  player.name,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                const Divider(color: Colors.black12, height: 0),
+                BatterInningsScore(battingStats: batterInnings),
               ],
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            Strings.getBowlerOversBowled(bowlerInnings),
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(width: 8),
-          CircleAvatar(
-            backgroundColor: ColorStyles.wicket.withOpacity(0.7),
-            foregroundColor: Colors.white,
-            radius: 14,
-            child: Text(
-              bowlerInnings.wicketsTaken.toString(),
+          const Divider(color: Colors.black12, height: 0),
+          GenericItemTile(
+            primaryHint: "Extras",
+            secondaryHint:
+                "(${wides.length} wd, ${noBalls.length} nb, ${byes.length} b, ${legByes.length} lb)",
+            contentPadding: const EdgeInsets.only(left: 24, right: 64),
+            trailing: Text(
+              extras.length.toString(),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            bowlerInnings.runsConceded.toString(),
-            style: Theme.of(context).textTheme.bodyLarge,
+          const Divider(color: Colors.black12, height: 0),
+          GenericItemTile(
+            primaryHint: "Total",
+            secondaryHint: Strings.getOverBowledText(innings, short: false),
+            contentPadding: const EdgeInsets.only(left: 24, right: 64),
+            trailing: Text(
+              Strings.getInningsScore(innings),
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
           ),
-          const SizedBox(width: 8),
-          Text(bowlerInnings.economy.toStringAsFixed(2),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.merge(const TextStyle(color: Colors.white70))),
-          const SizedBox(width: 8),
         ],
       ),
     );
@@ -410,6 +256,236 @@ class BatterInningsScore extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _YetToBatPanel extends StatelessWidget {
+  final Innings innings;
+
+  const _YetToBatPanel(this.innings);
+
+  @override
+  Widget build(BuildContext context) {
+    final playersThatDidNotBat = innings.battingTeam.squad;
+    for (final batterInnings in innings.batterInningsList) {
+      playersThatDidNotBat.remove(batterInnings.batter);
+    }
+    if (playersThatDidNotBat.isEmpty) {
+      return const SizedBox();
+    }
+
+    return _GenericInningsPanel(
+        title: "Yet To Bat".toUpperCase(),
+        color: innings.battingTeam.team.color,
+        child: SizedBox(
+          width: double.infinity,
+          child: Padding(
+            padding:
+                const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 12.0),
+            child: Wrap(
+              spacing: 16,
+              children: [
+                for (final player in playersThatDidNotBat) Text(player.name),
+              ],
+            ),
+          ),
+        ));
+  }
+}
+
+// TODO Abstract common code from _BattingInningsPanel
+class _FallOfWicketsPanel extends StatelessWidget {
+  final Innings innings;
+
+  const _FallOfWicketsPanel(this.innings);
+
+  @override
+  Widget build(BuildContext context) {
+    if (innings.fallOfWickets.isEmpty) {
+      return const SizedBox();
+    }
+    return _GenericInningsPanel(
+      title: "Fall of Wickets".toUpperCase(),
+      color: innings.battingTeam.team.color,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: DefaultTextStyle(
+          style: Theme.of(context).textTheme.titleMedium!,
+          child: Table(
+            // defaultColumnWidth: FlexColumnWidth(1),
+            columnWidths: const {
+              2: FlexColumnWidth(2),
+              3: FlexColumnWidth(3),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            border: const TableBorder(
+                horizontalInside: BorderSide(color: Colors.black12)),
+            children: [
+              for (final fallOfWicket in innings.fallOfWickets)
+                TableRow(
+                  children: [
+                    SizedBox(
+                      height: 36, // To space the rows
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                            "${fallOfWicket.ball.overIndex}.${fallOfWicket.ball.ballIndex}"),
+                      ),
+                    ), //TODO Abstract
+                    Text(
+                        "${fallOfWicket.runsAtWicket}/${fallOfWicket.wicketsAtWicket}"),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(fallOfWicket.wicket.batter.name),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(Strings.getWicketDescription(
+                              fallOfWicket.wicket))),
+                    ),
+                  ],
+                )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BowlingInningsPanel extends StatelessWidget {
+  final Innings innings;
+
+  const _BowlingInningsPanel(this.innings);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.all(0),
+      surfaceTintColor: innings.bowlingTeam.team.color,
+      color: innings.bowlingTeam.team.color.withOpacity(0.4),
+      elevation: 4,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Text(
+              Strings.scorecardBowling.toUpperCase(),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...[
+            for (final bowlInn in innings.bowlerInningsList)
+              Column(
+                children: [
+                  const Divider(color: Colors.black12, height: 0),
+                  BowlerInningsScore(bowlerInnings: bowlInn)
+                ],
+              )
+          ]
+        ],
+      ),
+    );
+  }
+}
+
+class BowlerInningsScore extends StatelessWidget {
+  final BowlingStats bowlerInnings;
+  const BowlerInningsScore({super.key, required this.bowlerInnings});
+
+  @override
+  Widget build(BuildContext context) {
+    final player = bowlerInnings.bowler;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Elements.getPlayerIcon(player, 36, null), //TODO
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  player.name,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            Strings.getBowlerOversBowled(bowlerInnings),
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(width: 8),
+          CircleAvatar(
+            backgroundColor: ColorStyles.wicket.withOpacity(0.7),
+            foregroundColor: Colors.white,
+            radius: 14,
+            child: Text(
+              bowlerInnings.wicketsTaken.toString(),
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            bowlerInnings.runsConceded.toString(),
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(width: 8),
+          Text(bowlerInnings.economy.toStringAsFixed(2),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.merge(const TextStyle(color: Colors.white70))),
+          const SizedBox(width: 8),
+        ],
+      ),
+    );
+  }
+}
+
+class _GenericInningsPanel extends StatelessWidget {
+  final String title;
+  final Color color;
+  final Widget child;
+
+  const _GenericInningsPanel(
+      {required this.title, required this.color, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      surfaceTintColor: color,
+      color: color.withOpacity(0.4),
+      elevation: 4,
+      margin: const EdgeInsets.all(0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(height: 16),
+          child
         ],
       ),
     );

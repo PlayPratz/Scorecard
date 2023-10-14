@@ -64,9 +64,6 @@ class AppStartup {
   late final TeamRepository teamRepository;
   late final CricketMatchRepository cricketMatchRepository;
 
-  // Handlers
-  late final ShareHandler shareHandler;
-
   // Services
   late final PlayerService playerService;
   late final TeamService teamService;
@@ -110,8 +107,7 @@ class AppStartup {
   }
 
   Future<void> _initializeHandlers() async {
-    shareHandler = ShareHandler();
-    await shareHandler.initialize();
+    await ShareHandler.initialize();
   }
 
   Future<void> _initializeServices() async {
@@ -121,10 +117,8 @@ class AppStartup {
     teamService = TeamService(teamRepository: teamRepository);
     await teamService.initialize();
 
-    cricketMatchService = CricketMatchService(
-      cricketMatchRepository: cricketMatchRepository,
-      shareHandler: shareHandler,
-    );
+    cricketMatchService =
+        CricketMatchService(cricketMatchRepository: cricketMatchRepository);
     await cricketMatchService.initialize();
   }
 }

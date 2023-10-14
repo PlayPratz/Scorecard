@@ -9,7 +9,7 @@ import 'package:share_plus/share_plus.dart';
 
 /// Handles all requests related to sharing (and in the future, importing) data
 /// to outside the app
-class ShareHandler {
+class _ShareHandler {
   late final Directory cacheDirectory;
 
   Future<void> initialize() async {
@@ -38,3 +38,6 @@ class ShareHandler {
     await Share.shareXFiles([XFile(file.path)]);
   }
 }
+
+// ignore: non_constant_identifier_names
+final ShareHandler = _ShareHandler();

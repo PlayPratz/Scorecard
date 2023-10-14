@@ -6,13 +6,10 @@ import 'package:scorecard/repositories/generic_repository.dart';
 /// Services all tasks related to a [CricketMatch]es.
 class CricketMatchService {
   final IRepository<CricketMatch> _cricketMatchRepository;
-  final ShareHandler _shareHandler;
 
   CricketMatchService({
     required IRepository<CricketMatch> cricketMatchRepository,
-    required ShareHandler shareHandler,
-  })  : _cricketMatchRepository = cricketMatchRepository,
-        _shareHandler = shareHandler;
+  }) : _cricketMatchRepository = cricketMatchRepository;
 
   Future<void> initialize() async {}
 
@@ -46,6 +43,6 @@ class CricketMatchService {
   }
 
   Future<void> share(CricketMatch cricketMatch) async {
-    _shareHandler.shareCricketMatch(cricketMatch);
+    ShareHandler.shareCricketMatch(cricketMatch);
   }
 }

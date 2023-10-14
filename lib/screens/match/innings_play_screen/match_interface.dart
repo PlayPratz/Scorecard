@@ -149,17 +149,16 @@ class MatchInterface extends StatelessWidget {
     switch (inningsState) {
       case AddBallState():
         return Elements.getConfirmButton(
-          text: Strings.addBall,
+          text: Strings.matchScreenAddBall,
           onPressed: () {
             stateController.addBall();
             ballDetailsStateController.reset();
             //TODO Find a better place
-            context.read<CricketMatchService>().save(match); // T
+            context.read<CricketMatchService>().save(match);
           },
         );
       case AddBatterState():
         final batterToReplace = inningsState.batterToReplace;
-        // TODO maybe batterToReplace can be fetched from balls.last?
         return Elements.getConfirmButton(
           text: Strings.matchScreenChooseBatter,
           onPressed: () =>

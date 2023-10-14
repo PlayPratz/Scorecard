@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/styles/color_styles.dart';
 
 class Elements {
@@ -100,26 +102,33 @@ class Elements {
   }
 
   static Widget getPlayerIcon(
-      Player player, double size, ImageProvider? profilePhoto) {
+      BuildContext context, Player player, double size) {
+    final profilePhotoFileFuture =
+        context.read<PlayerService>().getProfilePhoto(player.id);
     return CircleAvatar(
-      backgroundColor: ColorStyles.card,
-      // foregroundColor: Colors.white,
-      radius: (size / 2),
-      child: profilePhoto != null
-          ? FittedBox(
-              fit: BoxFit.contain,
-              child: CircleAvatar(
-                foregroundImage: profilePhoto,
-                backgroundColor: Colors.transparent,
-                radius: size / 2 - 1,
-              ),
-            )
-          : Icon(
-              Icons.person_outline,
-              size: size / 2,
-              color: Colors.grey.shade600,
-            ),
-    );
+        backgroundColor: ColorStyles.card,
+        // foregroundColor: Colors.white,
+        radius: (size / 2),
+        child: FutureBuilder(
+            future: profilePhotoFileFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.data != null) {
+                return FittedBox(
+                  fit: BoxFit.contain,
+                  child: CircleAvatar(
+                    foregroundImage: FileImage(snapshot.data!),
+                    backgroundColor: Colors.transparent,
+                    radius: size / 2 - 1,
+                  ),
+                );
+              }
+              return Icon(
+                Icons.person_outline,
+                size: size / 2,
+                color: Colors.grey.shade600,
+              );
+            }));
   }
 
   static const Widget noBallIndicator = Icon(

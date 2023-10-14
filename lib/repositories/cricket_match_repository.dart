@@ -258,7 +258,6 @@ class InningsDTO {
   final String striker;
   final String bowler;
 
-// TODO Add other stuff like batterInnings
   InningsDTO._({
     required this.battingTeam,
     required this.bowlingTeam,

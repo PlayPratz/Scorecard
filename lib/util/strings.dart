@@ -219,10 +219,10 @@ class Strings {
   static const String matchScreenSuperOver = "Super Over";
   static const String matchScreenSuperOverHint =
       "A quick one-over game to settle the scores.";
-  static const String addBall = "Add Ball";
+  static const String matchScreenAddBall = "Add Ball";
 
   // Ball Selector
-  static const String ballSelectorRuns = "Runs";
+  static const String extraEventBall = "Event";
 
   // Pick Batter
   static const String pickBatterTitle = "Pick the next batter";
@@ -230,6 +230,10 @@ class Strings {
 
   // Recent Balls (Innings Timeline)
   static const String inningsTimelineTitle = "Innings Timeline";
+
+  static String getDeliveryHeadline(Ball ball) {
+    return "${ball.bowler.name} to ${ball.batter.name}";
+  }
 
   // Common
   static const String buttonNext = "Next";

@@ -88,7 +88,7 @@ class MatchInitScreen extends StatelessWidget {
                   onBuild: (tossChoice) => ListTile(
                     leading: tossChoice == TossChoice.bat
                         ? const Icon(Icons.sports_cricket)
-                        : const Icon(Icons.sports_gymnastics), // TODO Jugaad
+                        : const Icon(Icons.sports_gymnastics),
                     title: Text(Strings.getTossChoice(tossChoice)),
                     onTap: () => tossChoiceController.selectItem(tossChoice),
                     shape: RoundedRectangleBorder(
@@ -97,7 +97,7 @@ class MatchInitScreen extends StatelessWidget {
                   onBuildSelected: (tossChoice) => ListTile(
                     leading: tossChoice == TossChoice.bat
                         ? const Icon(Icons.sports_cricket)
-                        : const Icon(Icons.sports_gymnastics), // TODO Jugaad
+                        : const Icon(Icons.sports_gymnastics),
                     title: Text(Strings.getTossChoice(tossChoice)),
                     selected: true,
                     selectedTileColor:

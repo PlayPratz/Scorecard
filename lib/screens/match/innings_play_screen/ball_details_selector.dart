@@ -97,9 +97,6 @@ class _RunSelector extends StatelessWidget {
   }
 }
 
-// TODO maybe merge BowlingExtraSelector and BattingExtraSelector
-// TODO into "Extra Selector" with params to decide color and values
-
 class _BowlingExtraSelector extends StatelessWidget {
   final BallDetailsStateController stateController;
 
@@ -111,7 +108,6 @@ class _BowlingExtraSelector extends StatelessWidget {
         stream: stateController.bowlingExtraStateStream,
         builder: (context, snapshot) {
           final selectedBowlingExtra = snapshot.data;
-
           return Row(
               children: BowlingExtra.values.map((bowlingExtra) {
             late final Color? backgroundColor;
@@ -120,6 +116,7 @@ class _BowlingExtraSelector extends StatelessWidget {
             if (bowlingExtra == selectedBowlingExtra) {
               foregroundColor = ColorStyles.background;
               if (bowlingExtra == BowlingExtra.noBall) {
+                // No Ball
                 backgroundColor = ColorStyles.ballNoBall;
               } else {
                 // Wide
@@ -167,33 +164,36 @@ class _BattingExtraSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<BattingExtra?>(
-        stream: stateController.battingExtraStateStream,
-        builder: (context, snapshot) {
-          final selectedBattingExtra = snapshot.data;
-          return Row(
-              children: BattingExtra.values.map((battingExtra) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: FilterChip(
-                  showCheckmark: false,
-                  padding: const EdgeInsets.all(0),
-                  side: const BorderSide(color: _borderColor, width: 0.5),
-                  // selectedColor: backgroundColor,
-                  label: Text(Strings.getBattingExtra(battingExtra),
-                      style: Theme.of(context).textTheme.labelMedium
-                      // ?.merge(TextStyle(color: foregroundColor)),
-                      ),
-                  selected: battingExtra == selectedBattingExtra,
-                  onSelected: (isSelected) {
-                    if (isSelected) {
-                      stateController.selectBattingExtra(battingExtra);
-                    } else {
-                      stateController.selectBattingExtra(null);
-                    }
-                  }),
-            );
-          }).toList());
-        });
+      stream: stateController.battingExtraStateStream,
+      builder: (context, snapshot) {
+        final selectedBattingExtra = snapshot.data;
+        return Row(
+          children: [
+            for (final battingExtra in BattingExtra.values)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: FilterChip(
+                    showCheckmark: false,
+                    padding: const EdgeInsets.all(0),
+                    side: const BorderSide(color: _borderColor, width: 0.5),
+                    // selectedColor: backgroundColor,
+                    label: Text(Strings.getBattingExtra(battingExtra),
+                        style: Theme.of(context).textTheme.labelMedium
+                        // ?.merge(TextStyle(color: foregroundColor)),
+                        ),
+                    selected: battingExtra == selectedBattingExtra,
+                    onSelected: (isSelected) {
+                      if (isSelected) {
+                        stateController.selectBattingExtra(battingExtra);
+                      } else {
+                        stateController.selectBattingExtra(null);
+                      }
+                    }),
+              )
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -210,10 +210,10 @@ class _BallIsEventSelector extends StatelessWidget {
       builder: (context, snapshot) {
         final isEvent = snapshot.data;
         return FilterChip(
-            label: Text("Event",
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium), // TODO Abstract Move
+            label: Text(
+              Strings.extraEventBall,
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
             selected: isEvent!,
             showCheckmark: false,
             selectedColor: ColorStyles.ballEvent,

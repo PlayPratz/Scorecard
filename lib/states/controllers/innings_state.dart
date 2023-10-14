@@ -97,6 +97,11 @@ class InningsStateController {
     // via the UI anyway.
     if (ball.runsScored % 2 == 1) _swapStrike();
 
+    // Swap strike whenever an over completes.
+    // Since this and the above strike-swap happens before an event is pushed,
+    // only one change at most will be visible on the UI.
+    if (innings.overs.last.isCompleted) _swapStrike();
+
     _inningsEventController.add(AddBallEvent(ball: ball));
   }
 
@@ -167,9 +172,6 @@ class InningsStateController {
     final outBowlerInnings = innings.balls.isNotEmpty
         ? innings.getBowlerInnings(innings.balls.last.bowler)
         : null;
-
-    // TODO Jugaad: Swapping strike on every bowler change instead of end of over
-    _swapStrike();
 
     _inningsEventController.add(SetBowlerEvent(
       inBowler: inBowlerInnings,

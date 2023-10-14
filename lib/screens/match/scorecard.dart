@@ -179,7 +179,7 @@ class BatterInningsScore extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Elements.getPlayerIcon(player, 36, null), //TODO
+          Elements.getPlayerIcon(context, player, 36),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -298,7 +298,6 @@ class _YetToBatPanel extends StatelessWidget {
   }
 }
 
-// TODO Abstract common code from _BattingInningsPanel
 class _FallOfWicketsPanel extends StatelessWidget {
   final Innings innings;
 
@@ -413,7 +412,7 @@ class BowlerInningsScore extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Elements.getPlayerIcon(player, 36, null), //TODO
+          Elements.getPlayerIcon(context, player, 36),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

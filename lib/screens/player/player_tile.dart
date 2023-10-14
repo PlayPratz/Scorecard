@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/elements.dart';
 
@@ -23,10 +21,8 @@ class PlayerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profileImage =
-        context.read<PlayerService>().getProfilePhoto(player.id);
     return GenericItemTile(
-      leading: Elements.getPlayerIcon(player, 42, null), //TODO
+      leading: Elements.getPlayerIcon(context, player, 42),
       primaryHint: player.name,
       secondaryHint: getBatBowlStyle(context),
       trailing: trailing,

@@ -122,8 +122,7 @@ class SelectablePlayerList extends StatelessWidget {
             selectedTileColor:
                 Theme.of(context).colorScheme.primary.withOpacity(0.1),
             title: Text(player.name),
-            leading: Elements.getPlayerIcon(
-                player, 48, null), //TODO Handle profile pic
+            leading: Elements.getPlayerIcon(context, player, 48),
             trailing:
                 isSelected ? const Icon(Icons.check_circle) : const SizedBox(),
             onTap: () => controller.selectItem(player),

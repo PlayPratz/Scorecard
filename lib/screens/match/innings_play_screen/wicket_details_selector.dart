@@ -101,7 +101,6 @@ class _WicketPickerState extends State<WicketPicker> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     _batter = widget.striker;

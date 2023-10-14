@@ -312,7 +312,7 @@ class CreateQuickTeamsForm extends StatelessWidget {
                       ),
                       title: Row(
                         children: [
-                          Elements.getPlayerIcon(player, 32, null), //TODO
+                          Elements.getPlayerIcon(context, player, 32),
                           const SizedBox(width: 12),
                           Text(player.name),
                         ],

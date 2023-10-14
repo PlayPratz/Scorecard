@@ -83,7 +83,7 @@ class PlayersInActionPane extends StatelessWidget {
     BuildContext context,
     BatterInnings batterInnings,
   ) {
-    // TODO get this from event instead of this duplicate logic
+    // TODO get this from state instead of this duplicate logic
     final isOut = batterInnings.isOut ||
         (innings.balls.isNotEmpty &&
             innings.balls.last.isWicket &&
@@ -204,8 +204,7 @@ class PlayerScoreTile extends StatelessWidget {
           ),
           onTap: onTap,
           onLongPress: onLongPress,
-          leading:
-              Elements.getPlayerIcon(player!, 32, null), //TODO player photo
+          leading: Elements.getPlayerIcon(context, player!, 32),
           horizontalTitleGap: 8,
           // visualDensity: const VisualDensity(vertical: -2),
           title: Align(

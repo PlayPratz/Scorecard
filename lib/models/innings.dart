@@ -67,25 +67,19 @@ class Innings {
     required Player? batter2,
     required Player bowler,
   }) {
-    final bowlerInnings = BowlerInnings(bowler, innings: this);
-    _bowlerInnings[bowler] = bowlerInnings;
+    final bowlerInnings = _addBowlerToBowlerInnings(bowler);
 
-    final batterInnings1 = BatterInnings(batter1, innings: this);
-    _batterInnings[batter1] =
-        batterInnings1; //TODO Remove duplicate code from [addBatter]
+    final batterInnings1 = _addBatterToBatterInnings(batter1);
+
+    final batterInnings2 =
+        batter2 == null ? null : _addBatterToBatterInnings(batter2);
 
     playersInAction = PlayersInAction(
       batter1: batterInnings1,
-      batter2: null,
+      batter2: batterInnings2,
       striker: batterInnings1,
       bowler: bowlerInnings,
     );
-
-    if (batter2 != null) {
-      final batterInnings2 = BatterInnings(batter2, innings: this);
-      _batterInnings[batter2] = batterInnings2;
-      playersInAction.batter2 = batterInnings2;
-    }
   }
 
   // OPERATIONS
@@ -151,8 +145,8 @@ class Innings {
     _batterInnings[ball.batter]!.unFace(ball);
   }
 
-  bool get isInitialized => _batterInnings.isNotEmpty;
-  // && bowlerInnings.isNotEmpty; TODO
+  bool get isInitialized =>
+      _batterInnings.isNotEmpty && _bowlerInnings.isNotEmpty;
 
   // Score
 

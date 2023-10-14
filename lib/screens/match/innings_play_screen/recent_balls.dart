@@ -220,8 +220,7 @@ class InningsTimelineScreen extends StatelessWidget {
                           child: GenericItemTile(
                             // contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                             leading: RecentBall(ball: ball),
-                            primaryHint:
-                                "${ball.bowler.name} to ${ball.batter.name}", // TODO move strings
+                            primaryHint: Strings.getDeliveryHeadline(ball),
                             secondaryHint: ball.isWicket
                                 ? " ${Strings.getWicketDescription(ball.wicket)}"
                                 : " ",

@@ -95,7 +95,7 @@ class Over with BowlingCalculations {
     if (isCompleted) {
       throw UnsupportedError("Attempted to add ball to completed over");
     }
-    balls.add(ball);
+    _balls.add(ball);
   }
 
   void removeBall(Ball ball) {
@@ -103,7 +103,7 @@ class Over with BowlingCalculations {
       throw UnsupportedError(
           "Attempted to remove a ball other than the last ball of the over");
     }
-    balls.removeLast();
+    _balls.removeLast();
   }
 }
 

@@ -49,7 +49,7 @@ abstract mixin class BowlingCalculations {
 
   int get legalBallsBowled => legalBalls.length;
   int get bowlingExtrasBowled => bowlingExtraBalls.length;
-  int get allBallsBowled => balls.length;
+  int get allBallsBowled => balls.where((ball) => !ball.isEventOnly).length;
 
   // TODO
   // int get maidensBowled => overs.where((over) => over.totalRuns == 0).length;

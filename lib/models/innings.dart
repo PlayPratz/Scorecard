@@ -12,6 +12,11 @@ import 'package:scorecard/util/constants.dart';
 ///
 /// An innings is one division of a cricket match where one team bats
 /// while the other team bowls and fields.
+///
+/// In Limited Overs Cricket, a [target] represents the runs required by a team
+/// to win the game. This implies that this is the second of a match. Typically,
+/// the target will be one more than the runs score in the first innings;
+/// however, DLS methods may be implemented to re-calculate the target.
 class Innings {
   final TeamSquad battingTeam;
   final TeamSquad bowlingTeam;
@@ -96,18 +101,33 @@ class Innings {
   // Score
   // TODO: Get from [BowlingCalculations]
 
+  /// The runs scored by the batting team in this Innings
   int get runs => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
+
+  /// The number of wickets the batting team has lost
   int get wickets => balls.where((ball) => ball.isWicket).length;
+
+  /// The number of balls bowled in this Innings
   int get ballsBowled => balls.where((ball) => ball.isLegal).length;
+
+  /// Whether the quota of overs to be bowled has been completed
   bool get areOversCompleted =>
       maxOvers * Constants.ballsPerOver == ballsBowled;
 
   // Calculations
 
+  /// Average number of runs scored per over
   double get currentRunRate =>
       ballsBowled == 0 ? 0 : (runs / ballsBowled) * Constants.ballsPerOver;
+
+  /// The projected score based on the [currentRunRate]
   int get projectedRuns => (currentRunRate * maxOvers).floor();
+
+  /// The number of runs required by the team to win the match
+  /// This only makes sense during the second Innings of a Limited Over match.
   int get requiredRuns => target != null ? max(0, (target! - runs)) : 0;
+
+  /// The number of balls left to be bowled in this innings
   int get ballsLeft => maxOvers * Constants.ballsPerOver - ballsBowled;
   double get requiredRunRate => target != null && ballsLeft != 0
       ? (requiredRuns / ballsLeft) * Constants.ballsPerOver
@@ -145,7 +165,7 @@ class Innings {
     _batterInnings[ball.batter]!.face(ball);
 
     // Handle partnership
-    _partnerships.last.play(ball);
+    // _partnerships.last.play(ball);
 
     if (ball.isWicket) {
       _fallOfWickets.add(
@@ -217,9 +237,9 @@ class Innings {
       UnmodifiableListView(_fallOfWickets);
 
   // Partnerships
-  final List<Partnership> _partnerships = [];
-  UnmodifiableListView<Partnership> get partnerships =>
-      UnmodifiableListView(_partnerships);
+  // final List<Partnership> _partnerships = [];
+  // UnmodifiableListView<Partnership> get partnerships =>
+  //     UnmodifiableListView(_partnerships);
 
   // Bowler
 
@@ -296,7 +316,7 @@ class Innings {
     _fixBattersInAction(inBatter, outBatter);
 
     // Handle Partnerships
-    _handlePartnerships(inBatter, outBatter);
+    // _handlePartnerships(inBatter, outBatter);
 
     return inBatter;
   }
@@ -332,12 +352,12 @@ class Innings {
     // All actions performed in [addBatter] are reversed here.
 
     // Fix partnerships
-    if (partnerships.last.batter1 != batInn.batter &&
-        partnerships.last.batter2 != batInn.batter) {
-      throw UnsupportedError(
-          "Attempted to remove batter that is not part of the current partnership");
-    }
-    _partnerships.removeLast();
+    // if (partnerships.last.batter1 != batInn.batter &&
+    //     partnerships.last.batter2 != batInn.batter) {
+    //   throw UnsupportedError(
+    //       "Attempted to remove batter that is not part of the current partnership");
+    // }
+    // _partnerships.removeLast();
 
     // Fix Batters In Action
     // Params are reversed
@@ -359,16 +379,16 @@ class Innings {
     }
   }
 
-  void _handlePartnerships(BatterInnings inBatter, BatterInnings outBatter) {
-    final currentPartnership = _partnerships.last;
-    if (currentPartnership.batter1 == outBatter.batter) {
-      _partnerships.add(Partnership(
-          batter1: currentPartnership.batter2, batter2: inBatter.batter));
-    } else {
-      _partnerships.add(Partnership(
-          batter1: currentPartnership.batter1, batter2: inBatter.batter));
-    }
-  }
+  // void _handlePartnerships(BatterInnings inBatter, BatterInnings outBatter) {
+  //   final currentPartnership = _partnerships.last;
+  //   if (currentPartnership.batter1 == outBatter.batter) {
+  //     _partnerships.add(Partnership(
+  //         batter1: currentPartnership.batter2, batter2: inBatter.batter));
+  //   } else {
+  //     _partnerships.add(Partnership(
+  //         batter1: currentPartnership.batter1, batter2: inBatter.batter));
+  //   }
+  // }
 
   /// Sets the strike, as defined in [PlayersInAction] to the given [batter].
   ///
@@ -465,6 +485,10 @@ class PlayersInAction {
   });
 }
 
+/// "Fall of Wickets" is a common entry in a [CricketMatch]'s scorecard.
+///
+/// One entry designates a wicket, its (over.ball) index and the innings score
+/// when that wicket fell.
 class FallOfWicket {
   final Ball ball;
 
@@ -481,8 +505,22 @@ class FallOfWicket {
   });
 }
 
+/// A partnership between two batters during an innings.
+///
+/// In cricketing terms, it represents the contribution made by two batters
+/// to their team's score, also including any runs awarded to their team due
+/// to extras.
+///
+/// As such, a partnership comes to an end when one of the involved batters
+/// either loses their wicket or retires; an end of one partnership paves
+/// the way for the next. The first-wicket partnership begins at the start
+/// of a team's innings, consisting of the two opening batters.
 class Partnership with BattingCalculations {
+  /// As per convention, the batter who walked onto the crease first should
+  /// be batter1
   final Player batter1;
+
+  /// As per convention, the new batter in should be batter2
   final Player batter2;
 
   // TODO: Is this the best way?
@@ -515,6 +553,15 @@ class Partnership with BattingCalculations {
   }
 }
 
+/// Represents a contribution made by one batter in a [Partnership].
+///
+/// Technically, this will be a subset of a batter's innings, consisting
+/// of the balls that a batter played while the said partnership was active.
+///
+/// It must be noted that the runs scored by a Partnership is more than just
+/// the sum of both batters' contributions, since a Partnership also consists
+/// of runs awarded due to extras, which are not accounted for in either
+/// batter's contribution.
 class PartnershipContribution with BattingCalculations {
   final Player batter;
   final Partnership partnership;

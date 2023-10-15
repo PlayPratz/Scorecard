@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/models/innings.dart';
-import 'package:scorecard/models/statistics.dart';
 import 'package:scorecard/screens/match/innings_play_screen/recent_balls.dart';
 import 'package:scorecard/screens/match/match_tile.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
@@ -135,7 +134,7 @@ class _BattingInningsPanel extends StatelessWidget {
             Column(
               children: [
                 const Divider(color: Colors.black12, height: 0),
-                BatterInningsScore(battingStats: batterInnings),
+                BatterInningsScore(batterInnings: batterInnings),
               ],
             ),
           const Divider(color: Colors.black12, height: 0),
@@ -166,13 +165,13 @@ class _BattingInningsPanel extends StatelessWidget {
 }
 
 class BatterInningsScore extends StatelessWidget {
-  final BattingStats battingStats;
-  const BatterInningsScore({super.key, required this.battingStats});
+  final BatterInnings batterInnings;
+  const BatterInningsScore({super.key, required this.batterInnings});
 
   @override
   Widget build(BuildContext context) {
-    final player = battingStats.batter;
-    final strikeRate = battingStats.strikeRate;
+    final player = batterInnings.batter;
+    final strikeRate = batterInnings.strikeRate;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -190,18 +189,14 @@ class BatterInningsScore extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 2.0),
-                  child: battingStats is BatterInnings
-                      ? Text(
-                          Strings.getWicketDescription(
-                              (battingStats as BatterInnings).wicket),
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.merge(const TextStyle(color: Colors.white70)),
-                        )
-                      : const SizedBox(),
-                ),
+                    padding: const EdgeInsets.only(top: 2.0),
+                    child: Text(
+                      Strings.getWicketDescription(batterInnings.wicket),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.merge(const TextStyle(color: Colors.white70)),
+                    )),
               ],
             ),
           ),
@@ -211,12 +206,12 @@ class BatterInningsScore extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                battingStats.runs.toString(),
+                batterInnings.runs.toString(),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(width: 4),
               Text(
-                battingStats.ballsFaced.toString(),
+                batterInnings.ballsFaced.toString(),
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
@@ -233,7 +228,7 @@ class BatterInningsScore extends StatelessWidget {
                 Text(
                   strikeRate.isNaN
                       ? ""
-                      : battingStats.strikeRate.toStringAsFixed(2),
+                      : batterInnings.strikeRate.toStringAsFixed(2),
                   style: Theme.of(context)
                       .textTheme
                       .labelMedium
@@ -245,7 +240,7 @@ class BatterInningsScore extends StatelessWidget {
                     foregroundColor: Colors.white,
                     radius: 15,
                     child: Text(
-                      battingStats.fours.toString(),
+                      batterInnings.fours.toString(),
                       style: Theme.of(context).textTheme.bodyMedium,
                     )),
                 const SizedBox(width: 3),
@@ -253,7 +248,7 @@ class BatterInningsScore extends StatelessWidget {
                     backgroundColor: ColorStyles.ballSix.withOpacity(0.7),
                     radius: 15,
                     foregroundColor: Colors.white,
-                    child: Text(battingStats.sixes.toString(),
+                    child: Text(batterInnings.sixes.toString(),
                         style: Theme.of(context).textTheme.bodyMedium)),
               ],
             ),
@@ -341,7 +336,7 @@ class _FallOfWicketsPanel extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Text(fallOfWicket.wicket.batter.name),
+                        child: Text(fallOfWicket.outBatter.name),
                       ),
                     ),
                     Align(
@@ -401,7 +396,7 @@ class _BowlingInningsPanel extends StatelessWidget {
 }
 
 class BowlerInningsScore extends StatelessWidget {
-  final BowlingStats bowlerInnings;
+  final BowlerInnings bowlerInnings;
   const BowlerInningsScore({super.key, required this.bowlerInnings});
 
   @override

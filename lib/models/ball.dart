@@ -1,7 +1,9 @@
-import 'package:scorecard/util/constants.dart';
+import 'dart:collection';
 
-import 'player.dart';
-import 'wicket.dart';
+import 'package:scorecard/models/player.dart';
+import 'package:scorecard/models/statistics.dart';
+import 'package:scorecard/models/wicket.dart';
+import 'package:scorecard/util/constants.dart';
 
 class Ball {
   /// The bowler who bowled the delivery
@@ -10,8 +12,12 @@ class Ball {
   /// The batter who faced the delivery
   final Player batter;
 
-  /// Runs awarded to the batting team by facing this [Ball].
-  /// <br/> Note: Do not specify the runs due to a bowling extra.
+  /// Runs awarded to the batting team by facing this [Ball]
+  ///
+  /// This does not include runs awarded due to an illegal delivery.
+  ///
+  ///  _Note: **DO NOT** specify the runs awarded to the batting team due_
+  /// _to a bowling extra such as a no-ball or a wide._
   final int runsScored;
 
   /// The type of [BowlingExtra] if applicable
@@ -29,9 +35,12 @@ class Ball {
   int overIndex;
 
   /// One-based index of this ball in its over
-  /// It could be zero if the first ball is a bowling extra
+  ///
+  /// For every legal delivery, 1 <= index <= 6
+  /// For every illegal delivery, 0 <= index <= 5
   int ballIndex;
 
+  /// The timestamp at which this ball was bowled.
   final DateTime timestamp;
 
   Ball({
@@ -71,42 +80,30 @@ class Ball {
   bool get isLegal => !isBowlingExtra && !isEventOnly;
 }
 
-class Over {
-  List<Ball> balls = [];
-  // BowlingStatistics statistics = BowlingStatistics();
+class Over with BowlingCalculations {
+  final List<Ball> _balls = [];
+  @override
+  UnmodifiableListView<Ball> get balls => UnmodifiableListView(_balls);
 
-  Over();
+  UnmodifiableListView<Ball> get allWicketBalls =>
+      UnmodifiableListView(balls.where((ball) => ball.isWicket));
 
-  List<Ball> get legalBalls => balls.where((ball) => ball.isLegal).toList();
-
-  // List<Ball> get bowlingExtraBalls =>
-  //     balls.where((ball) => ball.isBowlingExtra).toList();
-  //
-  List<Ball> get wicketBalls => balls.where((ball) => ball.isWicket).toList();
-
-  int get numOfLegalBalls => legalBalls.length;
-  // int get numOfBowlingExtras => bowlingExtraBalls.length;
-  int get numOfBallsLeft => Constants.ballsPerOver - numOfLegalBalls;
-  // int get numOfBallsBowled => balls.length;
-  bool get isCompleted => numOfBallsLeft == 0;
-
-  // int get totalRuns => statistics.runsConceded;
-  int get totalRuns => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
-  // int get bowlerWickets => balls.where((ball) => ball.isBowlerWicket).length;
-  int get totalWickets => wicketBalls.length;
+  int get ballsLeft => Constants.ballsPerOver - legalBallsBowled;
+  bool get isCompleted => ballsLeft == 0;
 
   void addBall(Ball ball) {
     if (isCompleted) {
-      throw StateError("Attempted to add ball to completed over");
+      throw UnsupportedError("Attempted to add ball to completed over");
     }
     balls.add(ball);
   }
 
   void removeBall(Ball ball) {
     if (balls.lastOrNull != ball) {
-      throw StateError("Attempted to add ball to completed over");
+      throw UnsupportedError(
+          "Attempted to remove a ball other than the last ball of the over");
     }
-    balls.remove(ball);
+    balls.removeLast();
   }
 }
 

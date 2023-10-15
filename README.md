@@ -40,7 +40,7 @@ flutter run
 
 ## ⚙️ Core Concepts <a name = "core-concepts"/>
 
-A Cricket Match is represented by the falling constructs or concepts:
+A Cricket Match is represented by the following constructs or concepts:
 
 1. [Cricket Match](#cricket-match)
 2. [Innings](#innings)

@@ -1,14 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 class Utils {
   Utils._(); // Private constructor
 
   static const _uuid = Uuid();
-
   static String generateUniqueId() => _uuid.v1();
 
   static Future<dynamic> goToPage(Widget page, BuildContext context) {
@@ -28,15 +24,6 @@ class Utils {
     Navigator.pop(context, result);
   }
 
-  static Future<ImageProvider?> pickPhotoFromGallery() async {
-    XFile? pickedPhoto =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedPhoto == null) {
-      return null;
-    }
-    return FileImage(File(pickedPhoto.path));
-  }
-
   static Map<String, dynamic> castMap(Map<dynamic, dynamic> map) {
     for (final key in map.keys) {
       if (map[key] is Map) {
@@ -48,5 +35,13 @@ class Utils {
       }
     }
     return map.cast<String, dynamic>();
+  }
+
+  static double handleDivideByZero(num numerator, num denominator,
+      {num fallback = 0}) {
+    if (denominator == 0) {
+      return fallback.toDouble();
+    }
+    return numerator / denominator;
   }
 }

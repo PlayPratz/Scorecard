@@ -20,7 +20,6 @@ class Strings {
   static const String scoreYetToBat = "Yet to bat";
   static const String scoreWonToss = " has elected to ";
   static const String scoreMatchNotStarted = "This match hasn't started";
-  static const String scoreAt = "\nat ";
   static const String scoreBallSingle = " ball";
   static const String scoreRunsPerOver = "RPO";
   static const String scoreRequire = "Require";
@@ -69,11 +68,11 @@ class Strings {
   //   return "${bowlingStats.wicketsTaken}-${bowlingStats.runsConceded} in ${getBowlerOversBowled(bowlingStats)}";
   // }
 
-  static String getBowlerOversBowled(BowlingStats bowlingStats) {
-    return "${bowlingStats.ballsBowled ~/ Constants.ballsPerOver}.${bowlingStats.ballsBowled % Constants.ballsPerOver}";
+  static String getBowlerOversBowled(BowlingCalculations bowlingStats) {
+    return "${bowlingStats.legalBallsBowled ~/ Constants.ballsPerOver}.${bowlingStats.legalBallsBowled % Constants.ballsPerOver}";
   }
 
-  static String getBowlerFigures(BowlingStats bowlingStats) {
+  static String getBowlerFigures(BowlingCalculations bowlingStats) {
     return "${bowlingStats.wicketsTaken}-${bowlingStats.runsConceded}";
   }
 
@@ -89,8 +88,8 @@ class Strings {
       "${innings.runs}/${innings.wickets}";
 
   static String getOverSummary(Over over) {
-    int runs = over.totalRuns;
-    int wickets = over.totalWickets;
+    int runs = over.runsConceded;
+    int wickets = over.wicketsTaken;
     final runsString = runs == 1 ? "RUN" : "RUNS";
     final wicketString = wickets == 1 ? "WICKET" : "WICKETS";
 

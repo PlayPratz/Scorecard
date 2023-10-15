@@ -32,7 +32,7 @@ class InningsStateController {
 
   InningsState _deduceState() {
     // End Innings due to over completion
-    if (innings.ballsBowled == innings.maxOvers * Constants.ballsPerOver) {
+    if (innings.areOversCompleted) {
       return EndInningsState(innings: innings, selections: _selections);
     }
 
@@ -219,34 +219,19 @@ class InningsStateController {
       throw StateError("AddBatterEvent does not contain 'OutBatter'");
     }
 
-    // Params are reversed
-    _fixBattersInAction(addBatterEvent.outBatter!, addBatterEvent.inBatter);
-
     // Remove the batter from the innings/scorecard
-    innings.removeBatter(addBatterEvent.inBatter);
+    innings.removeBatter(addBatterEvent.inBatter,
+        restore: addBatterEvent.outBatter!);
 
     // Reverse "retired" wicket if any
     if (addBatterEvent.outBatter!.isRetired) {
-      addBatterEvent.outBatter!.wicket = null;
+      addBatterEvent.outBatter!.setWicket(null);
     }
   }
 
   void setStrike(BatterInnings batter) {
     innings.setStrike(batter);
     _inningsEventController.add(ChangeStrikeEvent(striker: batter));
-  }
-
-  void _fixBattersInAction(BatterInnings inBatter, BatterInnings outBatter) {
-    final playersInAction = innings.playersInAction;
-    if (outBatter == playersInAction.batter2) {
-      playersInAction.batter2 = inBatter;
-    } else {
-      playersInAction.batter1 = inBatter;
-    }
-    if (playersInAction.striker != playersInAction.batter1 &&
-        playersInAction.striker != playersInAction.batter2) {
-      playersInAction.striker = inBatter;
-    }
   }
 
   void undo() {

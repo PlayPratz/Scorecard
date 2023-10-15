@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/util/utils.dart';
@@ -54,14 +56,16 @@ final List<_TeamTemplate> genTeamTemplates = [
 
 class TeamSquad {
   final Team team;
-  final List<Player> squad;
+  final List<Player> _squad;
 
-  TeamSquad({required this.team, required this.squad});
+  TeamSquad({required this.team, required List<Player> squad}) : _squad = squad;
 
   TeamSquad.generate()
       : team = Team.generate(),
-        squad = [];
+        _squad = [];
 
-  Player get captain => squad.first;
-  int get squadSize => squad.length;
+  UnmodifiableListView<Player> get squad => UnmodifiableListView(_squad);
+
+  Player get captain => _squad.first;
+  int get squadSize => _squad.length;
 }

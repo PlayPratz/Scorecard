@@ -8,6 +8,10 @@ import 'package:scorecard/models/team.dart';
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/constants.dart';
 
+/// Represents an innings of a [CricketMatch].
+///
+/// An innings is one division of a cricket match where one team bats
+/// while the other team bowls and fields.
 class Innings {
   final TeamSquad battingTeam;
   final TeamSquad bowlingTeam;
@@ -49,6 +53,9 @@ class Innings {
     );
   }
 
+  /// Creates a blank, uninitialized innings.
+  ///
+  /// **IMPORTANT**: [initialize] must be called separately!
   Innings.create({
     required this.battingTeam,
     required this.bowlingTeam,
@@ -56,21 +63,22 @@ class Innings {
     this.target,
   });
 
+  /// This forms the crux, root and source of all data that is generated
+  /// for an innings.
   final List<Ball> _balls = [];
   UnmodifiableListView<Ball> get balls => UnmodifiableListView(_balls);
 
-  final List<Over> _overs = [];
-  UnmodifiableListView<Over> get overs => UnmodifiableListView(_overs);
+  // Players In Action
+  late final PlayersInAction playersInAction;
 
+  /// Initializes an innings with the first [PlayersInAction].
   void initialize({
     required Player batter1,
     required Player? batter2,
     required Player bowler,
   }) {
     final bowlerInnings = _addBowlerToBowlerInnings(bowler);
-
     final batterInnings1 = _addBatterToBatterInnings(batter1);
-
     final batterInnings2 =
         batter2 == null ? null : _addBatterToBatterInnings(batter2);
 
@@ -82,73 +90,11 @@ class Innings {
     );
   }
 
-  // OPERATIONS
-
-  /// Add the given [ball] to the proceedings of this innings.
-  ///
-  /// This function serves as an entry point
-  void play(Ball ball) {
-    if (!_bowlerInnings.containsKey(ball.bowler)) {
-      throw StateError("Ball delivered by unregistered bowler");
-    }
-    if (!_batterInnings.containsKey(ball.batter)) {
-      throw StateError("Ball faced by unregistered batter");
-    }
-
-    _balls.add(ball);
-
-    if (_overs.isEmpty || _overs.last.isCompleted) {
-      _overs.add(Over());
-    }
-    _overs.last.addBall(ball);
-
-    _bowlerInnings[ball.bowler]!.deliver(ball);
-    _batterInnings[ball.batter]!.face(ball);
-
-    if (ball.isWicket) {
-      _fallOfWickets.add(
-        FallOfWicket(ball: ball, runsAtWicket: runs, wicketsAtWicket: wickets),
-      );
-      if (ball.wicket!.batter != ball.batter) {
-        _batterInnings[ball.wicket!.batter]!.setWicket(ball.wicket!);
-      }
-    }
-  }
-
-  /// Remove the given [ball] from this innings.
-  ///
-  /// The parameter [ball] is pretty useless as of now, it's added as a means of
-  /// forwards compatibility. For now, only removing the last ball is supported.
-  void unPlay(Ball ball) {
-    if (_balls.isEmpty) {
-      return;
-    }
-    if (_balls.last != ball) {
-      throw StateError("Attempted to remove ball other than last ball");
-    }
-
-    _balls.removeLast();
-
-    if (!_bowlerInnings.containsKey(ball.bowler)) {
-      throw StateError("Ball delivered by unregistered bowler");
-    }
-    if (!_batterInnings.containsKey(ball.batter)) {
-      throw StateError("Ball faced by unregistered batter");
-    }
-
-    _overs.last.removeBall(ball);
-    if (overs.last.balls.isEmpty) {
-      _overs.removeLast();
-    }
-
-    _bowlerInnings[ball.bowler]!.unDeliver(ball);
-    _batterInnings[ball.batter]!.unFace(ball);
-  }
-
   bool get isInitialized =>
       _batterInnings.isNotEmpty && _bowlerInnings.isNotEmpty;
 
   // Score
+  // TODO: Get from [BowlingCalculations]
 
   int get runs => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
   int get wickets => balls.where((ball) => ball.isWicket).length;
@@ -167,19 +113,126 @@ class Innings {
       ? (requiredRuns / ballsLeft) * Constants.ballsPerOver
       : 0;
 
+  // OPERATIONS
+
+  /// Adds the given [ball] to the proceedings of this innings.
+  ///
+  /// This function serves as an entry point to the innings.
+  ///
+  /// Pre-requisites:
+  /// - ball.batter must be registered into the innings via [addBatter]
+  /// - ball.bowler must be registered into the innings via [setBowler]
+  ///
+  /// Throws [UnsupportedError] if any pre-requisites is not met.
+  void play(Ball ball) {
+    if (!_bowlerInnings.containsKey(ball.bowler)) {
+      throw UnsupportedError("Ball delivered by unregistered bowler");
+    }
+    if (!_batterInnings.containsKey(ball.batter)) {
+      throw UnsupportedError("Ball faced by unregistered batter");
+    }
+
+    // Add to the balls of this innings
+    _balls.add(ball);
+
+    // Handle Overs
+    if (_overs.isEmpty || _overs.last.isCompleted) {
+      _overs.add(Over());
+    }
+    _overs.last.addBall(ball);
+
+    _bowlerInnings[ball.bowler]!.deliver(ball);
+    _batterInnings[ball.batter]!.face(ball);
+
+    // Handle partnership
+    _partnerships.last.play(ball);
+
+    if (ball.isWicket) {
+      _fallOfWickets.add(
+        FallOfWicket(ball: ball, runsAtWicket: runs, wicketsAtWicket: wickets),
+      );
+      if (ball.wicket!.batter != ball.batter) {
+        _batterInnings[ball.wicket!.batter]!.setWicket(ball.wicket!);
+      }
+    }
+  }
+
+  /// Remove the given [ball] from this innings.
+  ///
+  /// The parameter [ball] is pretty useless as of now, it's added as a means of
+  /// forwards compatibility. For now, only removing the last ball is supported.
+  /// This is because removing a ball other than the last can have various
+  /// implications, forcing this innings into an inexplicable state.
+  ///
+  /// Pre-requisites:
+  /// - The given [ball] must be the last ball.
+  ///
+  /// Throws [UnsupportedError] if any pre-requisites is not met.
+  void unPlay(Ball ball) {
+    if (_balls.isEmpty) {
+      return;
+    }
+    if (_balls.last != ball) {
+      throw UnsupportedError("Attempted to remove ball other than last ball");
+    }
+
+    // The following checks are not mentioned in the docs for this function
+    // because these conditions are impossible to satisfy. When a ball is added,
+    // these conditions are checked anyway. Nevertheless, I am leaving these
+    // checks in the code but not adding them to the docs to prevent confusion.
+
+    if (!_bowlerInnings.containsKey(ball.bowler)) {
+      throw UnsupportedError("Ball delivered by unregistered bowler");
+    }
+    if (!_batterInnings.containsKey(ball.batter)) {
+      throw UnsupportedError("Ball faced by unregistered batter");
+    }
+
+    // Remove the ball from the innings.
+    // We have already checked that the given ball is the last ball, so
+    // calling .removeLast() instead of .remove(ball) is more efficient.
+    _balls.removeLast();
+
+    // Handle Overs
+    _overs.last.removeBall(ball);
+    if (overs.last.balls.isEmpty) {
+      _overs.removeLast();
+    }
+
+    // Remove the ball from its batter's and bowler's innings
+    _bowlerInnings[ball.bowler]!.unDeliver(ball);
+    _batterInnings[ball.batter]!.unFace(ball);
+  }
+
+  // GENERATED DATA
+  // Anything below is generated ball-by-ball as and when [play] is called.
+
+  // Overs
+  final List<Over> _overs = [];
+  UnmodifiableListView<Over> get overs => UnmodifiableListView(_overs);
+
   // Fall of Wickets
   final List<FallOfWicket> _fallOfWickets = [];
   UnmodifiableListView<FallOfWicket> get fallOfWickets =>
       UnmodifiableListView(_fallOfWickets);
 
-  // Players In Action
-  late final PlayersInAction playersInAction;
+  // Partnerships
+  final List<Partnership> _partnerships = [];
+  UnmodifiableListView<Partnership> get partnerships =>
+      UnmodifiableListView(_partnerships);
 
   // Bowler
 
   final Map<Player, BowlerInnings> _bowlerInnings = {};
   List<BowlerInnings> get bowlerInningsList => _bowlerInnings.values.toList();
 
+  /// Sets the given bowler as the "current" bowler
+  /// as defined in [PlayersInAction]
+  ///
+  /// The given bowler, if not registered previously,
+  /// is registered into the innings.
+  ///
+  /// Returns the [BowlerInnings] of the given bowler.
   BowlerInnings setBowler(Player bowler) {
     // Check if bowler is not already registered
     if (!_bowlerInnings.containsKey(bowler)) {
@@ -199,31 +252,51 @@ class Innings {
     return bowlerInn;
   }
 
+  /// Returns the [BowlerInnings] of the given [bowler] as long as the bowler
+  /// has been registered into this innings.
   BowlerInnings? getBowlerInnings(Player bowler) {
     return _bowlerInnings[bowler];
   }
 
+  /// Removes the given [bowler] from the innings.
+  ///
+  /// Pre-requisites:
+  /// - No ball in [balls] should be bowled by the given bowler.
+  ///
+  /// throws [UnsupportedError] if any pre-requisites is not met.
   void removeBowler(BowlerInnings bowlInn) {
+    if (balls.any((ball) => ball.bowler == bowlInn.bowler)) {
+      throw UnsupportedError(
+          "Attempted to remove a bowler who has bowled at least once ball.");
+    }
     _bowlerInnings.remove(bowlInn.bowler);
   }
 
   // Batter
 
+  /// Serves as a register of [BatterInnings] for this innings.
+  /// A map data-structure ensures that every player has
+  /// only one associated [BatterInnings].
   final Map<Player, BatterInnings> _batterInnings = {};
+
+  /// A list of [BatterInnings] registered into this innings.
   List<BatterInnings> get batterInningsList => _batterInnings.values.toList();
 
+  /// Registers the given batter into this innings.
+  ///
+  /// If [addBatter] is called more than once on the same player, nothing
+  /// happens except that the [Wicket] of the batter is cleared. For more
+  /// information, refer to the docs on [BatterInnings].
+  ///
+  /// Returns the [BatterInnings] of the given batter.
   BatterInnings addBatter(Player batter, BatterInnings outBatter) {
     final inBatter = _addBatterToBatterInnings(batter);
 
-    if (outBatter == playersInAction.batter2) {
-      playersInAction.batter2 = inBatter;
-    } else {
-      playersInAction.batter1 = inBatter;
-    }
-    if (playersInAction.striker != playersInAction.batter1 &&
-        playersInAction.striker != playersInAction.batter2) {
-      playersInAction.striker = inBatter;
-    }
+    // Handle PlayersInAction
+    _fixBattersInAction(inBatter, outBatter);
+
+    // Handle Partnerships
+    _handlePartnerships(inBatter, outBatter);
 
     return inBatter;
   }
@@ -235,70 +308,135 @@ class Innings {
     return inBatter;
   }
 
+  /// Returns the [BatterInnings] of the given [batter] as long as the
+  /// the batter is registered.
   BatterInnings? getBatterInnings(Player batter) {
     return _batterInnings[batter];
   }
 
-  void removeBatter(BatterInnings batInn) {
+  /// Removes a batter from this innings.
+  ///
+  /// Due to lack of better options, a [restore] parameter is required
+  /// that specifies which batter is to be restored to [PlayersInAction].
+  ///
+  /// Pre-requisites:
+  /// - No ball in [balls] should be played by the batter to be removed.
+  ///
+  /// throws [UnsupportedError] if any of the pre-requisites is not met
+  void removeBatter(BatterInnings batInn, {required BatterInnings restore}) {
+    if (balls.any((ball) => ball.batter == batInn.batter)) {
+      throw UnsupportedError(
+          "Attempted to remove a batter who has played at least one ball.");
+    }
+
+    // All actions performed in [addBatter] are reversed here.
+
+    // Fix partnerships
+    if (partnerships.last.batter1 != batInn.batter &&
+        partnerships.last.batter2 != batInn.batter) {
+      throw UnsupportedError(
+          "Attempted to remove batter that is not part of the current partnership");
+    }
+    _partnerships.removeLast();
+
+    // Fix Batters In Action
+    // Params are reversed
+    _fixBattersInAction(restore, batInn);
+
+    // Remove the batterInnings from
     _batterInnings.remove(batInn.batter);
   }
 
+  void _fixBattersInAction(BatterInnings inBatter, BatterInnings outBatter) {
+    if (outBatter == playersInAction.batter2) {
+      playersInAction.batter2 = inBatter;
+    } else {
+      playersInAction.batter1 = inBatter;
+    }
+    if (playersInAction.striker != playersInAction.batter1 &&
+        playersInAction.striker != playersInAction.batter2) {
+      playersInAction.striker = inBatter;
+    }
+  }
+
+  void _handlePartnerships(BatterInnings inBatter, BatterInnings outBatter) {
+    final currentPartnership = _partnerships.last;
+    if (currentPartnership.batter1 == outBatter.batter) {
+      _partnerships.add(Partnership(
+          batter1: currentPartnership.batter2, batter2: inBatter.batter));
+    } else {
+      _partnerships.add(Partnership(
+          batter1: currentPartnership.batter1, batter2: inBatter.batter));
+    }
+  }
+
+  /// Sets the strike, as defined in [PlayersInAction] to the given [batter].
+  ///
+  /// Pre-requisites:
+  /// - The given [batter] must be a batter in [PlayersInAction]
+  ///
+  /// throws [UnsupportedError] if any pre-requisite is not met.
   void setStrike(BatterInnings batter) {
     if (batter != playersInAction.batter1 &&
         batter != playersInAction.batter2) {
-      throw StateError(
+      throw UnsupportedError(
           "Attempted to set strike to batter who is not in PlayersInAction");
     }
     playersInAction.striker = batter;
   }
 }
 
-class BatterInnings extends BattingStats {
-  Innings innings;
-  BatterInnings(super.batter, {required this.innings});
-  Wicket? wicket;
+/// An innings played by a batter during the course of one [Innings].
+///
+/// Colloquially, this may be referred to as a *knock*.
+class BatterInnings with BattingCalculations {
+  final Player batter;
+  final Innings innings;
+
+  BatterInnings(this.batter, {required this.innings});
+
+  Wicket? _wicket;
+  Wicket? get wicket => _wicket;
 
   @override
-  List<Ball> get balls =>
-      innings.balls.where((ball) => ball.batter == batter).toList();
+  UnmodifiableListView<Ball> get balls => UnmodifiableListView(
+      innings.balls.where((ball) => ball.batter == batter));
 
   bool get isOut => wicket != null;
 
   bool get isRetired =>
       wicket != null && wicket!.dismissal == Dismissal.retired;
 
-  // bool isRetired = false;
-  // bool get isPlaying => !isOut && !isRetired;
-
   void face(Ball ball) {
     if (ball.isWicket && ball.wicket!.batter == batter) {
-      wicket = ball.wicket;
+      _wicket = ball.wicket;
     }
   }
 
   void unFace(Ball ball) {
     if (ball.isWicket && ball.wicket!.batter == batter) {
-      wicket = null;
+      _wicket = null;
     }
   }
 
-  void setWicket(Wicket wicket) {
-    this.wicket = wicket;
+  void setWicket(Wicket? wicket) {
+    _wicket = wicket;
   }
 
   void retire() {
-    wicket = Wicket.retired(batter: batter);
+    _wicket = Wicket.retired(batter: batter);
   }
 }
 
-class BowlerInnings extends BowlingStats {
-  Innings innings;
+class BowlerInnings with BowlingCalculations {
+  final Player bowler;
+  final Innings innings;
 
-  BowlerInnings(super.bowler, {required this.innings});
+  BowlerInnings(this.bowler, {required this.innings});
 
   @override
-  List<Ball> get balls =>
-      innings.balls.where((ball) => ball.bowler == bowler).toList();
+  UnmodifiableListView<Ball> get balls => UnmodifiableListView(
+      innings.balls.where((ball) => ball.bowler == bowler));
 
   void deliver(Ball ball) {
     // Added for uniformity
@@ -307,24 +445,6 @@ class BowlerInnings extends BowlingStats {
   void unDeliver(Ball ball) {
     // Added for uniformity
   }
-}
-
-class FallOfWicket {
-  Ball ball;
-  // BatterInnings inBatter;
-  // BatterInnings outBatter;
-
-  final int runsAtWicket;
-  final int wicketsAtWicket;
-
-  Wicket get wicket => ball.wicket!;
-
-  FallOfWicket({
-    required this.ball,
-    // required this.inBatter,
-    required this.runsAtWicket,
-    required this.wicketsAtWicket,
-  });
 }
 
 /// The [Player]s that are currently on pitch
@@ -343,4 +463,65 @@ class PlayersInAction {
     required this.striker,
     required this.bowler,
   });
+}
+
+class FallOfWicket {
+  final Ball ball;
+
+  final int runsAtWicket;
+  final int wicketsAtWicket;
+
+  Wicket get wicket => ball.wicket!;
+  Player get outBatter => wicket.batter;
+
+  const FallOfWicket({
+    required this.ball,
+    required this.runsAtWicket,
+    required this.wicketsAtWicket,
+  });
+}
+
+class Partnership with BattingCalculations {
+  final Player batter1;
+  final Player batter2;
+
+  // TODO: Is this the best way?
+  late final PartnershipContribution batter1Contribution;
+  late final PartnershipContribution batter2Contribution;
+
+  Partnership({required this.batter1, required this.batter2}) {
+    batter1Contribution = PartnershipContribution(batter1, partnership: this);
+    batter2Contribution = PartnershipContribution(batter2, partnership: this);
+  }
+
+  final List<Ball> _balls = [];
+  @override
+  UnmodifiableListView<Ball> get balls => UnmodifiableListView(_balls);
+
+  void play(Ball ball) {
+    if (ball.batter != batter1 && ball.batter != batter2) {
+      throw UnsupportedError(
+          "Ball added to Partnership is not faced by any of the batters in the partnership.");
+    }
+    _balls.add(ball);
+  }
+
+  void unPlay(Ball ball) {
+    if (_balls.isEmpty || _balls.last != ball) {
+      throw UnsupportedError(
+          "Attempted to undo a ball that isn't the last ball.");
+    }
+    _balls.removeLast();
+  }
+}
+
+class PartnershipContribution with BattingCalculations {
+  final Player batter;
+  final Partnership partnership;
+
+  const PartnershipContribution(this.batter, {required this.partnership});
+
+  @override
+  UnmodifiableListView<Ball> get balls => UnmodifiableListView(
+      partnership.balls.where((ball) => ball.batter == batter));
 }

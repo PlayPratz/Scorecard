@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/handlers/image_picker_handler.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/services/player_service.dart';
@@ -80,10 +81,10 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
                           shape: BoxShape.circle),
                       child: InkWell(
                         customBorder: const CircleBorder(),
-                        onTap: () => Utils.pickPhotoFromGallery()
+                        onTap: () => ImagePickerHandler.pickPhotoFromGallery()
                             .then((photo) => setState(() {
                                   if (photo != null) {
-                                    _playerPhoto = photo;
+                                    _playerPhoto = FileImage(photo);
                                   }
                                 })),
                         child: CircleAvatar(

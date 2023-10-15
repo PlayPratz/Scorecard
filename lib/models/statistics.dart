@@ -1,50 +1,64 @@
+import 'dart:collection';
+
 import 'package:scorecard/models/ball.dart';
-import 'package:scorecard/models/player.dart';
 import 'package:scorecard/util/constants.dart';
+import 'package:scorecard/util/utils.dart';
 
-abstract class BattingStats {
-  final Player batter;
+/// An abstraction of all handy methods used to calculate statistics of a batter
+/// ranging from runs and balls to strike-rate, average, etc.
+abstract mixin class BattingCalculations {
+  UnmodifiableListView<Ball> get balls;
 
-  BattingStats(this.batter);
+  int get runs => balls.fold(0, (runs, ball) => runs + ball.batterRuns);
 
-  List<Ball> get balls;
-
-  int get runs =>
-      balls.fold(0, (runsScored, ball) => runsScored + ball.batterRuns);
+  UnmodifiableListView<Ball> get legalBalls =>
+      UnmodifiableListView(balls.where((ball) => ball.isLegal));
 
   int get ballsFaced => balls
       .where((ball) => ball.isLegal || ball.bowlingExtra == BowlingExtra.noBall)
       .length;
 
-  int get wicketsFallen => balls.where((ball) => ball.isWicket).length;
+  int get wicketsFallen => balls
+      .where((ball) => ball.isWicket && ball.wicket!.batter == ball.batter)
+      .length;
 
-  double get strikeRate => ballsFaced == 0
-      ? 0
-      : 100 * runs / ballsFaced; // TODO handle divideby0 case better
-  double get average => runs / wicketsFallen;
+  double get strikeRate =>
+      Utils.handleDivideByZero(100 * runs, ballsFaced, fallback: 0);
+  double get average =>
+      Utils.handleDivideByZero(runs, wicketsFallen, fallback: runs);
   int get fours => balls.where((ball) => ball.runsScored == 4).length;
   int get sixes => balls.where((ball) => ball.runsScored == 6).length;
 }
 
-abstract class BowlingStats {
-  final Player bowler;
+/// An abstraction of all handy methods used to calculate statistics of a bowler
+/// ranging from runs conceded and balls bowled to strike-rate, average, etc.
+abstract mixin class BowlingCalculations {
+  UnmodifiableListView<Ball> get balls;
 
-  BowlingStats(this.bowler);
+  UnmodifiableListView<Ball> get legalBalls =>
+      UnmodifiableListView(balls.where((ball) => ball.isLegal));
 
-  List<Ball> get balls;
+  UnmodifiableListView<Ball> get wicketBalls =>
+      UnmodifiableListView(balls.where((ball) => ball.isBowlerWicket));
+
+  UnmodifiableListView<Ball> get bowlingExtraBalls =>
+      UnmodifiableListView(balls.where((ball) => ball.isBowlingExtra));
 
   int get runsConceded => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
   int get wicketsTaken => balls.where((ball) => ball.isBowlerWicket).length;
-  int get ballsBowled => balls.where((ball) => ball.isLegal).length;
+
+  int get legalBallsBowled => legalBalls.length;
+  int get bowlingExtrasBowled => bowlingExtraBalls.length;
+  int get allBallsBowled => balls.length;
 
   // TODO
   // int get maidensBowled => overs.where((over) => over.totalRuns == 0).length;
 
-  double get economy => ballsBowled == 0
-      ? 0
-      : Constants.ballsPerOver * runsConceded / ballsBowled;
-  double get strikeRate => ballsBowled / wicketsTaken;
-  double get average => runsConceded / wicketsTaken;
+  double get economy => Utils.handleDivideByZero(
+      Constants.ballsPerOver * runsConceded, allBallsBowled);
+  double get strikeRate =>
+      Utils.handleDivideByZero(allBallsBowled, wicketsTaken);
+  double get average => Utils.handleDivideByZero(runsConceded, wicketsTaken);
 }
 
 // TODO

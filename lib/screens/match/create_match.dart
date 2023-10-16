@@ -46,7 +46,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
   @override
   Widget build(BuildContext context) {
     return TitledPage(
-        title: Strings.matchlistCreateNewMatch,
+        title: Strings.matchListCreateNewMatch,
         showBackButton: false,
         child: Form(
           autovalidateMode: AutovalidateMode.onUserInteraction,

@@ -16,6 +16,10 @@ class PlayerService {
 
   Future<void> initialize() async {
     _appDataDirectory = await getApplicationDocumentsDirectory();
+
+    final playerPhotoDirectory =
+        Directory("${_appDataDirectory.path}/photos/players");
+    await playerPhotoDirectory.create(recursive: true);
   }
 
   /// Get all players that are accessible to the currently logged-in user.

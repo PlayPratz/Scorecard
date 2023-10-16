@@ -139,9 +139,10 @@ class _BattingInningsPanel extends StatelessWidget {
             ),
           const Divider(color: Colors.black12, height: 0),
           GenericItemTile(
-            primaryHint: "Extras",
-            secondaryHint:
-                "(${wides.length} wd, ${noBalls.length} nb, ${byes.length} b, ${legByes.length} lb)",
+            primaryHint: Strings.extras,
+            smallPrimary: true,
+            secondaryHint: Strings.getExtrasForInnings(
+                wides.length, noBalls.length, byes.length, legByes.length),
             contentPadding: const EdgeInsets.only(left: 24, right: 64),
             trailing: Text(
               extras.length.toString(),
@@ -150,7 +151,7 @@ class _BattingInningsPanel extends StatelessWidget {
           ),
           const Divider(color: Colors.black12, height: 0),
           GenericItemTile(
-            primaryHint: "Total",
+            primaryHint: Strings.total,
             secondaryHint: Strings.getOverBowledText(innings, short: false),
             contentPadding: const EdgeInsets.only(left: 24, right: 64),
             trailing: Text(
@@ -186,7 +187,7 @@ class BatterInningsScore extends StatelessWidget {
               children: [
                 Text(
                   player.name,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
                 Padding(
                     padding: const EdgeInsets.only(top: 2.0),
@@ -227,7 +228,7 @@ class BatterInningsScore extends StatelessWidget {
               children: [
                 Text(
                   strikeRate.isNaN
-                      ? ""
+                      ? Strings.empty
                       : batterInnings.strikeRate.toStringAsFixed(2),
                   style: Theme.of(context)
                       .textTheme
@@ -275,7 +276,7 @@ class _YetToBatPanel extends StatelessWidget {
     }
 
     return _GenericInningsPanel(
-        title: "Yet To Bat".toUpperCase(),
+        title: Strings.scorecardYetToBat.toUpperCase(),
         color: innings.battingTeam.team.color,
         child: SizedBox(
           width: double.infinity,
@@ -283,9 +284,12 @@ class _YetToBatPanel extends StatelessWidget {
             padding:
                 const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 12.0),
             child: Wrap(
-              spacing: 16,
+              spacing: 6,
               children: [
-                for (final player in playersThatDidNotBat) Text(player.name),
+                for (final player in playersThatDidNotBat) ...[
+                  Text(player.name),
+                  if (playersThatDidNotBat.last != player) const Text('·'),
+                ]
               ],
             ),
           ),
@@ -304,7 +308,7 @@ class _FallOfWicketsPanel extends StatelessWidget {
       return const SizedBox();
     }
     return _GenericInningsPanel(
-      title: "Fall of Wickets".toUpperCase(),
+      title: Strings.scorecardFallOfWickets.toUpperCase(),
       color: innings.battingTeam.team.color,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -312,12 +316,15 @@ class _FallOfWicketsPanel extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium!,
           child: Table(
             columnWidths: const {
-              2: FlexColumnWidth(2),
-              3: FlexColumnWidth(3),
+              1: FlexColumnWidth(1.25),
+              2: FlexColumnWidth(3),
+              3: FlexColumnWidth(3.5),
             },
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             border: const TableBorder(
-                horizontalInside: BorderSide(color: Colors.black12)),
+              horizontalInside: BorderSide(color: Colors.black12),
+              verticalInside: BorderSide(color: Colors.black12),
+            ),
             children: [
               for (final fallOfWicket in innings.fallOfWickets)
                 TableRow(
@@ -326,25 +333,43 @@ class _FallOfWicketsPanel extends StatelessWidget {
                       height: 36, // To space the rows
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(
-                            "${fallOfWicket.ball.overIndex}.${fallOfWicket.ball.ballIndex}"),
+                        child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              Strings.getBallIndex(fallOfWicket.ball),
+                            )),
                       ),
                     ), //TODO Abstract
-                    Text(
-                        "${fallOfWicket.runsAtWicket}/${fallOfWicket.wicketsAtWicket}"),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(fallOfWicket.outBatter.name),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                              "${fallOfWicket.runsAtWicket}/${fallOfWicket.wicketsAtWicket}"),
+                        ),
                       ),
                     ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: FittedBox(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text(Strings.getWicketDescription(
-                              fallOfWicket.wicket))),
+                          child: Text(fallOfWicket.outBatter.name),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(Strings.getWicketDescription(
+                                fallOfWicket.wicket))),
+                      ),
                     ),
                   ],
                 )

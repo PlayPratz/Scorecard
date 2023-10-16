@@ -65,40 +65,6 @@ class RecentBallsPane extends StatelessWidget {
                     },
                   ),
                 ),
-                // Expanded(
-                //   child: AnimatedList(
-                //     key: recentBallsViewKey,
-                //     reverse: true,
-                //     initialItemCount: ballCount,
-                //     scrollDirection: Axis.horizontal,
-                //     itemBuilder: (context, index, animation) {
-                //       final innings = context.read<InningsManager>().innings;
-                //       final ballsReversed = innings.balls.reversed.toList();
-                //       final currentBall = ballsReversed[index];
-                //       Color? ballIndexColor;
-                //       if (index > 0) {
-                //         // At least two balls exist
-                //         final previousBall = ballsReversed[index - 1];
-                //         if (previousBall.overIndex != currentBall.overIndex) {
-                //           ballIndexColor = innings.bowlingTeam.color;
-                //         }
-                //       }
-                //       return SlideTransition(
-                //         position: animation.drive(
-                //           Tween<Offset>(
-                //             begin: const Offset(1, 0),
-                //             end: const Offset(0, 0),
-                //           ),
-                //         ),
-                //         child: RecentBall(
-                //           ball: currentBall,
-                //           highlightBallIndex: ballIndexColor,
-                //         ),
-                //       );
-                //     },
-                //     },
-                //   ),
-                // ),
                 const SizedBox(width: 4),
                 IconButton(
                   onPressed: null,

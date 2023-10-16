@@ -195,13 +195,6 @@ class InningsStateController {
       {required Player inBatter, required BatterInnings outBatterInnings}) {
     // TODO Should most of this be in a State Manager? Probably move to different file.
 
-    // Check if the batter being replaced has lost their wicket
-    if (!outBatterInnings.isOut) {
-      // If they haven't, they're most likely retired.
-      // TODO implement different types of retired: hurt, etc.
-      outBatterInnings.retire();
-    }
-
     // Add the batter to innings
     final inBatterInnings = innings.addBatter(inBatter, outBatterInnings);
 

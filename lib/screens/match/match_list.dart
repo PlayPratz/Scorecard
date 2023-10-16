@@ -106,7 +106,7 @@ class CricketMatchList extends StatelessWidget {
           ? null
           : CreateItemEntry<CricketMatch>(
               form: const CreateMatchForm(),
-              string: Strings.matchlistCreateNewMatch,
+              string: Strings.matchListCreateNewMatch,
               onCreate: onCreate!,
             ),
     );

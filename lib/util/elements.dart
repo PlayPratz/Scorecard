@@ -67,26 +67,6 @@ class Elements {
     );
   }
 
-  // static Widget getIconButton({
-  //   required String text,
-  //   required Widget icon,
-  //   void Function()? onPressed,
-  //   Color? foreground,
-  //   Color? background,
-  // }) {
-  //   return ElevatedButton.icon(
-  //     style: ElevatedButton.styleFrom(
-  //       backgroundColor: background?.withOpacity(0.1),
-  //       foregroundColor: foreground,
-  //     ),
-  //     onPressed: onPressed,
-  //     label: Text(
-  //       text,
-  //     ),
-  //     icon: icon,
-  //   );
-  // }
-
   static Widget getTextInput(
       String label, String hint, void Function(String value) onChangeValue,
       [String? initialValue,
@@ -158,6 +138,7 @@ class Elements {
         closeIconColor: Colors.white,
         dismissDirection: DismissDirection.horizontal,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+        duration: const Duration(seconds: 10),
         behavior: SnackBarBehavior.floating,
       ),
     );

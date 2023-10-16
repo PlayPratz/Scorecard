@@ -17,6 +17,8 @@ class GenericItemTile extends StatefulWidget {
   final ShapeBorder? shape;
   final EdgeInsetsGeometry? contentPadding;
 
+  final bool smallPrimary;
+
   const GenericItemTile({
     Key? key,
     required this.primaryHint,
@@ -29,6 +31,7 @@ class GenericItemTile extends StatefulWidget {
     this.contentPadding,
     // this.size = ItemSize.normal,
     this.trailing = const Icon(Icons.chevron_right),
+    this.smallPrimary = false,
   }) : super(key: key);
 
   @override
@@ -44,7 +47,9 @@ class _GenericItemTileState extends State<GenericItemTile> {
         fit: BoxFit.scaleDown,
         child: Text(
           widget.primaryHint,
-          style: Theme.of(context).textTheme.titleMedium,
+          style: widget.smallPrimary
+              ? Theme.of(context).textTheme.titleSmall
+              : Theme.of(context).textTheme.titleMedium,
         ),
       ),
       subtitle: widget.secondaryHint.isNotEmpty

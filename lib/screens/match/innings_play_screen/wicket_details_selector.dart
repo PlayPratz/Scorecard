@@ -25,17 +25,13 @@ class WicketTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String primary = Strings.matchScreenAddWicket;
-    String hint = Strings.matchScreenAddWicketHint;
-
     return StreamBuilder(
       stream: stateController.wicketStateSteam,
       builder: (context, snapshot) {
         final wicket = snapshot.data;
-        if (wicket != null) {
-          primary = wicket.batter.name;
-          hint = Strings.getWicketDescription(wicket);
-        }
+        final (primary, hint) = wicket == null
+            ? (Strings.matchScreenAddWicket, Strings.matchScreenAddWicketHint)
+            : (wicket.batter.name, Strings.getWicketDescription(wicket));
         return Card(
           margin: const EdgeInsets.all(0),
           surfaceTintColor: ColorStyles.wicket,

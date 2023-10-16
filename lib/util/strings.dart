@@ -105,7 +105,7 @@ class Strings {
   // static const String playerBowler = " Bowl";
 
   // Creation
-  static const String matchlistCreateNewMatch = "Create new match";
+  static const String matchListCreateNewMatch = "Create new match";
   static const String addNewPlayer = "Add new player";
   static const String createNewTeam = "Create new team";
 
@@ -185,14 +185,23 @@ class Strings {
   static const String scorecardBowling = "Bowling";
   static const String scorecardInningsWithSpace = " Innings";
   static const String scorecardFallOfWickets = "Fall Of Wickets";
+  static const String scorecardYetToBat = "Yet to bat";
 
   static const String goToTimeline = "View Timeline";
   static const String innings = "Innings";
+
+  static const String extras = "Extras";
+  static const String total = "Total";
 
   static String getInningsHeaderForIndex(int i) {
     if (i == 1) return "First Innings";
     if (i == 2) return "Second Innings";
     return "Innings";
+  }
+
+  static String getExtrasForInnings(
+      int wides, int noBalls, int byes, int legByes) {
+    return "($wides wd, $noBalls nb, $byes b, $legByes lb)";
   }
 
   // Choose
@@ -219,6 +228,8 @@ class Strings {
   static const String matchScreenSuperOverHint =
       "A quick one-over game to settle the scores.";
   static const String matchScreenAddBall = "Add Ball";
+  static const String matchScreenReplaceBatterError =
+      "Only a batter who has not lost their wicket and has not faced a single delivery can be replaced.";
 
   // Ball Selector
   static const String extraEventBall = "Event";
@@ -229,6 +240,10 @@ class Strings {
 
   // Recent Balls (Innings Timeline)
   static const String inningsTimelineTitle = "Innings Timeline";
+
+  static String getBallIndex(Ball ball) {
+    return "${ball.overIndex}.${ball.ballIndex}";
+  }
 
   static String getDeliveryHeadline(Ball ball) {
     return "${ball.bowler.name} to ${ball.batter.name}";

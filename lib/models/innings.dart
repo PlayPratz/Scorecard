@@ -422,7 +422,8 @@ class BatterInnings with BattingCalculations {
   UnmodifiableListView<Ball> get balls => UnmodifiableListView(
       innings.balls.where((ball) => ball.batter == batter));
 
-  bool get isOut => wicket != null;
+  bool get isOutOrRetired => wicket != null;
+  bool get isOut => wicket != null && wicket!.dismissal != Dismissal.retired;
 
   bool get isRetired =>
       wicket != null && wicket!.dismissal == Dismissal.retired;

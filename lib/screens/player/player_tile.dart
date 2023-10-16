@@ -3,7 +3,7 @@ import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/util/strings.dart';
-import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
 
 class PlayerTile extends StatelessWidget {
   final Player player;

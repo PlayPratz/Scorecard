@@ -4,8 +4,8 @@ import 'package:scorecard/handlers/image_picker_handler.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/services/player_service.dart';
-import 'package:scorecard/util/elements.dart';
-import 'package:scorecard/util/helpers.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
+import 'package:scorecard/screens/widgets/helpers.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
@@ -49,7 +49,7 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
       _name = widget.player!.name;
       context
           .read<PlayerService>()
-          .getProfilePhoto(widget.player!.id)
+          .getPhotoFromStorage(widget.player!)
           .then((photoFile) {
         if (photoFile != null) {
           _playerPhoto = FileImage(photoFile);
@@ -166,10 +166,9 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
     );
 
     if (_playerPhoto != null) {
-      context.read<PlayerService>().saveProfilePhoto(
-            playerId: player.id,
-            profilePhoto: (_playerPhoto as FileImage).file,
-          );
+      context
+          .read<PlayerService>()
+          .savePhoto(player, (_playerPhoto as FileImage).file);
     }
     Utils.goBack(context, player);
   }

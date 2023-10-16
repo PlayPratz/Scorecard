@@ -9,7 +9,7 @@ import 'package:scorecard/screens/templates/titled_page.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/services/cricket_match_service.dart';
 import 'package:scorecard/styles/color_styles.dart';
-import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
@@ -156,7 +156,7 @@ class _BattingInningsPanel extends StatelessWidget {
             contentPadding: const EdgeInsets.only(left: 24, right: 64),
             trailing: Text(
               Strings.getInningsScore(innings),
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
         ],
@@ -339,7 +339,7 @@ class _FallOfWicketsPanel extends StatelessWidget {
                               Strings.getBallIndex(fallOfWicket.ball),
                             )),
                       ),
-                    ), //TODO Abstract
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Align(

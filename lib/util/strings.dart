@@ -238,6 +238,9 @@ class Strings {
   static const String pickBatterTitle = "Pick the next batter";
   static const String pickBatterLastMan = "Continue as Last Man";
 
+  // Players in Action
+  static const String playersInAction = "Players in Action";
+
   // Recent Balls (Innings Timeline)
   static const String inningsTimelineTitle = "Innings Timeline";
 

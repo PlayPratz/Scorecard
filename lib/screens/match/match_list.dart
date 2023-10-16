@@ -17,6 +17,8 @@ import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
 void handleOpenMatch(BuildContext context, CricketMatch match) {
+  // Fire async request
+  context.read<CricketMatchService>().open(match);
   switch (match.matchState) {
     case MatchState.notStarted:
       Utils.goToPage(MatchInitScreen(match: match), context);

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/styles/color_styles.dart';
-import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
 import 'package:scorecard/util/strings.dart';
 
 class PlayersInActionPane extends StatelessWidget {
@@ -38,18 +38,6 @@ class PlayersInActionPane extends StatelessWidget {
           ],
         ),
       ),
-      // Expanded(
-      //   child: Column(
-      //     children: [
-      //       _wBowlerInAction(context),
-      //       GenericItemTile(
-      //         primaryHint: "This Over",
-      //         secondaryHint: "This Over",
-      //         trailing: null,
-      //       ),
-      //     ],
-      //   ),
-      // ),
       Expanded(child: _wBowlerInAction(context))
     ];
     return Card(
@@ -62,7 +50,7 @@ class PlayersInActionPane extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Players in Action".toUpperCase(),
+                Strings.playersInAction.toUpperCase(),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
@@ -104,7 +92,7 @@ class PlayersInActionPane extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium
-                ?.merge(const TextStyle(color: Colors.white70)),
+                ?.copyWith(color: Colors.white70),
           ),
         ],
       ),

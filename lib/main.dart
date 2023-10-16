@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/handlers/image_picker_handler.dart';
+import 'package:scorecard/handlers/photo_handler.dart';
 import 'package:scorecard/handlers/share_handler.dart';
 import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/player_repository.dart';
@@ -110,6 +111,7 @@ class AppStartup {
   Future<void> _initializeHandlers() async {
     await ShareHandler.initialize();
     await ImagePickerHandler.initialize();
+    await PhotoHandler.initialize();
   }
 
   Future<void> _initializeServices() async {

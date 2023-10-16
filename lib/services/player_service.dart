@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
+import 'package:scorecard/handlers/photo_handler.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
 
@@ -12,15 +12,7 @@ class PlayerService {
   PlayerService({required IRepository<Player> playerRepository})
       : _playerRepository = playerRepository;
 
-  late final Directory _appDataDirectory;
-
-  Future<void> initialize() async {
-    _appDataDirectory = await getApplicationDocumentsDirectory();
-
-    final playerPhotoDirectory =
-        Directory("${_appDataDirectory.path}/photos/players");
-    await playerPhotoDirectory.create(recursive: true);
-  }
+  Future<void> initialize() async {}
 
   /// Get all players that are accessible to the currently logged-in user.
   Future<UnmodifiableListView<Player>> getAll() async {
@@ -37,25 +29,16 @@ class PlayerService {
     await _playerRepository.add(player);
   }
 
-  Future<File?> getProfilePhoto(String playerId) async {
-    // Create a file of the photo
-    File photoFile = File(_getProfilePhotoPath(playerId));
-
-    // Check if the photo exists
-    if (!await photoFile.exists()) {
-      return null;
-    }
-
-    return photoFile;
+  File? getPhotoFromCache(Player player) {
+    return PhotoHandler.getPlayerPhotoFromCache(player.id);
   }
 
-  Future<void> saveProfilePhoto({
-    required String playerId,
-    required File profilePhoto,
-  }) async {
-    await profilePhoto.copy(_getProfilePhotoPath(playerId));
+  Future<File?> getPhotoFromStorage(Player player) async {
+    return await PhotoHandler.getPlayerPhoto(player.id);
   }
 
-  String _getProfilePhotoPath(String playerId) =>
-      "${_appDataDirectory.path}/photos/players/$playerId";
+  Future<void> savePhoto(Player player, File profilePhoto) async {
+    await PhotoHandler.savePlayerPhoto(
+        playerId: player.id, profilePhoto: profilePhoto);
+  }
 }

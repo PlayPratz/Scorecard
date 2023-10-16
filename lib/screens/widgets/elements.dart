@@ -83,32 +83,52 @@ class Elements {
 
   static Widget getPlayerIcon(
       BuildContext context, Player player, double size) {
-    final profilePhotoFileFuture =
-        context.read<PlayerService>().getProfilePhoto(player.id);
-    return CircleAvatar(
+    // Attempt to get from cache
+    final photoFile = context.read<PlayerService>().getPhotoFromCache(player);
+    if (photoFile != null) {
+      return CircleAvatar(
         backgroundColor: ColorStyles.card,
         // foregroundColor: Colors.white,
         radius: (size / 2),
-        child: FutureBuilder(
-            future: profilePhotoFileFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done &&
-                  snapshot.data != null) {
-                return FittedBox(
-                  fit: BoxFit.contain,
-                  child: CircleAvatar(
-                    foregroundImage: FileImage(snapshot.data!),
-                    backgroundColor: Colors.transparent,
-                    radius: size / 2 - 1,
-                  ),
-                );
-              }
-              return Icon(
-                Icons.person_outline,
-                size: size / 2,
-                color: Colors.grey.shade600,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: CircleAvatar(
+            foregroundImage: FileImage(photoFile),
+            backgroundColor: Colors.transparent,
+            radius: size / 2 - 1,
+          ),
+        ),
+      );
+    }
+
+    final playerPhotoFileFuture =
+        context.read<PlayerService>().getPhotoFromStorage(player);
+
+    return CircleAvatar(
+      backgroundColor: ColorStyles.card,
+      // foregroundColor: Colors.white,
+      radius: (size / 2),
+      child: FutureBuilder(
+          future: playerPhotoFileFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done &&
+                snapshot.data != null) {
+              return FittedBox(
+                fit: BoxFit.contain,
+                child: CircleAvatar(
+                  foregroundImage: FileImage(snapshot.data!),
+                  backgroundColor: Colors.transparent,
+                  radius: size / 2 - 1,
+                ),
               );
-            }));
+            }
+            return Icon(
+              Icons.person_outline,
+              size: size / 2,
+              color: Colors.grey.shade600,
+            );
+          }),
+    );
   }
 
   static const Widget noBallIndicator = Icon(

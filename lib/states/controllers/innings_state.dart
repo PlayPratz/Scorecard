@@ -111,6 +111,7 @@ class InningsStateController {
     final ball = addBallEvent.ball;
 
     if (ball.runsScored % 2 == 1) _swapStrike();
+    if (innings.overs.last.isCompleted) _swapStrike();
 
     innings.unPlay(ball);
   }
@@ -193,13 +194,8 @@ class InningsStateController {
 
   void addBatter(
       {required Player inBatter, required BatterInnings outBatterInnings}) {
-    // TODO Should most of this be in a State Manager? Probably move to different file.
-
     // Add the batter to innings
     final inBatterInnings = innings.addBatter(inBatter, outBatterInnings);
-
-    // On the UI/selections, replace old batter with new batter.
-    // _fixBattersInAction(inBatterInnings, outBatterInnings);
 
     _inningsEventController.add(
         AddBatterEvent(inBatter: inBatterInnings, outBatter: outBatterInnings));
@@ -212,7 +208,6 @@ class InningsStateController {
       throw StateError("AddBatterEvent does not contain 'OutBatter'");
     }
 
-    // Remove the batter from the innings/scorecard
     innings.removeBatter(addBatterEvent.inBatter,
         restore: addBatterEvent.outBatter!);
 

@@ -6,7 +6,7 @@ import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
 import 'package:scorecard/states/controllers/ball_details_state.dart';
 import 'package:scorecard/styles/color_styles.dart';
-import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
 
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/util/strings.dart';

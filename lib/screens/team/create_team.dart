@@ -12,7 +12,7 @@ import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
 import 'package:scorecard/services/player_service.dart';
-import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 

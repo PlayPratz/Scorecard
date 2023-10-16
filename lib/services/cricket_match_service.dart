@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:scorecard/handlers/photo_handler.dart';
 import 'package:scorecard/handlers/share_handler.dart';
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
@@ -33,6 +34,29 @@ class CricketMatchService {
     return UnmodifiableListView(
         cricketMatches.where((cricketMatch) => cricketMatch.isCompleted));
   }
+
+  Future<void> open(CricketMatch cricketMatch) async {
+    // Clear previous cache, if any
+    PhotoHandler.clearPlayerPhotoCache();
+
+    // Store photos in cache
+    for (final player in cricketMatch.home.squad) {
+      await PhotoHandler.getPlayerPhoto(player.id, storeInCache: true);
+    }
+    for (final player in cricketMatch.away.squad) {
+      await PhotoHandler.getPlayerPhoto(player.id, storeInCache: true);
+    }
+  }
+
+  // Future<void> close(CricketMatch cricketMatch) async {
+  //   // Remove photos from cache
+  //   for (final player in cricketMatch.home.squad) {
+  //     await PhotoHandler.clearPlayerPhotoFromCache(player.id);
+  //   }
+  //   for (final player in cricketMatch.away.squad) {
+  //     await PhotoHandler.clearPlayerPhotoFromCache(player.id);
+  //   }
+  // }
 
   Future<void> save(CricketMatch cricketMatch) async {
     await _cricketMatchRepository.add(cricketMatch);

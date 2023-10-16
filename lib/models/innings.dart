@@ -318,6 +318,10 @@ class Innings {
     // Handle Partnerships
     // _handlePartnerships(inBatter, outBatter);
 
+    if (!outBatter.isOutOrRetired && outBatter.ballsFaced == 0) {
+      _batterInnings.remove(outBatter.batter);
+    }
+
     return inBatter;
   }
 

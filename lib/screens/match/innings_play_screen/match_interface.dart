@@ -19,7 +19,7 @@ import 'package:scorecard/states/controllers/innings_state.dart';
 
 import 'package:scorecard/models/cricket_match.dart';
 import 'package:scorecard/styles/color_styles.dart';
-import 'package:scorecard/util/elements.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
@@ -44,68 +44,69 @@ class MatchInterface extends StatelessWidget {
       // toolbarHeight: 0,
       appBarColor: Colors.transparent,
       child: StreamBuilder<InningsState>(
-          stream: inningsStateController.stateStream,
-          initialData: inningsStateController.initialState,
-          builder: (context, snapshot) {
-            final inningsState = snapshot.data!;
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                MatchTile(
-                  match: match,
-                  showSummaryLine: false,
-                  onTap: () => Utils.goToPage(Scorecard(match: match), context),
-                ),
-                RunRatePane(
-                  stateController: runRatePaneStateController,
-                  innings: inningsState.innings,
-                  showChaseRequirement:
-                      inningsState.innings == match.secondInnings,
-                ),
-                PlayersInActionPane(
-                  innings: inningsState.innings,
-                  isHomeTeamBatting: match.homeInnings == match.currentInnings,
-                  onTapBatter: (batter) =>
-                      inningsStateController.setStrike(batter),
-                  onLongTapBatter: (batter) => _handleReplaceBatter(
-                      context, inningsStateController, batter),
-                  onTapBowler: (bowler) =>
-                      _handleSetBowler(context, inningsStateController),
-                ),
-                RecentBallsPane(innings: inningsState.innings),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    _wEndInningsButton(context),
-                    const SizedBox(width: 4),
-                    Expanded(
-                        child: WicketTile(
-                      stateController: ballDetailsStateController,
-                      innings: inningsState.innings,
-                    )),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                BallDetailsSelector(
-                  stateController: ballDetailsStateController,
-                  innings: inningsState.innings,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(child: _wUndoButton(inningsStateController)),
-                    const SizedBox(width: 16),
-                    Expanded(
-                        flex: 2,
-                        child: _wConfirmButton(context, inningsStateController,
-                            inningsState, ballDetailsStateController))
-                  ],
-                ),
-              ],
-            );
-          }),
+        stream: inningsStateController.stateStream,
+        initialData: inningsStateController.initialState,
+        builder: (context, snapshot) {
+          final inningsState = snapshot.data!;
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              MatchTile(
+                match: match,
+                showSummaryLine: false,
+                onTap: () => Utils.goToPage(Scorecard(match: match), context),
+              ),
+              RunRatePane(
+                stateController: runRatePaneStateController,
+                innings: inningsState.innings,
+                showChaseRequirement:
+                    inningsState.innings == match.secondInnings,
+              ),
+              PlayersInActionPane(
+                innings: inningsState.innings,
+                isHomeTeamBatting: match.homeInnings == match.currentInnings,
+                onTapBatter: (batter) =>
+                    inningsStateController.setStrike(batter),
+                onLongTapBatter: (batter) => _handleReplaceBatter(
+                    context, inningsStateController, batter),
+                onTapBowler: (bowler) =>
+                    _handleSetBowler(context, inningsStateController),
+              ),
+              RecentBallsPane(innings: inningsState.innings),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _wEndInningsButton(context),
+                  const SizedBox(width: 4),
+                  Expanded(
+                      child: WicketTile(
+                    stateController: ballDetailsStateController,
+                    innings: inningsState.innings,
+                  )),
+                ],
+              ),
+              const SizedBox(height: 8),
+              BallDetailsSelector(
+                stateController: ballDetailsStateController,
+                innings: inningsState.innings,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(child: _wUndoButton(inningsStateController)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      flex: 2,
+                      child: _wConfirmButton(context, inningsStateController,
+                          inningsState, ballDetailsStateController))
+                ],
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 

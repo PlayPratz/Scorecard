@@ -167,7 +167,7 @@ class Innings {
     // Handle partnership
     // _partnerships.last.play(ball);
 
-    if (ball.isWicket) {
+    if (ball.isWicket || ball.isBatterRetired) {
       _fallOfWickets.add(
         FallOfWicket(ball: ball, runsAtWicket: runs, wicketsAtWicket: wickets),
       );
@@ -307,6 +307,8 @@ class Innings {
   /// If [addBatter] is called more than once on the same player, nothing
   /// happens except that the [Wicket] of the batter is cleared. For more
   /// information, refer to the docs on [BatterInnings].
+  ///
+  /// [outBatter] is the batter that will be replaced in [PlayersInAction].
   ///
   /// Returns the [BatterInnings] of the given batter.
   BatterInnings addBatter(Player batter, BatterInnings outBatter) {

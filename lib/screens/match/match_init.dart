@@ -112,11 +112,10 @@ class MatchInitScreen extends StatelessWidget {
             )),
             const SizedBox(height: 128),
             ListenableBuilder(
-                // TODO Please solve this nested jugaad
-                listenable: teamSquadController,
-                builder: (context, child) => ListenableBuilder(
-                    listenable: tossChoiceController,
-                    builder: (context, child) => _wConfirmButton(context))),
+              listenable:
+                  Listenable.merge([teamSquadController, tossChoiceController]),
+              builder: (context, child) => _wConfirmButton(context),
+            ),
           ],
         ));
   }

@@ -123,8 +123,9 @@ class OngoingCricketMatchList extends StatelessWidget {
         children: [
           Expanded(
             child: _FutureCricketMatchList(
-                controller: _OngoingMatchListController(
-                    cricketMatchService: context.read<CricketMatchService>())),
+              controller: _OngoingMatchListController(
+                  cricketMatchService: context.read<CricketMatchService>()),
+            ),
           ),
           const SizedBox(height: 12),
           GenericItemTile(

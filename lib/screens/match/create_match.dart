@@ -179,21 +179,21 @@ class CreateQuickMatchForm extends StatelessWidget {
         future: playersFuture,
         builder: (context, playerList) {
           return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               const SizedBox(height: 16),
               ListenableBuilder(
-                listenable: controller, //TODO Jugaad
+                listenable: controller,
                 builder: (context, child) => Text(
                     controller.selectedItems.isEmpty
-                        ? "Select Players"
-                        : "Selected ${controller.selectedItems.length} players",
-                    style: Theme.of(context).textTheme.headlineSmall),
+                        ? Strings.createQuickTeamsSelectPlayers
+                        : Strings.getSelectedPlayerCount(
+                            controller.selectedItems.length),
+                    style: Theme.of(context).textTheme.titleMedium),
               ),
               const SizedBox(height: 16),
-              const SizedBox(height: 8),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              Flexible(
+                child: SingleChildScrollView(
                   child: SelectablePlayerList(
                     players: playerList,
                     controller: controller,
@@ -201,7 +201,7 @@ class CreateQuickMatchForm extends StatelessWidget {
                 ),
               ),
               ListenableBuilder(
-                listenable: controller, // TODO Remove Jugaad
+                listenable: controller,
                 builder: (context, child) => Elements.getConfirmButton(
                   text: Strings.buttonNext,
                   onPressed: controller.selectedItems.length >= 2

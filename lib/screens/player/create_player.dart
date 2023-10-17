@@ -12,12 +12,9 @@ import 'package:scorecard/util/utils.dart';
 class CreatePlayerForm extends StatefulWidget {
   final Player? player;
 
-  const CreatePlayerForm({Key? key})
-      : player = null,
-        super(key: key);
+  const CreatePlayerForm.create({super.key}) : player = null;
 
-  const CreatePlayerForm.update({Key? key, required this.player})
-      : super(key: key);
+  const CreatePlayerForm.update({super.key, required this.player});
 
   @override
   State<CreatePlayerForm> createState() => _CreatePlayerFormState();

@@ -291,9 +291,23 @@ class CreateQuickTeamsForm extends StatelessWidget {
   ) =>
       Expanded(
         child: SeparatedWidgetPair(
-          top: Text(
-            title.toUpperCase(),
-            style: Theme.of(context).textTheme.titleMedium,
+          top: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              children: [
+                const Spacer(),
+                Text(
+                  title.toUpperCase(),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(players.length.toString()),
+                  ),
+                ),
+              ],
+            ),
           ),
           bottom: Expanded(
             child: ItemList(

@@ -130,6 +130,16 @@ class Strings {
   static const String createTeamCreate = "Create new team";
   static const String createTeamSave = "Save Team";
 
+  // Create Quick Teams
+  static const String createQuickTeamsSelectPlayers = "Select Players";
+  static String getSelectedPlayerCount(int count) {
+    if (count == 1) {
+      return "Selected $count player";
+    } else {
+      return "Selected $count players";
+    }
+  }
+
   // Create Player
   static const String createPlayerTitle = "Player Details";
   static const String createPlayerName = "Name";

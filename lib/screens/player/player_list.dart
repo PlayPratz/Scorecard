@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/player.dart';
@@ -38,7 +40,7 @@ class PlayerList extends StatelessWidget {
         ],
         createItem: onCreate != null
             ? CreateItemEntry(
-                form: const CreatePlayerForm(),
+                form: const CreatePlayerForm.create(),
                 string: Strings.addNewPlayer,
                 onCreate: (item) => onCreate!(item),
               )
@@ -100,9 +102,8 @@ class PlayerController with ChangeNotifier {
 // }
 }
 
-// TODO Migrate to SelectableItemList?
 class SelectablePlayerList extends StatelessWidget {
-  final List<Player> players;
+  final UnmodifiableListView<Player> players;
   final SelectableItemController<Player> controller;
 
   final Widget Function(Player player)? buildTrailing;
@@ -116,34 +117,28 @@ class SelectablePlayerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-        listenable: controller,
-        builder: (context, child) {
-          return ItemList(
-            itemList: players
-                //Not using PlayerTile because need "selected" param
-                .map((player) {
-              final isSelected = controller.selectedItems.contains(player);
-              final trailing = isSelected && buildTrailing != null
-                  ? buildTrailing!(player)
-                  : isSelected
-                      ? const Icon(Icons.check_circle)
-                      : const SizedBox();
-
-              return ListTile(
-                selected: isSelected,
-                selectedTileColor:
-                    Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                title: Text(player.name),
-                leading: Elements.getPlayerIcon(context, player, 48),
-                trailing: trailing,
-                onTap: () => controller.selectItem(player),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              );
-            }).toList(),
-            alignToBottom: false,
-          );
-        });
+    return SelectableItemList(
+      items: players,
+      controller: controller,
+      onBuild: (player) => ListTile(
+        selected: false,
+        title: Text(player.name),
+        leading: Elements.getPlayerIcon(context, player, 48),
+        onTap: () => controller.selectItem(player),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      onBuildSelected: (player) => ListTile(
+        selected: true,
+        selectedTileColor:
+            Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        title: Text(player.name),
+        leading: Elements.getPlayerIcon(context, player, 48),
+        trailing: buildTrailing != null
+            ? buildTrailing!(player)
+            : const Icon(Icons.check_circle),
+        onTap: () => controller.selectItem(player),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 }

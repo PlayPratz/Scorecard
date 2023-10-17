@@ -71,7 +71,8 @@ class CreateItemEntry<T> {
 class SelectableItemList<T> extends StatelessWidget {
   final List<T> items;
   final Widget Function(T item) onBuild;
-  final Widget Function(T item) onBuildSelected;
+  final Widget Function(T item)
+      onBuildSelected; // TODO Add "isSelected" param to onBuild instead
   final SelectableItemController<T> controller;
 
   const SelectableItemList({
@@ -87,16 +88,21 @@ class SelectableItemList<T> extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, child) {
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            if (controller.selectedItems.contains(items[index])) {
-              return onBuildSelected(items[index]);
-            }
-            return onBuild(items[index]);
-          },
-          itemCount: items.length,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final item in items)
+              if (controller.selectedItems.contains(item))
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 1.0),
+                  child: onBuildSelected(item),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 1.0),
+                  child: onBuild(item),
+                )
+          ],
         );
       },
     );

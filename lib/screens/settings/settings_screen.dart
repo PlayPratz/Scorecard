@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/util/strings.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -11,7 +12,7 @@ class SettingsScreen extends StatelessWidget {
       children: [
         GenericItemTile(
           leading: Icon(Icons.system_update),
-          primaryHint: "App Version",
+          primaryHint: Strings.settingsAppVersion,
           secondaryHint: "v0.20.0beta",
           trailing: null,
         ),

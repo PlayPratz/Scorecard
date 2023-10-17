@@ -109,8 +109,8 @@ class _WicketPickerScreen extends StatelessWidget {
         children: [
           const GenericItemTile(
             leading: Icon(Icons.gpp_bad),
-            primaryHint: "Select a Dismissal",
-            secondaryHint: "How did the batter get out?",
+            primaryHint: Strings.selectDismissal,
+            secondaryHint: Strings.selectDismissalHint,
             trailing: null,
           ),
           SelectableItemList(
@@ -144,8 +144,8 @@ class _WicketPickerScreen extends StatelessWidget {
           const Divider(),
           const GenericItemTile(
             leading: Icon(Icons.sports_cricket_outlined),
-            primaryHint: "Select a Batter",
-            secondaryHint: "Which batter got out?",
+            primaryHint: Strings.selectBatter,
+            secondaryHint: Strings.selectBatterHint,
             trailing: null,
           ),
           SelectableItemList(

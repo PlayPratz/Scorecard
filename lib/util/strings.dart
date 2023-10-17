@@ -338,7 +338,6 @@ class Strings {
   }
 
   // Wickets
-
   static const String chooseWicket = "Choose a Wicket";
   static const String selectDismissal = "Select a Dismissal";
   static const String selectDismissalHint = "How did the batter get out?";
@@ -346,6 +345,9 @@ class Strings {
   static const String selectBatterHint = "Which batter got out?";
   static const String selectFielder = "Select a Fielder";
   static const String selectFielderHint = "Which fielder gave their hand?";
+
+  // Settings
+  static const String settingsAppVersion = "App Version";
 
   static String getWicketDescription(Wicket? wicket) {
     if (wicket == null) {

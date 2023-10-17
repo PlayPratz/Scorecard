@@ -72,7 +72,7 @@ class PlayersInActionPane extends StatelessWidget {
     BatterInnings batterInnings,
   ) {
     // TODO get this from state instead of this duplicate logic
-    final isOut = batterInnings.isOut ||
+    final isOut = batterInnings.isOutOrRetired ||
         (innings.balls.isNotEmpty &&
             innings.balls.last.isWicket &&
             innings.balls.last.wicket!.batter == batterInnings.batter);

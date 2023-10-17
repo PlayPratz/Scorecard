@@ -51,7 +51,7 @@ class WicketTile extends StatelessWidget {
   }
 
   void _onSelectWicket(BuildContext context, Innings innings) async {
-    Wicket? selectedWicket = await Utils.goToPage(
+    final Wicket? selectedWicket = await Utils.goToPage(
         _WicketPickerScreen(
           fieldingTeam: innings.bowlingTeam,
           battingTeam: innings.battingTeam,
@@ -97,7 +97,7 @@ class _WicketPickerScreen extends StatelessWidget {
             ),
             Elements.getConfirmButton(
               text: Strings.matchScreenAddWicket,
-              onPressed: _canSubmit ? _processWicket : null,
+              onPressed: _canSubmit ? () => _processWicket(context) : null,
             ),
           ],
         ),
@@ -231,60 +231,73 @@ class _WicketPickerScreen extends StatelessWidget {
   Player get _bowler => playersInAction.bowler.bowler;
   Player get _striker => playersInAction.striker.batter;
 
-  void _processWicket() async {
+  void _processWicket(BuildContext context) async {
     switch (_dismissal) {
       case Dismissal.retired:
-        _sendWicketToParent(Wicket.runout(
-          batter: _batter!,
-          fielder: _fielder!,
-        ));
+        _sendWicketToParent(
+            context,
+            Wicket.retired(
+              batter: _batter!,
+            ));
         return;
 
       case Dismissal.runout:
-        _sendWicketToParent(Wicket.runout(
-          batter: _batter!,
-          fielder: _fielder!,
-        ));
+        _sendWicketToParent(
+            context,
+            Wicket.runout(
+              batter: _batter!,
+              fielder: _fielder!,
+            ));
         return;
 
       case Dismissal.caught:
-        _sendWicketToParent(Wicket.caught(
-          batter: playersInAction.bowler.bowler,
-          bowler: playersInAction.bowler.bowler,
-          fielder: _fielder!,
-        ));
+        _sendWicketToParent(
+            context,
+            Wicket.caught(
+              batter: _striker,
+              bowler: _bowler,
+              fielder: _fielder!,
+            ));
         return;
       case Dismissal.stumped:
-        _sendWicketToParent(Wicket.stumped(
-          batter: playersInAction.bowler.bowler,
-          bowler: playersInAction.bowler.bowler,
-          fielder: _fielder!,
-        ));
+        _sendWicketToParent(
+            context,
+            Wicket.stumped(
+              batter: _striker,
+              bowler: _bowler,
+              fielder: _fielder!,
+            ));
         return;
 
       case Dismissal.hitWicket:
-        _sendWicketToParent(Wicket.hitWicket(
-          batter: _striker,
-          bowler: playersInAction.bowler.bowler,
-        ));
+        _sendWicketToParent(
+            context,
+            Wicket.hitWicket(
+              batter: _striker,
+              bowler: playersInAction.bowler.bowler,
+            ));
         return;
       case Dismissal.lbw:
-        _sendWicketToParent(Wicket.lbw(
-          batter: _striker,
-          bowler: _bowler,
-        ));
+        _sendWicketToParent(
+            context,
+            Wicket.lbw(
+              batter: _striker,
+              bowler: _bowler,
+            ));
         return;
       case Dismissal.bowled:
       default:
-        _sendWicketToParent(Wicket.bowled(
-          batter: _striker,
-          bowler: _bowler,
-        ));
+        _sendWicketToParent(
+            context,
+            Wicket.bowled(
+              batter: _striker,
+              bowler: _bowler,
+            ));
         return;
     }
   }
 
-  void _sendWicketToParent(Wicket wicket) {
-    // Utils.goBack(context, wicket);
+  void _sendWicketToParent(BuildContext context, Wicket wicket) {
+    Utils.goBack(context, wicket);
   }
 }

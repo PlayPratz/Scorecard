@@ -43,7 +43,7 @@ class InningsStateController {
 
     // Change Batter due to fall of wicket
     final playerInAction = innings.playersInAction;
-    if (playerInAction.batter1.isOut) {
+    if (playerInAction.batter1.isOutOrRetired) {
       return AddBatterState(
         innings: innings,
         selections: _selections,
@@ -51,7 +51,8 @@ class InningsStateController {
       );
     }
 
-    if (playerInAction.batter2 != null && playerInAction.batter2!.isOut) {
+    if (playerInAction.batter2 != null &&
+        playerInAction.batter2!.isOutOrRetired) {
       return AddBatterState(
           innings: innings,
           selections: _selections,

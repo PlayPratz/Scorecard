@@ -213,11 +213,11 @@ class MatchInterface extends StatelessWidget {
   }
 
   void _endInnings(BuildContext context) {
-    // final inningsManager = context.read<InningsManager>();
     if (match.matchState == MatchState.secondInnings ||
         match.matchState == MatchState.completed) {
       // TODO make this such that matchState need not be checked
       match.progressMatch();
+      context.read<CricketMatchService>().save(match);
       if (match.result.victoryType == VictoryType.tie) {
         // Show Super Over option
         showModalBottomSheet(

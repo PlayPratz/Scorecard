@@ -105,33 +105,45 @@ class SelectablePlayerList extends StatelessWidget {
   final List<Player> players;
   final SelectableItemController<Player> controller;
 
-  const SelectablePlayerList(
-      {super.key, required this.players, required this.controller});
+  final Widget Function(Player player)? buildTrailing;
+
+  const SelectablePlayerList({
+    super.key,
+    required this.players,
+    required this.controller,
+    this.buildTrailing,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: controller,
-      builder: (context, child) => ItemList(
-        itemList: players
-            //Not using PlayerTile because need "selected" param
-            .map((player) {
-          final isSelected = controller.selectedItems.contains(player);
-          return ListTile(
-            selected: isSelected,
-            selectedTileColor:
-                Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            title: Text(player.name),
-            leading: Elements.getPlayerIcon(context, player, 48),
-            trailing:
-                isSelected ? const Icon(Icons.check_circle) : const SizedBox(),
-            onTap: () => controller.selectItem(player),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        listenable: controller,
+        builder: (context, child) {
+          return ItemList(
+            itemList: players
+                //Not using PlayerTile because need "selected" param
+                .map((player) {
+              final isSelected = controller.selectedItems.contains(player);
+              final trailing = isSelected && buildTrailing != null
+                  ? buildTrailing!(player)
+                  : isSelected
+                      ? const Icon(Icons.check_circle)
+                      : const SizedBox();
+
+              return ListTile(
+                selected: isSelected,
+                selectedTileColor:
+                    Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                title: Text(player.name),
+                leading: Elements.getPlayerIcon(context, player, 48),
+                trailing: trailing,
+                onTap: () => controller.selectItem(player),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              );
+            }).toList(),
+            alignToBottom: false,
           );
-        }).toList(),
-        alignToBottom: false,
-      ),
-    );
+        });
   }
 }

@@ -25,6 +25,7 @@ class ItemList<T> extends StatelessWidget {
       children: [
         Expanded(
           child: ListView.separated(
+            shrinkWrap: true,
             itemBuilder: (context, index) => items[index],
             separatorBuilder: (context, index) => const Divider(
               indent: 8,
@@ -87,6 +88,8 @@ class SelectableItemList<T> extends StatelessWidget {
       listenable: controller,
       builder: (context, child) {
         return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) {
             if (controller.selectedItems.contains(items[index])) {
               return onBuildSelected(items[index]);

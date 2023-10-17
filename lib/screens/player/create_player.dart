@@ -52,7 +52,9 @@ class _CreatePlayerFormState extends State<CreatePlayerForm> {
           .getPhotoFromStorage(widget.player!)
           .then((photoFile) {
         if (photoFile != null) {
-          _playerPhoto = FileImage(photoFile);
+          setState(() {
+            _playerPhoto = FileImage(photoFile);
+          });
         }
       });
     }

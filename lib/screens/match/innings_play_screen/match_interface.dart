@@ -163,7 +163,7 @@ class MatchInterface extends StatelessWidget {
         return Elements.getConfirmButton(
           text: Strings.matchScreenChooseBatter,
           onPressed: () =>
-              _handleReplaceBatter(context, stateController, batterToReplace),
+              _handleAddBatter(context, stateController, batterToReplace),
         );
       case AddBowlerState():
         return Elements.getConfirmButton(
@@ -187,6 +187,13 @@ class MatchInterface extends StatelessWidget {
           text: Strings.matchScreenReplaceBatterError);
       return;
     }
+    _handleAddBatter(context, stateController, batterInnings);
+  }
+
+  void _handleAddBatter(
+      BuildContext context,
+      InningsStateController stateController,
+      BatterInnings batterInnings) async {
     final inBatter =
         await chooseBatter(context, match.currentInnings, batterInnings, null);
     if (inBatter == null) {

@@ -34,7 +34,7 @@ class PlayerService {
   }
 
   Future<File?> getPhotoFromStorage(Player player) async {
-    return await PhotoHandler.getPlayerPhoto(player.id);
+    return await PhotoHandler.getPlayerPhoto(player.id, storeInCache: true);
   }
 
   Future<void> savePhoto(Player player, File profilePhoto) async {

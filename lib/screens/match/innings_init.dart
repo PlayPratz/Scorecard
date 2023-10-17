@@ -45,6 +45,17 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
                   child: SelectablePlayerList(
                     players: widget.match.nextTeamToBat.squad,
                     controller: batterController,
+                    buildTrailing: (player) => CircleAvatar(
+                      radius: 12,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      child: Text(
+                        "${batterController.selectedItems.indexOf(player) + 1}",
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              color: Theme.of(context).colorScheme.background,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
                   ),
                 ),
               ),

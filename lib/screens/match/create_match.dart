@@ -174,7 +174,7 @@ class CreateQuickMatchForm extends StatelessWidget {
     final controller = SelectableItemController<Player>();
     final playersFuture = context.read<PlayerService>().getAll();
     return TitledPage(
-      title: "Quick Match",
+      title: Strings.createQuickMatch,
       child: SimplifiedFutureBuilder(
         future: playersFuture,
         builder: (context, playerList) {

@@ -7,28 +7,32 @@ class Wicket {
   final Dismissal dismissal;
 
   // Bowler Wickets
-  Wicket.bowled({required this.batter, required this.bowler})
+  Wicket.bowled({required this.batter, required Player this.bowler})
       : dismissal = Dismissal.bowled,
         fielder = null;
 
-  Wicket.lbw({required this.batter, required this.bowler})
+  Wicket.lbw({required this.batter, required Player this.bowler})
       : dismissal = Dismissal.lbw,
         fielder = null;
 
-  Wicket.hitWicket({required this.batter, required this.bowler})
+  Wicket.hitWicket({required this.batter, required Player this.bowler})
       : fielder = null,
         dismissal = Dismissal.hitWicket;
 
   // Fielder Wickets
   Wicket.caught(
-      {required this.batter, required this.bowler, required this.fielder})
+      {required this.batter,
+      required this.bowler,
+      required Player this.fielder})
       : dismissal = Dismissal.caught;
 
   Wicket.stumped(
-      {required this.batter, required this.bowler, required this.fielder})
+      {required this.batter,
+      required this.bowler,
+      required Player this.fielder})
       : dismissal = Dismissal.stumped;
 
-  Wicket.runout({required this.batter, required this.fielder})
+  Wicket.runout({required this.batter, required Player this.fielder})
       : dismissal = Dismissal.runout,
         bowler = null;
 

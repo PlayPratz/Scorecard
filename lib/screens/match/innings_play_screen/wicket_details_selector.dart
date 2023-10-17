@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/player/player_list.dart';
-import 'package:scorecard/screens/player/player_tile.dart';
 import 'package:scorecard/states/controllers/ball_details_state.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/screens/widgets/elements.dart';
@@ -53,11 +51,8 @@ class WicketTile extends StatelessWidget {
   }
 
   void _onSelectWicket(BuildContext context, Innings innings) async {
-    final playersInAction = innings.playersInAction;
     Wicket? selectedWicket = await Utils.goToPage(
-        WicketPicker(
-          bowler: playersInAction.bowler.bowler,
-          striker: playersInAction.striker.batter,
+        _WicketPickerScreen(
           fieldingTeam: innings.bowlingTeam,
           battingTeam: innings.battingTeam,
           playersInAction: innings.playersInAction,
@@ -67,225 +62,229 @@ class WicketTile extends StatelessWidget {
   }
 }
 
-class WicketPicker extends StatefulWidget {
-  final Player bowler;
-  final Player striker;
+class _WicketPickerScreen extends StatelessWidget {
+  final PlayersInAction playersInAction;
   final TeamSquad battingTeam;
   final TeamSquad fieldingTeam;
-  final PlayersInAction playersInAction;
-  const WicketPicker({
-    Key? key,
-    required this.bowler,
-    required this.striker,
+
+  _WicketPickerScreen({
+    required this.playersInAction,
     required this.battingTeam,
     required this.fieldingTeam,
-    required this.playersInAction,
-  }) : super(key: key);
+  });
 
-  @override
-  State<WicketPicker> createState() => _WicketPickerState();
-}
-
-class _WicketPickerState extends State<WicketPicker> {
-  Dismissal? _dismissal;
-  Player? _fielder;
-  Player? _batter;
-
-  bool _isDismissalSelected = false;
-  bool _isBatterSelected = false;
-  bool _isFielderSelected = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _batter = widget.striker;
-  }
+  final dismissalController = SelectableItemController<Dismissal>(maxItems: 1);
+  final batterController = SelectableItemController<Player>(maxItems: 1);
+  final fielderController = SelectableItemController<Player>(maxItems: 1);
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> options = [const Spacer()];
-
-    _isDismissalSelected = false;
-    _isBatterSelected = false;
-    _isFielderSelected = false;
-
-    if (_dismissal == null) {
-      options.add(_wDismissalChooser());
-    } else {
-      _isDismissalSelected = true;
-      options.add(_wDismissalViewer());
-
-      if (_requiresBatter(_dismissal)) {
-        if (_batter == null) {
-          options.add(_wBatterChooser());
-        } else {
-          _isBatterSelected = true;
-          options.add(PlayerTile(
-            _batter!,
-            onSelect: (_) => _onSelectBatter(),
-          ));
-        }
-      } else {
-        _isBatterSelected = true;
-      }
-
-      if (_requiresFielder(_dismissal)) {
-        if (_fielder == null) {
-          options.add(_wFielderChooser());
-        } else {
-          _isFielderSelected = true;
-          options
-              .add(PlayerTile(_fielder!, onSelect: (_) => _onSelectFielder()));
-        }
-      } else {
-        _isFielderSelected = true;
-      }
-    }
-
-    options.addAll([
-      const SizedBox(height: 32),
-      Elements.getConfirmButton(
-          text: "Add Wicket", onPressed: canAddWicket ? _processWicket : null)
-    ]);
-
     return TitledPage(
-      title: Strings.chooseWicket,
-      child: Column(
-        children: options,
+      child: ListenableBuilder(
+        listenable: Listenable.merge(
+            [dismissalController, batterController, fielderController]),
+        builder: (context, child) => Column(
+          children: [
+            Expanded(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  _wDismissalChooser,
+                  if (_requiresBatter) _wBatterChooser(context),
+                  if (_requiresFielder) _wFielderChooser(context),
+                ],
+              ),
+            ),
+            Elements.getConfirmButton(
+              text: Strings.matchScreenAddWicket,
+              onPressed: _canSubmit ? _processWicket : null,
+            ),
+          ],
+        ),
       ),
     );
   }
 
+  Widget get _wDismissalChooser => Column(
+        children: [
+          const GenericItemTile(
+            leading: Icon(Icons.gpp_bad),
+            primaryHint: "Select a Dismissal",
+            secondaryHint: "How did the batter get out?",
+            trailing: null,
+          ),
+          SelectableItemList(
+            items: Dismissal.values,
+            controller: dismissalController,
+            onBuild: (dismissal) => ListTile(
+              leading: const SizedBox(),
+              title: Text(Strings.getDismissalName(dismissal)),
+              onTap: () {
+                dismissalController.selectItem(dismissal);
+              },
+            ),
+            onBuildSelected: (dismissal) => ListTile(
+              leading: const SizedBox(),
+              title: Text(Strings.getDismissalName(dismissal)),
+              selected: true,
+              onTap: () {
+                dismissalController.selectItem(dismissal);
+              },
+              trailing: const Icon(Icons.check_circle),
+              selectedColor: ColorStyles.wicket,
+              selectedTileColor: ColorStyles.wicket.withOpacity(0.15),
+            ),
+          ),
+        ],
+      );
+
+  Widget _wBatterChooser(BuildContext context) => Column(
+        // mainAxisSize: MainAxisSize.min,
+        children: [
+          const Divider(),
+          const GenericItemTile(
+            leading: Icon(Icons.sports_cricket_outlined),
+            primaryHint: "Select a Batter",
+            secondaryHint: "Which batter got out?",
+            trailing: null,
+          ),
+          SelectableItemList(
+            items: [
+              playersInAction.batter1.batter,
+              if (playersInAction.batter2 != null)
+                playersInAction.batter2!.batter
+            ],
+            controller: batterController,
+            onBuild: (player) => ListTile(
+              leading: Elements.getPlayerIcon(context, player, 36),
+              title: Text(player.name),
+              onTap: () {
+                batterController.selectItem(player);
+              },
+            ),
+            onBuildSelected: (player) => ListTile(
+              leading: Elements.getPlayerIcon(context, player, 36),
+              title: Text(player.name),
+              selected: true,
+              selectedColor: ColorStyles.wicket,
+              selectedTileColor: ColorStyles.wicket.withOpacity(0.15),
+              trailing: const Icon(Icons.check_circle),
+              onTap: () {
+                batterController.selectItem(player);
+              },
+            ),
+          ),
+        ],
+      );
+
+  Widget _wFielderChooser(BuildContext context) => Column(
+        children: [
+          const Divider(),
+          const GenericItemTile(
+            leading: Icon(Icons.sports_gymnastics),
+            primaryHint: Strings.selectFielder,
+            secondaryHint: Strings.selectFielderHint,
+            trailing: null,
+          ),
+          SelectableItemList(
+            items: fieldingTeam.squad,
+            controller: fielderController,
+            onBuild: (player) => ListTile(
+              leading: Elements.getPlayerIcon(context, player, 36),
+              title: Text(player.name),
+              onTap: () {
+                fielderController.selectItem(player);
+              },
+            ),
+            onBuildSelected: (player) => ListTile(
+              leading: Elements.getPlayerIcon(context, player, 36),
+              title: Text(player.name),
+              selected: true,
+              selectedColor: ColorStyles.wicket,
+              selectedTileColor: ColorStyles.wicket.withOpacity(0.15),
+              trailing: const Icon(Icons.check_circle),
+              onTap: () {
+                fielderController.selectItem(player);
+              },
+            ),
+          ),
+        ],
+      );
+
+  bool get _requiresBatter =>
+      _dismissal == Dismissal.runout || _dismissal == Dismissal.retired;
+
+  bool get _requiresFielder =>
+      _dismissal == Dismissal.caught ||
+      _dismissal == Dismissal.runout ||
+      _dismissal == Dismissal.stumped;
+
+  bool get _canSubmit =>
+      _dismissal != null &&
+      (!_requiresBatter || _batter != null) &&
+      (!_requiresFielder || _fielder != null);
+
+  Dismissal? get _dismissal => dismissalController.selectedItems.singleOrNull;
+  Player? get _batter => batterController.selectedItems.singleOrNull;
+  Player? get _fielder => fielderController.selectedItems.singleOrNull;
+
+  Player get _bowler => playersInAction.bowler.bowler;
+  Player get _striker => playersInAction.striker.batter;
+
   void _processWicket() async {
     switch (_dismissal) {
       case Dismissal.retired:
-        _sendWicketToParent(Wicket.runout(batter: _batter!, fielder: _fielder));
+        _sendWicketToParent(Wicket.runout(
+          batter: _batter!,
+          fielder: _fielder!,
+        ));
         return;
 
       case Dismissal.runout:
-        _sendWicketToParent(Wicket.runout(batter: _batter!, fielder: _fielder));
+        _sendWicketToParent(Wicket.runout(
+          batter: _batter!,
+          fielder: _fielder!,
+        ));
         return;
 
       case Dismissal.caught:
         _sendWicketToParent(Wicket.caught(
-            batter: widget.striker, bowler: widget.bowler, fielder: _fielder));
+          batter: playersInAction.bowler.bowler,
+          bowler: playersInAction.bowler.bowler,
+          fielder: _fielder!,
+        ));
         return;
       case Dismissal.stumped:
         _sendWicketToParent(Wicket.stumped(
-            batter: widget.striker, bowler: widget.bowler, fielder: _fielder));
+          batter: playersInAction.bowler.bowler,
+          bowler: playersInAction.bowler.bowler,
+          fielder: _fielder!,
+        ));
         return;
 
       case Dismissal.hitWicket:
-        _sendWicketToParent(
-            Wicket.hitWicket(batter: widget.striker, bowler: widget.bowler));
+        _sendWicketToParent(Wicket.hitWicket(
+          batter: _striker,
+          bowler: playersInAction.bowler.bowler,
+        ));
         return;
       case Dismissal.lbw:
-        _sendWicketToParent(
-            Wicket.lbw(batter: widget.striker, bowler: widget.bowler));
+        _sendWicketToParent(Wicket.lbw(
+          batter: _striker,
+          bowler: _bowler,
+        ));
         return;
       case Dismissal.bowled:
       default:
-        _sendWicketToParent(
-            Wicket.bowled(batter: widget.striker, bowler: widget.bowler));
+        _sendWicketToParent(Wicket.bowled(
+          batter: _striker,
+          bowler: _bowler,
+        ));
         return;
     }
   }
 
   void _sendWicketToParent(Wicket wicket) {
-    Utils.goBack(context, wicket);
+    // Utils.goBack(context, wicket);
   }
-
-  bool get canAddWicket =>
-      _isDismissalSelected && _isFielderSelected && _isBatterSelected;
-
-  bool _requiresBatter(Dismissal? dismissal) {
-    if (dismissal == Dismissal.runout || dismissal == Dismissal.retired) {
-      // Wickets where non-striker can get run-out
-      return true;
-    }
-    return false;
-  }
-
-  bool _requiresFielder(Dismissal? dismissal) {
-    if (dismissal == Dismissal.caught ||
-        dismissal == Dismissal.runout ||
-        dismissal == Dismissal.stumped) {
-      return true;
-    }
-    return false;
-  }
-
-  Widget _wDismissalViewer() => GenericItemTile(
-        primaryHint: Strings.getDismissalName(_dismissal!),
-        secondaryHint: Strings.empty,
-        onSelect: _onSelectDismissal,
-      );
-
-  Widget _wDismissalChooser() => GenericItemTile(
-        primaryHint: "Select a Dismissal",
-        secondaryHint: "How did the batter get out?",
-        onSelect: _onSelectDismissal,
-      );
-
-  void _onSelectDismissal() => Utils.goToPage(
-      TitledPage(
-        title: "Select a Dismissal",
-        child: ItemList(itemList: [
-          ...Dismissal.values.map(
-            (dismissal) => GenericItemTile(
-              primaryHint: Strings.getDismissalName(dismissal),
-              secondaryHint: Strings.empty,
-              onSelect: () => setState(() {
-                _dismissal = dismissal;
-                _batter = null;
-                _fielder = null;
-                Utils.goBack(context);
-              }),
-            ),
-          )
-        ]),
-      ),
-      context);
-
-  Widget _wBatterChooser() => GenericItemTile(
-        primaryHint: "Select a Batter",
-        secondaryHint: "Which batter got out?",
-        onSelect: _onSelectBatter,
-      );
-
-  void _onSelectBatter() {
-    Utils.goToPage(
-        TitledPage(
-            title: Strings.choosePlayer,
-            child: PlayerList(
-              playerList: [
-                widget.playersInAction.batter1.batter,
-                if (widget.playersInAction.batter2 != null)
-                  widget.playersInAction.batter2!.batter
-              ],
-              onSelect: (batter) => setState(() {
-                _batter = batter;
-                Utils.goBack(context);
-              }),
-            )),
-        context);
-  }
-
-  Widget _wFielderChooser() => GenericItemTile(
-      primaryHint: "Select a Fielder",
-      secondaryHint: "Which fielder gave their hand?",
-      onSelect: _onSelectFielder);
-
-  void _onSelectFielder() => Utils.goToPage(
-      TitledPage(
-          title: Strings.choosePlayer,
-          child: PlayerList(
-            playerList: widget.fieldingTeam.squad,
-            onSelect: (fielder) => setState(() {
-              _fielder = fielder;
-              Utils.goBack(context);
-            }),
-          )),
-      context);
 }

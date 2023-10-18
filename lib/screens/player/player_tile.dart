@@ -26,7 +26,7 @@ class PlayerTile extends StatelessWidget {
     return GenericItemTile(
       leading: Elements.getPlayerIcon(context, player, 42),
       primaryHint: player.name,
-      secondaryHint: getBatBowlStyle(context),
+      // secondaryHint: getBatBowlStyle(context),
       trailing: trailing,
       onSelect: () {
         if (onSelect != null) {

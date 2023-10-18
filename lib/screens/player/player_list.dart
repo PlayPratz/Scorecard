@@ -110,6 +110,7 @@ class AllPlayersList extends StatelessWidget {
                         ),
                       ));
             },
+            trailingIcon: Elements.forwardIcon,
           );
         },
       ),

@@ -33,7 +33,7 @@ class _HomeTabViewState extends State<HomeTabView> {
         destinations: [
           const NavigationDestination(
             icon: Icon(Icons.live_tv),
-            label: "Ongoing",
+            label: Strings.navbarMatches,
           ),
           const NavigationDestination(
             icon: Icon(Icons.person),

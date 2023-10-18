@@ -8,6 +8,7 @@ import 'package:scorecard/screens/widgets/elements.dart';
 class PlayerTile extends StatelessWidget {
   final Player player;
   final void Function(Player player)? onSelect;
+  final void Function(Player player)? onLongPress;
   final String? detail;
   final Widget? trailing;
 
@@ -15,6 +16,7 @@ class PlayerTile extends StatelessWidget {
     this.player, {
     Key? key,
     this.onSelect,
+    this.onLongPress,
     this.detail,
     this.trailing = Elements.forwardIcon,
   }) : super(key: key);
@@ -31,6 +33,7 @@ class PlayerTile extends StatelessWidget {
           onSelect!(player);
         }
       },
+      onLongPress: onLongPress != null ? () => onLongPress!(player) : null,
     );
   }
 

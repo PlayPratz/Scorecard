@@ -2,7 +2,9 @@ import 'dart:collection';
 import 'package:scorecard/handlers/photo_handler.dart';
 import 'package:scorecard/handlers/share_handler.dart';
 import 'package:scorecard/models/cricket_match.dart';
+import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
+import 'package:scorecard/util/strings.dart';
 
 /// Services all tasks related to a [CricketMatch]es.
 class CricketMatchService {
@@ -67,6 +69,8 @@ class CricketMatchService {
   }
 
   Future<void> share(CricketMatch cricketMatch) async {
-    ShareHandler.shareCricketMatch(cricketMatch);
+    final cricketMatchDTO = CricketMatchDTO.of(cricketMatch);
+    ShareHandler.shareCricketMatchesJson([cricketMatchDTO.toMap()],
+        "${Strings.getCricketMatchTitle(cricketMatch)}-${cricketMatch.id}");
   }
 }

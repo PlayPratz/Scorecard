@@ -268,6 +268,12 @@ class Strings {
     return "${ball.bowler.name} to ${ball.batter.name}";
   }
 
+  // Sharing
+  static const String share = "Share";
+  static const String sharePlayerHint = "Share this player as a JSON file";
+  static const String exportAllPlayers = "Export all Players";
+  static const String exportAllPlayersHint = "As a handy JSON file";
+
   // Common
   static const String buttonNext = "Next";
 

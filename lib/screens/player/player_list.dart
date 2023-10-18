@@ -6,9 +6,11 @@ import 'package:scorecard/models/player.dart';
 import 'package:scorecard/screens/player/create_player.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
 import 'package:scorecard/screens/widgets/common_builders.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/screens/widgets/elements.dart';
+import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
@@ -16,16 +18,18 @@ class PlayerList extends StatelessWidget {
   final List<Player> playerList;
 
   final void Function(Player player)? onSelect;
+  final void Function(Player player)? onLongPress;
   final void Function(Player? player)? onCreate;
   final Icon? trailingIcon;
 
   const PlayerList({
-    Key? key,
+    super.key,
     required this.playerList,
     this.trailingIcon,
     this.onSelect,
+    this.onLongPress,
     this.onCreate,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +39,7 @@ class PlayerList extends StatelessWidget {
           PlayerTile(
             player,
             onSelect: onSelect,
+            onLongPress: onLongPress,
             trailing: trailingIcon,
           )
       ],
@@ -78,6 +83,32 @@ class AllPlayersList extends StatelessWidget {
               if (updatedPlayer != null) {
                 controller.save(updatedPlayer);
               }
+            },
+            onLongPress: (player) async {
+              showModalBottomSheet(
+                  context: context,
+                  builder: (context) => SizedBox(
+                        height: 256,
+                        child: Material(
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 16),
+                              GenericItemTile(
+                                primaryHint: Strings.share,
+                                secondaryHint: Strings.sharePlayerHint,
+                                trailing: const Icon(
+                                  Icons.ios_share,
+                                  color: ColorStyles.online,
+                                ),
+                                onSelect: () async {
+                                  context.read<PlayerService>().share([player]);
+                                  Utils.goBack(context);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ));
             },
           );
         },

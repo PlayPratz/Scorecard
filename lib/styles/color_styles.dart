@@ -20,23 +20,22 @@ class ColorStyles {
   static const Color ballNoBall = Colors.yellowAccent;
   static const Color ballWide = Colors.white;
   static const Color ballEvent = Colors.blueGrey;
-  // Colors.pink and pinkAccent should be used, they are good colors
 
   // static const highlight = Color(0xFFFF8000);
   static const highlight = Colors.greenAccent;
   static const online = Color(0xFF30D158);
 
-  // static const List<Color> teamColors = [
-  //   Colors.blue,
-  //   Colors.orange,
-  //   Colors.amber,
-  //   Colors.green,
-  //   Colors.cyan,
-  //   Colors.brown,
-  //   Colors.deepOrange,
-  //   Colors.purple,
-  //   Colors.deepPurple,
-  // ];
+  static const List<Color> teamColors = [
+    Colors.blue,
+    Colors.deepOrange,
+    Colors.amber,
+    Colors.green,
+    Colors.deepPurple,
+    Colors.cyan,
+    Colors.brown,
+    Colors.purple,
+    Colors.lime,
+  ];
 
   static Color getBowlingExtraColour(BowlingExtra bowlingExtra) {
     if (bowlingExtra == BowlingExtra.noBall) {

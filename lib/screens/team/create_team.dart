@@ -13,6 +13,7 @@ import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
 import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/screens/widgets/elements.dart';
+import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
@@ -119,9 +120,8 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
         Expanded(
             child: GestureDetector(
           onTap: () => setState(() {
-            genTeamIndex++;
-            _color =
-                genTeamTemplates[genTeamIndex % genTeamTemplates.length].color;
+            genTeamIndex = (genTeamIndex + 1) % genTeamTemplates.length;
+            _color = ColorStyles.teamColors[genTeamIndex];
           }),
           child: CircleAvatar(backgroundColor: _color),
         )),
@@ -227,7 +227,8 @@ class CreateQuickTeamsForm extends StatelessWidget {
     final shuffledTemplates = [...genTeamTemplates]..shuffle();
     final colors = shuffledTemplates
         .take(2)
-        .map((teamTemplate) => teamTemplate.color.withOpacity(0.2))
+        .map((teamTemplate) =>
+            ColorStyles.teamColors[genTeamTemplates.indexOf(teamTemplate)])
         .toList();
     return TitledPage(
       title: "Quick Teams",
@@ -251,32 +252,6 @@ class CreateQuickTeamsForm extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  void _handleSubmitTeams(BuildContext context,
-      CreateQuickTeamsFormController controller, Color teamA, Color teamB) {
-    final team1 = TeamSquad(
-      team: Team.create(
-        name: controller.team1,
-        shortName: controller.team1.substring(0, 3).toUpperCase(),
-        color: teamA,
-      ),
-      squad: controller.squad1,
-    );
-
-    final team2 = TeamSquad(
-      team: Team.create(
-        name: controller.team2,
-        shortName: controller.team2.substring(0, 3).toUpperCase(),
-        color: teamB,
-      ),
-      squad: controller.squad2,
-    );
-
-    Utils.goBack(
-      context,
-      [team1, team2],
     );
   }
 
@@ -352,9 +327,35 @@ class CreateQuickTeamsForm extends StatelessWidget {
               alignToBottom: false,
             ),
           ),
-          color: color,
+          color: color?.withOpacity(0.2),
         ),
       );
+
+  void _handleSubmitTeams(BuildContext context,
+      CreateQuickTeamsFormController controller, Color teamA, Color teamB) {
+    final team1 = TeamSquad(
+      team: Team.create(
+        name: controller.team1,
+        shortName: controller.team1.substring(0, 3).toUpperCase(),
+        color: teamA,
+      ),
+      squad: controller.squad1,
+    );
+
+    final team2 = TeamSquad(
+      team: Team.create(
+        name: controller.team2,
+        shortName: controller.team2.substring(0, 3).toUpperCase(),
+        color: teamB,
+      ),
+      squad: controller.squad2,
+    );
+
+    Utils.goBack(
+      context,
+      [team1, team2],
+    );
+  }
 }
 
 class CreateQuickTeamsFormController with ChangeNotifier {

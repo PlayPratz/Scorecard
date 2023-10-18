@@ -1,52 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
-import 'package:scorecard/models/wicket.dart';
+import 'package:scorecard/models/team.dart';
 import 'package:scorecard/screens/match/innings_play_screen/players_in_action.dart';
 import 'package:scorecard/screens/player/player_list.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
+import 'package:scorecard/screens/widgets/generic_item_tile.dart';
+import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
 
-class BatterPicker extends StatelessWidget {
-  final List<Player> squad;
+class _BatterPicker extends StatelessWidget {
+  final TeamSquad teamSquad;
   final BatterInnings batterToReplace;
-  final Wicket? wicket;
-  const BatterPicker({
-    super.key,
-    required this.squad,
+  const _BatterPicker({
+    required this.teamSquad,
     required this.batterToReplace,
-    this.wicket,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TitledPage(
+    final wicket = batterToReplace.wicket;
+    return _SinglePlayerPicker(
       title: Strings.pickBatterTitle,
-      child: Column(
-        children: [
-          const Spacer(),
-          Flexible(
-            flex: 2,
-            child: SeparatedWidgetPair(
-              top: PlayerScoreTile.wicket(
-                player: batterToReplace.batter,
-                score: wicket != null
-                    ? Text(Strings.getWicketDescription(wicket))
-                    : const SizedBox(),
-              ),
-              bottom: Expanded(
-                child: PlayerList(
-                  playerList: squad,
-                  onSelect: (player) => Utils.goBack(context, player),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 64),
-        ],
-      ),
+      player: batterToReplace.batter,
+      secondary: wicket != null
+          ? Strings.getWicketDescription(wicket)
+          : Strings.whitespace,
+      trailing: BatterRuns(batterToReplace),
+      submitText: Strings.matchScreenChooseBatter,
+      teamSquad: teamSquad,
     );
   }
 }
@@ -55,13 +40,11 @@ Future<Player?> chooseBatter(
   BuildContext context,
   Innings innings,
   BatterInnings batterToReplace,
-  Wicket? wicket,
 ) async {
   final player = await Utils.goToPage(
-    BatterPicker(
-      squad: innings.battingTeam.squad,
+    _BatterPicker(
+      teamSquad: innings.battingTeam,
       batterToReplace: batterToReplace,
-      wicket: wicket,
     ),
     context,
   );
@@ -69,8 +52,104 @@ Future<Player?> chooseBatter(
   return player;
 }
 
-Future<Player?> chooseBowler(BuildContext context, Innings innings) async {
-  final player = await choosePlayer(context, innings.bowlingTeam.squad);
+class _BowlerPicker extends StatelessWidget {
+  final TeamSquad teamSquad;
+  final BowlerInnings bowlerToReplace;
+
+  const _BowlerPicker({required this.teamSquad, required this.bowlerToReplace});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SinglePlayerPicker(
+      title: Strings.pickBowlerTitle,
+      player: bowlerToReplace.bowler,
+      secondary: Strings.getBowlerOversBowled(bowlerToReplace) + " overs",
+      trailing: Text(
+        Strings.getBowlerFigures(bowlerToReplace),
+        style: Theme.of(context).textTheme.titleLarge,
+      ),
+      submitText: Strings.matchScreenChooseBowler,
+      teamSquad: teamSquad,
+    );
+  }
+}
+
+class _SinglePlayerPicker extends StatelessWidget {
+  final String title;
+
+  final Player player;
+  final String secondary;
+  final Widget trailing;
+
+  final String submitText;
+
+  final TeamSquad teamSquad;
+
+  _SinglePlayerPicker({
+    required this.title,
+    required this.player,
+    required this.secondary,
+    required this.trailing,
+    required this.submitText,
+    required this.teamSquad,
+  });
+
+  final playerController = SelectableItemController<Player>(maxItems: 1);
+
+  @override
+  Widget build(BuildContext context) {
+    return TitledPage(
+      title: title,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Flexible(
+            child: SeparatedWidgetPair(
+              top: GenericItemTile(
+                leading: Elements.getPlayerIcon(context, player, 48),
+                primaryHint: player.name,
+                secondaryHint: secondary,
+                trailing: trailing,
+                shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(12.0))),
+              ),
+              bottom: Flexible(
+                child: SelectablePlayerList(
+                  players: teamSquad.squad,
+                  controller: playerController,
+                ),
+              ),
+              color: teamSquad.team.color.withOpacity(0.25),
+            ),
+          ),
+          ListenableBuilder(
+            listenable: playerController,
+            builder: (context, _) => Elements.getConfirmButton(
+                text: submitText,
+                onPressed: playerController.selectedItems.singleOrNull == null
+                    ? null
+                    : () {
+                        Utils.goBack(
+                            context, playerController.selectedItems.single);
+                      }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<Player?> chooseBowler(BuildContext context, Innings innings,
+    BowlerInnings bowlerToReplace) async {
+  final player = await Utils.goToPage(
+    _BowlerPicker(
+      teamSquad: innings.bowlingTeam,
+      bowlerToReplace: bowlerToReplace,
+    ),
+    context,
+  );
+
   return player;
 }
 

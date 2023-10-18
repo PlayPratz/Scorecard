@@ -117,6 +117,7 @@ class Strings {
 
   // Hacks
   static const String empty = "";
+  static const String whitespace = " ";
   static const String versus = "v";
 
   // Create Team
@@ -249,6 +250,9 @@ class Strings {
   // Pick Batter
   static const String pickBatterTitle = "Pick the next batter";
   static const String pickBatterLastMan = "Continue as Last Man";
+
+  // Pick Bowler
+  static const String pickBowlerTitle = "Pick the next bowler";
 
   // Players in Action
   static const String playersInAction = "Players in Action";

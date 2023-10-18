@@ -78,24 +78,7 @@ class PlayersInActionPane extends StatelessWidget {
             innings.balls.last.wicket!.batter == batterInnings.batter);
     return PlayerScoreTile(
       player: batterInnings.batter,
-      score: Column(
-        //TODO Remove duplicate code from Scorecard.dart
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            batterInnings.runs.toString(),
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          Text(
-            batterInnings.ballsFaced.toString(),
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: Colors.white70),
-          ),
-        ],
-      ),
+      score: BatterRuns(batterInnings),
       description: Text(
         "SR ${batterInnings.strikeRate.toStringAsFixed(0)}",
         style: Theme.of(context).textTheme.bodySmall,
@@ -160,17 +143,6 @@ class PlayerScoreTile extends StatelessWidget {
     this.onLongPress,
   }) : super(key: key);
 
-  const PlayerScoreTile.wicket({
-    super.key,
-    required this.player,
-    required this.score,
-    this.description,
-    this.onTap,
-    this.onLongPress,
-  })  : isOut = true,
-        teamColor = Colors.transparent,
-        isOnline = false;
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -211,6 +183,34 @@ class PlayerScoreTile extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         ),
       ),
+    );
+  }
+}
+
+class BatterRuns extends StatelessWidget {
+  final BatterInnings batterInnings;
+
+  const BatterRuns(this.batterInnings, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      //TODO Remove duplicate code from Scorecard.dart
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          batterInnings.runs.toString(),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        Text(
+          batterInnings.ballsFaced.toString(),
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.white70),
+        ),
+      ],
     );
   }
 }

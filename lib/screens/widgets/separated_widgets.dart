@@ -17,13 +17,11 @@ class SeparatedWidgetPair extends StatelessWidget {
       color: color,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: top,
-          ),
+          top,
           const Divider(
-            thickness: 1,
+            thickness: 2,
             height: 0,
+            color: Colors.black12,
           ),
           bottom,
         ],

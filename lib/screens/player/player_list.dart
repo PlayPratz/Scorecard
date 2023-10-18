@@ -30,21 +30,23 @@ class PlayerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ItemList<Player>(
-        itemList: [
-          for (Player player in playerList)
-            PlayerTile(
-              player,
-              onSelect: onSelect,
-              trailing: trailingIcon,
+      itemList: [
+        for (Player player in playerList)
+          PlayerTile(
+            player,
+            onSelect: onSelect,
+            trailing: trailingIcon,
+          )
+      ],
+      createItem: onCreate != null
+          ? CreateItemEntry(
+              form: const CreatePlayerForm.create(),
+              string: Strings.addNewPlayer,
+              onCreate: (item) => onCreate!(item),
             )
-        ],
-        createItem: onCreate != null
-            ? CreateItemEntry(
-                form: const CreatePlayerForm.create(),
-                string: Strings.addNewPlayer,
-                onCreate: (item) => onCreate!(item),
-              )
-            : null);
+          : null,
+      alignToBottom: false,
+    );
   }
 }
 

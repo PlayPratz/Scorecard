@@ -94,12 +94,12 @@ class SelectableItemList<T> extends StatelessWidget {
             for (final item in items)
               if (controller.selectedItems.contains(item))
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 1.0),
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: onBuildSelected(item),
                 )
               else
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 1.0),
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: onBuild(item),
                 )
           ],

@@ -27,7 +27,6 @@ class _HomeTabViewState extends State<HomeTabView> {
         padding: const EdgeInsets.only(bottom: 8.0, left: 16, right: 16),
         child: screens[_index],
       ),
-      backgroundColor: ColorStyles.background,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         backgroundColor: ColorStyles.card,

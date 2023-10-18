@@ -42,18 +42,23 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
                   trailing: null,
                 ),
                 bottom: Expanded(
-                  child: SelectablePlayerList(
-                    players: widget.match.nextTeamToBat.squad,
-                    controller: batterController,
-                    buildTrailing: (player) => CircleAvatar(
-                      radius: 12,
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      child: Text(
-                        "${batterController.selectedItems.indexOf(player) + 1}",
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              color: Theme.of(context).colorScheme.background,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  child: SingleChildScrollView(
+                    child: SelectablePlayerList(
+                      players: widget.match.nextTeamToBat.squad,
+                      controller: batterController,
+                      buildTrailing: (player) => CircleAvatar(
+                        radius: 12,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        child: Text(
+                          "${batterController.selectedItems.indexOf(player) + 1}",
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium!
+                              .copyWith(
+                                color: Theme.of(context).colorScheme.background,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
                       ),
                     ),
                   ),
@@ -70,9 +75,11 @@ class _InningsInitScreenState extends State<InningsInitScreen> {
                 trailing: null,
               ),
               bottom: Expanded(
-                child: SelectablePlayerList(
-                  players: widget.match.nextTeamToBowl.squad,
-                  controller: bowlerController,
+                child: SingleChildScrollView(
+                  child: SelectablePlayerList(
+                    players: widget.match.nextTeamToBowl.squad,
+                    controller: bowlerController,
+                  ),
                 ),
               ),
             )),

@@ -70,7 +70,7 @@ class MatchInterface extends StatelessWidget {
                 onLongTapBatter: (batter) => _handleReplaceBatter(
                     context, inningsStateController, batter),
                 onTapBowler: (bowler) =>
-                    _handleSetBowler(context, inningsStateController),
+                    _handleSetBowler(context, inningsStateController, bowler),
               ),
               RecentBallsPane(innings: inningsState.innings),
               const SizedBox(height: 8),
@@ -95,7 +95,9 @@ class MatchInterface extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Expanded(child: _wUndoButton(inningsStateController)),
+                  Expanded(
+                      child: _wUndoButton(
+                          inningsStateController, ballDetailsStateController)),
                   const SizedBox(width: 16),
                   Expanded(
                       flex: 2,
@@ -126,11 +128,13 @@ class MatchInterface extends StatelessWidget {
         ),
       );
 
-  Widget _wUndoButton(InningsStateController stateController) {
+  Widget _wUndoButton(InningsStateController stateController,
+      BallDetailsStateController ballDetailsStateController) {
     return ElevatedButton.icon(
       onPressed: match.currentInnings.balls.isNotEmpty
           ? () {
               stateController.undo();
+              ballDetailsStateController.reset();
             }
           : null,
       style: ElevatedButton.styleFrom(
@@ -168,7 +172,8 @@ class MatchInterface extends StatelessWidget {
       case AddBowlerState():
         return Elements.getConfirmButton(
           text: Strings.matchScreenChooseBowler,
-          onPressed: () => _handleSetBowler(context, stateController),
+          onPressed: () => _handleSetBowler(context, stateController,
+              inningsState.innings.playersInAction.bowler),
         );
       case EndInningsState():
         return Elements.getConfirmButton(
@@ -195,7 +200,7 @@ class MatchInterface extends StatelessWidget {
       InningsStateController stateController,
       BatterInnings batterInnings) async {
     final inBatter =
-        await chooseBatter(context, match.currentInnings, batterInnings, null);
+        await chooseBatter(context, match.currentInnings, batterInnings);
     if (inBatter == null) {
       return;
     }
@@ -204,8 +209,11 @@ class MatchInterface extends StatelessWidget {
   }
 
   void _handleSetBowler(
-      BuildContext context, InningsStateController stateController) async {
-    final inBowler = await chooseBowler(context, stateController.innings);
+      BuildContext context,
+      InningsStateController stateController,
+      BowlerInnings bowlerInnings) async {
+    final inBowler =
+        await chooseBowler(context, stateController.innings, bowlerInnings);
     if (inBowler == null) {
       return;
     }

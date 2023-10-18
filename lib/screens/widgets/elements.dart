@@ -104,8 +104,12 @@ class Elements {
     final playerPhotoFileFuture =
         context.read<PlayerService>().getPhotoFromStorage(player);
 
+    final colorIndex =
+        (player.name.codeUnits.fold(0, (sum, element) => element + sum)) %
+            ColorStyles.teamColors.length;
+
     return CircleAvatar(
-      backgroundColor: ColorStyles.card,
+      backgroundColor: ColorStyles.teamColors[colorIndex],
       // foregroundColor: Colors.white,
       radius: (size / 2),
       child: FutureBuilder(
@@ -125,7 +129,7 @@ class Elements {
             return Icon(
               Icons.person_outline,
               size: size / 2,
-              color: Colors.grey.shade600,
+              color: Colors.white,
             );
           }),
     );

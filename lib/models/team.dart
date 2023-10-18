@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/utils.dart';
 
 int genTeamIndex = -1;
@@ -30,28 +31,27 @@ class Team {
     return Team.create(
         name: template.name,
         shortName: template.shortName,
-        color: template.color);
+        color: ColorStyles.teamColors[genTeamIndex]);
   }
 }
 
 class _TeamTemplate {
-  String name;
-  String shortName;
-  Color color;
+  final String name;
+  final String shortName;
 
-  _TeamTemplate(
-      {required this.name, required this.shortName, required this.color});
+  _TeamTemplate({required this.name, required this.shortName});
 }
 
 final List<_TeamTemplate> genTeamTemplates = [
-  _TeamTemplate(name: "Aqua", shortName: "AQU", color: Colors.blue),
-  _TeamTemplate(name: "Lava", shortName: "LAV", color: Colors.deepOrange),
-  _TeamTemplate(name: "Solar", shortName: "SOL", color: Colors.amber),
-  _TeamTemplate(name: "Grass", shortName: "GRA", color: Colors.green),
-  _TeamTemplate(name: "Mint", shortName: "MIN", color: Colors.cyan),
-  _TeamTemplate(name: "Cookie", shortName: "CKE", color: Colors.brown),
-  _TeamTemplate(name: "Lemon", shortName: "LEM", color: Colors.lime),
-  _TeamTemplate(name: "Blackberry", shortName: "BLB", color: Colors.deepPurple),
+  _TeamTemplate(name: "Aqua", shortName: "AQU"),
+  _TeamTemplate(name: "Lava", shortName: "LAV"),
+  _TeamTemplate(name: "Solar", shortName: "SOL"),
+  _TeamTemplate(name: "Grass", shortName: "GRA"),
+  _TeamTemplate(name: "Galaxy", shortName: "GLX"),
+  _TeamTemplate(name: "Mint", shortName: "MIN"),
+  _TeamTemplate(name: "Cookie", shortName: "CKE"),
+  _TeamTemplate(name: "Black Currant", shortName: "BCR"),
+  _TeamTemplate(name: "Lemon", shortName: "LEM"),
 ];
 
 class TeamSquad {

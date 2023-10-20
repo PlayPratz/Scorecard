@@ -83,13 +83,9 @@ class _InningsPanel extends StatelessWidget {
                 const SizedBox(width: 4),
               ],
             ),
-            const SizedBox(height: 16),
             _BattingInningsPanel(innings),
-            const SizedBox(height: 16),
             _YetToBatPanel(innings),
-            const SizedBox(height: 16),
             _FallOfWicketsPanel(innings),
-            const SizedBox(height: 16),
             _BowlingInningsPanel(innings),
             const SizedBox(height: 16),
             Align(
@@ -318,7 +314,6 @@ class _FallOfWicketsPanel extends StatelessWidget {
             columnWidths: const {
               1: FlexColumnWidth(1.25),
               2: FlexColumnWidth(3),
-              3: FlexColumnWidth(3.5),
             },
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             border: const TableBorder(
@@ -361,16 +356,6 @@ class _FallOfWicketsPanel extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(Strings.getWicketDescription(
-                                fallOfWicket.wicket))),
-                      ),
-                    ),
                   ],
                 )
             ],
@@ -388,31 +373,14 @@ class _BowlingInningsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(0),
-      surfaceTintColor: innings.bowlingTeam.team.color,
-      color: innings.bowlingTeam.team.color.withOpacity(0.4),
-      elevation: 4,
+    return _GenericInningsPanel(
+      title: Strings.scorecardBowling.toUpperCase(),
+      color: innings.bowlingTeam.team.color,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Text(
-              Strings.scorecardBowling.toUpperCase(),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...[
-            for (final bowlInn in innings.bowlerInningsList)
-              Column(
-                children: [
-                  const Divider(color: Colors.black12, height: 0),
-                  BowlerInningsScore(bowlerInnings: bowlInn)
-                ],
-              )
+          for (final bowlInn in innings.bowlerInningsList) ...[
+            const Divider(color: Colors.black12, height: 0),
+            BowlerInningsScore(bowlerInnings: bowlInn)
           ]
         ],
       ),
@@ -492,7 +460,7 @@ class _GenericInningsPanel extends StatelessWidget {
       surfaceTintColor: color,
       color: color.withOpacity(0.4),
       elevation: 4,
-      margin: const EdgeInsets.all(0),
+      margin: const EdgeInsets.only(top: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -104,8 +104,11 @@ class Innings {
   /// The runs scored by the batting team in this Innings
   int get runs => balls.fold(0, (runs, ball) => runs + ball.totalRuns);
 
+  UnmodifiableListView<Ball> get _wicketBalls =>
+      UnmodifiableListView(balls.where((ball) => ball.isWicket));
+
   /// The number of wickets the batting team has lost
-  int get wickets => balls.where((ball) => ball.isWicket).length;
+  int get wickets => _wicketBalls.length;
 
   /// The number of balls bowled in this Innings
   int get ballsBowled => balls.where((ball) => ball.isLegal).length;
@@ -168,9 +171,6 @@ class Innings {
     // _partnerships.last.play(ball);
 
     if (ball.isWicket || ball.isBatterRetired) {
-      _fallOfWickets.add(
-        FallOfWicket(ball: ball, runsAtWicket: runs, wicketsAtWicket: wickets),
-      );
       if (ball.wicket!.batter != ball.batter) {
         _batterInnings[ball.wicket!.batter]!.setWicket(ball.wicket!);
       }
@@ -232,9 +232,20 @@ class Innings {
   UnmodifiableListView<Over> get overs => UnmodifiableListView(_overs);
 
   // Fall of Wickets
-  final List<FallOfWicket> _fallOfWickets = [];
-  UnmodifiableListView<FallOfWicket> get fallOfWickets =>
-      UnmodifiableListView(_fallOfWickets);
+  UnmodifiableListView<FallOfWicket> get fallOfWickets {
+    final fallOfWickets = <FallOfWicket>[];
+    int runs = 0;
+    int wickets = 0;
+    for (final ball in balls) {
+      runs = runs + ball.totalRuns;
+      if (ball.isWicket) {
+        wickets++;
+        fallOfWickets.add(FallOfWicket(
+            ball: ball, runsAtWicket: runs, wicketsAtWicket: wickets));
+      }
+    }
+    return UnmodifiableListView(fallOfWickets);
+  }
 
   // Partnerships
   // final List<Partnership> _partnerships = [];
@@ -450,9 +461,9 @@ class BatterInnings with BattingCalculations {
     _wicket = wicket;
   }
 
-  void retire() {
-    _wicket = Wicket.retired(batter: batter);
-  }
+  // void retire() {
+  //   _wicket = Wicket.retired(batter: batter);
+  // }
 }
 
 class BowlerInnings with BowlingCalculations {

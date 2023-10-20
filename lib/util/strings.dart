@@ -199,6 +199,7 @@ class Strings {
   static const String scorecardInningsWithSpace = " Innings";
   static const String scorecardFallOfWickets = "Fall Of Wickets";
   static const String scorecardYetToBat = "Yet to bat";
+  static const String scorecardDidNotBat = "Did not bat";
 
   static const String goToTimeline = "View Timeline";
   static const String innings = "Innings";

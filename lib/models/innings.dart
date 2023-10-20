@@ -249,8 +249,31 @@ class Innings {
 
   // Partnerships
   // final List<Partnership> _partnerships = [];
-  // UnmodifiableListView<Partnership> get partnerships =>
-  //     UnmodifiableListView(_partnerships);
+  UnmodifiableListView<Partnership> get partnerships {
+    final partnerships = <Partnership>[];
+    final batterInningsIterator = batterInningsList.iterator;
+
+    batterInningsIterator.moveNext();
+    final batter1 = batterInningsIterator.current;
+    batterInningsIterator.moveNext();
+    final batter2 = batterInningsIterator.current;
+
+    partnerships
+        .add(Partnership(batter1: batter1.batter, batter2: batter2.batter));
+    for (final ball in balls) {
+      partnerships.last.play(ball);
+      if ((ball.isWicket || ball.isBatterRetired) &&
+          batterInningsIterator.moveNext()) {
+        final batterToBeAdded = ball.wicket!.batter == partnerships.last.batter1
+            ? partnerships.last.batter2
+            : partnerships.last.batter1;
+        partnerships.add(Partnership(
+            batter1: batterToBeAdded,
+            batter2: batterInningsIterator.current.batter));
+      }
+    }
+    return UnmodifiableListView(partnerships);
+  }
 
   // Bowler
 

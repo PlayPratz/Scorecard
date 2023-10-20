@@ -88,9 +88,21 @@ class _InningsPanel extends StatelessWidget {
             _FallOfWicketsPanel(innings),
             _BowlingInningsPanel(innings),
             const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: _wViewTimelineButton(context),
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.query_stats),
+                  label: const Text("Stats"),
+                  onPressed: () {
+                    showModalBottomSheet(
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (context) => _PartnershipTable(innings));
+                  },
+                ),
+                const Spacer(),
+                _wViewTimelineButton(context),
+              ],
             ),
           ],
         ),
@@ -126,13 +138,177 @@ class _BattingInningsPanel extends StatelessWidget {
       color: innings.battingTeam.team.color,
       child: Column(
         children: [
-          for (final batterInnings in innings.batterInningsList)
-            Column(
-              children: [
-                const Divider(color: Colors.black12, height: 0),
-                BatterInningsScore(batterInnings: batterInnings),
-              ],
-            ),
+          // DataTable(
+          //   columnSpacing: 12,
+          //   columns: const [
+          //     DataColumn(label: SizedBox()),
+          //     DataColumn(label: SizedBox()),
+          //     DataColumn(label: Text("SR")),
+          //     DataColumn(label: Text("4s")),
+          //     DataColumn(label: Text("6s")),
+          //   ],
+          //   rows: [
+          //     for (final batterInnings in innings.batterInningsList)
+          //       DataRow(cells: [
+          //         DataCell(
+          //           // Text(batterInnings.batter.name),
+          //           ListTile(
+          //             leading: Elements.getPlayerIcon(
+          //                 context, batterInnings.batter, 36),
+          //             title: Text(
+          //               batterInnings.batter.name,
+          //               style: Theme.of(context).textTheme.titleSmall,
+          //             ),
+          //             subtitle: Text(
+          //               Strings.getWicketDescription(batterInnings.wicket),
+          //               style: Theme.of(context).textTheme.bodySmall,
+          //             ),
+          //           ),
+          //         ),
+          //         DataCell(
+          //           Column(
+          //             mainAxisAlignment: MainAxisAlignment.center,
+          //             crossAxisAlignment: CrossAxisAlignment.end,
+          //             children: [
+          //               Text(
+          //                 batterInnings.runs.toString(),
+          //                 style: Theme.of(context).textTheme.titleLarge,
+          //               ),
+          //               const SizedBox(width: 4),
+          //               Text(
+          //                 batterInnings.ballsFaced.toString(),
+          //                 style: Theme.of(context)
+          //                     .textTheme
+          //                     .bodyMedium
+          //                     ?.merge(const TextStyle(color: Colors.white70)),
+          //               ),
+          //             ],
+          //           ),
+          //         ),
+          //         DataCell(
+          //           Text(
+          //             batterInnings.strikeRate.toStringAsFixed(2),
+          //             style: Theme.of(context)
+          //                 .textTheme
+          //                 .labelMedium
+          //                 ?.merge(const TextStyle(color: Colors.white70)),
+          //           ),
+          //         ),
+          //         DataCell(
+          //           CircleAvatar(
+          //               backgroundColor: ColorStyles.ballFour.withOpacity(0.7),
+          //               foregroundColor: Colors.white,
+          //               radius: 15,
+          //               child: Text(
+          //                 batterInnings.fours.toString(),
+          //                 style: Theme.of(context).textTheme.bodyMedium,
+          //               )),
+          //         ),
+          //         DataCell(
+          //           CircleAvatar(
+          //               backgroundColor: ColorStyles.ballSix.withOpacity(0.7),
+          //               radius: 15,
+          //               foregroundColor: Colors.white,
+          //               child: Text(
+          //                 batterInnings.sixes.toString(),
+          //                 style: Theme.of(context).textTheme.bodyMedium,
+          //               )),
+          //         ),
+          //       ])
+          //   ],
+          // ),
+          Table(
+            columnWidths: const {
+              0: FlexColumnWidth(3.5),
+              3: FlexColumnWidth(0.6),
+              4: FlexColumnWidth(0.6),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            // border: const TableBorder(
+            //   verticalInside: BorderSide(color: Colors.black12),
+            // ),
+            children: [
+              const TableRow(
+                  children: [
+                    SizedBox(),
+                    SizedBox(),
+                    Center(child: Text("SR")),
+                    Center(child: Text("4s")),
+                    Center(child: Text("6s"))
+                  ],
+                  decoration: BoxDecoration(
+                      border:
+                          Border(bottom: BorderSide(color: Colors.black12)))),
+              for (final batterInnings in innings.batterInningsList)
+                TableRow(children: [
+                  ListTile(
+                    leading: Elements.getPlayerIcon(
+                        context, batterInnings.batter, 36),
+                    title: Text(
+                      batterInnings.batter.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    subtitle: Text(
+                      Strings.getWicketDescription(batterInnings.wicket),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          batterInnings.runs.toString(),
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          batterInnings.ballsFaced.toString(),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.merge(const TextStyle(color: Colors.white70)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Center(
+                    child: Text(
+                      batterInnings.strikeRate.toStringAsFixed(2),
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelMedium
+                          ?.merge(const TextStyle(color: Colors.white70)),
+                    ),
+                  ),
+                  CircleAvatar(
+                      backgroundColor: ColorStyles.ballFour.withOpacity(0.7),
+                      foregroundColor: Colors.white,
+                      radius: 15,
+                      child: Text(
+                        batterInnings.fours.toString(),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      )),
+                  CircleAvatar(
+                      backgroundColor: ColorStyles.ballSix.withOpacity(0.7),
+                      radius: 15,
+                      foregroundColor: Colors.white,
+                      child: Text(
+                        batterInnings.sixes.toString(),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      )),
+                ])
+            ],
+          ),
+          // for (final batterInnings in innings.batterInningsList)
+          //   Column(
+          //     children: [
+          //       const Divider(color: Colors.black12, height: 0),
+          //       BatterInningsScore(batterInnings: batterInnings),
+          //     ],
+          //   ),
           const Divider(color: Colors.black12, height: 0),
           GenericItemTile(
             primaryHint: Strings.extras,
@@ -451,8 +627,13 @@ class _GenericInningsPanel extends StatelessWidget {
   final Color color;
   final Widget child;
 
+  final EdgeInsets margin;
+
   const _GenericInningsPanel(
-      {required this.title, required this.color, required this.child});
+      {required this.title,
+      required this.color,
+      required this.child,
+      this.margin = const EdgeInsets.only(top: 16.0)});
 
   @override
   Widget build(BuildContext context) {
@@ -460,7 +641,7 @@ class _GenericInningsPanel extends StatelessWidget {
       surfaceTintColor: color,
       color: color.withOpacity(0.4),
       elevation: 4,
-      margin: const EdgeInsets.only(top: 16.0),
+      margin: margin,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -475,6 +656,112 @@ class _GenericInningsPanel extends StatelessWidget {
           const SizedBox(height: 16),
           child
         ],
+      ),
+    );
+  }
+}
+
+class _PartnershipTable extends StatelessWidget {
+  final Innings innings;
+
+  const _PartnershipTable(this.innings);
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      expand: false,
+      maxChildSize: 0.8,
+      builder: (context, scrollController) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 12.0),
+        child: SingleChildScrollView(
+          controller: scrollController,
+          child: _GenericInningsPanel(
+            title: "Partnerships",
+            color: innings.battingTeam.team.color,
+            margin: const EdgeInsets.all(0),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6.0),
+              child: Table(
+                columnWidths: const {
+                  1: FlexColumnWidth(2),
+                },
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                border: const TableBorder(
+                  horizontalInside: BorderSide(color: Colors.black12),
+                ),
+                // border: TableBorder.all(color: Colors.yellow),
+                children: [
+                  for (final partnership in innings.partnerships)
+                    TableRow(children: [
+                      ListTile(
+                        title: Text(
+                          partnership.batter1.name,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        subtitle: Text(
+                            "${partnership.batter1Contribution.runs} (${partnership.batter1Contribution.ballsFaced})"),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 4.0),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              "${partnership.runs} (${partnership.ballsFaced})",
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8.0),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: partnership.batter1Contribution.runs,
+                                  child: const ClipRRect(
+                                    borderRadius: BorderRadius.horizontal(
+                                      left: Radius.circular(24),
+                                    ),
+                                    child: Divider(
+                                      color: ColorStyles.online,
+                                      thickness: 8,
+                                      height: 8,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: partnership.batter2Contribution.runs,
+                                  child: const ClipRRect(
+                                    borderRadius: BorderRadius.horizontal(
+                                      right: Radius.circular(24),
+                                    ),
+                                    child: Divider(
+                                      color: ColorStyles.highlight,
+                                      thickness: 8,
+                                      height: 8,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8.0),
+                          ],
+                        ),
+                      ),
+                      ListTile(
+                        title: Text(
+                          partnership.batter2.name,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        subtitle: Text(
+                            "${partnership.batter2Contribution.runs} (${partnership.batter2Contribution.ballsFaced})"),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 4.0),
+                      ),
+                    ])
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

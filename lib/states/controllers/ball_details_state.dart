@@ -4,6 +4,13 @@ import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/wicket.dart';
 import 'package:scorecard/states/containers/innings_selection.dart';
 
+/// A State Controller for the details selected for the next ball.
+///
+/// These details include:
+///- Runs
+/// - [BowlingExtra]
+/// - [BattingExtra]
+/// - [Wicket]
 class BallDetailsStateController {
   final InningsSelections _selections;
 

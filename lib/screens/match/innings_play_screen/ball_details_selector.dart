@@ -5,6 +5,7 @@ import 'package:scorecard/states/controllers/ball_details_state.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 
+/// Displays controls that hold information about the ball that is to be recorded.
 class BallDetailsSelector extends StatelessWidget {
   final BallDetailsStateController stateController;
   final Innings innings;

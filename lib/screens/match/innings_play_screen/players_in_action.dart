@@ -5,13 +5,14 @@ import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/screens/widgets/elements.dart';
 import 'package:scorecard/util/strings.dart';
 
+///Displays a quick overview of the [PlayersInAction] for the current innings.
 class PlayersInActionPane extends StatelessWidget {
   final Innings innings;
   final bool isHomeTeamBatting;
 
   final void Function(BatterInnings batter) onTapBatter;
   final void Function(BatterInnings batter) onLongTapBatter;
-  final void Function(BowlerInnings bowler) onTapBowler;
+  final void Function(BowlerInnings bowler) onLongTapBowler;
 
   const PlayersInActionPane({
     super.key,
@@ -19,7 +20,7 @@ class PlayersInActionPane extends StatelessWidget {
     required this.isHomeTeamBatting,
     required this.onTapBatter,
     required this.onLongTapBatter,
-    required this.onTapBowler,
+    required this.onLongTapBowler,
   });
 
   @override
@@ -115,7 +116,7 @@ class PlayersInActionPane extends StatelessWidget {
         style: Theme.of(context).textTheme.bodySmall,
       ),
       teamColor: innings.bowlingTeam.team.color,
-      onLongPress: () => onTapBowler(bowlerInnings),
+      onLongPress: () => onLongTapBowler(bowlerInnings),
     );
   }
 }

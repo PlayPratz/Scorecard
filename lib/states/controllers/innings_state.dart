@@ -3,10 +3,32 @@ import 'dart:async';
 import 'package:scorecard/models/ball.dart';
 import 'package:scorecard/models/innings.dart';
 import 'package:scorecard/models/player.dart';
+import 'package:scorecard/screens/match/innings_play_screen/match_interface.dart';
 import 'package:scorecard/states/containers/innings_selection.dart';
 import 'package:scorecard/util/constants.dart';
 
+/// A State Controller for the innings that is active on the currently opened
+/// [MatchInterface]
+///
+/// Instead of directly modifying the [Innings] object, a call must be made via
+/// this State Controller so that the changes are updated across all UI
+/// components.
 class InningsStateController {
+  /*
+    How This Class Works:
+
+    This State Controller uses two Streams - one for Events, one for States.
+    Whenever an Event is added to the stream, the [_deduceState] function is
+    called (since the a listener is registered for the Event Stream). This
+    function now figures out the desired state of the Innings and and adds it
+    to the State Stream. The UI component has a StreamBuilder that listens
+    to this State Stream, thereby rebuilding the UI for every Event.
+
+    An Event is added to the Event Stream whenever a function exposed by this
+    State Controller is called. This function is usually called due to some
+    user interaction. 
+  */
+
   final _inningsEventController = StreamController<InningsEvent>();
 
   final _inningsEventHistory = <InningsEvent>[];
@@ -42,21 +64,21 @@ class InningsStateController {
     }
 
     // Change Batter due to fall of wicket
-    final playerInAction = innings.playersInAction;
-    if (playerInAction.batter1.isOutOrRetired) {
+    final playersInAction = innings.playersInAction;
+    if (playersInAction.batter1.isOutOrRetired) {
       return AddBatterState(
         innings: innings,
         selections: _selections,
-        batterToReplace: playerInAction.batter1,
+        batterToReplace: playersInAction.batter1,
       );
     }
 
-    if (playerInAction.batter2 != null &&
-        playerInAction.batter2!.isOutOrRetired) {
+    if (playersInAction.batter2 != null &&
+        playersInAction.batter2!.isOutOrRetired) {
       return AddBatterState(
           innings: innings,
           selections: _selections,
-          batterToReplace: playerInAction.batter2!);
+          batterToReplace: playersInAction.batter2!);
     }
 
     // Change Bowler due to end of over

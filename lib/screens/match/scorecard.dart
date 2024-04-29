@@ -138,85 +138,6 @@ class _BattingInningsPanel extends StatelessWidget {
       color: innings.battingTeam.team.color,
       child: Column(
         children: [
-          // DataTable(
-          //   columnSpacing: 12,
-          //   columns: const [
-          //     DataColumn(label: SizedBox()),
-          //     DataColumn(label: SizedBox()),
-          //     DataColumn(label: Text("SR")),
-          //     DataColumn(label: Text("4s")),
-          //     DataColumn(label: Text("6s")),
-          //   ],
-          //   rows: [
-          //     for (final batterInnings in innings.batterInningsList)
-          //       DataRow(cells: [
-          //         DataCell(
-          //           // Text(batterInnings.batter.name),
-          //           ListTile(
-          //             leading: Elements.getPlayerIcon(
-          //                 context, batterInnings.batter, 36),
-          //             title: Text(
-          //               batterInnings.batter.name,
-          //               style: Theme.of(context).textTheme.titleSmall,
-          //             ),
-          //             subtitle: Text(
-          //               Strings.getWicketDescription(batterInnings.wicket),
-          //               style: Theme.of(context).textTheme.bodySmall,
-          //             ),
-          //           ),
-          //         ),
-          //         DataCell(
-          //           Column(
-          //             mainAxisAlignment: MainAxisAlignment.center,
-          //             crossAxisAlignment: CrossAxisAlignment.end,
-          //             children: [
-          //               Text(
-          //                 batterInnings.runs.toString(),
-          //                 style: Theme.of(context).textTheme.titleLarge,
-          //               ),
-          //               const SizedBox(width: 4),
-          //               Text(
-          //                 batterInnings.ballsFaced.toString(),
-          //                 style: Theme.of(context)
-          //                     .textTheme
-          //                     .bodyMedium
-          //                     ?.merge(const TextStyle(color: Colors.white70)),
-          //               ),
-          //             ],
-          //           ),
-          //         ),
-          //         DataCell(
-          //           Text(
-          //             batterInnings.strikeRate.toStringAsFixed(2),
-          //             style: Theme.of(context)
-          //                 .textTheme
-          //                 .labelMedium
-          //                 ?.merge(const TextStyle(color: Colors.white70)),
-          //           ),
-          //         ),
-          //         DataCell(
-          //           CircleAvatar(
-          //               backgroundColor: ColorStyles.ballFour.withOpacity(0.7),
-          //               foregroundColor: Colors.white,
-          //               radius: 15,
-          //               child: Text(
-          //                 batterInnings.fours.toString(),
-          //                 style: Theme.of(context).textTheme.bodyMedium,
-          //               )),
-          //         ),
-          //         DataCell(
-          //           CircleAvatar(
-          //               backgroundColor: ColorStyles.ballSix.withOpacity(0.7),
-          //               radius: 15,
-          //               foregroundColor: Colors.white,
-          //               child: Text(
-          //                 batterInnings.sixes.toString(),
-          //                 style: Theme.of(context).textTheme.bodyMedium,
-          //               )),
-          //         ),
-          //       ])
-          //   ],
-          // ),
           Table(
             columnWidths: const {
               0: FlexColumnWidth(3.5),
@@ -302,13 +223,6 @@ class _BattingInningsPanel extends StatelessWidget {
                 ])
             ],
           ),
-          // for (final batterInnings in innings.batterInningsList)
-          //   Column(
-          //     children: [
-          //       const Divider(color: Colors.black12, height: 0),
-          //       BatterInningsScore(batterInnings: batterInnings),
-          //     ],
-          //   ),
           const Divider(color: Colors.black12, height: 0),
           GenericItemTile(
             primaryHint: Strings.extras,

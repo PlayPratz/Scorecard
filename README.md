@@ -56,14 +56,14 @@ It's a match played between two teams. What more can I say? Maybe a lot more; wi
 
 An innings is one division of a cricket match where one team bats while the other team bowls and fields. Throughout this app, an "innings" refers only to a team's innings; _batter innings_ and _bowler innings_ are mentioned as such.
 
-Technically speaking, an innings is essentially a list of balls played; all other information can be derived from that. (Note: It could also be a list of _overs_ but it was simpler to skip that layer). This information includes (but not limited to):
+Technically speaking, an innings is essentially a list of balls played; all other information can be derived from that. (Note: It could also be a list of _overs_ but it was simpler to skip that layer). This derived information includes (but is not limited to):
 
 1. Runs scored by the batting team
 2. Wickets fallen of the batting team
-3. [Batter innings](#batter-innings), i.e., scores of all batsmen
+3. [Batter innings](#batter-innings), i.e., scores of all batters
 4. [Bowler innings](#bowler-innings), i.e., bowling figures of all bowlers
 
-Batter innings and bowler innings form the building blocks for all player-centric statistics in the sport.
+Batter innings and bowler innings form the building blocks for all player-centric statistics in cricket.
 
 An innings comes to an end when any one of the following happens:
 
@@ -72,7 +72,7 @@ An innings comes to an end when any one of the following happens:
 3. The batting team has scored the required runs (while chasing)
 4. The batting team declares
 
-To support dynamic teams (the most common form when cricket is played recreationally), the app does not take into account the 2nd condition. To accommodate the same, the user may choose to declare the innings once all wickets have fallen. Once unlimited overs are supported, the process of declaring an innings will change
+To support dynamic teams (the most common form when cricket is played recreationally), the app does not take into account the 2nd condition. To accommodate the same, the user may choose to declare the innings once all wickets have fallen. Once support for unlimited overs is added, the process of declaring an innings will change.
 
 #### Batter Innings
 
@@ -87,7 +87,7 @@ Using the above data, the following statistics can be calculated:
 
 #### Bowler Innings
 
-A bowler's innings, also called a **spell**, consists of a list of [balls](#-ball) played by that bowler. Using this, we can derive the following data:
+A bowler's innings, also called a **spell**, consists of a list of [balls](#-ball) delivered by that bowler. Using this, we can derive the following data:
 
 1. Number of overs (or balls) bowled
 2. Number of wickets taken
@@ -102,7 +102,7 @@ Using the above data, the following statistics can be calculated:
 
 ### ⚾️ Ball <a name = "ball"/>
 
-A ball is the most atomic unit for scoring a cricket match. It consists of the following data
+A ball is the most atomic unit for scoring a cricket match. It consists of the following data:
 
 1. Bowler
 2. Batter
@@ -114,7 +114,9 @@ Once this data is obtained for every ball of the match, the score as well as res
 
 ### 🤾 Player <a name = "player"/>
 
-A player is needed to play any sport. Players in cricket take up the role of a batter, bowler and fielder. Since players contribute in more than one ways, tying together their statistics provides a handy way of representing a player's career performance.
+A player is needed to play any sport. Players in cricket take up the role of a batter, bowler and fielder. Since players contribute in more than one way, tying together their statistics provides a handy way of representing a player's career performance.
+
+As it stands, you can create as many players as you like but deleting a player is not possible. This is because if a player has been part of even a single match, deleting that player is not possible, as the match cannot have a non-existent player.
 
 TODO: This section will be expanded.
 
@@ -133,9 +135,9 @@ TODO: This section will be expanded
 The Home Screen consists of the following tabs:
 
 1. [Ongoing Matches](#ongoing-and-completed-matches)
-2. [Completed Matches](#ongoing-and-completed-matches)
-3. [Players](#players-page)
-4. [Statistics](#statistics-page)
+2. [Players](#players-page)
+3. [Statistics](#statistics-page)
+4. [Settings](#settings)
 
 A new match can be created using the ⨁ button located at the center of the Bottom Navigation Bar.
 
@@ -197,18 +199,21 @@ This is where the magic happens.
 On the top, you can see the **Score Summary** in the form of two tiles representing the _Home Team_ and _Away Team_. Depending on which innings is being played, the score `Runs/Wickets` is displayed for the batting team and the overs bowled `Over.Ball` is displayed for the bowling team. Tapping on the Score Summary will take you to the match's [scorecard](#match-scorecard).
 
 
+##### Run Rate Pane
+
+1. For the first innings shows the _Current Run Rate (CRR)_ and the _Projected Score_
+2. For the second innings shows the _Current Run Rate (CRR)_, _Runs Required_ and _Balls Left_. Tapping on the _CRR_ box will toggle it to display the _Required Run Rate (RRR)_ instead.
+
 ###### Players in Action
 
 Next, we have the **Players In Action** pane, which represents the two batters on the pitch and the bowler who is currently bowling. The two batters are represented as tiles laid out vertically, directly below their team's tile as in the Score Summary header. Similarly, the bowler's tile is placed vertically below the fielding team's tile. In other words, players are of the _Home Team_ are always on the _left_ while players of the _Away Team_ are always on the right, regardless of which team is batting in the ongoing innings.
 
 The Batter Tiles serve an important purpose — selecting the player who is on strike. Usually, this is handled automatically — strike is rotated for odd number of runs and at the end of an over. However, there are possibilities of rules being altered and a '1D' or 3D' being added, in which case the strike will have to be changed manually. The score of each batter is displayed on the tile. For more details on the score, you can always open the [Scorecard](#match-scorecard).
 
-Each of these tiles Player Tiles can be long-pressed to replace the player. You will be taken to a list of players to choose a replacement from. This comes in handy if either a batter or the bowler (or all of them!) has to be replaced, like in the case of an injury. You must note that replacing a bowler will NOT skip or restart the over. Just like international matches, the over will continue to be bowled by a different bowler. If you want to restart the over, use the *Undo* button found in the [Submit Input](#submit-input) pane.
+Long pressing a Batter Tile will allow you to replace the batter only if the said batter has not lost their wicket and has not faced a single ball. This functionality exists to fix any human error while initializing an innings. To retire a batter, use the [Add Wicket](#End-Innings-and-Add-Wicket) option.
 
-But PlayPratz, you might wonder, there is another block of information in this pane! You're right — that's the **Run Rate Box**, which:
+Long pressing a Bowler Tile will allow you to replace the bowler mid-over. Please note that replacing a bowler will NOT skip or restart the over. Just like international matches, the over will continue to be bowled by a different bowler. If you want to restart the over with another bowler, use the *Undo* button found in the [Submit Input](#submit-input) pane.
 
-1. For the first innings shows the _Current Run Rate (CRR)_ and the _Projected Score_
-2. For the second innings shows the _Runs Required_ and _Balls Left_. I'm planning to display the _Current_ and _Required Run Rate (RRR)_ as well; I just haven't figured out where to put it.
 
 ###### Recent Balls
 
@@ -220,18 +225,16 @@ To demarcate the beginning of an over, its first ball has its index in the bowli
 
 The next row consists of two mostly unrelated interactions:
 
-1. The _End Innings_ button, which can also be called the _Declare_ button. Clicking this will, well, do nothing. You will see a small message pop-up which tells you exactly what you have to do — press and hold this button if you really want to end (or declare) the innings.
-2. The _Wicket_ tile, which lets you add a wicket to the ball that is currently being entered. On tapping this tile, you will be taken to a pretty self-explanatory screen where you choose the kind of dismissal (bowled, LBW, run-out etc.) and the players involved in said dismissal. Once a wicket is selected, press and hold this tile to remove the wicket before the ball is entered.
+1. The _End Innings_ button, which can also be called the _Declare_ button. Clicking this will, well, do nothing. You will see a small message pop-up which tells you exactly what you have to do — press and hold this button if you really want to end (or declare) the innings. The long-press instead of a tap is to prevent an accidental declaration (oops!).
+2. The _Wicket_ tile, which lets you add a wicket to the ball that is currently being entered. On tapping this tile, you will be taken to a pretty self-explanatory screen where you choose the kind of dismissal (bowled, LBW, run-out etc.) and the players involved in said dismissal. To clear a wicket that has been selected, press and hold this tile before adding the ball.
 
 ###### Extra Selector
 
-The first section toggles between **Batting Extras**: _Event_ and _Leg Bye_. _Event_ is a stand-in for _Bye_, which should be taking its place, but _Event_ serves a very crucial purpose — recording an event that takes place without a ball being bowled. A very common case is the run-out by the bowler at the non-striker before bowling the ball, as sensationalized by Ravichandran Ashwin when he dismissed Jos Buttler.
+The first section toggles between **Batting Extras**: _Bye_ and _Leg Bye_. For the uninitiated, a Bye is a run scored by the batting team without a batter getting their bat on ball. But if they manage to get their body on ball before scoring the runs, it's called a Leg Bye. Note that in either case, even though the runs scored are awarded to the batting team, they aren't awarded to the batter.
 
-Admittedly, it's not possible to enter a _Bye_ for now. It will be added soon enough, but just note that _Event_ is here to stay as well.
+Next up, we have the _Event_ toggle which serves a very crucial purpose — recording an event that takes place without a ball being bowled. A very common case is the run-out by the bowler at the non-striker before bowling the ball, as sensationalized by Ravichandran Ashwin when he dismissed Jos Buttler. This also comes in handy when you want to retire a batter.
 
-For the uninitiated, a Bye is a run scored by the batting team without a batter getting their bat on ball. But if they manage to get their body on ball before scoring the runs, it's called a Leg Bye.
-
-The second section deals with **Bowling Extras**, the infamous _No Balls_ and _Wides_. Do note that while entering this data you are NOT supposed to select the runs awarded to the batting team due to a Bowling Extra. If no runs are scored by the batting team on a No Ball or a Wide, choose 0 runs on the [Run Chooser](#run-selector)
+The last section deals with **Bowling Extras**, the infamous _No Balls_ and _Wides_. Do note that while entering this data you are NOT supposed to select the runs awarded to the batting team due to a Bowling Extra. If no runs are scored by the batting team on a No Ball or a Wide, choose 0 runs on the [Run Chooser](#run-selector).
 
 ###### Run Selector
 
@@ -242,11 +245,12 @@ As mentioned earlier, DO NOT select the runs awarded due to a Bowling Extra such
 ###### Submit Input
 
 These two buttons do exactly opposite actions
+
 The first one, _Undo_, as the name suggests, will undo the previous ball, i.e., make it as if it was never played. It is removed completely. Discarded. Shredded. Destroyed. Obliterated. As such, you can't "Undo" an "Undo", so don't undo what you don't want to undo. Don't request for a "Redo" feature, just be more careful. (Or do request, maybe I am underestimating the requirement.)
 
 The second button takes on various forms depending on the situation.
 
-1. In most cases, it is a _Next_ button, that submits the data entered from [Run Selector](#run-selector), [Extra Selector](#extra-selector) and [Add a wicket](#end-innings-and-add-wicket). This will cause the [ball](#-ball) to be added into the [innings](#-innings). As result of this, the scores for both the teams and all the players involved will be updated.
+1. In most cases, it is an _Add Ball_ button, that submits the data entered from [Run Selector](#run-selector), [Extra Selector](#extra-selector) and [Add a wicket](#end-innings-and-add-wicket). This will cause the [ball](#-ball) to be added into the [innings](#-innings). As result of this, the scores for both the teams and all the players involved will be updated.
 2. When an over is completed, it is a _Select Bowler_ button. On clicking, you will be taken to the bowling squad to choose the next bowler.
 3. When a wicket falls, it is a _Select Batter_ button. On clicking, you will be taken to the batting squad to choose the next batter.
 4. When the quota of overs is completed, or when the _target_ for the second innings is achieved, it is an _End Innings_ button which will act the same as long-pressing the [End Innings button](#end-innings-and-add-wicket).
@@ -259,11 +263,26 @@ The Scorecard screen starts with a simple view of the overall scores of both the
 
 If the match is completed, you will see the result of the match right below. This is skipped for [Ongoing Matches](#ongoing-and-completed-matches).
 
-Next, for each team's innings, a list of [batter innings](#batter-innings) and [bowler innings](#bowler-innings) is displayed.
+Next, for each team's innings, a list of [batter innings](#batter-innings) is displayed. For each Batter Innings, the following information is displayed from left to right:
+1. The batter's photo, if any
+2. The batter's name
+3. Right below the batter's name, their wicket status
+4. The batter's score - Runs, balls faced
+5. The batter's strike rate
+6. The number of fours and sixes hit, displayed inside circles of the respective colour
 
-1. For each batter innings, you will see two numbers towards the far right: The runs scored on the top and the balls faced at the bottom. Additionally, the wicket status of the batter is specified directly below their name.
-2. For each bowler innings, you will see the short bowling figures towards the far right in the format of `(Wickets Taken)/(Runs Scored)`. Right below that is the bowling average of the bowler. Additionally, the number of overs bowled and the economy is displayed directly below the bowler's name.
+Next, we have a list of players from the batting team who did not bat.
 
+Next, we have a table displaying the Fall of Wickets. Every row marks the index at which a wicket fell, the score at when that wicket fail, the batter who lost their wicket and their wicket's details.
+
+Next, the list of [bowler innings](#bowler-innings) is displayed. For each Bowler Innings, the following information is displayed from left to right:
+1. The bowler's photo, if any
+2. The bowler's name
+3. The number of overs bowled
+4. The number of wickets taken, displayed inside a red circle
+5. The number of runs conceded
+6. The bowler's economy
+  
 Finally, a _View Timeline_ button takes you to the [Innings Timeline](#innings-timeline)
 
 ---
@@ -307,9 +326,7 @@ Note: Currently, deleting players is not an option because. Why? Here's a detail
 
 This is where you will see the statistics of all your players.
 
-Right now, it is quite basic with all players from all teams that have played any match thrown onto your screen. Batters are sorted by their runs scored while bowlers are sorted by wickets taken.
-
-In the future, filters and other parameters such as strike rates and averages will be added to make this screen useful. Another statistics screen for each player will also be added, where you will see all the statistics of that player.
+Right now, the page has been disabled.
 
 ---
 
@@ -340,11 +357,10 @@ The colours available for assigning to a Team:
 
 - Add screenshots to README.md
 - Add online syncing
-- Add filters to statistics
+- Add statistics and filters
 - Add Settings and Customizations
 - Add support for Test Matches (Unlimited Overs)
 - Add **Tournaments** and **Series**
-- Fielding statistics
 - Track multiple sports
 
 ---

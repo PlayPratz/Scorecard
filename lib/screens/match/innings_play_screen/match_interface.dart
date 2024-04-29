@@ -69,8 +69,8 @@ class MatchInterface extends StatelessWidget {
                     inningsStateController.setStrike(batter),
                 onLongTapBatter: (batter) => _handleReplaceBatter(
                     context, inningsStateController, batter),
-                onTapBowler: (bowler) =>
-                    _handleSetBowler(context, inningsStateController, bowler),
+                onLongTapBowler: (bowler) => _handleSetBowler(context,
+                    inningsStateController, bowler, ballDetailsStateController),
               ),
               RecentBallsPane(innings: inningsState.innings),
               const SizedBox(height: 8),
@@ -172,8 +172,11 @@ class MatchInterface extends StatelessWidget {
       case AddBowlerState():
         return Elements.getConfirmButton(
           text: Strings.matchScreenChooseBowler,
-          onPressed: () => _handleSetBowler(context, stateController,
-              inningsState.innings.playersInAction.bowler),
+          onPressed: () => _handleSetBowler(
+              context,
+              stateController,
+              inningsState.innings.playersInAction.bowler,
+              ballDetailsStateController),
         );
       case EndInningsState():
         return Elements.getConfirmButton(
@@ -209,14 +212,22 @@ class MatchInterface extends StatelessWidget {
   }
 
   void _handleSetBowler(
-      BuildContext context,
-      InningsStateController stateController,
-      BowlerInnings bowlerInnings) async {
+    BuildContext context,
+    InningsStateController stateController,
+    BowlerInnings bowlerInnings,
+    BallDetailsStateController ballDetailsStateController,
+  ) async {
     final inBowler =
         await chooseBowler(context, stateController.innings, bowlerInnings);
     if (inBowler == null) {
       return;
     }
+    // This ensures that all selections are reset when the bowler changes
+    // This precaution is mainly for when a wicket is selected before chainging
+    // the bowler
+    ballDetailsStateController.reset();
+
+    // Set the bowler using the State Controller
     stateController.setBowler(bowler: inBowler);
   }
 

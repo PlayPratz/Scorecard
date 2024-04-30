@@ -556,7 +556,7 @@ class FallOfWicket {
 /// either loses their wicket or retires; an end of one partnership paves
 /// the way for the next. The first-wicket partnership begins at the start
 /// of a team's innings, consisting of the two opening batters.
-class Partnership with BattingCalculations {
+class Partnership {
   /// As per convention, the batter who walked onto the crease first should
   /// be batter1
   final Player batter1;
@@ -574,8 +574,13 @@ class Partnership with BattingCalculations {
   }
 
   final List<Ball> _balls = [];
-  @override
+  // @override
   UnmodifiableListView<Ball> get balls => UnmodifiableListView(_balls);
+
+  // TODO: Abstract this logic, it's repeated so many times
+  int get runs => balls.fold<int>(0, (runs, ball) => runs + ball.totalRuns);
+  int get ballsFaced => balls.fold<int>(
+      0, (ballsFaced, ball) => ball.isLegal ? ballsFaced + 1 : ballsFaced);
 
   void play(Ball ball) {
     if (ball.batter != batter1 && ball.batter != batter2) {

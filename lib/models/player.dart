@@ -31,3 +31,11 @@ enum BowlStyle {
   medium,
   fast,
 }
+
+class PlayerGroup {
+  final String id;
+  final String name;
+  final int color;
+
+  PlayerGroup({required this.id, required this.name, required this.color});
+}

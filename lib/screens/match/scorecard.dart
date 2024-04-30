@@ -150,16 +150,16 @@ class _BattingInningsPanel extends StatelessWidget {
             // ),
             children: [
               const TableRow(
-                  children: [
-                    SizedBox(),
-                    SizedBox(),
-                    Center(child: Text("SR")),
-                    Center(child: Text("4s")),
-                    Center(child: Text("6s"))
-                  ],
-                  decoration: BoxDecoration(
-                      border:
-                          Border(bottom: BorderSide(color: Colors.black12)))),
+                children: [
+                  SizedBox(),
+                  SizedBox(),
+                  Center(child: Text("SR")),
+                  Center(child: Text("4s")),
+                  Center(child: Text("6s"))
+                ],
+                decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.black12))),
+              ),
               for (final batterInnings in innings.batterInningsList)
                 TableRow(children: [
                   ListTile(
@@ -466,72 +466,73 @@ class _BowlingInningsPanel extends StatelessWidget {
     return _GenericInningsPanel(
       title: Strings.scorecardBowling.toUpperCase(),
       color: Color(innings.bowlingTeam.team.color),
-      child: Column(
-        children: [
-          for (final bowlInn in innings.bowlerInningsList) ...[
-            const Divider(color: Colors.black12, height: 0),
-            BowlerInningsScore(bowlerInnings: bowlInn)
-          ]
-        ],
-      ),
-    );
-  }
-}
-
-class BowlerInningsScore extends StatelessWidget {
-  final BowlerInnings bowlerInnings;
-  const BowlerInningsScore({super.key, required this.bowlerInnings});
-
-  @override
-  Widget build(BuildContext context) {
-    final player = bowlerInnings.bowler;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Elements.getPlayerIcon(context, player, 36),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      // child: Column(
+      //   children: [
+      //     for (final bowlInn in innings.bowlerInningsList) ...[
+      //       const Divider(color: Colors.black12, height: 0),
+      //       BowlerInningsScore(bowlerInnings: bowlInn)
+      //     ]
+      //   ],
+      // ),
+      child: Table(
+          columnWidths: const {
+            0: FlexColumnWidth(4),
+          },
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          children: [
+            const TableRow(
               children: [
-                Text(
-                  player.name,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                SizedBox(),
+                Center(child: Text("O")),
+                Center(child: Text("W")),
+                Center(child: Text("R")),
+                Center(child: Text("Econ"))
               ],
+              decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Colors.black12))),
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            Strings.getBowlerOversBowled(bowlerInnings),
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(width: 8),
-          CircleAvatar(
-            backgroundColor: ColorStyles.wicket.withOpacity(0.7),
-            foregroundColor: Colors.white,
-            radius: 14,
-            child: Text(
-              bowlerInnings.wicketsTaken.toString(),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            bowlerInnings.runsConceded.toString(),
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(width: 8),
-          Text(bowlerInnings.economy.toStringAsFixed(2),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.merge(const TextStyle(color: Colors.white70))),
-          const SizedBox(width: 8),
-        ],
-      ),
+            for (final bowlerInnings in innings.bowlerInningsList)
+              TableRow(children: [
+                ListTile(
+                  leading:
+                      Elements.getPlayerIcon(context, bowlerInnings.bowler, 36),
+                  title: Text(
+                    bowlerInnings.bowler.name,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                Center(
+                  child: Text(
+                    Strings.getBowlerOversBowled(bowlerInnings),
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ),
+                Center(
+                  child: CircleAvatar(
+                    backgroundColor: ColorStyles.wicket.withOpacity(0.7),
+                    foregroundColor: Colors.white,
+                    radius: 14,
+                    child: Text(
+                      bowlerInnings.wicketsTaken.toString(),
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Text(
+                    bowlerInnings.runsConceded.toString(),
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ),
+                Center(
+                  child: Text(bowlerInnings.economy.toStringAsFixed(2),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.merge(const TextStyle(color: Colors.white70))),
+                ),
+              ])
+          ]),
     );
   }
 }

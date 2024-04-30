@@ -70,7 +70,7 @@ class Ball {
 
   int get totalRuns => runsScored + bowlingExtraRuns;
   int get bowlingExtraRuns => isBowlingExtra ? 1 : 0;
-  int get batterRuns => isBattingExtra ? 0 : runsScored;
+  int get batterRuns => isBattingExtra || isEventOnly ? 0 : runsScored;
 
   bool get isWicket => wicket != null && wicket!.dismissal != Dismissal.retired;
   bool get isBatterRetired =>

@@ -49,7 +49,7 @@ class MatchInterface extends StatelessWidget {
         builder: (context, snapshot) {
           final inningsState = snapshot.data!;
           return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               MatchTile(
                 match: match,
@@ -86,12 +86,10 @@ class MatchInterface extends StatelessWidget {
                   )),
                 ],
               ),
-              const SizedBox(height: 8),
               BallDetailsSelector(
                 stateController: ballDetailsStateController,
                 innings: inningsState.innings,
               ),
-              const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [

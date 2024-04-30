@@ -46,7 +46,7 @@ class MatchInitScreen extends StatelessWidget {
                     controller: teamSquadController,
                     onBuild: (teamSquad) => ListTile(
                       leading: Icon(Icons.people,
-                          color: teamSquad.team.color.withOpacity(0.7)),
+                          color: Color(teamSquad.team.color).withOpacity(0.7)),
                       title: Text(teamSquad.team.name),
                       trailing: const SizedBox(),
                       onTap: () => teamSquadController.selectItem(
@@ -58,13 +58,14 @@ class MatchInitScreen extends StatelessWidget {
                       selected: true,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      selectedTileColor: teamSquad.team.color.withOpacity(0.1),
-                      selectedColor: teamSquad.team.color.withOpacity(1),
+                      selectedTileColor:
+                          Color(teamSquad.team.color).withOpacity(0.1),
+                      selectedColor: Color(teamSquad.team.color).withOpacity(1),
                       leading: Icon(Icons.people,
-                          color: teamSquad.team.color.withOpacity(1)),
+                          color: Color(teamSquad.team.color).withOpacity(1)),
                       title: Text(teamSquad.team.name),
                       trailing: Icon(Icons.check_circle,
-                          color: teamSquad.team.color.withOpacity(1)),
+                          color: Color(teamSquad.team.color).withOpacity(1)),
                       onTap: () => teamSquadController.selectItem(
                           teamSquad), // TODO maybe move to SelectableItemList
                     ),

@@ -120,7 +120,7 @@ class _SinglePlayerPicker extends StatelessWidget {
                   controller: playerController,
                 ),
               ),
-              color: teamSquad.team.color.withOpacity(0.25),
+              color: Color(teamSquad.team.color).withOpacity(0.25),
             ),
           ),
           ListenableBuilder(

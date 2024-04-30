@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/utils.dart';
@@ -12,7 +11,7 @@ class Team {
 
   final String name;
   final String shortName;
-  final Color color;
+  final int color;
 
   Team({
     required this.id,
@@ -31,7 +30,7 @@ class Team {
     return Team.create(
         name: template.name,
         shortName: template.shortName,
-        color: ColorStyles.teamColors[genTeamIndex]);
+        color: ColorStyles.teamColors[genTeamIndex].value);
   }
 }
 

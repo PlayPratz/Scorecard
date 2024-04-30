@@ -25,13 +25,13 @@ class RunRatePane extends StatelessWidget {
             child: stateController.showRequiredRunRate
                 ? _wRunRateBox(
                     context: context,
-                    color: innings.battingTeam.team.color,
+                    color: Color(innings.battingTeam.team.color),
                     heading: Strings.scoreRRR,
                     value: innings.requiredRunRate.toStringAsFixed(2),
                     onTap: _handleToggle)
                 : _wRunRateBox(
                     context: context,
-                    color: innings.battingTeam.team.color,
+                    color: Color(innings.battingTeam.team.color),
                     heading: Strings.scoreCRR,
                     value: innings.currentRunRate.toStringAsFixed(2),
                     onTap: showChaseRequirement ? _handleToggle : null),
@@ -40,14 +40,14 @@ class RunRatePane extends StatelessWidget {
             Expanded(
               child: _wRunRateBox(
                   context: context,
-                  color: innings.battingTeam.team.color,
+                  color: Color(innings.battingTeam.team.color),
                   heading: Strings.scoreRequire,
                   value: innings.requiredRuns.toString()),
             ),
             Expanded(
               child: _wRunRateBox(
                   context: context,
-                  color: innings.bowlingTeam.team.color,
+                  color: Color(innings.bowlingTeam.team.color),
                   heading: Strings.scoreBalls,
                   value: innings.ballsLeft.toString()),
             ),
@@ -55,7 +55,7 @@ class RunRatePane extends StatelessWidget {
             Expanded(
               child: _wRunRateBox(
                   context: context,
-                  color: innings.battingTeam.team.color,
+                  color: Color(innings.battingTeam.team.color),
                   heading: Strings.scoreProjected,
                   value: innings.projectedRuns.toString()),
             ),

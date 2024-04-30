@@ -52,7 +52,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
     TeamSquad teamSquad = widget.team;
     _teamNameController.text = teamSquad.team.name;
     _shortTeamNameController.text = teamSquad.team.shortName;
-    _color = teamSquad.team.color;
+    _color = Color(teamSquad.team.color);
 
     if (teamSquad.squadSize > 0) {
       _selectedCaptain = teamSquad.squad[0];
@@ -88,7 +88,7 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
         id: widget.team.team.id,
         name: _teamNameController.text,
         shortName: _shortTeamNameController.text,
-        color: _color,
+        color: _color.value,
       ),
       squad: [_selectedCaptain!, ..._selectedPlayerList],
     );
@@ -337,7 +337,7 @@ class CreateQuickTeamsForm extends StatelessWidget {
       team: Team.create(
         name: controller.team1,
         shortName: controller.team1.substring(0, 3).toUpperCase(),
-        color: teamA,
+        color: teamA.value,
       ),
       squad: controller.squad1,
     );
@@ -346,7 +346,7 @@ class CreateQuickTeamsForm extends StatelessWidget {
       team: Team.create(
         name: controller.team2,
         shortName: controller.team2.substring(0, 3).toUpperCase(),
-        color: teamB,
+        color: teamB.value,
       ),
       squad: controller.squad2,
     );

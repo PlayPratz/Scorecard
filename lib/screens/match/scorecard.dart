@@ -65,7 +65,7 @@ class _InningsPanel extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 2,
-      surfaceTintColor: innings.battingTeam.team.color,
+      surfaceTintColor: Color(innings.battingTeam.team.color),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
         child: Column(
@@ -135,7 +135,7 @@ class _BattingInningsPanel extends StatelessWidget {
         extras.where((ball) => ball.battingExtra == BattingExtra.legBye);
     return _GenericInningsPanel(
       title: Strings.scorecardBatting.toUpperCase(),
-      color: innings.battingTeam.team.color,
+      color: Color(innings.battingTeam.team.color),
       child: Column(
         children: [
           Table(
@@ -363,7 +363,7 @@ class _YetToBatPanel extends StatelessWidget {
 
     return _GenericInningsPanel(
         title: Strings.scorecardYetToBat.toUpperCase(),
-        color: innings.battingTeam.team.color,
+        color: Color(innings.battingTeam.team.color),
         child: SizedBox(
           width: double.infinity,
           child: Padding(
@@ -395,7 +395,7 @@ class _FallOfWicketsPanel extends StatelessWidget {
     }
     return _GenericInningsPanel(
       title: Strings.scorecardFallOfWickets.toUpperCase(),
-      color: innings.battingTeam.team.color,
+      color: Color(innings.battingTeam.team.color),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: DefaultTextStyle(
@@ -465,7 +465,7 @@ class _BowlingInningsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return _GenericInningsPanel(
       title: Strings.scorecardBowling.toUpperCase(),
-      color: innings.bowlingTeam.team.color,
+      color: Color(innings.bowlingTeam.team.color),
       child: Column(
         children: [
           for (final bowlInn in innings.bowlerInningsList) ...[
@@ -591,7 +591,7 @@ class _PartnershipTable extends StatelessWidget {
           controller: scrollController,
           child: _GenericInningsPanel(
             title: "Partnerships",
-            color: innings.battingTeam.team.color,
+            color: Color(innings.battingTeam.team.color),
             margin: const EdgeInsets.all(0),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6.0),

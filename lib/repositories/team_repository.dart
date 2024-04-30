@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:scorecard/models/team.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
@@ -86,14 +85,14 @@ class TeamDTO {
         id: id,
         name: name,
         shortName: shortName,
-        color: Color(color),
+        color: color,
       );
 
   factory TeamDTO.of(Team team) => TeamDTO._(
         id: team.id,
         name: team.name,
         shortName: team.shortName,
-        color: team.color.value,
+        color: team.color,
       );
 
   Map<String, dynamic> toMap() => {

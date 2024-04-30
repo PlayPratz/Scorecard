@@ -42,7 +42,7 @@ class PlayersInActionPane extends StatelessWidget {
       Expanded(child: _wBowlerInAction(context))
     ];
     return Card(
-      surfaceTintColor: innings.battingTeam.team.color,
+      surfaceTintColor: Color(innings.battingTeam.team.color),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -84,7 +84,7 @@ class PlayersInActionPane extends StatelessWidget {
         "SR ${batterInnings.strikeRate.toStringAsFixed(0)}",
         style: Theme.of(context).textTheme.bodySmall,
       ), //TODO move
-      teamColor: innings.battingTeam.team.color,
+      teamColor: Color(innings.battingTeam.team.color),
       isOnline: batterInnings == innings.playersInAction.striker,
       isOut: isOut,
       onTap: () => onTapBatter(batterInnings),
@@ -115,7 +115,7 @@ class PlayersInActionPane extends StatelessWidget {
         "ECON ${bowlerInnings.economy.toStringAsFixed(1)}", //TODO move
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      teamColor: innings.bowlingTeam.team.color,
+      teamColor: Color(innings.bowlingTeam.team.color),
       onLongPress: () => onLongTapBowler(bowlerInnings),
     );
   }

@@ -44,7 +44,7 @@ class MatchTile extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      surfaceTintColor: primaryTeam.color,
+      surfaceTintColor: Color(primaryTeam.color),
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
@@ -76,7 +76,8 @@ class MatchTile extends StatelessWidget {
                     ),
                     CircleAvatar(
                       child: const Text(Strings.versus),
-                      backgroundColor: secondaryTeam.color.withOpacity(0.25),
+                      backgroundColor:
+                          Color(secondaryTeam.color).withOpacity(0.25),
                       foregroundColor: Colors.white,
                     ),
 
@@ -232,7 +233,7 @@ class TeamChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: team.color,
+        color: Color(team.color),
         borderRadius: BorderRadius.circular(16),
       ),
       constraints: const BoxConstraints(minWidth: 64),

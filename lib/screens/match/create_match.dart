@@ -57,7 +57,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
                   ? _wSelectTeam(
                       _selectedHomeTeam!.team.name,
                       _selectedHomeTeam!.team.shortName,
-                      _selectedHomeTeam!.team.color.withOpacity(0.8),
+                      Color(_selectedHomeTeam!.team.color).withOpacity(0.8),
                       true,
                     )
                   : _wSelectTeam(
@@ -71,7 +71,7 @@ class _CreateMatchFormState extends State<CreateMatchForm> {
                   ? _wSelectTeam(
                       _selectedAwayTeam!.team.name,
                       _selectedAwayTeam!.team.shortName,
-                      _selectedAwayTeam!.team.color.withOpacity(0.8),
+                      Color(_selectedAwayTeam!.team.color).withOpacity(0.8),
                       false,
                     )
                   : _wSelectTeam(

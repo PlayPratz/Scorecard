@@ -55,9 +55,9 @@ abstract mixin class BowlingCalculations {
   // int get maidensBowled => overs.where((over) => over.totalRuns == 0).length;
 
   double get economy => Utils.handleDivideByZero(
-      Constants.ballsPerOver * runsConceded, allBallsBowled);
+      Constants.ballsPerOver * runsConceded, legalBallsBowled);
   double get strikeRate =>
-      Utils.handleDivideByZero(allBallsBowled, wicketsTaken);
+      Utils.handleDivideByZero(legalBallsBowled, wicketsTaken);
   double get average => Utils.handleDivideByZero(runsConceded, wicketsTaken);
 }
 

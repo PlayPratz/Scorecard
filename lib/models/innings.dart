@@ -16,7 +16,8 @@ import 'package:scorecard/util/constants.dart';
 /// In Limited Overs Cricket, a [target] represents the runs required by a team
 /// to win the game. This implies that this is the second of a match. Typically,
 /// the target will be one more than the runs score in the first innings;
-/// however, DLS methods may be implemented to re-calculate the target.
+/// however, DLS methods may be implemented in the future to re-calculate
+/// the target.
 class Innings {
   final TeamSquad battingTeam;
   final TeamSquad bowlingTeam;

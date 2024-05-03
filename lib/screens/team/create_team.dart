@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/models/player.dart';
 import 'package:scorecard/models/team.dart';
-import 'package:scorecard/screens/player/player_pickers.dart';
 import 'package:scorecard/screens/player/player_list.dart';
+import 'package:scorecard/screens/player/player_pickers.dart';
 import 'package:scorecard/screens/player/player_tile.dart';
 import 'package:scorecard/screens/templates/titled_page.dart';
+import 'package:scorecard/screens/widgets/elements.dart';
 import 'package:scorecard/screens/widgets/generic_item_tile.dart';
 import 'package:scorecard/screens/widgets/item_list.dart';
 import 'package:scorecard/screens/widgets/separated_widgets.dart';
 import 'package:scorecard/services/player_service.dart';
-import 'package:scorecard/screens/widgets/elements.dart';
 import 'package:scorecard/styles/color_styles.dart';
 import 'package:scorecard/util/strings.dart';
 import 'package:scorecard/util/utils.dart';
@@ -183,11 +183,13 @@ class _CreateTeamFormState extends State<CreateTeamForm> {
             secondaryHint: Strings.createTeamSquadHint,
             trailing: Elements.addIcon,
             onSelect: () async {
-              List<Player> filteredPlayerList =
-                  await context.read<PlayerService>().getAll();
-              filteredPlayerList.removeWhere(
-                  (player) => _selectedPlayerList.contains(player));
-              filteredPlayerList.remove(_selectedCaptain);
+              final ignoreIds = _selectedPlayerList.map((p) => p.id).toList();
+              if (_selectedCaptain != null) ignoreIds.add(_selectedCaptain!.id);
+
+              final playerList = await context.read<PlayerService>().getAll();
+              final filteredPlayerList = playerList
+                  .where((player) => !ignoreIds.contains(player.id))
+                  .toList();
               Player? player = await choosePlayer(context, filteredPlayerList);
               if (player != null) {
                 setState(() {

@@ -70,6 +70,7 @@ class CricketMatch {
 
   MatchState get matchState {
     if (_isCompleted) {
+      _isCompleted = false; //TODO temporary
       return MatchState.completed;
     } else if (toss == null) {
       // Toss has not completed

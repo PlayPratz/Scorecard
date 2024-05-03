@@ -24,7 +24,7 @@ class SettingsScreen extends StatelessWidget {
         const GenericItemTile(
           leading: Icon(Icons.system_update),
           primaryHint: Strings.settingsAppVersion,
-          secondaryHint: "v0.21.0beta",
+          secondaryHint: "v0.21.2beta",
           trailing: null,
         ),
       ],

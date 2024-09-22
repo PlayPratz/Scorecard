@@ -54,7 +54,7 @@ class TimedOutWicket extends Wicket {
   TimedOutWicket({required super.batter});
 }
 
-// Retired
+// Retirements
 
 sealed class Retired {
   final Player batter;

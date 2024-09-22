@@ -2,8 +2,9 @@ import 'package:scorecard/modules/player/player_model.dart';
 
 class Team {
   final String name;
+  final int color;
 
-  Team({required this.name});
+  Team({required this.name, required this.color});
 }
 
 class Squad {

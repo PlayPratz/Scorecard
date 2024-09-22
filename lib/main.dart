@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/screens/home_screen.dart';
 
 void main() {
   runApp(const ScorecardApp());
@@ -13,8 +14,9 @@ class ScorecardApp extends StatelessWidget {
       title: 'Scorecard',
       theme: ThemeData(
         useMaterial3: true,
+        colorSchemeSeed: Colors.teal,
       ),
-      builder: (context, widget) => Container(),
+      home: const HomeScreen(),
     );
   }
 }

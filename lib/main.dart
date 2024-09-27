@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:scorecard/modules/repository/service/repostiory_service.dart';
 import 'package:scorecard/screens/home_screen.dart';
 
 void main() {
+  // TODO Improve
+
+  GetIt.I.registerSingleton<IRepositoryService>(RAMRepositoryService());
+
   runApp(const ScorecardApp());
 }
 

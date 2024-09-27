@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/services/cricket_match_service.dart';
-import 'package:scorecard/modules/team/team_model.dart';
+import 'package:scorecard/modules/team/models/team_model.dart';
+import 'package:scorecard/modules/venue/models/venue_model.dart';
 
 class CreateCricketMatchController {
   final team1 = ValueNotifier<Team?>(null);
@@ -15,6 +16,8 @@ class CreateCricketMatchController {
   final oversPerInnings = ValueNotifier<int>(10);
   final oversPerBowler = ValueNotifier<int>(10);
 
+  final venue = ValueNotifier<Venue?>(null); // TODO add default value
+
   final matchType = MatchType.limitedOvers;
 
   // final _stateController = StreamController<CreateCricketMatchState>();
@@ -23,6 +26,10 @@ class CreateCricketMatchController {
   CricketMatch scheduleMatch() {
     if (team1.value == null || team2.value == null) {
       throw UnsupportedError("Please select two teams");
+    }
+
+    if (venue.value == null) {
+      throw UnsupportedError("Please select a venue");
     }
 
     late final GameRules rules;
@@ -39,7 +46,11 @@ class CreateCricketMatchController {
     }
 
     final match = CricketMatchService().createCricketMatch(
-        team1: team1.value!, team2: team2.value!, rules: rules);
+      team1: team1.value!,
+      team2: team2.value!,
+      venue: venue.value!,
+      rules: rules,
+    );
 
     return match;
   }

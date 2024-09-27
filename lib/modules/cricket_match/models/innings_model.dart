@@ -4,7 +4,7 @@ import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart'
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/team/team_model.dart';
+import 'package:scorecard/modules/team/models/team_model.dart';
 
 class InningsIndex {
   final int over;

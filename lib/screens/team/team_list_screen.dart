@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/modules/team/team_model.dart';
+import 'package:scorecard/modules/team/models/team_model.dart';
 
 class TeamListScreen extends StatelessWidget {
   const TeamListScreen({super.key});

@@ -1,17 +1,29 @@
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
-import 'package:scorecard/modules/team/team_model.dart';
+import 'package:scorecard/modules/team/models/team_model.dart';
+import 'package:scorecard/modules/venue/models/venue_model.dart';
 
-abstract class CricketMatch {}
+abstract class CricketMatch {
+  final String id;
+
+  CricketMatch({required this.id});
+}
 
 class ScheduledCricketMatch extends CricketMatch {
   final Team team1;
   final Team team2;
 
+  final Venue venue;
+
   final GameRules rules;
 
-  ScheduledCricketMatch(
-      {required this.team1, required this.team2, required this.rules});
+  ScheduledCricketMatch({
+    required super.id,
+    required this.team1,
+    required this.team2,
+    required this.venue,
+    required this.rules,
+  });
 }
 
 class InitializedCricketMatch extends ScheduledCricketMatch {
@@ -21,8 +33,10 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
   final Squad squad2;
 
   InitializedCricketMatch({
+    required super.id,
     required super.team1,
     required super.team2,
+    required super.venue,
     required super.rules,
     required this.toss,
     required this.squad1,
@@ -35,8 +49,10 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
     required Squad squad1,
     required Squad squad2,
   }) : this(
+          id: match.id,
           team1: match.team1,
           team2: match.team2,
+          venue: match.venue,
           rules: match.rules,
           toss: toss,
           squad1: squad1,
@@ -50,8 +66,10 @@ class OngoingCricketMatch extends InitializedCricketMatch {
   final CricketGame game;
 
   OngoingCricketMatch({
+    required super.id,
     required super.team1,
     required super.team2,
+    required super.venue,
     required super.rules,
     required super.toss,
     required super.squad1,
@@ -63,8 +81,10 @@ class OngoingCricketMatch extends InitializedCricketMatch {
     InitializedCricketMatch match, {
     required CricketGame game,
   }) : this(
+          id: match.id,
           team1: match.team1,
           team2: match.team2,
+          venue: match.venue,
           rules: match.rules,
           toss: match.toss,
           squad1: match.squad1,
@@ -74,14 +94,17 @@ class OngoingCricketMatch extends InitializedCricketMatch {
 }
 
 class CompletedCricketMatch extends OngoingCricketMatch {
-  CompletedCricketMatch(
-      {required super.team1,
-      required super.team2,
-      required super.rules,
-      required super.toss,
-      required super.squad1,
-      required super.squad2,
-      required super.game});
+  CompletedCricketMatch({
+    required super.id,
+    required super.team1,
+    required super.team2,
+    required super.venue,
+    required super.rules,
+    required super.toss,
+    required super.squad1,
+    required super.squad2,
+    required super.game,
+  });
   // final MatchResult result;
   //
   // CompletedCricketMatch() {

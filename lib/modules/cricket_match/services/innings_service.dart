@@ -1,7 +1,7 @@
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/team/team_model.dart';
+import 'package:scorecard/modules/team/models/team_model.dart';
 
 class InningsService {
   void nextInnings({
@@ -54,12 +54,17 @@ class InningsService {
     }
   }
 
+  /// Creates a new [BatterInnings] and adds it to the given [Innings]
+  ///
+  /// Call this function when a new batter walks out to bat.
   BatterInnings createBatterInnings(Innings innings, Player batter) {
     final batterInnings = BatterInnings(batter);
     innings.batters.add(batterInnings);
     return batterInnings;
   }
 
+  /// Fetches the [BatterInnings] of the given [player]. Returns `null`
+  /// if the player hasn't batted.
   BatterInnings? getBatterInningsOfPlayer(Innings innings, Player player) {
     try {
       final batterInnings = innings.batters
@@ -70,7 +75,7 @@ class InningsService {
     }
   }
 
-  /// Deletes the last batter innings of the player
+  /// Deletes the LAST [BatterInnings] of the given [player].
   bool deleteBatterInningsOfPlayer(Innings innings, Player player) {
     final batterInnings = getBatterInningsOfPlayer(innings, player);
     if (batterInnings == null) {
@@ -80,10 +85,14 @@ class InningsService {
     return true;
   }
 
+  /// Deletes the LAST [BatterInnings] from the given [innings]
   void deleteLastBatterInnings(Innings innings) {
     if (innings.batters.isNotEmpty) innings.batters.removeLast();
   }
 
+  /// Creates a new [BowlerInnings] in the given [innings].
+  ///
+  /// CAll this function when a new bowler
   BowlerInnings createBowlerInnings(Innings innings, Player bowler) {
     final bowlerInnings = BowlerInnings(bowler);
     innings.bowlers.add(bowlerInnings);

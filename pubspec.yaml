@@ -43,6 +43,7 @@ dependencies:
   share_plus: ^10.0.2
   get_it: ^8.0.0
   ulid: ^2.0.1
+  sqflite: ^2.3.3+2
 
 dev_dependencies:
   flutter_test:

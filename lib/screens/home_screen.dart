@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/screens/cricket_match/create_cricket_match_screen.dart';
-import 'package:scorecard/screens/player/player_list_screen.dart';
-import 'package:scorecard/screens/team/team_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,51 +9,16 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: ListView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _HomeScreenSection(
-              title: "Players",
-              children: [
-                PlayerTile(
-                  Player(name: "Pratik Nerurkar"),
-                  onSelect: () {},
-                ),
-                PlayerTile(
-                  Player(name: "Rutash Joshipura"),
-                  onSelect: () {},
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.add,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  onTap: () {},
-                  title: Text("Add"),
-                  trailing: Icon(Icons.chevron_right),
-                )
-              ],
+            _HomeScreenTile(
+              title: "New Match",
+              onSelect: () => _createMatch(context),
             ),
-            _HomeScreenSection(title: "Teams", children: [
-              TeamTile(
-                Team(name: "Mumbai Indians", color: Colors.blueAccent.value),
-                onSelect: () {},
-              ),
-              TeamTile(
-                Team(
-                    name: "Chennai Super Kings",
-                    color: Colors.yellowAccent.value),
-                onSelect: () {},
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.add,
-                  color: Theme.of(context).primaryColor,
-                ),
-                onTap: () {},
-                title: Text("Add"),
-                trailing: Icon(Icons.chevron_right),
-              )
-            ])
+            _HomeScreenTile(title: "Load Match"),
+            _HomeScreenTile(title: "Players"),
+            _HomeScreenTile(title: "Venues"),
           ],
         ),
       ),
@@ -70,10 +31,10 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.sports_baseball),
-        onPressed: () => _createMatch(context),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   child: const Icon(Icons.sports_baseball),
+      //   onPressed: () => _createMatch(context),
+      // ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
     );
   }
@@ -81,6 +42,22 @@ class HomeScreen extends StatelessWidget {
   void _createMatch(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => CreateCricketMatchScreen()));
+  }
+}
+
+class _HomeScreenTile extends StatelessWidget {
+  final String title;
+  final void Function()? onSelect;
+
+  const _HomeScreenTile({super.key, required this.title, this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(title),
+      trailing: onSelect == null ? null : const Icon(Icons.chevron_right),
+      onTap: onSelect,
+    );
   }
 }
 

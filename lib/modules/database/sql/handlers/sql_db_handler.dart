@@ -19,6 +19,7 @@ class SQLDBHandler {
       List<String> columns = const [],
       required String where}) async {
     final result = await db.query(table, columns: columns, where: where);
+    return result;
   }
 
   Future<void> update({

@@ -1,107 +1,162 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/controllers/create_cricket_match_controller.dart';
-import 'package:scorecard/screens/cricket_match/cricket_match_screen.dart';
+import 'package:scorecard/modules/team/models/team_model.dart';
 
 class CreateCricketMatchScreen extends StatelessWidget {
-  final controller = CreateCricketMatchController();
+  final teamController = TeamSelectController();
+  final gameRulesController = LimitedOverGameRulesController();
 
   CreateCricketMatchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: ListView(
-            children: [
-              Text("Let's create a new match!",
-                  style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 32),
-              Text("Teams", style: Theme.of(context).textTheme.titleSmall),
-              Text(
-                "Which great sides will be clashing?",
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              ListTile(),
-              const Divider(height: 64),
-              Text("Match Rules",
-                  style: Theme.of(context).textTheme.titleSmall),
-              Text(
-                "These can't be edited once the match is created. Make sure everything is right!",
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 16),
-              const Center(child: Text("Overs")),
-              const SizedBox(height: 4),
-              ValueListenableBuilder(
-                valueListenable: controller.oversPerInnings,
-                builder: (context, value, child) => _NumberChooser(
-                  value: value,
-                  onChange: (value) => controller.oversPerInnings.value = value,
-                  min: 1,
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Center(child: Text("Overs Per Bowler")),
-              const SizedBox(height: 4),
-              ValueListenableBuilder(
-                valueListenable: controller.oversPerBowler,
-                builder: (context, value, child) => _NumberChooser(
-                  value: value,
-                  onChange: (value) => controller.oversPerBowler.value = value,
-                  min: 1,
-                  max: controller.oversPerInnings.value,
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Center(child: Text("No Ball Penalty")),
-              const SizedBox(height: 4),
-              ValueListenableBuilder(
-                valueListenable: controller.noBallPenalty,
-                builder: (context, value, child) => _NumberChooser(
-                  value: value,
-                  onChange: (value) => controller.noBallPenalty.value = value,
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Center(child: Text("Wide Ball Penalty")),
-              const SizedBox(height: 4),
-              ValueListenableBuilder(
-                valueListenable: controller.wideBallPenalty,
-                builder: (context, value, child) => _NumberChooser(
-                  value: value,
-                  onChange: (value) => controller.wideBallPenalty.value = value,
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Center(child: Text("Balls Per Over")),
-              const SizedBox(height: 4),
-              ValueListenableBuilder(
-                valueListenable: controller.ballsPerOver,
-                builder: (context, value, child) => _NumberChooser(
-                  value: value,
-                  onChange: (value) => controller.ballsPerOver.value = value,
-                  min: 1,
-                ),
-              ),
-              const SizedBox(height: 64),
-            ],
-          ),
+      appBar: AppBar(),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: ListView(
+          children: [
+            Text("Let's create a new match!",
+                style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 32),
+            _TeamSelectorSection(teamController),
+            const Divider(height: 64),
+            _LimitedOverGameRulesSection(gameRulesController),
+          ],
         ),
-        bottomNavigationBar: const BottomAppBar(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: FilledButton.icon(
-          onPressed: null,
-          label: const Text("Start"),
-          icon: const Icon(Icons.play_arrow),
-        ));
+      ),
+      bottomNavigationBar: BottomAppBar(
+          child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FilledButton.icon(
+            onPressed: () {},
+            label: const Text("Start"),
+            icon: const Icon(Icons.play_arrow),
+          ),
+        ],
+      )),
+    );
   }
 
   void _initializeMatch(BuildContext context) {
-    final match = controller.scheduleMatch();
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) => CricketMatchScreen(match)));
+    // final match = controller.scheduleMatch();
+    // Navigator.pushReplacement(context,
+    //     MaterialPageRoute(builder: (context) => CricketMatchScreen(match)));
+  }
+}
+
+class _TeamSelectorSection extends StatelessWidget {
+  final TeamSelectController controller;
+  const _TeamSelectorSection(this.controller, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Teams", style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          "Which great sides will be clashing?",
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        _TeamSelectTile(
+          controller.team1,
+          onSelect: () {},
+        ),
+        _TeamSelectTile(
+          controller.team2,
+          onSelect: () {},
+        ),
+      ],
+    );
+  }
+}
+
+class _TeamSelectTile extends StatelessWidget {
+  final Team? team;
+  final void Function() onSelect;
+
+  const _TeamSelectTile(this.team, {super.key, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    if (team == null) {
+      return ListTile(
+        leading: const Icon(Icons.people),
+        title: const Text("Select Team"),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {},
+      );
+    }
+    return ListTile(
+      leading: const Icon(Icons.people),
+      title: Text(team!.name),
+      trailing: const Icon(Icons.chevron_right),
+    );
+  }
+}
+
+class _LimitedOverGameRulesSection extends StatelessWidget {
+  final LimitedOverGameRulesController controller;
+
+  const _LimitedOverGameRulesSection(this.controller, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, child) {
+        final rules = controller.rules;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Game Rules", style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              "These can't be edited once the match is created. Make sure everything is right!",
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            const Center(child: Text("Overs")),
+            const SizedBox(height: 4),
+            _NumberChooser(
+                value: rules.oversPerInnings,
+                min: 1,
+                onChange: (x) => controller.overPerInnings = x),
+            const SizedBox(height: 32),
+            const Center(child: Text("Overs Per Bowler")),
+            const SizedBox(height: 4),
+            _NumberChooser(
+                value: rules.oversPerBowler,
+                min: 1,
+                max: rules.oversPerInnings,
+                onChange: (x) => controller.oversPerBowler = x),
+            const SizedBox(height: 32),
+            const Center(child: Text("No Ball Penalty")),
+            const SizedBox(height: 4),
+            _NumberChooser(
+                value: rules.noBallPenalty,
+                min: 1,
+                onChange: (x) => controller.noBallPenalty = x),
+            const SizedBox(height: 32),
+            const Center(child: Text("Wide Penalty")),
+            const SizedBox(height: 4),
+            _NumberChooser(
+                value: rules.widePenalty,
+                min: 1,
+                onChange: (x) => controller.widePenalty = x),
+            const SizedBox(height: 32),
+            const Center(child: Text("Balls Per Over")),
+            const SizedBox(height: 4),
+            _NumberChooser(
+                value: rules.ballsPerOver,
+                min: 1,
+                onChange: (x) => controller.ballsPerOver = x),
+            const SizedBox(height: 64),
+          ],
+        );
+      },
+    );
   }
 }
 

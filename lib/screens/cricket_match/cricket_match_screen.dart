@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
-import 'package:scorecard/screens/cricket_match/cricket_game_screen.dart';
+import 'package:scorecard/screens/cricket_game/cricket_game_screen.dart';
 
 class CricketMatchScreen extends StatelessWidget {
   final CricketMatch match;

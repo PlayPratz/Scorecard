@@ -99,10 +99,10 @@ class Ball extends InningsPost {
 }
 
 sealed class Innings {
-  final Squad battingSquad;
-  final Squad bowlingSquad;
+  final Lineup battingLineup;
+  final Lineup bowlingLineup;
 
-  Innings({required this.battingSquad, required this.bowlingSquad});
+  Innings({required this.battingLineup, required this.bowlingLineup});
 
   GameRules get rules;
 
@@ -135,8 +135,8 @@ sealed class Innings {
 class LimitedOversInnings extends Innings {
   final LimitedOversRules _rules;
   LimitedOversInnings({
-    required super.battingSquad,
-    required super.bowlingSquad,
+    required super.battingLineup,
+    required super.bowlingLineup,
     required LimitedOversRules rules,
   }) : _rules = rules;
 
@@ -152,8 +152,8 @@ class LimitedOversInnings extends Innings {
 class UnlimitedOversInnings extends Innings {
   final UnlimitedOversRules _rules;
   UnlimitedOversInnings({
-    required super.battingSquad,
-    required super.bowlingSquad,
+    required super.battingLineup,
+    required super.bowlingLineup,
     required UnlimitedOversRules rules,
   }) : _rules = rules;
 
@@ -165,14 +165,47 @@ class UnlimitedOversInnings extends Innings {
   bool get isInningsComplete => throw UnimplementedError();
 }
 
-class BatterInnings {
-  final Player batter;
-
-  BatterInnings(this.batter);
+abstract class PlayerInnings {
+  final posts = <InningsPost>[];
 }
 
-class BowlerInnings {
+class BatterInnings extends PlayerInnings with BasicCalculations {
+  final Player batter;
+  BatterInnings(this.batter);
+
+  @override
+  Iterable<InningsPost> get _posts => posts;
+
+  int get ballCount =>
+      balls.where((ball) => ball.bowlingExtra != BowlingExtra.wide).length;
+}
+
+class BowlerInnings extends PlayerInnings with BasicCalculations {
   final Player bowler;
 
   BowlerInnings(this.bowler);
+
+  @override
+  Iterable<InningsPost> get _posts => posts;
+
+  Iterable<Ball> get wickets =>
+      balls.where((ball) => isBowlerWicket(ball.wicket));
+  int get wicketCount => wickets.length;
+
+  bool isBowlerWicket(Wicket? wicket) => switch (wicket) {
+        BowledWicket() ||
+        HitWicket() ||
+        LbwWicket() ||
+        CaughtWicket() ||
+        StumpedWicket() =>
+          true,
+        null || RunoutWicket() || TimedOutWicket() => false
+      };
+}
+
+mixin BasicCalculations {
+  Iterable<InningsPost> get _posts;
+  Iterable<Ball> get balls => _posts.whereType<Ball>();
+
+  int get runs => balls.fold(0, (runs, ball) => runs + ball.runs);
 }

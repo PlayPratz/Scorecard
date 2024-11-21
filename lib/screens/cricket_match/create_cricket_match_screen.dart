@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/modules/cricket_match/controllers/create_cricket_match_controller.dart';
+import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
+import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
+import 'package:scorecard/modules/cricket_match/services/cricket_match_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
+import 'package:scorecard/modules/venue/models/venue_model.dart';
+import 'package:scorecard/screens/cricket_match/cricket_match_screen.dart';
+import 'package:scorecard/screens/team/team_list_screen.dart';
 
 class CreateCricketMatchScreen extends StatelessWidget {
   final teamController = TeamSelectController();
   final gameRulesController = LimitedOverGameRulesController();
 
+  late final CreateCricketMatchController controller;
+
   CreateCricketMatchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    controller = CreateCricketMatchController(
+        teamSelectController: teamController,
+        limitedOverGameRulesController: gameRulesController);
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -30,7 +40,7 @@ class CreateCricketMatchScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           FilledButton.icon(
-            onPressed: () {},
+            onPressed: () => _initializeMatch(context),
             label: const Text("Start"),
             icon: const Icon(Icons.play_arrow),
           ),
@@ -40,9 +50,11 @@ class CreateCricketMatchScreen extends StatelessWidget {
   }
 
   void _initializeMatch(BuildContext context) {
-    // final match = controller.scheduleMatch();
-    // Navigator.pushReplacement(context,
-    //     MaterialPageRoute(builder: (context) => CricketMatchScreen(match)));
+    final match = controller.scheduleMatch();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => CricketMatchScreen(match)),
+    );
   }
 }
 
@@ -60,15 +72,40 @@ class _TeamSelectorSection extends StatelessWidget {
           "Which great sides will be clashing?",
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        _TeamSelectTile(
-          controller.team1,
-          onSelect: () {},
-        ),
-        _TeamSelectTile(
-          controller.team2,
-          onSelect: () {},
-        ),
+        const SizedBox(height: 8),
+        ListenableBuilder(
+          listenable: controller,
+          builder: (context, child) => Column(
+            children: [
+              _TeamSelectTile(
+                controller.team1,
+                onSelect: () => onSelectTeam(context, 1),
+              ),
+              const SizedBox(height: 8),
+              _TeamSelectTile(
+                controller.team2,
+                onSelect: () => onSelectTeam(context, 2),
+              ),
+            ],
+          ),
+        )
       ],
+    );
+  }
+
+  void onSelectTeam(BuildContext context, int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TeamListScreen(onSelect: (team) {
+          if (index == 1) {
+            controller.team1 = team;
+          } else if (index == 2) {
+            controller.team2 = team;
+          }
+          Navigator.pop(context);
+        }),
+      ),
     );
   }
 }
@@ -86,13 +123,16 @@ class _TeamSelectTile extends StatelessWidget {
         leading: const Icon(Icons.people),
         title: const Text("Select Team"),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () {},
+        onTap: onSelect,
       );
     }
     return ListTile(
       leading: const Icon(Icons.people),
       title: Text(team!.name),
       trailing: const Icon(Icons.chevron_right),
+      tileColor: Color(team!.color).withOpacity(0.8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      onTap: onSelect,
     );
   }
 }
@@ -214,5 +254,140 @@ class _NumberChooser extends StatelessWidget {
     } else {
       onChange(newValue);
     }
+  }
+}
+
+class CreateCricketMatchController {
+  final TeamSelectController teamSelectController;
+  final LimitedOverGameRulesController limitedOverGameRulesController;
+  // final VenueSelectController venueSelectController;
+
+  CreateCricketMatchController({
+    required this.teamSelectController,
+    required this.limitedOverGameRulesController,
+    // required this.venueSelectController,
+  });
+
+  bool get canCreateMatch =>
+      teamSelectController.team1 != null && teamSelectController.team2 != null;
+
+  CricketMatch scheduleMatch() {
+    if (!canCreateMatch) {
+      throw UnsupportedError("Please select two teams");
+    }
+
+    // if (venue.value == null) {
+    //   throw UnsupportedError("Please select a venue");
+    // }
+
+    final match = _service.createCricketMatch(
+      team1: teamSelectController.team1!,
+      team2: teamSelectController.team2!,
+      venue: Venue(name: "default"),
+      rules: limitedOverGameRulesController.rules,
+    );
+
+    return match;
+  }
+
+  CricketMatchService get _service => CricketMatchService();
+}
+
+class TeamSelectController with ChangeNotifier {
+  Team? _team1;
+  Team? _team2;
+
+  void _dispatchState() {
+    notifyListeners();
+  }
+
+  Team? get team1 => _team1;
+  set team1(Team? x) {
+    _team1 = x;
+    if (_team2 == x) {
+      _team2 = null;
+    }
+    _dispatchState();
+  }
+
+  Team? get team2 => _team2;
+  set team2(Team? x) {
+    _team2 = x;
+    if (_team1 == x) {
+      _team1 = null;
+    }
+    _dispatchState();
+  }
+}
+
+class TeamSelectState {
+  final Team? team;
+
+  TeamSelectState(this.team);
+}
+
+class LimitedOverGameRulesController with ChangeNotifier {
+  int _ballsPerOver = 6;
+  int _noBallPenalty = 1;
+  int _widePenalty = 1;
+  int _oversPerInnings = 10;
+  int _oversPerBowler = 10;
+  bool _allowLastMan = false;
+  bool _allowSingleBatter = false;
+
+  LimitedOversRules get rules => LimitedOversRules(
+        ballsPerOver: _ballsPerOver,
+        widePenalty: _widePenalty,
+        noBallPenalty: _noBallPenalty,
+        oversPerInnings: _oversPerInnings,
+        oversPerBowler: _oversPerBowler,
+        allowSingleBatter: _allowSingleBatter,
+        allowLastMan: _allowLastMan,
+      );
+  // LimitedOverGameRulesController(super.value);
+
+  void _dispatchState() {
+    notifyListeners();
+  }
+
+  set ballsPerOver(int x) {
+    _ballsPerOver = x;
+    _dispatchState();
+  }
+
+  set noBallPenalty(int x) {
+    _noBallPenalty = x;
+    _dispatchState();
+  }
+
+  set widePenalty(int x) {
+    _widePenalty = x;
+    _dispatchState();
+  }
+
+  set overPerInnings(int x) {
+    _oversPerInnings = x;
+    if (_oversPerBowler > x) {
+      _oversPerBowler = x;
+    }
+    _dispatchState();
+  }
+
+  set oversPerBowler(int x) {
+    _oversPerBowler = x;
+    _dispatchState();
+  }
+
+  set allowLastMan(bool x) {
+    _allowLastMan = x;
+    _dispatchState();
+  }
+
+  set allowSingleBatter(bool x) {
+    _allowSingleBatter = x;
+    if (_allowSingleBatter) {
+      _allowLastMan = true;
+    }
+    _dispatchState();
   }
 }

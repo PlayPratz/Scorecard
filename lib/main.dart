@@ -20,8 +20,8 @@ import 'package:scorecard/screens/home_screen.dart';
 /// essentially an abstraction of a database.
 ///
 /// [Services] are STATELESS classes that perform major Business Logic
-/// operations. They are initialized once and used throughout the app. The
-/// service is responsible for all procedural work in the app, like fulfilling
+/// operations. They are initialized once and used throughout the app. Services
+/// are responsible for all procedural work in the app, like fulfilling
 /// the pre-requisites of any operation or validating inputs.
 ///
 /// [Controllers] are STATE controllers that manipulate the state of UI. Any
@@ -37,7 +37,7 @@ import 'package:scorecard/screens/home_screen.dart';
 ///
 /// The above list is ordered such that every [Component] may import other
 /// components of the same level or any component above it, but CANNOT import
-/// any component below it. To clarify, a Model can only see other Models, and
+/// any component below it. To clarify, a Model can only see other Models, but
 /// MUST NOT import a Handler, Repository, Service, Controller and of course,
 /// Screen. Similarly, a Service can import Repositories, Handlers, Models and
 /// even other Services, but not Controllers and Screens.

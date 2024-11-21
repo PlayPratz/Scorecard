@@ -2,13 +2,19 @@ sealed class GameRules {
   final int ballsPerOver;
   // final int wicketsPerInnings; TODO
 
-  final int widePenalty;
   final int noBallPenalty;
+  final int widePenalty;
 
-  GameRules(
-      {required this.ballsPerOver,
-      required this.widePenalty,
-      required this.noBallPenalty});
+  final bool allowSingleBatter;
+  final bool allowLastMan;
+
+  GameRules({
+    required this.ballsPerOver,
+    required this.noBallPenalty,
+    required this.widePenalty,
+    required this.allowSingleBatter,
+    required this.allowLastMan,
+  });
 }
 
 class LimitedOversRules extends GameRules {
@@ -17,8 +23,10 @@ class LimitedOversRules extends GameRules {
 
   LimitedOversRules({
     required super.ballsPerOver,
-    required super.widePenalty,
     required super.noBallPenalty,
+    required super.widePenalty,
+    required super.allowSingleBatter,
+    required super.allowLastMan,
     required this.oversPerInnings,
     required this.oversPerBowler,
   });
@@ -26,10 +34,12 @@ class LimitedOversRules extends GameRules {
   LimitedOversRules.standard()
       : this(
           ballsPerOver: 6,
+          noBallPenalty: 1,
+          allowLastMan: false,
+          allowSingleBatter: false,
+          widePenalty: 1,
           oversPerInnings: 5,
           oversPerBowler: -1,
-          noBallPenalty: 1,
-          widePenalty: 1,
         );
 }
 
@@ -39,8 +49,10 @@ class UnlimitedOversRules extends GameRules {
 
   UnlimitedOversRules({
     required super.ballsPerOver,
-    required super.widePenalty,
     required super.noBallPenalty,
+    required super.widePenalty,
+    required super.allowSingleBatter,
+    required super.allowLastMan,
     required this.days,
     required this.inningsPerSide,
   });

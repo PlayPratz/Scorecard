@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
@@ -55,7 +56,23 @@ class RAMPlayerRepository implements IRepository<Player> {
 }
 
 class RAMTeamRepository implements IRepository<Team> {
-  final _database = <String, Team>{};
+  final _database = <String, Team>{
+    "ipl_1": Team(
+        id: "ipl_1",
+        name: "Mumbai Indians",
+        short: "MI",
+        color: Colors.blue.value),
+    "ipl_2": Team(
+        id: "ipl_2",
+        name: "Chennai Super Kings",
+        short: "CSK",
+        color: Colors.orangeAccent.value),
+    "ipl_3": Team(
+        id: "ipl_3",
+        name: "Royal Challengers Bengaluru",
+        short: "RCB",
+        color: Colors.red.value),
+  };
 
   @override
   Future<void> create(Team team) async {

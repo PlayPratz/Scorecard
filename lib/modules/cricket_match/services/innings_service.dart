@@ -6,39 +6,39 @@ import 'package:scorecard/modules/team/models/team_model.dart';
 class InningsService {
   void nextInnings({
     required CricketGame game,
-    required Squad battingSquad,
-    required Squad bowlingSquad,
+    required Lineup battingLineup,
+    required Lineup bowlingLineup,
   }) {
     late final Innings innings;
     switch (game) {
       case LimitedOversGame():
         innings = LimitedOversInnings(
           rules: game.rules,
-          battingSquad: battingSquad,
-          bowlingSquad: bowlingSquad,
+          battingLineup: battingLineup,
+          bowlingLineup: bowlingLineup,
         );
       case UnlimitedOversGame():
         innings = UnlimitedOversInnings(
           rules: game.rules,
-          battingSquad: battingSquad,
-          bowlingSquad: bowlingSquad,
+          battingLineup: battingLineup,
+          bowlingLineup: bowlingLineup,
         );
     }
     game.innings.add(innings);
   }
 
-  void initializeInnings(
-    Innings innings, {
-    required Player batter1,
-    required Player batter2,
-    required Player bowler,
-  }) {
-    final batterInnings1 = createBatterInnings(innings, batter1);
-    final batterInnings2 = createBatterInnings(innings, batter2);
-    final bowlerInnings = createBowlerInnings(innings, bowler);
-
-    setStrike(innings, batterInnings1);
-  }
+  // void initializeInnings(
+  //   Innings innings, {
+  //   required Player batter1,
+  //   required Player batter2,
+  //   required Player bowler,
+  // }) {
+  //   final batterInnings1 = createBatterInnings(innings, batter1);
+  //   final batterInnings2 = createBatterInnings(innings, batter2);
+  //   final bowlerInnings = createBowlerInnings(innings, bowler);
+  //
+  //   setStrike(innings, batterInnings1);
+  // }
 
   void setStrike(Innings innings, BatterInnings batter) {
     if (innings.batter1 == batter || innings.batter2 == batter) {
@@ -119,20 +119,40 @@ class InningsService {
     innings.bowlers.removeLast();
   }
 
-  void postToInnings(Innings innings, InningsPost event) {
-    innings.posts.add(event);
+  void postToInnings(Innings innings, InningsPost post) {
+    innings.posts.add(post);
 
-    if (event is Ball) {
+    if (post is Ball) {
       // Swap strike for odd number of runs
-      if (event.runsScored % 2 == 1) swapStrike(innings);
+      if (post.runsScored % 2 == 1) swapStrike(innings);
 
       // Swap strike whenever an over completes
-      if (event.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
+      if (post.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
     }
   }
 
   void undoPostFromInnings(Innings innings) {
-    if (innings.posts.isNotEmpty) innings.posts.removeLast();
+    if (innings.posts.isEmpty) return;
+
+    final post = innings.posts.removeLast();
+    switch (post) {
+      case NextBowler():
+        if (post.previous == null) {
+          innings.bowler = null;
+        } else {
+          innings.bowler = getBowlerInningsOfPlayer(innings, post.previous!);
+        }
+      case BatterRetire():
+        final batterInnings = getBatterInningsOfPlayer(innings, post.batter);
+        batterInnings.posts.removeLast();
+      //TODO DO SOMETHING
+      case NonStrikerRunout():
+      // TODO: Handle this case.
+      case NextBatter():
+      // TODO: Handle this case.
+      case Ball():
+      // TODO: Handle this case.
+    }
   }
 
   void forfeitInnings(Innings innings) {

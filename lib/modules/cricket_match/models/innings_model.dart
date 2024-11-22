@@ -11,13 +11,31 @@ class InningsIndex {
   final int ball;
 
   const InningsIndex(this.over, this.ball);
+
+  const InningsIndex.zero()
+      : over = 0,
+        ball = 0;
+
+  @override
+  String toString() => "$over.$ball";
 }
 
 sealed class InningsPost {
   final InningsIndex index;
-  final String? comments;
+  final String? comment;
 
-  InningsPost({required this.index, this.comments});
+  InningsPost({required this.index, this.comment});
+}
+
+class BowlerRetire extends InningsPost {
+  final Player bowler;
+  final RetiredBowler retired;
+
+  BowlerRetire({
+    required super.index,
+    required this.bowler,
+    required this.retired,
+  });
 }
 
 class NextBowler extends InningsPost {
@@ -26,7 +44,7 @@ class NextBowler extends InningsPost {
 
   NextBowler({
     required super.index,
-    super.comments,
+    super.comment,
     required this.previous,
     required this.next,
   });
@@ -34,23 +52,13 @@ class NextBowler extends InningsPost {
 
 class BatterRetire extends InningsPost {
   final Player batter;
-  final Retired retired;
+  final RetiredBatter retired;
 
   BatterRetire({
     required super.index,
-    super.comments,
+    super.comment,
     required this.batter,
     required this.retired,
-  });
-}
-
-class NonStrikerRunout extends InningsPost {
-  final RunoutWicket wicket;
-
-  NonStrikerRunout({
-    required super.index,
-    super.comments,
-    required this.wicket,
   });
 }
 
@@ -60,9 +68,19 @@ class NextBatter extends InningsPost {
 
   NextBatter({
     required super.index,
-    super.comments,
+    super.comment,
     required this.previous,
     required this.next,
+  });
+}
+
+class RunoutBeforeDelivery extends InningsPost {
+  final RunoutWicket wicket;
+
+  RunoutBeforeDelivery({
+    required super.index,
+    super.comment,
+    required this.wicket,
   });
 }
 
@@ -111,13 +129,19 @@ sealed class Innings {
   UnmodifiableListView<Ball> get balls =>
       UnmodifiableListView(posts.whereType<Ball>());
 
+  /// Total runs awarded to the batting team
   int get runs => balls.fold(0, (value, ball) => value + ball.runs);
+
+  /// Total wickets taken by the bowling team
   int get wickets => balls.where((ball) => ball.isWicket).length;
 
-  int get oversBowled {
-    if (balls.isEmpty) return 0;
-    return balls.last.index.over + 1;
-  }
+  /// Are all wickets lost by the batting team
+  // bool get isAllDown => wickets >= rules.wicketsPerSide; TODO
+
+  // int get oversBowled {
+  //   if (balls.isEmpty) return 0;
+  //   return balls.last.index.over + 1;
+  // }
 
   bool get isInningsComplete;
 
@@ -145,8 +169,30 @@ class LimitedOversInnings extends Innings {
   @override
   LimitedOversRules get rules => _rules;
 
+  bool get isBowlingComplete =>
+      balls.isNotEmpty &&
+      balls.last.index.over + 1 == rules.oversPerInnings &&
+      balls.last.index.ball == rules.ballsPerOver;
+
   @override
-  bool get isInningsComplete => oversBowled == rules.oversPerInnings;
+  bool get isInningsComplete => isBowlingComplete;
+}
+
+class LimitedOversInningsWithTarget extends LimitedOversInnings {
+  /// Runs required by the batting team to win the game
+  final int target;
+
+  LimitedOversInningsWithTarget({
+    required super.battingLineup,
+    required super.bowlingLineup,
+    required super.rules,
+    required this.target,
+  });
+
+  bool get isTargetAchieved => runs >= target;
+
+  @override
+  bool get isInningsComplete => isTargetAchieved || isBowlingComplete;
 }
 
 class UnlimitedOversInnings extends Innings {
@@ -169,30 +215,60 @@ abstract class PlayerInnings {
   final posts = <InningsPost>[];
 }
 
-class BatterInnings extends PlayerInnings with BasicCalculations {
-  final Player batter;
-  BatterInnings(this.batter);
+class BatterInnings extends PlayerInnings with BattingCalculations {
+  final Player player;
+  BatterInnings(this.player);
+
+  Wicket? wicket;
+  RetiredBatter? retired;
 
   @override
   Iterable<InningsPost> get _posts => posts;
 
   int get ballCount =>
       balls.where((ball) => ball.bowlingExtra != BowlingExtra.wide).length;
+
+  bool get isOut => wicket != null;
+  bool get isRetired => retired != null;
 }
 
-class BowlerInnings extends PlayerInnings with BasicCalculations {
-  final Player bowler;
-
-  BowlerInnings(this.bowler);
+class BowlerInnings extends PlayerInnings with BowlingCalculations {
+  final Player player;
 
   @override
-  Iterable<InningsPost> get _posts => posts;
+  Iterable<Ball> get balls => posts.whereType<Ball>();
+
+  @override
+  final int ballsPerOver;
+
+  BowlerInnings(this.player, {required this.ballsPerOver});
+}
+
+mixin BattingCalculations {
+  Iterable<InningsPost> get _posts;
+  Iterable<Ball> get balls => _posts.whereType<Ball>();
+  int get runs => balls.fold(0, (runs, ball) => runs + ball.runs);
+}
+
+mixin BowlingCalculations {
+  Iterable<Ball> get balls;
+  int get ballsPerOver;
+
+  int get runsConceded => balls
+      .where((b) => !b.isBattingExtra)
+      .fold(0, (sum, ball) => sum + ball.runs);
+
+  int get ballCount => balls.where((b) => !b.isBowlingExtra).length;
+
+  double get economy => runsConceded / ballCount * ballsPerOver;
+
+  double get average => runsConceded / wicketCount;
 
   Iterable<Ball> get wickets =>
-      balls.where((ball) => isBowlerWicket(ball.wicket));
+      balls.where((ball) => _isBowlerWicket(ball.wicket));
   int get wicketCount => wickets.length;
 
-  bool isBowlerWicket(Wicket? wicket) => switch (wicket) {
+  bool _isBowlerWicket(Wicket? wicket) => switch (wicket) {
         BowledWicket() ||
         HitWicket() ||
         LbwWicket() ||
@@ -201,11 +277,4 @@ class BowlerInnings extends PlayerInnings with BasicCalculations {
           true,
         null || RunoutWicket() || TimedOutWicket() => false
       };
-}
-
-mixin BasicCalculations {
-  Iterable<InningsPost> get _posts;
-  Iterable<Ball> get balls => _posts.whereType<Ball>();
-
-  int get runs => balls.fold(0, (runs, ball) => runs + ball.runs);
 }

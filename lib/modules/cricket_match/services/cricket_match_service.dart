@@ -1,4 +1,3 @@
-import 'package:get_it/get_it.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/repository/service/repostiory_service.dart';
@@ -46,17 +45,17 @@ class CricketMatchService {
   OngoingCricketMatch commenceCricketMatch(
       InitializedCricketMatch initializedMatch) {
     late final CricketGame game;
-
-    switch (initializedMatch.rules) {
+    final rules = initializedMatch.rules;
+    switch (rules) {
       case LimitedOversRules():
         game = LimitedOversGame(
-          rules: initializedMatch.rules as LimitedOversRules,
+          rules: rules,
           lineup1: initializedMatch.lineup1,
           lineup2: initializedMatch.lineup2,
         );
       case UnlimitedOversRules():
         game = UnlimitedOversGame(
-          rules: initializedMatch.rules as UnlimitedOversRules,
+          rules: rules,
           lineup1: initializedMatch.lineup1,
           lineup2: initializedMatch.lineup2,
         );
@@ -68,5 +67,5 @@ class CricketMatchService {
   }
 
   IRepository<CricketMatch> get _repository =>
-      GetIt.I.get<IRepositoryService>().getCricketMatchRepository();
+      RepositoryService().getCricketMatchRepository();
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:scorecard/modules/repository/service/repostiory_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
@@ -88,8 +87,7 @@ class TeamListController {
         .then((teams) => _streamController.add(TeamListLoadedState(teams)));
   }
 
-  IRepository<Team> get _repository =>
-      GetIt.I.get<IRepositoryService>().getTeamRepository();
+  IRepository<Team> get _repository => RepositoryService().getTeamRepository();
 }
 
 sealed class TeamListState {}

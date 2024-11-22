@@ -1,4 +1,3 @@
-import 'package:get_it/get_it.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/repository/service/repostiory_service.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
@@ -54,5 +53,5 @@ class PlayerService {
   }
 
   IRepository<Player> get _playerRepository =>
-      GetIt.I.get<IRepositoryService>().getPlayerRepository();
+      RepositoryService().getPlayerRepository();
 }

@@ -5,6 +5,8 @@ import 'package:scorecard/repositories/generic_repository.dart';
 import 'package:scorecard/repositories/ram_repository.dart';
 
 abstract class IRepositoryService {
+  IRepositoryService._();
+
   void initialize();
   // void register(IRepository repository);
   // IRepository get(Type T);
@@ -15,13 +17,22 @@ abstract class IRepositoryService {
   void shutdown();
 }
 
-class RAMRepositoryService implements IRepositoryService {
-  final _playerRepository = RAMPlayerRepository();
-  final _teamRepository = RAMTeamRepository();
-  final _cricketMatchRepository = RAMCricketMatchRepository();
+// TODO This is probably not stateless, need to rework.
+class RepositoryService implements IRepositoryService {
+  RepositoryService._();
+  static final _instance = RepositoryService._();
+  factory RepositoryService() => _instance;
+
+  late final IRepository<Player> _playerRepository;
+  late final IRepository<Team> _teamRepository;
+  late final IRepository<CricketMatch> _cricketMatchRepository;
 
   @override
-  void initialize() {}
+  void initialize() {
+    _playerRepository = RAMPlayerRepository();
+    _teamRepository = RAMTeamRepository();
+    _cricketMatchRepository = RAMCricketMatchRepository();
+  }
 
   @override
   IRepository<Player> getPlayerRepository() => _playerRepository;

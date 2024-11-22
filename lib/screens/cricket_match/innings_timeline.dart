@@ -4,7 +4,7 @@ import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 class InningsTimelineScreen extends StatelessWidget {
   final Innings innings;
 
-  const InningsTimelineScreen({super.key, required this.innings});
+  const InningsTimelineScreen(this.innings, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,28 +14,25 @@ class InningsTimelineScreen extends StatelessWidget {
       child: ListView.builder(
         itemBuilder: (context, index) {
           final post = posts[index];
-          late final Widget widget;
-          // TODO Abstract Text
-          switch (post) {
-            case NextBowler():
-              widget = Text("${post.next.name} is going to bowl the next over");
-            case BatterRetire():
-              widget = Text("${post.batter.name} has retired");
-            case NonStrikerRunout():
-              widget = Text(
-                  "${post.wicket.batter} has been run-out at the non-striker's end!");
-            case NextBatter():
-              widget = Text("The next batter in is ${post.next.name}");
-            case Ball():
-              widget = Text(
-                  "${post.bowler.name} to ${post.batter.name}, ${post.runs} runs");
-          }
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: widget,
+            child: widget(post),
           );
         },
       ),
     );
   }
+
+  Widget widget(InningsPost post) => switch (post) {
+        BowlerRetire() => Text("${post.bowler.name} has retired"),
+        NextBowler() =>
+          Text("${post.next.name} is going to bowl the next over"),
+        BatterRetire() => Text("${post.batter.name} has retired"),
+        NextBatter() => Text("The next batter in is ${post.next.name}"),
+        RunoutBeforeDelivery() => Text(
+            "${post.wicket.batter} has been run-out at the non-striker's end!"),
+        // TODO: Handle this case.
+        Ball() =>
+          Text("${post.bowler.name} to ${post.batter.name}, ${post.runs} runs"),
+      };
 }

@@ -8,15 +8,14 @@ import 'package:scorecard/screens/cricket_match/cricket_match_screen.dart';
 import 'package:scorecard/screens/team/team_list_screen.dart';
 
 class CreateCricketMatchScreen extends StatelessWidget {
-  final teamController = TeamSelectController();
-  final gameRulesController = LimitedOverGameRulesController();
-
   late final CreateCricketMatchController controller;
 
   CreateCricketMatchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final teamController = TeamSelectController();
+    final gameRulesController = LimitedOverGameRulesController();
     controller = CreateCricketMatchController(
         teamSelectController: teamController,
         limitedOverGameRulesController: gameRulesController);
@@ -88,7 +87,7 @@ class _TeamSelectorSection extends StatelessWidget {
               ),
             ],
           ),
-        )
+        ),
       ],
     );
   }

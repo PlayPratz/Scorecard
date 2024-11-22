@@ -21,6 +21,8 @@ class BallColors {
   static const Color wide = Colors.white;
   static const Color post = Colors.blueGrey;
 
+  static const Color newOver = Colors.lightBlueAccent;
+
   // static const highlight = Color(0xFFFF8000);
   // static const highlight = Colors.greenAccent;
   // static const online = Color(0xFF30D158);

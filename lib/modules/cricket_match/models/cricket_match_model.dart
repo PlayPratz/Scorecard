@@ -1,5 +1,6 @@
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
+import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/modules/venue/models/venue_model.dart';
 
@@ -96,8 +97,6 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
 /// Continuing our example, as long as Rohit Sharma smacks Starc or Bumrah
 /// contains Head, it's an ongoing match. No, I'm not salty about 19 Nov 2023!
 class OngoingCricketMatch extends InitializedCricketMatch {
-  final List<Innings> innings = [];
-
   /// The game that is played between the two teams, as it happens.
   final CricketGame game;
 
@@ -138,6 +137,9 @@ class OngoingCricketMatch extends InitializedCricketMatch {
 ///
 /// (19 Nov still hurts).
 class CompletedCricketMatch extends OngoingCricketMatch {
+  final CricketMatchResult result;
+  final Player? playerOfTheMatch;
+
   CompletedCricketMatch({
     required super.id,
     required super.team1,
@@ -149,12 +151,9 @@ class CompletedCricketMatch extends OngoingCricketMatch {
     required super.lineup1,
     required super.lineup2,
     required super.game,
+    required this.result,
+    required this.playerOfTheMatch,
   });
-  // final MatchResult result;
-  //
-  // CompletedCricketMatch() {
-  //   result
-  // }
 }
 
 enum TossChoice { bat, field }
@@ -170,7 +169,39 @@ class Toss {
   Toss({required this.winner, required this.choice});
 }
 
-class MatchResult {}
+sealed class CricketMatchResult {}
+
+sealed class LimitedOversMatchResult extends CricketMatchResult {}
+
+class WinByChasingResult extends LimitedOversMatchResult {
+  final Team winner;
+  final Team loser;
+
+  // final int wicketsMargin; TODO
+  final int ballsToSpare;
+
+  WinByChasingResult(
+      {required this.winner, required this.loser, required this.ballsToSpare});
+}
+
+class WinByDefendingResult extends LimitedOversMatchResult {
+  final Team winner;
+  final Team loser;
+
+  final int runsMargin;
+
+  WinByDefendingResult(
+      {required this.winner, required this.loser, required this.runsMargin});
+}
+
+class TieResult extends LimitedOversMatchResult {
+  final Team team1;
+  final Team team2;
+
+  TieResult({required this.team1, required this.team2});
+}
+
+sealed class UnlimitedOversMatchResult extends CricketMatchResult {}
 
 /// This might be confusing -- what's the difference between a [CricketMatch]
 /// and a [CricketGame]?
@@ -193,7 +224,7 @@ sealed class CricketGame {
 
   GameRules get rules;
 
-  final List<Innings> innings = [];
+  List<Innings> get innings;
   Innings get currentInnings => innings.last;
 
   int get team1runs => _getTeamRuns(lineup1.team);
@@ -222,6 +253,12 @@ class LimitedOversGame extends CricketGame {
   @override
   LimitedOversRules get rules => _rules;
 
+  @override
+  final List<LimitedOversInnings> innings = [];
+
+  @override
+  LimitedOversInnings get currentInnings => innings.last;
+
   LimitedOversGame({
     required super.lineup1,
     required super.lineup2,
@@ -236,6 +273,9 @@ class UnlimitedOversGame extends CricketGame {
   final UnlimitedOversRules _rules;
   @override
   UnlimitedOversRules get rules => _rules;
+
+  @override
+  List<UnlimitedOversInnings> innings = [];
 
   UnlimitedOversGame({
     required super.lineup1,

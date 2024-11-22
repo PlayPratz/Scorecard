@@ -1,51 +1,21 @@
-import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
+import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/team/models/team_model.dart';
 
+/// Handles the business logic with all operations related to an [Innings].
 class InningsService {
-  void nextInnings({
-    required CricketGame game,
-    required Lineup battingLineup,
-    required Lineup bowlingLineup,
-  }) {
-    late final Innings innings;
-    switch (game) {
-      case LimitedOversGame():
-        innings = LimitedOversInnings(
-          rules: game.rules,
-          battingLineup: battingLineup,
-          bowlingLineup: bowlingLineup,
-        );
-      case UnlimitedOversGame():
-        innings = UnlimitedOversInnings(
-          rules: game.rules,
-          battingLineup: battingLineup,
-          bowlingLineup: bowlingLineup,
-        );
-    }
-    game.innings.add(innings);
-  }
+  InningsService._();
+  static final _instance = InningsService._();
+  factory InningsService() => _instance;
 
-  // void initializeInnings(
-  //   Innings innings, {
-  //   required Player batter1,
-  //   required Player batter2,
-  //   required Player bowler,
-  // }) {
-  //   final batterInnings1 = createBatterInnings(innings, batter1);
-  //   final batterInnings2 = createBatterInnings(innings, batter2);
-  //   final bowlerInnings = createBowlerInnings(innings, bowler);
-  //
-  //   setStrike(innings, batterInnings1);
-  // }
-
+  /// Sets the given [batter] on strike.
   void setStrike(Innings innings, BatterInnings batter) {
     if (innings.batter1 == batter || innings.batter2 == batter) {
       innings.striker = batter;
     }
   }
 
+  /// Swaps strike between the two batters.
   void swapStrike(Innings innings) {
     if (innings.striker == innings.batter1) {
       innings.striker = innings.batter2;
@@ -54,13 +24,68 @@ class InningsService {
     }
   }
 
+  void nextBatter(Innings innings,
+      {required Player nextBatter,
+      required BatterInnings? previousBatterInnings}) {
+    // Find or create [BatterInnings] for player
+    final nextBatterInnings = getBatterInningsOfPlayer(innings, nextBatter) ??
+        _createBatterInnings(innings, nextBatter);
+
+    // Remove retirement, if any
+    nextBatterInnings.retired = null;
+    // Remove wicket, if any
+    nextBatterInnings.wicket = null;
+
+    if (previousBatterInnings == null) {
+      // Setting batter for the first time
+      if (innings.batter1 == null) {
+        innings.batter1 = nextBatterInnings;
+      } else if (innings.batter2 == null) {
+        innings.batter2 = nextBatterInnings;
+      }
+    } else {
+      if (!previousBatterInnings.isOut && !previousBatterInnings.isRetired) {
+        // Retire batter if required
+        previousBatterInnings.retired =
+            RetiredDeclared(batter: previousBatterInnings.player);
+      }
+      // Replace an existing batter
+      if (innings.batter1 == previousBatterInnings) {
+        innings.batter1 = nextBatterInnings;
+      } else if (innings.batter2 == previousBatterInnings) {
+        innings.batter2 = nextBatterInnings;
+      }
+    }
+
+    // Add Post to Innings
+    _postToInnings(
+        innings,
+        NextBatter(
+          index: _currentIndex(innings),
+          previous: previousBatterInnings?.player,
+          next: nextBatter,
+        ));
+  }
+
   /// Creates a new [BatterInnings] and adds it to the given [Innings]
   ///
   /// Call this function when a new batter walks out to bat.
-  BatterInnings createBatterInnings(Innings innings, Player batter) {
+  BatterInnings _createBatterInnings(Innings innings, Player batter) {
     final batterInnings = BatterInnings(batter);
     innings.batters.add(batterInnings);
     return batterInnings;
+  }
+
+  void retireBatterInnings(
+      Innings innings, BatterInnings batterInnings, RetiredBatter retired) {
+    _postToInnings(
+      innings,
+      BatterRetire(
+        index: _currentIndex(innings),
+        batter: batterInnings.player,
+        retired: retired,
+      ),
+    );
   }
 
   /// Fetches the [BatterInnings] of the given [player]. Returns `null`
@@ -68,7 +93,7 @@ class InningsService {
   BatterInnings? getBatterInningsOfPlayer(Innings innings, Player player) {
     try {
       final batterInnings = innings.batters
-          .lastWhere((batterInnings) => batterInnings.batter == player);
+          .lastWhere((batterInnings) => batterInnings.player == player);
       return batterInnings;
     } on StateError {
       return null;
@@ -76,33 +101,62 @@ class InningsService {
   }
 
   /// Deletes the LAST [BatterInnings] of the given [player].
-  bool deleteBatterInningsOfPlayer(Innings innings, Player player) {
+  BatterInnings? deleteBatterInningsOfPlayer(Innings innings, Player player) {
     final batterInnings = getBatterInningsOfPlayer(innings, player);
-    if (batterInnings == null) {
-      return false;
+    if (batterInnings != null) {
+      innings.batters.remove(batterInnings);
     }
-    innings.batters.remove(batterInnings);
-    return true;
+    return batterInnings;
   }
 
   /// Deletes the LAST [BatterInnings] from the given [innings]
-  void deleteLastBatterInnings(Innings innings) {
-    if (innings.batters.isNotEmpty) innings.batters.removeLast();
+  // void deleteLastBatterInnings(Innings innings) {
+  //   if (innings.batters.isNotEmpty) innings.batters.removeLast();
+  // }
+
+  void nextBowler(Innings innings, Player bowler) {
+    // Find or create [BowlerInnings] for player
+    final bowlerInnings = getBowlerInningsOfPlayer(innings, bowler) ??
+        _createBowlerInnings(innings, bowler);
+
+    // Add post to Innings
+    _postToInnings(
+        innings,
+        NextBowler(
+            index: _currentIndex(innings),
+            previous: innings.bowler?.player,
+            next: bowler));
+
+    // Change the current bowler
+    innings.bowler = bowlerInnings;
   }
 
   /// Creates a new [BowlerInnings] in the given [innings].
   ///
-  /// CAll this function when a new bowler
-  BowlerInnings createBowlerInnings(Innings innings, Player bowler) {
-    final bowlerInnings = BowlerInnings(bowler);
+  /// Call this function when a new bowler is set to bowl.
+  BowlerInnings _createBowlerInnings(Innings innings, Player bowler) {
+    final bowlerInnings =
+        BowlerInnings(bowler, ballsPerOver: innings.rules.ballsPerOver);
     innings.bowlers.add(bowlerInnings);
     return bowlerInnings;
+  }
+
+  void retireBowlerInnings(
+      Innings innings, BowlerInnings bowlerInnings, RetiredBowler retired) {
+    _postToInnings(
+      innings,
+      BowlerRetire(
+        index: _currentIndex(innings),
+        bowler: bowlerInnings.player,
+        retired: retired,
+      ),
+    );
   }
 
   BowlerInnings? getBowlerInningsOfPlayer(Innings innings, Player player) {
     try {
       final bowlerInnings = innings.bowlers
-          .lastWhere((bowlerInnings) => bowlerInnings.bowler == player);
+          .lastWhere((bowlerInnings) => bowlerInnings.player == player);
       return bowlerInnings;
     } on StateError {
       return null;
@@ -110,24 +164,101 @@ class InningsService {
   }
 
   /// Deletes the last bowler innings of the player
-  void deleteBowlerInningsOfPlayer(Innings innings, Player player) {
+  BowlerInnings? deleteBowlerInningsOfPlayer(Innings innings, Player player) {
     final bowlerInnings = getBowlerInningsOfPlayer(innings, player);
-    innings.bowlers.remove(bowlerInnings);
+    if (bowlerInnings != null) {
+      innings.bowlers.remove(bowlerInnings);
+    }
+    return bowlerInnings;
   }
 
   void deleteLastBowlerInnings(Innings innings) {
     innings.bowlers.removeLast();
   }
 
-  void postToInnings(Innings innings, InningsPost post) {
+  void play(
+    Innings innings, {
+    required Player bowler,
+    required Player batter,
+    required int runsScored,
+    required Wicket? wicket,
+    required BowlingExtra? bowlingExtra,
+    required BattingExtra? battingExtra,
+  }) {
+    final index =
+        bowlingExtra == null ? _currentIndex(innings) : _nextIndex(innings);
+
+    final ball = Ball(
+      index: index,
+      bowler: bowler,
+      batter: batter,
+      runsScored: runsScored,
+      wicket: wicket,
+      bowlingExtra: bowlingExtra,
+      battingExtra: battingExtra,
+    );
+
+    // Add Post to Innings
+    _postToInnings(innings, ball);
+
+    // Swap strike for odd number of runs
+    if (ball.runsScored % 2 == 1) swapStrike(innings);
+
+    // Swap strike whenever an over completes
+    if (ball.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
+  }
+
+  void _postToInnings(Innings innings, InningsPost post) {
     innings.posts.add(post);
 
-    if (post is Ball) {
-      // Swap strike for odd number of runs
-      if (post.runsScored % 2 == 1) swapStrike(innings);
+    switch (post) {
+      case NextBowler():
+        // _addPostToBowlerInningsOfPlayer(innings, post, post.next);
+        // if (post.previous != null) {
+        //   _addPostToBowlerInningsOfPlayer(innings, post, post.previous!);
+        // }
+        break;
+      case BowlerRetire():
+        _postToBowlerInningsOfPlayer(innings, post, post.bowler);
+      case NextBatter():
+        // _addPostToBatterInningsOfPlayer(innings, post, post.next);
+        // if(post.previous != null) {
+        //   _addPostToBatterInningsOfPlayer(innings, post, post.previous!)
+        // }
+        break;
+      case BatterRetire():
+        _postToBatterInningsOfPlayer(innings, post, post.batter);
+      case RunoutBeforeDelivery():
+        _postToBatterInningsOfPlayer(innings, post, post.wicket.batter);
+      case Ball():
+        _postToBowlerInningsOfPlayer(innings, post, post.bowler);
+        _postToBatterInningsOfPlayer(innings, post, post.batter);
+    }
+  }
 
-      // Swap strike whenever an over completes
-      if (post.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
+  void _postToBowlerInningsOfPlayer(
+      Innings innings, InningsPost post, Player bowler) {
+    final bowlerInnings = getBowlerInningsOfPlayer(innings, bowler);
+    if (bowlerInnings != null) {
+      bowlerInnings.posts.add(post);
+    }
+  }
+
+  void _unPostFromBowlerInningsOfPlayer(Innings innings, Player bowler) {
+    // Get the BowlerInnings
+    final bowlerInnings = getBowlerInningsOfPlayer(innings, bowler);
+
+    // Remove post from BowlerInnings
+    if (bowlerInnings != null && bowlerInnings.posts.isNotEmpty) {
+      final last = bowlerInnings.posts.removeLast();
+    }
+  }
+
+  void _postToBatterInningsOfPlayer(
+      Innings innings, InningsPost post, Player batter) {
+    final batterInnings = getBatterInningsOfPlayer(innings, batter);
+    if (batterInnings != null) {
+      batterInnings.posts.add(post);
     }
   }
 
@@ -142,14 +273,33 @@ class InningsService {
         } else {
           innings.bowler = getBowlerInningsOfPlayer(innings, post.previous!);
         }
+      case BowlerRetire():
+        final bowlerInnings = getBowlerInningsOfPlayer(innings, post.bowler);
+        if (bowlerInnings != null && bowlerInnings.posts.last is BowlerRetire) {
+          bowlerInnings.posts.removeLast();
+        }
       case BatterRetire():
         final batterInnings = getBatterInningsOfPlayer(innings, post.batter);
-        batterInnings.posts.removeLast();
-      //TODO DO SOMETHING
-      case NonStrikerRunout():
-      // TODO: Handle this case.
+        if (batterInnings != null) {
+          batterInnings.retired = null;
+        }
+      case RunoutBeforeDelivery():
+        final batterInnings =
+            getBatterInningsOfPlayer(innings, post.wicket.batter);
+        if (batterInnings != null) {
+          batterInnings.wicket = null;
+        }
       case NextBatter():
-      // TODO: Handle this case.
+        final batterInnings = deleteBatterInningsOfPlayer(innings, post.next);
+        if (post.previous != null) {
+          final restoredBatterInnings =
+              getBatterInningsOfPlayer(innings, post.previous!);
+          if (innings.batter1 == batterInnings) {
+            innings.batter1 = restoredBatterInnings;
+          } else if (innings.batter2 == batterInnings) {
+            innings.batter2 = restoredBatterInnings;
+          }
+        }
       case Ball():
       // TODO: Handle this case.
     }
@@ -157,5 +307,19 @@ class InningsService {
 
   void forfeitInnings(Innings innings) {
     innings.isForfeited = true;
+  }
+
+  InningsIndex _currentIndex(Innings innings) => innings.posts.isEmpty
+      ? const InningsIndex.zero()
+      : innings.posts.last.index;
+
+  InningsIndex _nextIndex(Innings innings) {
+    final currentIndex = _currentIndex(innings);
+
+    if (currentIndex.ball == innings.rules.ballsPerOver) {
+      return InningsIndex(currentIndex.over + 1, 0);
+    } else {
+      return InningsIndex(currentIndex.over, currentIndex.ball + 1);
+    }
   }
 }

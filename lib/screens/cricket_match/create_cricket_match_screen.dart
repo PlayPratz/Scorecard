@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/services/cricket_match_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/modules/venue/models/venue_model.dart';
-import 'package:scorecard/screens/cricket_match/cricket_match_screen.dart';
+import 'package:scorecard/screens/cricket_match/cricket_match_screen_switcher.dart';
 import 'package:scorecard/screens/team/team_list_screen.dart';
 
 class CreateCricketMatchScreen extends StatelessWidget {
-  late final CreateCricketMatchController controller;
+  final CreateCricketMatchController controller;
 
-  CreateCricketMatchScreen({super.key});
+  const CreateCricketMatchScreen(this.controller, {super.key});
 
   @override
   Widget build(BuildContext context) {
     final teamController = TeamSelectController();
     final gameRulesController = LimitedOverGameRulesController();
-    controller = CreateCricketMatchController(
-        teamSelectController: teamController,
-        limitedOverGameRulesController: gameRulesController);
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -38,21 +34,24 @@ class CreateCricketMatchScreen extends StatelessWidget {
           child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FilledButton.icon(
-            onPressed: () => _initializeMatch(context),
-            label: const Text("Start"),
-            icon: const Icon(Icons.play_arrow),
+          ListenableBuilder(
+            listenable: teamController,
+            builder: (context, child) => FilledButton.icon(
+              onPressed:
+                  teamController.team1 != null && teamController.team2 != null
+                      ? () => controller.scheduleMatch(
+                            context,
+                            team1: teamController.team1!,
+                            team2: teamController.team2!,
+                            rules: gameRulesController._deduceState(),
+                          )
+                      : null,
+              label: const Text("Toss"),
+              icon: const Icon(Icons.radar),
+            ),
           ),
         ],
       )),
-    );
-  }
-
-  void _initializeMatch(BuildContext context) {
-    final match = controller.scheduleMatch();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => CricketMatchScreen(match)),
     );
   }
 }
@@ -146,7 +145,7 @@ class _LimitedOverGameRulesSection extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, child) {
-        final rules = controller.rules;
+        final rules = controller._deduceState();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -257,36 +256,20 @@ class _NumberChooser extends StatelessWidget {
 }
 
 class CreateCricketMatchController {
-  final TeamSelectController teamSelectController;
-  final LimitedOverGameRulesController limitedOverGameRulesController;
-  // final VenueSelectController venueSelectController;
-
-  CreateCricketMatchController({
-    required this.teamSelectController,
-    required this.limitedOverGameRulesController,
-    // required this.venueSelectController,
-  });
-
-  bool get canCreateMatch =>
-      teamSelectController.team1 != null && teamSelectController.team2 != null;
-
-  CricketMatch scheduleMatch() {
-    if (!canCreateMatch) {
-      throw UnsupportedError("Please select two teams");
-    }
-
-    // if (venue.value == null) {
-    //   throw UnsupportedError("Please select a venue");
-    // }
-
+  void scheduleMatch(BuildContext context,
+      {required Team team1, required Team team2, required GameRules rules}) {
     final match = _service.createCricketMatch(
-      team1: teamSelectController.team1!,
-      team2: teamSelectController.team2!,
+      team1: team1,
+      team2: team2,
       venue: Venue(name: "default"),
-      rules: limitedOverGameRulesController.rules,
+      rules: rules,
     );
 
-    return match;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (context) => CricketMatchScreenSwitcher(match)),
+    );
   }
 
   CricketMatchService get _service => CricketMatchService();
@@ -334,16 +317,15 @@ class LimitedOverGameRulesController with ChangeNotifier {
   bool _allowLastMan = false;
   bool _allowSingleBatter = false;
 
-  LimitedOversRules get rules => LimitedOversRules(
+  LimitedOversRules _deduceState() => LimitedOversRules(
         ballsPerOver: _ballsPerOver,
         widePenalty: _widePenalty,
         noBallPenalty: _noBallPenalty,
         oversPerInnings: _oversPerInnings,
         oversPerBowler: _oversPerBowler,
-        allowSingleBatter: _allowSingleBatter,
+        onlySingleBatter: _allowSingleBatter,
         allowLastMan: _allowLastMan,
       );
-  // LimitedOverGameRulesController(super.value);
 
   void _dispatchState() {
     notifyListeners();

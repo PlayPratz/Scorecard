@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
+import 'package:scorecard/ui/ball_colors.dart';
 
 class NextBallSelectorSection extends StatelessWidget {
   final NextBallSelectorController controller;
@@ -13,6 +14,7 @@ class NextBallSelectorSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: controller.stream,
+      initialData: controller.state,
       builder: (context, snapshot) {
         final state = snapshot.data!;
         return Column(
@@ -60,15 +62,24 @@ class _RunSelectorSection extends StatelessWidget {
                 selected:
                     runs == (state as NextBallSelectorEnabledState).nextRuns,
                 onSelected: (x) => _onSelect(x, runs),
+                selectedColor: _color(runs),
+                shape: const CircleBorder(),
               ),
             NextBallSelectorDisabledState() => ChoiceChip(
                 label: Text(runs.toString()),
                 selected: false,
+                shape: const CircleBorder(),
               ),
           },
           growable: false,
         ));
   }
+
+  Color? _color(int runs) => switch (runs) {
+        4 => BallColors.four,
+        6 => BallColors.six,
+        _ => null,
+      };
 
   void _onSelect(bool isSelected, int runs) {
     if (isSelected) setRuns(runs);
@@ -125,7 +136,7 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: BowlingExtra.values.map((e) => chip(e)).toList());
+    return Wrap(children: BowlingExtra.values.map((e) => chip(e)).toList());
   }
 
   String stringify(BowlingExtra extra) => switch (extra) {
@@ -228,6 +239,18 @@ class NextBallSelectorController {
   // Wicket? get nextWicket => _nextWicket;
   set nextWicket(Wicket? x) {
     _nextWicket = x;
+    _dispatchState();
+  }
+
+  void disable() {
+    _selectionStreamController.add(NextBallSelectorDisabledState());
+  }
+
+  void reset() {
+    _nextRuns = 0;
+    _nextBattingExtra = null;
+    _nextBowlingExtra = null;
+    _nextWicket = null;
     _dispatchState();
   }
 }

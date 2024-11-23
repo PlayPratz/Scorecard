@@ -2,13 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 
 class PlayerListScreen extends StatelessWidget {
-  const PlayerListScreen({super.key});
+  final List<Player> players;
+
+  final void Function(Player player)? onSelectPlayer;
+  const PlayerListScreen(this.players, {super.key, this.onSelectPlayer});
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(),
+      body: ListView.builder(
+        itemCount: players.length,
+        itemBuilder: (context, index) => PlayerTile(players[index]),
+      ),
+      bottomNavigationBar: const BottomAppBar(),
+      floatingActionButton: FloatingActionButton(onPressed: () {}),
+    );
   }
 }
+
+// class PlayerListController {
+//   final List<Player> players;
+//
+//   PlayerListController(this.players);
+//
+// }
 
 class PlayerTile extends StatelessWidget {
   final Player player;

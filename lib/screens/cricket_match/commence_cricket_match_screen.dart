@@ -1,0 +1,228 @@
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
+import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
+import 'package:scorecard/modules/cricket_match/services/cricket_match_service.dart';
+import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/modules/team/models/team_model.dart';
+import 'package:scorecard/screens/cricket_match/cricket_match_screen_switcher.dart';
+
+class CommenceCricketMatchScreen extends StatelessWidget {
+  final CommenceCricketGameScreenController controller;
+  const CommenceCricketMatchScreen(this.controller, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final match = controller.match;
+    return Scaffold(
+      appBar: AppBar(),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: ListView(
+          children: [
+            _MatchupPreviewSection(
+              lineup1: match.lineup1,
+              lineup2: match.lineup2,
+            ),
+            const SizedBox(height: 16),
+            _GameRulesPreviewSection(match.rules),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FilledButton.icon(
+              onPressed: () => controller.onCommenceMatch(context),
+              label: const Text("Start!"),
+              icon: const Icon(Icons.sports_cricket),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CommenceCricketGameScreenController {
+  final InitializedCricketMatch match;
+
+  CommenceCricketGameScreenController(this.match);
+
+  void onCommenceMatch(BuildContext context) {
+    final ongoingMatch = _service.commenceCricketMatch(match);
+
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => CricketMatchScreenSwitcher(ongoingMatch)));
+  }
+
+  CricketMatchService get _service => CricketMatchService();
+}
+
+class _MatchupPreviewSection extends StatelessWidget {
+  final Lineup lineup1;
+  final Lineup lineup2;
+
+  const _MatchupPreviewSection({
+    super.key,
+    required this.lineup1,
+    required this.lineup2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final playerList1 = lineup1.players.toList();
+    final playerList2 = lineup2.players.toList();
+    final rowCount = max(playerList1.length, playerList2.length);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Lineups", style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Table(
+              columnWidths: const {1: FlexColumnWidth(0.2)},
+              border: const TableBorder(horizontalInside: BorderSide(width: 0)),
+              children: [
+                TableRow(children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(lineup1.team.name.toUpperCase(),
+                        style: Theme.of(context).textTheme.titleSmall),
+                  ),
+                  const Center(child: Text('v')),
+                  Text(lineup2.team.name.toUpperCase(),
+                      style: Theme.of(context).textTheme.titleSmall),
+                ]),
+                for (int i = 0; i < rowCount; i++)
+                  TableRow(
+                    children: [
+                      i < playerList1.length
+                          ? Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                      getPlayerName(playerList1[i], lineup1))),
+                            )
+                          : const SizedBox(),
+                      Center(
+                          child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text((i + 1).toString()),
+                      )),
+                      i < playerList2.length
+                          ? Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child:
+                                  Text(getPlayerName(playerList2[i], lineup2)),
+                            )
+                          : const SizedBox(),
+                    ],
+                  )
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String getPlayerName(Player player, Lineup lineup) {
+    final name = player.name.toUpperCase();
+    if (player == lineup.captain) {
+      return '$name (c)';
+    } else {
+      return name;
+    }
+  }
+}
+
+class _GameRulesPreviewSection extends StatelessWidget {
+  final GameRules rules;
+  const _GameRulesPreviewSection(this.rules, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final rules = this.rules;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Rules", style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Table(
+              columnWidths: const {
+                0: FlexColumnWidth(2),
+              },
+              border: const TableBorder(
+                horizontalInside: BorderSide(width: 0),
+              ),
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              children: [
+                ...switch (rules) {
+                  LimitedOversRules() => [
+                      TableRow(children: [
+                        _wLabelWidget("Overs per Bowler"),
+                        Text(rules.oversPerInnings.toString())
+                      ]),
+                      TableRow(children: [
+                        _wLabelWidget("Overs per Bowler"),
+                        Text(rules.oversPerBowler.toString())
+                      ]),
+                    ],
+                  UnlimitedOversRules() => [
+                      TableRow(children: [
+                        _wLabelWidget("Overs per Bowler"),
+                        Text(rules.days.toString())
+                      ]),
+                      TableRow(children: [
+                        _wLabelWidget("Overs per Bowler"),
+                        Text(rules.inningsPerSide.toString())
+                      ])
+                    ],
+                },
+                TableRow(children: [
+                  _wLabelWidget("Overs per Bowler"),
+                  Text(rules.ballsPerOver.toString())
+                ]),
+                TableRow(children: [
+                  _wLabelWidget("Overs per Bowler"),
+                  Text(rules.noBallPenalty.toString())
+                ]),
+                TableRow(children: [
+                  _wLabelWidget("Wide penalty"),
+                  Text(rules.widePenalty.toString())
+                ]),
+                TableRow(children: [
+                  _wLabelWidget("Only Single Batter"),
+                  Text(rules.onlySingleBatter.toString())
+                ]),
+                TableRow(children: [
+                  _wLabelWidget("Allow Last Man"),
+                  Text(rules.allowLastMan.toString())
+                ]),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _wLabelWidget(String label) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Text(label),
+        ),
+      );
+}

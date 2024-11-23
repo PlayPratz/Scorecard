@@ -1,11 +1,13 @@
 class Player {
   final String id;
   final String name;
+  final String? fullName;
   // final Gender gender;
 
   const Player({
     required this.id,
     required this.name,
+    this.fullName,
     // required this.gender,
   });
 }

@@ -5,14 +5,14 @@ sealed class GameRules {
   final int noBallPenalty;
   final int widePenalty;
 
-  final bool allowSingleBatter;
+  final bool onlySingleBatter;
   final bool allowLastMan;
 
   GameRules({
     required this.ballsPerOver,
     required this.noBallPenalty,
     required this.widePenalty,
-    required this.allowSingleBatter,
+    required this.onlySingleBatter,
     required this.allowLastMan,
   });
 }
@@ -25,7 +25,7 @@ class LimitedOversRules extends GameRules {
     required super.ballsPerOver,
     required super.noBallPenalty,
     required super.widePenalty,
-    required super.allowSingleBatter,
+    required super.onlySingleBatter,
     required super.allowLastMan,
     required this.oversPerInnings,
     required this.oversPerBowler,
@@ -36,7 +36,7 @@ class LimitedOversRules extends GameRules {
           ballsPerOver: 6,
           noBallPenalty: 1,
           allowLastMan: false,
-          allowSingleBatter: false,
+          onlySingleBatter: false,
           widePenalty: 1,
           oversPerInnings: 5,
           oversPerBowler: -1,
@@ -51,7 +51,7 @@ class UnlimitedOversRules extends GameRules {
     required super.ballsPerOver,
     required super.noBallPenalty,
     required super.widePenalty,
-    required super.allowSingleBatter,
+    required super.onlySingleBatter,
     required super.allowLastMan,
     required this.days,
     required this.inningsPerSide,

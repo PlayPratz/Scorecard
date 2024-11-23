@@ -30,41 +30,53 @@ class PlayersInActionSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final row = [
-      Column(
-        children: [
-          _BatterTile(
-            state.batter1,
-            isOnStrike: state.striker == state.batter1,
-            isOut: state.batter1 != null &&
-                (state.batter1!.isOut || state.batter1!.isRetired),
-            onSetStrike: onSetStrike,
-            onRetireBatter: (b) => onRetireBatter, //TODO
-            onPickBatter: onPickBatter,
-          ),
-          _BatterTile(
-            state.batter2,
-            isOnStrike: state.striker == state.batter2,
-            isOut: state.batter2 != null &&
-                (state.batter2!.isOut || state.batter2!.isRetired),
-            onSetStrike: onSetStrike,
-            onRetireBatter: (b) => onRetireBatter, //TODO
-            onPickBatter: onPickBatter,
-          ),
-        ],
+      Expanded(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _BatterTile(
+              state.batter1,
+              isOnStrike: state.striker == state.batter1,
+              isOut: state.batter1 != null &&
+                  (state.batter1!.isOut || state.batter1!.isRetired),
+              onSetStrike: onSetStrike,
+              onRetireBatter: (b) => onRetireBatter, //TODO
+              onPickBatter: onPickBatter,
+            ),
+            const Spacer(),
+            _BatterTile(
+              state.batter2,
+              isOnStrike: state.striker == state.batter2,
+              isOut: state.batter2 != null &&
+                  (state.batter2!.isOut || state.batter2!.isRetired),
+              onSetStrike: onSetStrike,
+              onRetireBatter: (b) => onRetireBatter, //TODO
+              onPickBatter: onPickBatter,
+            ),
+          ],
+        ),
       ),
-      Column(
-        children: [
-          _BowlerInAction(
-            state.bowler,
-            onPickBowler: onPickBowler,
-            onRetireBowler: (b) => onRetireBowler, //TODO
-          )
-        ],
+      Expanded(
+        child: Column(
+          children: [
+            _BowlerInAction(
+              state.bowler,
+              onPickBowler: onPickBowler,
+              onRetireBowler: (b) => onRetireBowler, //TODO
+            )
+          ],
+        ),
       ),
     ];
     return Card(
-      child: Row(
-        children: isFirstTeamBatting ? row : row.reversed.toList(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+        child: SizedBox(
+          height: 120,
+          child: Row(
+            children: isFirstTeamBatting ? row : row.reversed.toList(),
+          ),
+        ),
       ),
     );
   }
@@ -99,7 +111,12 @@ class _BatterTile extends StatelessWidget {
         leading: const Icon(Icons.person),
         title: const Text("Pick Batter"),
         // tileColor: color,
+        // trailing: Icon(Icons.chevron_right),
         onTap: onPickBatter,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(width: 0.5),
+        ),
       );
     }
     return ListTile(

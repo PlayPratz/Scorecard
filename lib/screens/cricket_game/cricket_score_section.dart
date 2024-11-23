@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/screens/cricket_game/cricket_game_screen.dart';
+import 'package:scorecard/ui/ball_colors.dart';
 
 class LimitedOversScoreSection extends StatelessWidget {
   final LimitedOversScoreState state;
@@ -10,48 +11,107 @@ class LimitedOversScoreSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Card(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+        child: Center(
+          child: Table(
+            // defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            columnWidths: const {1: FlexColumnWidth(0.4)},
             children: [
-              _BattingTeamTile(
-                teamName: state.battingTeam.name,
-                color: Color(state.battingTeam.color),
-                runs: state.runs,
-                wickets: state.wickets,
-                isLeftAligned: state.isLeftTeamBatting,
-              ),
-              Center(
-                child: CircleAvatar(
-                  backgroundColor: Colors.black54,
-                  child: Text(
-                    'v',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: Colors.white),
+              TableRow(children: [
+                Text(
+                  state.battingTeam.name.toUpperCase(),
+                  style: Theme.of(context).textTheme.titleSmall,
+                  textAlign: TextAlign.right,
+                ),
+                TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.bottom,
+                  child: CircleAvatar(
+                    backgroundColor: BallColors.background,
+                    radius: 12,
+                    child: Text(
+                      'v',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: Colors.white),
+                    ),
                   ),
                 ),
-              ),
-              _BowlingTeamTile(
-                teamName: state.bowlingTeam.name,
-                color: Color(state.bowlingTeam.color),
-                currentIndex: state.currentIndex,
-                totalOvers: state.oversToBowl,
-                isLeftAligned: !state.isLeftTeamBatting,
-              )
+                Text(state.bowlingTeam.name.toUpperCase(),
+                    style: Theme.of(context).textTheme.titleSmall),
+              ]),
+              TableRow(children: [
+                Text(
+                  "${state.runs}-${state.wickets}",
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.right,
+                ),
+                const SizedBox(),
+                Text("Overs ${state.currentIndex}/${state.oversToBowl}"),
+              ]),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        Card(
-          child: Row(),
-        )
-      ],
+      ),
     );
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   final row = [
+  //     Expanded(
+  //       child: _BattingTeamTile(
+  //         teamName: state.battingTeam.name,
+  //         color: Color(state.battingTeam.color),
+  //         runs: state.runs,
+  //         wickets: state.wickets,
+  //         isLeftAligned: state.isFirstTeamBatting,
+  //       ),
+  //     ),
+  //     CircleAvatar(
+  //       backgroundColor: Colors.black54,
+  //       radius: 12,
+  //       child: Text(
+  //         'v',
+  //         style: Theme.of(context)
+  //             .textTheme
+  //             .bodySmall
+  //             ?.copyWith(color: Colors.white),
+  //       ),
+  //     ),
+  //     Expanded(
+  //       child: _BowlingTeamTile(
+  //         teamName: state.bowlingTeam.short,
+  //         color: Color(state.bowlingTeam.color),
+  //         currentIndex: state.currentIndex,
+  //         totalOvers: state.oversToBowl,
+  //         isLeftAligned: !state.isFirstTeamBatting,
+  //       ),
+  //     ),
+  //   ];
+  //   return Column(
+  //     // crossAxisAlignment: CrossAxisAlignment.center,
+  //     children: [
+  //       Card(
+  //         child: Padding(
+  //           padding: const EdgeInsets.symmetric(vertical: 16.0),
+  //           child: SizedBox(
+  //             height: 64,
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               crossAxisAlignment: CrossAxisAlignment.center,
+  //               children:
+  //                   state.isFirstTeamBatting ? row : row.reversed.toList(),
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(height: 8),
+  //     ],
+  //   );
+  // }
 }
 
 sealed class LimitedOversScoreState {
@@ -64,7 +124,7 @@ sealed class LimitedOversScoreState {
   final InningsIndex currentIndex;
   final int oversToBowl;
 
-  final bool isLeftTeamBatting;
+  final bool isFirstTeamBatting;
 
   LimitedOversScoreState({
     required this.runs,
@@ -73,7 +133,7 @@ sealed class LimitedOversScoreState {
     required this.bowlingTeam,
     required this.currentIndex,
     required this.oversToBowl,
-    required this.isLeftTeamBatting,
+    required this.isFirstTeamBatting,
   });
 
   // LimitedOversScoreState.fromGameScreenState(CricketGameScreenState state,
@@ -94,7 +154,7 @@ class LimitedOversScoreFirstInningsState extends LimitedOversScoreState {
     required super.bowlingTeam,
     required super.currentIndex,
     required super.oversToBowl,
-    required super.isLeftTeamBatting,
+    required super.isFirstTeamBatting,
   });
 }
 
@@ -108,7 +168,7 @@ class LimitedOversScoreSecondInningsState extends LimitedOversScoreState {
     required super.bowlingTeam,
     required super.currentIndex,
     required super.oversToBowl,
-    required super.isLeftTeamBatting,
+    required super.isFirstTeamBatting,
     required this.target,
   });
 }
@@ -135,17 +195,17 @@ class _BattingTeamTile extends StatelessWidget {
   Widget build(BuildContext context) {
     // final innings = game.currentInnings;
     return Column(
-      mainAxisAlignment:
-          isLeftAligned ? MainAxisAlignment.start : MainAxisAlignment.end,
+      crossAxisAlignment:
+          isLeftAligned ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Text(
           teamName.toUpperCase(),
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        const SizedBox(height: 8),
+        // const SizedBox(height: 2),
         Text(
           "$runs-$wickets",
-          style: Theme.of(context).textTheme.titleLarge,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
       ],
     );
@@ -173,8 +233,8 @@ class _BowlingTeamTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment:
-          isLeftAligned ? MainAxisAlignment.start : MainAxisAlignment.end,
+      crossAxisAlignment:
+          isLeftAligned ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Text(
           teamName.toUpperCase(),

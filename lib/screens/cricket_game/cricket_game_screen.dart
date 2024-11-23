@@ -8,11 +8,13 @@ import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/cricket_match/services/innings_service.dart';
 import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/modules/repository/service/repostiory_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/screens/cricket_game/cricket_score_section.dart';
 import 'package:scorecard/screens/cricket_game/next_ball_selector_section.dart';
 import 'package:scorecard/screens/cricket_game/players_in_action_section.dart';
 import 'package:scorecard/screens/cricket_game/recent_balls_section.dart';
+import 'package:scorecard/screens/player/player_list_screen.dart';
 
 class CricketGameScreen extends StatelessWidget {
   final CricketGameScreenController controller;
@@ -22,63 +24,69 @@ class CricketGameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nextBallSelectorController = NextBallSelectorController();
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(onPressed: _settings, icon: const Icon(Icons.settings)),
-        ],
-      ),
-      body: ListView(
-        children: [
-          //Cricket Match Tile
-          StreamBuilder(
-              stream: controller.stream,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  // controller.initialize();
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final state = snapshot.data!;
-                return Column(
-                  children: [
-                    _wScoreSection(controller.game, state),
-                    const SizedBox(height: 16),
-                    //PlayersInAction
-                    PlayersInActionSection(
-                      state,
-                      onSetStrike: (bi) => controller.setStrike(bi),
-                      isFirstTeamBatting: controller.game.lineup1.team.id ==
-                          controller.game.currentInnings.battingLineup.team.id,
-                      onRetireBowler: (b, r) => controller.retireBowler(b, r),
-                      onRetireBatter: (b, r) => controller.retireBatter(b, r),
-                      onPickBatter: _pickBatter,
-                      onPickBowler: _pickBowler,
-                    ),
-                    //Recent Balls
-                    RecentBallsSection(state.balls),
-                  ],
-                );
-              }),
+    return StreamBuilder(
+      stream: controller.stream,
+      initialData: controller._deduceState(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final state = snapshot.data!;
 
-          //Wicket Selector
-          // Wicket
-          //Ball Details Selector
-          NextBallSelectorSection(nextBallSelectorController),
-        ],
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            StreamBuilder(
-              stream: controller.stream,
-              builder: (context, snapshot) => snapshot.hasData
-                  ? _wConfirmButton(snapshot.data!)
-                  : const SizedBox(),
-            )
-          ],
-        ),
-      ),
+        if (state is PlayBallState) {
+          nextBallSelectorController.reset();
+        } else {
+          nextBallSelectorController.disable();
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            actions: [
+              IconButton(
+                  onPressed: _settings, icon: const Icon(Icons.settings)),
+            ],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ListView(
+              children: [
+                //Cricket Match Tile
+                _wScoreSection(controller.game, state),
+                const SizedBox(height: 16),
+                //PlayersInAction
+                PlayersInActionSection(
+                  state,
+                  onSetStrike: (bi) => controller.setStrike(bi),
+                  isFirstTeamBatting: controller.game.lineup1.team ==
+                      controller.game.currentInnings.battingLineup.team,
+                  onRetireBowler: (b, r) => controller.retireBowler(b, r),
+                  onRetireBatter: (b, r) => controller.retireBatter(b, r),
+                  onPickBatter: () => _pickBatter(context),
+                  onPickBowler: () => _pickBowler(context),
+                ),
+
+                RecentBallsSection(state.balls),
+
+                //Wicket Selector
+                // Wicket
+                //Ball Details Selector
+              ],
+            ),
+          ),
+          bottomNavigationBar: BottomAppBar(
+            height: 200,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NextBallSelectorSection(nextBallSelectorController),
+                const SizedBox(height: 16),
+                _wConfirmButton(
+                    context, state, nextBallSelectorController.state),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -91,18 +99,20 @@ class CricketGameScreen extends StatelessWidget {
                     wickets: state.wickets,
                     battingTeam: state.battingTeam,
                     bowlingTeam: state.bowlingTeam,
-                    currentIndex: state.latestPost.index,
+                    currentIndex:
+                        state.latestPost?.index ?? const InningsIndex.zero(),
                     oversToBowl: game.rules.oversPerInnings,
-                    isLeftTeamBatting: state.battingTeam == game.lineup1.team,
+                    isFirstTeamBatting: state.battingTeam == game.lineup1.team,
                   )
                 : LimitedOversScoreSecondInningsState(
                     runs: state.runs,
                     wickets: state.wickets,
                     battingTeam: state.battingTeam,
                     bowlingTeam: state.bowlingTeam,
-                    currentIndex: state.latestPost.index,
+                    currentIndex:
+                        state.latestPost?.index ?? const InningsIndex.zero(),
                     oversToBowl: game.rules.oversPerInnings,
-                    isLeftTeamBatting: state.battingTeam == game.lineup2.team,
+                    isFirstTeamBatting: state.battingTeam == game.lineup1.team,
                     target: 0,
                   ),
           ),
@@ -111,16 +121,16 @@ class CricketGameScreen extends StatelessWidget {
         UnlimitedOversGame() => throw UnimplementedError(),
       };
 
-  Widget _wConfirmButton(CricketGameScreenState state) => FilledButton(
-      onPressed: _playBall,
-      child: switch (state) {
+  Widget _wConfirmButton(BuildContext context, CricketGameScreenState state,
+          NextBallSelectorState nextBallSelectorState) =>
+      switch (state) {
         PickBowlerState() => FilledButton.icon(
-            onPressed: _pickBowler,
+            onPressed: () => _pickBowler(context),
             icon: const Icon(Icons.person),
             label: const Text("Pick Bowler"),
           ),
         PickBatterState() => FilledButton.icon(
-            onPressed: _pickBatter,
+            onPressed: () => _pickBatter(context),
             icon: const Icon(Icons.person),
             label: const Text("Pick Batter"),
           ),
@@ -130,17 +140,19 @@ class CricketGameScreen extends StatelessWidget {
             label: const Text("End Innings"),
           ),
         PlayBallState() => FilledButton.icon(
-            onPressed: _playBall,
+            onPressed: () => _playBall(state, nextBallSelectorState),
             icon: const Icon(Icons.sports_baseball),
             label: const Text("Play"),
           ),
-      });
+      };
 
-  void _playBall() {}
+  void _playBall(PlayBallState playBallState,
+          NextBallSelectorState nextBallSelectorState) =>
+      controller.play(playBallState, nextBallSelectorState);
 
-  void _pickBatter() {}
+  void _pickBatter(BuildContext context) => controller.pickBatter(context);
 
-  void _pickBowler() {}
+  void _pickBowler(BuildContext context) => controller.pickBowler(context);
 
   void _endInnings() {}
 
@@ -164,6 +176,9 @@ class CricketGameScreenController {
   final _streamController = StreamController<CricketGameScreenState>();
   Stream<CricketGameScreenState> get stream => _streamController.stream;
 
+  // late final Stream<CricketGameScreenState> stream =
+  //     _streamController.stream.asBroadcastStream();
+
   // final _postStreamController = StreamController<InningsPost>();
   // Stream<InningsPost> get _postStream => _postStreamController.stream;
 
@@ -173,6 +188,17 @@ class CricketGameScreenController {
     // _service.postToInnings(game.currentInnings, post);
 
     final innings = game.currentInnings;
+
+    if (innings.batter1 == null ||
+        innings.batter2 == null ||
+        innings.striker == null) {
+      return PickBatterState(innings);
+    }
+
+    if (innings.bowler == null) {
+      return PickBowlerState(innings);
+    }
+
     final lastPost = innings.posts.last;
 
     switch (lastPost) {
@@ -205,12 +231,8 @@ class CricketGameScreenController {
     _service.retireBatterInnings(currentInnings, batterInnings, retired);
   }
 
-  void replaceBatter({
-    required Player next,
-    required BatterInnings? previous,
-  }) {
-    _service.nextBatter(currentInnings,
-        nextBatter: next, previousBatterInnings: previous);
+  void replaceBatter(Player nextBatter) {
+    _service.nextBatter(currentInnings, nextBatter);
   }
 
   void retireBowler(BowlerInnings bowlerInnings, RetiredBowler retired) {
@@ -221,8 +243,41 @@ class CricketGameScreenController {
     _service.nextBowler(currentInnings, next);
   }
 
+  Future<void> pickBowler(BuildContext context) async {
+    final bowler = await _pickPlayer(
+        context, currentInnings.bowlingLineup.players.toList());
+    if (bowler != null) {
+      _service.nextBowler(currentInnings, bowler);
+    }
+  }
+
+  void pickBatter(BuildContext context) async {
+    final batter = await _pickPlayer(
+        context, currentInnings.battingLineup.players.toList());
+    if (batter != null) {
+      _service.nextBatter(currentInnings, batter);
+    }
+  }
+
+  Future<Player?> _pickPlayer(
+      BuildContext context, List<Player> players) async {
+    final player = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlayerListScreen(players,
+              onSelectPlayer: (p) => Navigator.pop(context, p)),
+        ));
+    if (player is Player) {
+      return player;
+    } else {
+      return null;
+    }
+  }
+
   void play(PlayBallState playBallState,
-      NextBallSelectorEnabledState nextBallSelectorState) {
+      NextBallSelectorState nextBallSelectorState) {
+    // assert(nextBallSelectorState is NextBallSelectorEnabledState);
+    nextBallSelectorState as NextBallSelectorEnabledState;
     if (playBallState.bowler != null && playBallState.striker != null) {
       _service.play(
         currentInnings,
@@ -247,7 +302,7 @@ sealed class CricketGameScreenState {
   // Scoreboard
   final int runs;
   final int wickets;
-  final InningsPost latestPost;
+  final InningsPost? latestPost;
   final Team battingTeam;
   final Team bowlingTeam;
   // final InningsIndex currentIndex;
@@ -268,7 +323,7 @@ sealed class CricketGameScreenState {
         battingTeam = innings.battingLineup.team,
         bowlingTeam = innings.bowlingLineup.team,
         rules = innings.rules,
-        latestPost = innings.posts.last,
+        latestPost = innings.posts.lastOrNull,
         batter1 = innings.batter1,
         batter2 = innings.batter2,
         striker = innings.striker,

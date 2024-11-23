@@ -24,9 +24,7 @@ class InningsService {
     }
   }
 
-  void nextBatter(Innings innings,
-      {required Player nextBatter,
-      required BatterInnings? previousBatterInnings}) {
+  void nextBatter(Innings innings, Player nextBatter) {
     // Find or create [BatterInnings] for player
     final nextBatterInnings = getBatterInningsOfPlayer(innings, nextBatter) ??
         _createBatterInnings(innings, nextBatter);
@@ -36,35 +34,58 @@ class InningsService {
     // Remove wicket, if any
     nextBatterInnings.wicket = null;
 
-    if (previousBatterInnings == null) {
-      // Setting batter for the first time
-      if (innings.batter1 == null) {
-        innings.batter1 = nextBatterInnings;
-      } else if (innings.batter2 == null) {
-        innings.batter2 = nextBatterInnings;
-      }
+    // final previousBatterInnings = _isBatterToBeReplaced(innings.)
+
+    late final NextBatter nextBatterPost;
+    if (innings.batter1 == null) {
+      innings.batter1 = nextBatterInnings;
+      nextBatterPost = NextBatter(
+          index: _currentIndex(innings), next: nextBatter, previous: null);
+    } else if (!innings.rules.onlySingleBatter && innings.batter2 == null) {
+      innings.batter2 = nextBatterInnings;
+      nextBatterPost = NextBatter(
+          index: _currentIndex(innings), next: nextBatter, previous: null);
     } else {
-      if (!previousBatterInnings.isOut && !previousBatterInnings.isRetired) {
-        // Retire batter if required
-        previousBatterInnings.retired =
-            RetiredDeclared(batter: previousBatterInnings.player);
-      }
-      // Replace an existing batter
-      if (innings.batter1 == previousBatterInnings) {
-        innings.batter1 = nextBatterInnings;
-      } else if (innings.batter2 == previousBatterInnings) {
-        innings.batter2 = nextBatterInnings;
+      // Previous batter exists
+      late final BatterInnings previousBatterInnings;
+      if (_isBatterToBeReplaced(innings.batter1)) {
+        previousBatterInnings = innings.batter1!;
+        nextBatterPost = NextBatter(
+            index: _currentIndex(innings),
+            next: nextBatter,
+            previous: innings.batter1!.player);
+      } else if (!innings.rules.onlySingleBatter &&
+          _isBatterToBeReplaced(innings.batter2)) {
+        previousBatterInnings = innings.batter2!;
+        nextBatterPost = NextBatter(
+            index: _currentIndex(innings),
+            next: nextBatter,
+            previous: innings.batter2!.player);
+      } else {
+        throw StateError(
+            "Attempted to add new batter without retiring previous");
       }
     }
 
+    // Set strike
+    if (innings.striker == null ||
+        innings.striker != innings.batter1 &&
+            innings.striker != innings.batter2) {
+      setStrike(innings, nextBatterInnings);
+    }
+
     // Add Post to Innings
-    _postToInnings(
-        innings,
-        NextBatter(
-          index: _currentIndex(innings),
-          previous: previousBatterInnings?.player,
-          next: nextBatter,
-        ));
+    _postToInnings(innings, nextBatterPost);
+  }
+
+  bool _isBatterToBeReplaced(BatterInnings? batterInnings) {
+    if (batterInnings == null) {
+      return true;
+    } else if (batterInnings.isOut || batterInnings.isRetired) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /// Creates a new [BatterInnings] and adds it to the given [Innings]

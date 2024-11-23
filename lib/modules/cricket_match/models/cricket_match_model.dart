@@ -77,8 +77,8 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
   InitializedCricketMatch.fromScheduled(
     ScheduledCricketMatch match, {
     required Toss toss,
-    required Lineup squad1,
-    required Lineup squad2,
+    required Lineup lineup1,
+    required Lineup lineup2,
   }) : this(
           id: match.id,
           team1: match.team1,
@@ -87,8 +87,8 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
           venue: match.venue,
           rules: match.rules,
           toss: toss,
-          lineup1: squad1,
-          lineup2: squad2,
+          lineup1: lineup1,
+          lineup2: lineup2,
         );
 }
 

@@ -1,5 +1,6 @@
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
+import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/repository/service/repostiory_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/modules/venue/models/venue_model.dart';
@@ -31,10 +32,10 @@ class CricketMatchService {
   InitializedCricketMatch initializeCricketMatch(
       ScheduledCricketMatch scheduledMatch,
       {required Toss toss,
-      required Lineup squad1,
-      required Lineup squad2}) {
+      required Lineup lineup1,
+      required Lineup lineup2}) {
     final match = InitializedCricketMatch.fromScheduled(scheduledMatch,
-        toss: toss, squad1: squad1, squad2: squad2);
+        toss: toss, lineup1: lineup1, lineup2: lineup2);
 
     // Update match in repository
     _repository.update(match);
@@ -44,26 +45,55 @@ class CricketMatchService {
 
   OngoingCricketMatch commenceCricketMatch(
       InitializedCricketMatch initializedMatch) {
-    late final CricketGame game;
     final rules = initializedMatch.rules;
-    switch (rules) {
-      case LimitedOversRules():
-        game = LimitedOversGame(
+    final CricketGame game = switch (rules) {
+      LimitedOversRules() => LimitedOversGame(
           rules: rules,
           lineup1: initializedMatch.lineup1,
           lineup2: initializedMatch.lineup2,
-        );
-      case UnlimitedOversRules():
-        game = UnlimitedOversGame(
+        ),
+      UnlimitedOversRules() => UnlimitedOversGame(
           rules: rules,
           lineup1: initializedMatch.lineup1,
           lineup2: initializedMatch.lineup2,
-        );
-    }
+        )
+    };
 
     final match =
         OngoingCricketMatch.fromInitialized(initializedMatch, game: game);
+
+    if (match.toss.winner == match.lineup1.team &&
+            match.toss.choice == TossChoice.bat ||
+        match.toss.winner == match.lineup2.team &&
+            match.toss.choice == TossChoice.field) {
+      nextInnings(game,
+          battingLineup: match.lineup1, bowlingLineup: match.lineup2);
+    } else {
+      nextInnings(game,
+          battingLineup: match.lineup2, bowlingLineup: match.lineup1);
+    }
+
     return match;
+  }
+
+  void nextInnings(
+    CricketGame game, {
+    required Lineup battingLineup,
+    required Lineup bowlingLineup,
+  }) {
+    final Innings innings = switch (game) {
+      LimitedOversGame() => LimitedOversInnings(
+          rules: game.rules,
+          battingLineup: battingLineup,
+          bowlingLineup: bowlingLineup,
+        ),
+      UnlimitedOversGame() => UnlimitedOversInnings(
+          rules: game.rules,
+          battingLineup: battingLineup,
+          bowlingLineup: bowlingLineup,
+        ),
+    };
+    game.innings.add(innings);
   }
 
   IRepository<CricketMatch> get _repository =>

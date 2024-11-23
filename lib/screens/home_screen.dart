@@ -31,17 +31,17 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   child: const Icon(Icons.sports_baseball),
-      //   onPressed: () => _createMatch(context),
-      // ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
     );
   }
 
   void _createMatch(BuildContext context) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => CreateCricketMatchScreen()));
+    final controller = CreateCricketMatchController();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => CreateCricketMatchScreen(controller)),
+    );
   }
 }
 
@@ -57,25 +57,6 @@ class _HomeScreenTile extends StatelessWidget {
       title: Text(title),
       trailing: onSelect == null ? null : const Icon(Icons.chevron_right),
       onTap: onSelect,
-    );
-  }
-}
-
-class _HomeScreenSection extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-
-  const _HomeScreenSection(
-      {super.key, required this.title, required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.headlineLarge),
-        ...children
-      ],
     );
   }
 }

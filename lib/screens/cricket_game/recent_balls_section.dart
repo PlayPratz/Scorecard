@@ -11,14 +11,17 @@ class RecentBallsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final reversedBalls = balls.reversed.toList();
     return Card(
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        physics: const NeverScrollableScrollPhysics(), //TODO change to Row?
-        reverse: true,
-        itemCount: balls.length,
-        itemBuilder: (context, index) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: _BallPreview(reversedBalls[index]),
+      child: SizedBox(
+        height: 64, // TODO
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(), //TODO change to Row?
+          reverse: true,
+          itemCount: balls.length,
+          itemBuilder: (context, index) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: _BallPreview(reversedBalls[index]),
+          ),
         ),
       ),
     );

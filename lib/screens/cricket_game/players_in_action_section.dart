@@ -29,57 +29,59 @@ class PlayersInActionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final row = [
-      Expanded(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _BatterTile(
-              state.batter1,
-              isOnStrike: state.striker == state.batter1,
-              isOut: state.batter1 != null &&
-                  (state.batter1!.isOut || state.batter1!.isRetired),
-              onSetStrike: onSetStrike,
-              onRetireBatter: (b) => onRetireBatter, //TODO
-              onPickBatter: onPickBatter,
-            ),
-            const Spacer(),
-            _BatterTile(
-              state.batter2,
-              isOnStrike: state.striker == state.batter2,
-              isOut: state.batter2 != null &&
-                  (state.batter2!.isOut || state.batter2!.isRetired),
-              onSetStrike: onSetStrike,
-              onRetireBatter: (b) => onRetireBatter, //TODO
-              onPickBatter: onPickBatter,
-            ),
-          ],
-        ),
-      ),
-      Expanded(
-        child: Column(
-          children: [
-            _BowlerInAction(
-              state.bowler,
-              onPickBowler: onPickBowler,
-              onRetireBowler: (b) => onRetireBowler, //TODO
-            )
-          ],
-        ),
-      ),
-    ];
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-        child: SizedBox(
-          height: 150,
-          child: Row(
-            children: isFirstTeamBatting ? row : row.reversed.toList(),
-          ),
+        child: Table(
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          children: [
+            TableRow(
+              children: isFirstTeamBatting ? row1 : row1.reversed.toList(),
+            ),
+            TableRow(
+              children: isFirstTeamBatting ? row2 : row2.reversed.toList(),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  List<Widget> get row1 => [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: _BatterTile(
+            state.batter1,
+            isOnStrike: state.striker == state.batter1,
+            isOut: state.batter1 != null &&
+                (state.batter1!.isOut || state.batter1!.isRetired),
+            onSetStrike: onSetStrike,
+            onRetireBatter: (b) => onRetireBatter, //TODO
+            onPickBatter: onPickBatter,
+          ),
+        ),
+        _BowlerInAction(
+          state.bowler,
+          onPickBowler: onPickBowler,
+          onRetireBowler: (b) => onRetireBowler, //TODO
+        ),
+      ];
+
+  List<Widget> get row2 => [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: _BatterTile(
+            state.batter2,
+            isOnStrike: state.striker == state.batter2,
+            isOut: state.batter2 != null &&
+                (state.batter2!.isOut || state.batter2!.isRetired),
+            onSetStrike: onSetStrike,
+            onRetireBatter: (b) => onRetireBatter, //TODO
+            onPickBatter: onPickBatter,
+          ),
+        ),
+        const _InfoTile(),
+      ];
 }
 
 class _BatterTile extends StatelessWidget {
@@ -107,17 +109,26 @@ class _BatterTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      // side: const BorderSide(width: 0.5),
+    );
+
     if (batterInnings == null) {
       return ListTile(
         leading: const Icon(Icons.sports_motorsports),
         title: const Text("Pick Batter"),
+        subtitle: Text(
+          "Tap to continue",
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(color: Colors.black54),
+        ),
         // tileColor: color,
         // trailing: Icon(Icons.chevron_right),
         onTap: onPickBatter,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(width: 0.5),
-        ),
+        shape: shape,
       );
     }
     return ListTile(
@@ -130,7 +141,10 @@ class _BatterTile extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
-      subtitle: Text(batterInnings!.player.name.toUpperCase()),
+      subtitle: Text(
+        batterInnings!.player.name.toUpperCase(),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
       tileColor: isOut
           ? Colors.red.withOpacity(0.3)
           : isOnStrike
@@ -141,10 +155,7 @@ class _BatterTile extends StatelessWidget {
       // trailing: isOnStrike
       //     ? const Icon(Icons.chevron_left, color: Colors.greenAccent)
       //     : const SizedBox(),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(width: 0.5),
-      ),
+      shape: shape,
     );
   }
 }
@@ -170,6 +181,13 @@ class _BowlerInAction extends StatelessWidget {
       return ListTile(
         leading: const Icon(Icons.person),
         title: const Text("Pick Bowler"),
+        subtitle: Text(
+          "Tap to continue",
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(color: Colors.black54),
+        ),
         onTap: onPickBowler,
         // tileColor: color,
       );
@@ -178,9 +196,27 @@ class _BowlerInAction extends StatelessWidget {
       leading: const Icon(Icons.sports_baseball),
       title:
           Text("${bowlerInnings!.runsConceded}-${bowlerInnings!.wicketCount}"),
-      subtitle: Text(bowlerInnings!.player.name.toUpperCase()),
+      subtitle: Text(
+        bowlerInnings!.player.name.toUpperCase(),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
       onLongPress: () => onRetireBowler(bowlerInnings!),
       // tileColor: color,
+    );
+  }
+}
+
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.info_outline, color: Colors.black54),
+      title: Text("Long press a player to retire",
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.black54,
+              )),
     );
   }
 }

@@ -92,7 +92,7 @@ class Ball extends InningsPost {
   final Player bowler;
   final Player batter;
 
-  final int runsScored;
+  final int runsScoredByBattingTeam;
 
   final Wicket? wicket;
   bool get isWicket => wicket != null;
@@ -103,13 +103,13 @@ class Ball extends InningsPost {
   final BattingExtra? battingExtra;
   bool get isBattingExtra => battingExtra != null;
 
-  int get runs => runsScored; // TODO URGENT include Extra Runs
+  int get runs => runsScoredByBattingTeam; // TODO URGENT include Extra Runs
 
   Ball({
     required super.index,
     required this.bowler,
     required this.batter,
-    required this.runsScored,
+    required this.runsScoredByBattingTeam,
     required this.wicket,
     required this.bowlingExtra,
     required this.battingExtra,
@@ -133,7 +133,8 @@ sealed class Innings {
   int get runs => balls.fold(0, (value, ball) => value + ball.runs);
 
   /// Total wickets taken by the bowling team
-  int get wickets => balls.where((ball) => ball.isWicket).length;
+  int get wickets => wicketBalls.length;
+  Iterable<Ball> get wicketBalls => balls.where((ball) => ball.isWicket);
 
   /// Are all wickets lost by the batting team
   // bool get isAllDown => wickets >= rules.wicketsPerSide; TODO
@@ -225,9 +226,6 @@ class BatterInnings extends PlayerInnings with BattingCalculations {
   @override
   Iterable<Ball> get balls => posts.whereType<Ball>();
 
-  int get ballCount =>
-      balls.where((ball) => ball.bowlingExtra != BowlingExtra.wide).length;
-
   bool get isOut => wicket != null;
   bool get isRetired => retired != null;
 }
@@ -246,7 +244,13 @@ class BowlerInnings extends PlayerInnings with BowlingCalculations {
 
 mixin BattingCalculations {
   Iterable<Ball> get balls;
-  int get runs => balls.fold(0, (runs, ball) => runs + ball.runsScored);
+  int get runs =>
+      balls.fold(0, (runs, ball) => runs + ball.runsScoredByBattingTeam);
+
+  int get ballCount =>
+      balls.where((ball) => ball.bowlingExtra != BowlingExtra.wide).length;
+
+  double get strikeRate => 100 * runs / ballCount;
 }
 
 mixin BowlingCalculations {

@@ -12,7 +12,7 @@ class RecentBallsSection extends StatelessWidget {
     final reversedBalls = balls.reversed.toList();
     return Card(
       child: SizedBox(
-        height: 64, // TODO
+        height: 56, // TODO
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           physics: const NeverScrollableScrollPhysics(), //TODO change to Row?
@@ -35,23 +35,21 @@ class _BallPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          decoration: ShapeDecoration(
-            shape: CircleBorder(side: BorderSide(color: borderColor)),
-            color: ballColor,
-          ),
-          height: 24,
-          child: Text(ball.runs.toString()),
+        CircleAvatar(
+          backgroundColor: ballColor,
+          radius: 14,
+          child: Center(
+              child: Text(
+            ball.runs.toString(),
+            style: Theme.of(context).textTheme.bodySmall,
+          )),
         ),
         const SizedBox(height: 4),
-        Text(
-          ball.index.toString(),
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: BallColors.newOver),
-        )
+        Text(ball.index.toString(), style: Theme.of(context).textTheme.bodySmall
+            // ?.copyWith(color: BallColors.newOver),
+            )
       ],
     );
   }

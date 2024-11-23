@@ -213,7 +213,7 @@ class InningsService {
       index: index,
       bowler: bowler,
       batter: batter,
-      runsScored: runsScored,
+      runsScoredByBattingTeam: runsScored,
       wicket: wicket,
       bowlingExtra: bowlingExtra,
       battingExtra: battingExtra,
@@ -223,7 +223,7 @@ class InningsService {
     _postToInnings(innings, ball);
 
     // Swap strike for odd number of runs
-    if (ball.runsScored % 2 == 1) swapStrike(innings);
+    if (ball.runsScoredByBattingTeam % 2 == 1) swapStrike(innings);
 
     // Swap strike whenever an over completes
     if (ball.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
@@ -283,6 +283,16 @@ class InningsService {
     }
   }
 
+  void _unPostFromBatterInningsOfPlayer(Innings innings, Player batter) {
+    // Get the BatterInnings
+    final batterInnings = getBatterInningsOfPlayer(innings, batter);
+
+    // Remove post from BatterInnings
+    if (batterInnings != null && batterInnings.posts.isNotEmpty) {
+      final last = batterInnings.posts.removeLast();
+    }
+  }
+
   void undoPostFromInnings(Innings innings) {
     if (innings.posts.isEmpty) return;
 
@@ -312,17 +322,25 @@ class InningsService {
         }
       case NextBatter():
         final batterInnings = deleteBatterInningsOfPlayer(innings, post.next);
+        late final BatterInnings? restoredBatterInnings;
         if (post.previous != null) {
-          final restoredBatterInnings =
+          restoredBatterInnings =
               getBatterInningsOfPlayer(innings, post.previous!);
-          if (innings.batter1 == batterInnings) {
-            innings.batter1 = restoredBatterInnings;
-          } else if (innings.batter2 == batterInnings) {
-            innings.batter2 = restoredBatterInnings;
-          }
+        } else {
+          restoredBatterInnings = null;
+        }
+        if (innings.batter1 == batterInnings) {
+          innings.batter1 = restoredBatterInnings;
+        } else if (innings.batter2 == batterInnings) {
+          innings.batter2 = restoredBatterInnings;
         }
       case Ball():
-      // TODO: Handle this case.
+        // Remove post from both players' Innings
+        _unPostFromBatterInningsOfPlayer(innings, post.batter);
+        _unPostFromBowlerInningsOfPlayer(innings, post.bowler);
+
+        // Swap strike
+        if (post.runsScoredByBattingTeam % 2 == 1) swapStrike(innings);
     }
   }
 

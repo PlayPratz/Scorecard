@@ -7,51 +7,57 @@ import 'package:scorecard/ui/ball_colors.dart';
 class LimitedOversScoreSection extends StatelessWidget {
   final LimitedOversScoreState state;
 
-  const LimitedOversScoreSection(this.state, {super.key});
+  final void Function()? onTap;
+
+  const LimitedOversScoreSection(this.state, {super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
-        child: Center(
-          child: Table(
-            // defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: const {1: FlexColumnWidth(0.4)},
-            children: [
-              TableRow(children: [
-                Text(
-                  state.battingTeam.name.toUpperCase(),
-                  style: Theme.of(context).textTheme.titleSmall,
-                  textAlign: TextAlign.right,
-                ),
-                TableCell(
-                  verticalAlignment: TableCellVerticalAlignment.bottom,
-                  child: CircleAvatar(
-                    backgroundColor: BallColors.background,
-                    radius: 12,
-                    child: Text(
-                      'v',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.white),
+      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)), TODO FIX
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+          child: Center(
+            child: Table(
+              // defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              columnWidths: const {1: FlexColumnWidth(0.4)},
+              children: [
+                TableRow(children: [
+                  Text(
+                    state.battingTeam.name.toUpperCase(),
+                    style: Theme.of(context).textTheme.titleSmall,
+                    textAlign: TextAlign.right,
+                  ),
+                  TableCell(
+                    verticalAlignment: TableCellVerticalAlignment.bottom,
+                    child: CircleAvatar(
+                      backgroundColor: BallColors.background,
+                      radius: 12,
+                      child: Text(
+                        'v',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: Colors.white),
+                      ),
                     ),
                   ),
-                ),
-                Text(state.bowlingTeam.name.toUpperCase(),
-                    style: Theme.of(context).textTheme.titleSmall),
-              ]),
-              TableRow(children: [
-                Text(
-                  "${state.runs}-${state.wickets}",
-                  style: Theme.of(context).textTheme.headlineSmall,
-                  textAlign: TextAlign.right,
-                ),
-                const SizedBox(),
-                Text("Overs ${state.currentIndex}/${state.oversToBowl}"),
-              ]),
-            ],
+                  Text(state.bowlingTeam.name.toUpperCase(),
+                      style: Theme.of(context).textTheme.titleSmall),
+                ]),
+                TableRow(children: [
+                  Text(
+                    "${state.runs}-${state.wickets}",
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.right,
+                  ),
+                  const SizedBox(),
+                  Text("Overs ${state.currentIndex}/${state.oversToBowl}"),
+                ]),
+              ],
+            ),
           ),
         ),
       ),

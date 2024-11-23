@@ -9,6 +9,7 @@ import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/cricket_match/services/innings_service.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
+import 'package:scorecard/screens/cricket_game/cricket_game_scorecard.dart';
 import 'package:scorecard/screens/cricket_game/cricket_score_section.dart';
 import 'package:scorecard/screens/cricket_game/next_ball_selector_section.dart';
 import 'package:scorecard/screens/cricket_game/players_in_action_section.dart';
@@ -50,9 +51,11 @@ class CricketGameScreen extends StatelessWidget {
             child: ListView(
               children: [
                 //Cricket Match Tile
-                _wScoreSection(controller.game, state),
-                const SizedBox(height: 16),
+                _wScoreSection(context, controller.game, state),
+                _wSectionSeperator,
+
                 //PlayersInAction
+                _wHeader(context, "Players In Action"),
                 PlayersInActionSection(
                   state,
                   onSetStrike: (bi) => controller.setStrike(bi),
@@ -64,6 +67,10 @@ class CricketGameScreen extends StatelessWidget {
                   onPickBowler: () => _pickBowler(context),
                 ),
 
+                _wSectionSeperator,
+
+                // Recent Balls
+                _wHeader(context, "Recent Balls"),
                 RecentBallsSection(state.balls),
 
                 //Wicket Selector
@@ -73,17 +80,20 @@ class CricketGameScreen extends StatelessWidget {
             ),
           ),
           bottomNavigationBar: BottomAppBar(
-            height: 200,
+            height: 220,
             child: Column(
+              // crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                _wHeader(context, "Record Next Ball"),
+                _wSectionSeperator,
                 NextBallSelectorSection(nextBallSelectorController),
-                const SizedBox(height: 16),
+                _wSectionSeperator,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _wUndoButton(),
-                    const SizedBox(width: 16),
+                    _wSectionSeperator,
                     Expanded(
                         child: _wConfirmButton(
                             context, state, nextBallSelectorController)),
@@ -97,7 +107,8 @@ class CricketGameScreen extends StatelessWidget {
     );
   }
 
-  Widget _wScoreSection(CricketGame game, CricketGameScreenState state) =>
+  Widget _wScoreSection(BuildContext context, CricketGame game,
+          CricketGameScreenState state) =>
       switch (game) {
         LimitedOversGame() => LimitedOversScoreSection(
             game.currentInnings is LimitedOversInningsWithTarget
@@ -122,6 +133,7 @@ class CricketGameScreen extends StatelessWidget {
                     isFirstTeamBatting: state.battingTeam == game.lineup1.team,
                     target: 0,
                   ),
+            onTap: () => controller.showScorecard(context),
           ),
 
         // TODO: Handle this case.
@@ -158,6 +170,11 @@ class CricketGameScreen extends StatelessWidget {
         label: const Text("Undo"),
         icon: const Icon(Icons.undo),
       );
+
+  Widget get _wSectionSeperator => const SizedBox(height: 12);
+
+  Widget _wHeader(BuildContext context, String text) =>
+      Text(text, style: Theme.of(context).textTheme.titleSmall);
 
   void _playBall(PlayBallState playBallState,
           NextBallSelectorController nextBallSelectorController) =>
@@ -265,7 +282,7 @@ class CricketGameScreenController {
     }
   }
 
-  void pickBatter(BuildContext context) async {
+  Future<void> pickBatter(BuildContext context) async {
     final batter = await _pickPlayer(
         context, currentInnings.battingLineup.players.toList());
     if (batter != null) {
@@ -287,6 +304,11 @@ class CricketGameScreenController {
     } else {
       return null;
     }
+  }
+
+  void showScorecard(BuildContext context) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => CricketGameScorecard(game)));
   }
 
   void play(PlayBallState playBallState,

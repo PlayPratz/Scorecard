@@ -8,7 +8,6 @@ import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/cricket_match/services/innings_service.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/repository/service/repostiory_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/screens/cricket_game/cricket_score_section.dart';
 import 'package:scorecard/screens/cricket_game/next_ball_selector_section.dart';
@@ -80,8 +79,16 @@ class CricketGameScreen extends StatelessWidget {
               children: [
                 NextBallSelectorSection(nextBallSelectorController),
                 const SizedBox(height: 16),
-                _wConfirmButton(
-                    context, state, nextBallSelectorController.state),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _wUndoButton(),
+                    const SizedBox(width: 16),
+                    Expanded(
+                        child: _wConfirmButton(
+                            context, state, nextBallSelectorController)),
+                  ],
+                ),
               ],
             ),
           ),
@@ -122,7 +129,7 @@ class CricketGameScreen extends StatelessWidget {
       };
 
   Widget _wConfirmButton(BuildContext context, CricketGameScreenState state,
-          NextBallSelectorState nextBallSelectorState) =>
+          NextBallSelectorController nextBallSelectorController) =>
       switch (state) {
         PickBowlerState() => FilledButton.icon(
             onPressed: () => _pickBowler(context),
@@ -140,15 +147,21 @@ class CricketGameScreen extends StatelessWidget {
             label: const Text("End Innings"),
           ),
         PlayBallState() => FilledButton.icon(
-            onPressed: () => _playBall(state, nextBallSelectorState),
+            onPressed: () => _playBall(state, nextBallSelectorController),
             icon: const Icon(Icons.sports_baseball),
             label: const Text("Play"),
           ),
       };
 
+  Widget _wUndoButton() => OutlinedButton.icon(
+        onPressed: controller.undo,
+        label: const Text("Undo"),
+        icon: const Icon(Icons.undo),
+      );
+
   void _playBall(PlayBallState playBallState,
-          NextBallSelectorState nextBallSelectorState) =>
-      controller.play(playBallState, nextBallSelectorState);
+          NextBallSelectorController nextBallSelectorController) =>
+      controller.play(playBallState, nextBallSelectorController.state);
 
   void _pickBatter(BuildContext context) => controller.pickBatter(context);
 
@@ -248,6 +261,7 @@ class CricketGameScreenController {
         context, currentInnings.bowlingLineup.players.toList());
     if (bowler != null) {
       _service.nextBowler(currentInnings, bowler);
+      _dispatchState();
     }
   }
 
@@ -256,6 +270,7 @@ class CricketGameScreenController {
         context, currentInnings.battingLineup.players.toList());
     if (batter != null) {
       _service.nextBatter(currentInnings, batter);
+      _dispatchState();
     }
   }
 
@@ -288,10 +303,16 @@ class CricketGameScreenController {
         bowlingExtra: nextBallSelectorState.nextBowlingExtra,
         battingExtra: nextBallSelectorState.nextBattingExtra,
       );
+      _dispatchState();
     } else {
       throw StateError(
           "Attempted to play ball when either the bowler or striker were unset.");
     }
+  }
+
+  void undo() {
+    _service.undoPostFromInnings(currentInnings);
+    _dispatchState();
   }
 
   Innings get currentInnings => game.currentInnings;

@@ -58,12 +58,14 @@ class _RunSelectorSection extends StatelessWidget {
           7,
           (runs) => switch (state) {
             NextBallSelectorEnabledState() => ChoiceChip(
-                label: Text(runs.toString()),
+                label: Text(runs.toString(),
+                    style: Theme.of(context).textTheme.bodySmall),
                 selected:
                     runs == (state as NextBallSelectorEnabledState).nextRuns,
                 onSelected: (x) => _onSelect(x, runs),
                 selectedColor: _color(runs),
                 shape: const CircleBorder(),
+                showCheckmark: false,
               ),
             NextBallSelectorDisabledState() => ChoiceChip(
                 label: Text(runs.toString()),
@@ -89,7 +91,7 @@ class _RunSelectorSection extends StatelessWidget {
 class _BattingExtraSelectorSection extends StatelessWidget {
   final NextBallSelectorState state;
 
-  final void Function(BattingExtra extra) setExtra;
+  final void Function(BattingExtra? extra) setExtra;
   const _BattingExtraSelectorSection(
     this.state, {
     super.key,
@@ -114,7 +116,11 @@ class _BattingExtraSelectorSection extends StatelessWidget {
           label: Text(stringify(extra)),
           selected: extra == state.nextBattingExtra,
           onSelected: (x) {
-            if (x) setExtra(extra);
+            if (x) {
+              setExtra(extra);
+            } else {
+              setExtra(null);
+            }
           }),
       NextBallSelectorDisabledState() => ChoiceChip(
           label: Text(stringify(extra)),
@@ -127,7 +133,7 @@ class _BattingExtraSelectorSection extends StatelessWidget {
 class _BowlingExtraSelectorSection extends StatelessWidget {
   final NextBallSelectorState state;
 
-  final void Function(BowlingExtra extra) setExtra;
+  final void Function(BowlingExtra? extra) setExtra;
   const _BowlingExtraSelectorSection(
     this.state, {
     super.key,
@@ -152,7 +158,11 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
           label: Text(stringify(extra)),
           selected: extra == state.nextBowlingExtra,
           onSelected: (x) {
-            if (x) setExtra(extra);
+            if (x) {
+              setExtra(extra);
+            } else {
+              setExtra(null);
+            }
           }),
       NextBallSelectorDisabledState() => ChoiceChip(
           label: Text(stringify(extra)),

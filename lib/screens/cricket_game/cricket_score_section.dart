@@ -57,61 +57,6 @@ class LimitedOversScoreSection extends StatelessWidget {
       ),
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   final row = [
-  //     Expanded(
-  //       child: _BattingTeamTile(
-  //         teamName: state.battingTeam.name,
-  //         color: Color(state.battingTeam.color),
-  //         runs: state.runs,
-  //         wickets: state.wickets,
-  //         isLeftAligned: state.isFirstTeamBatting,
-  //       ),
-  //     ),
-  //     CircleAvatar(
-  //       backgroundColor: Colors.black54,
-  //       radius: 12,
-  //       child: Text(
-  //         'v',
-  //         style: Theme.of(context)
-  //             .textTheme
-  //             .bodySmall
-  //             ?.copyWith(color: Colors.white),
-  //       ),
-  //     ),
-  //     Expanded(
-  //       child: _BowlingTeamTile(
-  //         teamName: state.bowlingTeam.short,
-  //         color: Color(state.bowlingTeam.color),
-  //         currentIndex: state.currentIndex,
-  //         totalOvers: state.oversToBowl,
-  //         isLeftAligned: !state.isFirstTeamBatting,
-  //       ),
-  //     ),
-  //   ];
-  //   return Column(
-  //     // crossAxisAlignment: CrossAxisAlignment.center,
-  //     children: [
-  //       Card(
-  //         child: Padding(
-  //           padding: const EdgeInsets.symmetric(vertical: 16.0),
-  //           child: SizedBox(
-  //             height: 64,
-  //             child: Row(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               crossAxisAlignment: CrossAxisAlignment.center,
-  //               children:
-  //                   state.isFirstTeamBatting ? row : row.reversed.toList(),
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //       const SizedBox(height: 8),
-  //     ],
-  //   );
-  // }
 }
 
 sealed class LimitedOversScoreState {

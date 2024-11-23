@@ -207,7 +207,7 @@ class InningsService {
     required BattingExtra? battingExtra,
   }) {
     final index =
-        bowlingExtra == null ? _currentIndex(innings) : _nextIndex(innings);
+        bowlingExtra != null ? _currentIndex(innings) : _nextIndex(innings);
 
     final ball = Ball(
       index: index,

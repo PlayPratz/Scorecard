@@ -13,7 +13,10 @@ class PlayerListScreen extends StatelessWidget {
       appBar: AppBar(),
       body: ListView.builder(
         itemCount: players.length,
-        itemBuilder: (context, index) => PlayerTile(players[index]),
+        itemBuilder: (context, index) => PlayerTile(
+          players[index],
+          onSelect: onSelectPlayer,
+        ),
       ),
       bottomNavigationBar: const BottomAppBar(),
       floatingActionButton: FloatingActionButton(onPressed: () {}),
@@ -30,7 +33,7 @@ class PlayerListScreen extends StatelessWidget {
 
 class PlayerTile extends StatelessWidget {
   final Player player;
-  final void Function()? onSelect;
+  final void Function(Player player)? onSelect;
   const PlayerTile(this.player, {super.key, this.onSelect});
 
   @override
@@ -40,7 +43,7 @@ class PlayerTile extends StatelessWidget {
       leading: const Icon(Icons.sports_motorsports),
       title: Text(player.name),
       trailing: isSelectable ? const Icon(Icons.chevron_right) : null,
-      onTap: onSelect,
+      onTap: onSelect != null ? () => onSelect!(player) : null,
     );
   }
 }

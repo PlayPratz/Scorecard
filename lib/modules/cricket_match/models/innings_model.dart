@@ -223,7 +223,7 @@ class BatterInnings extends PlayerInnings with BattingCalculations {
   RetiredBatter? retired;
 
   @override
-  Iterable<InningsPost> get _posts => posts;
+  Iterable<Ball> get balls => posts.whereType<Ball>();
 
   int get ballCount =>
       balls.where((ball) => ball.bowlingExtra != BowlingExtra.wide).length;
@@ -245,9 +245,8 @@ class BowlerInnings extends PlayerInnings with BowlingCalculations {
 }
 
 mixin BattingCalculations {
-  Iterable<InningsPost> get _posts;
-  Iterable<Ball> get balls => _posts.whereType<Ball>();
-  int get runs => balls.fold(0, (runs, ball) => runs + ball.runs);
+  Iterable<Ball> get balls;
+  int get runs => balls.fold(0, (runs, ball) => runs + ball.runsScored);
 }
 
 mixin BowlingCalculations {

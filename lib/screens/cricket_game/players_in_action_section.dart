@@ -72,7 +72,7 @@ class PlayersInActionSection extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
         child: SizedBox(
-          height: 120,
+          height: 150,
           child: Row(
             children: isFirstTeamBatting ? row : row.reversed.toList(),
           ),
@@ -85,6 +85,7 @@ class PlayersInActionSection extends StatelessWidget {
 class _BatterTile extends StatelessWidget {
   final BatterInnings? batterInnings;
 
+  // final Color? color;
   final bool isOnStrike;
   final bool isOut;
 
@@ -108,7 +109,7 @@ class _BatterTile extends StatelessWidget {
   Widget build(BuildContext context) {
     if (batterInnings == null) {
       return ListTile(
-        leading: const Icon(Icons.person),
+        leading: const Icon(Icons.sports_motorsports),
         title: const Text("Pick Batter"),
         // tileColor: color,
         // trailing: Icon(Icons.chevron_right),
@@ -120,22 +121,30 @@ class _BatterTile extends StatelessWidget {
       );
     }
     return ListTile(
-      leading: const Icon(Icons.person),
+      leading: const Icon(Icons.sports_motorsports),
       title: Row(
         children: [
           Text("${batterInnings!.runs}"),
-          const SizedBox(width: 8),
-          Text("(${batterInnings!.ballCount})",
+          const SizedBox(width: 4),
+          Text("${batterInnings!.ballCount}",
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
       subtitle: Text(batterInnings!.player.name.toUpperCase()),
-      tileColor: isOut ? Colors.red.withOpacity(0.3) : null,
+      tileColor: isOut
+          ? Colors.red.withOpacity(0.3)
+          : isOnStrike
+              ? Colors.greenAccent
+              : null,
       onTap: () => onSetStrike(batterInnings!),
       onLongPress: () => onRetireBatter(batterInnings!),
-      trailing: isOnStrike
-          ? const Icon(Icons.chevron_left, color: Colors.greenAccent)
-          : const SizedBox(),
+      // trailing: isOnStrike
+      //     ? const Icon(Icons.chevron_left, color: Colors.greenAccent)
+      //     : const SizedBox(),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(width: 0.5),
+      ),
     );
   }
 }
@@ -166,6 +175,7 @@ class _BowlerInAction extends StatelessWidget {
       );
     }
     return ListTile(
+      leading: const Icon(Icons.sports_baseball),
       title:
           Text("${bowlerInnings!.runsConceded}-${bowlerInnings!.wicketCount}"),
       subtitle: Text(bowlerInnings!.player.name.toUpperCase()),

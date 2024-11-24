@@ -11,7 +11,6 @@ class RecentBallsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final reversedBalls = balls.reversed.toList();
     return Card(
-      // color: BallColors.pane,
       child: SizedBox(
         height: 56, // TODO
         child: ListView.builder(
@@ -38,28 +37,18 @@ class _BallPreview extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          decoration: ShapeDecoration(
-              shape: CircleBorder(
-            side: BorderSide(
-              width: 2,
-              color: borderColor,
-            ),
-          )),
-          child: CircleAvatar(
-            backgroundColor: ballColor,
-            radius: 14,
-            child: Center(
+        CircleAvatar(
+          backgroundColor: ballColor,
+          radius: 14,
+          child: Center(
               child: Text(
-                ball.runs.toString(),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          ),
+            ball.runs.toString(),
+            style: Theme.of(context).textTheme.bodySmall,
+          )),
         ),
         const SizedBox(height: 4),
         Text(ball.index.toString(), style: Theme.of(context).textTheme.bodySmall
-            // ?.copyWith(color: Colors.white),
+            // ?.copyWith(color: BallColors.newOver),
             )
       ],
     );
@@ -75,14 +64,10 @@ class _BallPreview extends StatelessWidget {
     }
   }
 
-  Color get borderColor {
-    if (ball.bowlingExtra == BowlingExtra.noBall) {
-      return BallColors.noBall;
-    } else if (ball.bowlingExtra == BowlingExtra.wide) {
-      return BallColors.wide;
-    } else if (ball.isWicket) {
-      return BallColors.wicket;
-    }
-    return Colors.transparent;
-  }
+  Color get borderColor => switch (ball.bowlingExtra) {
+        BowlingExtra.noBall => BallColors.noBall,
+        BowlingExtra.wide => BallColors.wide,
+        // No border color if not an extra
+        null => Colors.transparent,
+      };
 }

@@ -4,11 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/ui/ball_colors.dart';
+import 'package:scorecard/ui/stringify.dart';
 
 class NextBallSelectorSection extends StatelessWidget {
   final NextBallSelectorController controller;
 
-  const NextBallSelectorSection(this.controller, {super.key});
+  final void Function()? onSelectWicket;
+
+  const NextBallSelectorSection(
+    this.controller, {
+    super.key,
+    this.onSelectWicket,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +27,13 @@ class NextBallSelectorSection extends StatelessWidget {
         return Column(
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _BattingExtraSelectorSection(state,
                     setExtra: (extra) => controller.nextBattingExtra = extra),
-                const Spacer(),
+                _WicketTile(state,
+                    onSelectWicket: onSelectWicket,
+                    onClearWicket: () => controller.nextWicket = null),
                 _BowlingExtraSelectorSection(state,
                     setExtra: (extra) => controller.nextBowlingExtra = extra),
               ],
@@ -100,7 +110,10 @@ class _BattingExtraSelectorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: BattingExtra.values.map((e) => chip(e)).toList());
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: BattingExtra.values.map((e) => chip(e)).toList(),
+    );
   }
 
   String stringify(BattingExtra extra) => switch (extra) {
@@ -142,7 +155,10 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(children: BowlingExtra.values.map((e) => chip(e)).toList());
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: BowlingExtra.values.map((e) => chip(e)).toList(),
+    );
   }
 
   String stringify(BowlingExtra extra) => switch (extra) {
@@ -171,42 +187,6 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
     };
   }
 }
-
-//
-// class _RunSelector extends StatelessWidget {
-//   final int runs;
-//
-//   final bool isEnabled;
-//   final bool isSelected;
-//
-//   final void Function() onSelect;
-//
-//   final Color? color;
-//   const _RunSelector(
-//     this.runs, {
-//     super.key,
-//     required this.isSelected,
-//     required this.onSelect,
-//     required this.isEnabled,
-//     this.color,
-//   });
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return ChoiceChip(
-//       label: Text(runs.toString()),
-//       shape: const CircleBorder(),
-//       selected: isSelected,
-//       onSelected: isEnabled ? _onSelect : null,
-//     );
-//   }
-//
-//   void _onSelect(bool x) {
-//     if(x) {
-//       onSelect();
-//     }
-//   }
-// }
 
 class NextBallSelectorController {
   final _selectionStreamController = StreamController<NextBallSelectorState>();
@@ -282,3 +262,28 @@ class NextBallSelectorEnabledState extends NextBallSelectorState {
 }
 
 class NextBallSelectorDisabledState extends NextBallSelectorState {}
+
+class _WicketTile extends StatelessWidget {
+  final NextBallSelectorState state;
+  final void Function()? onSelectWicket;
+  final void Function()? onClearWicket;
+
+  const _WicketTile(this.state,
+      {super.key, required this.onSelectWicket, this.onClearWicket});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = this.state;
+    switch (state) {
+      case NextBallSelectorEnabledState():
+        return ActionChip(
+          label: Text(Stringify.wicket(state.nextWicket, ifNone: "Add Wicket")),
+          onPressed: state.nextWicket == null ? onSelectWicket : onClearWicket,
+        );
+      case NextBallSelectorDisabledState():
+        return const ActionChip(
+          label: Text("Wicket"),
+        );
+    }
+  }
+}

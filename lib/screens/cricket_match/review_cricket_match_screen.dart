@@ -8,9 +8,9 @@ import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/screens/cricket_match/cricket_match_screen_switcher.dart';
 
-class CommenceCricketMatchScreen extends StatelessWidget {
-  final CommenceCricketGameScreenController controller;
-  const CommenceCricketMatchScreen(this.controller, {super.key});
+class ReviewCricketMatchScreen extends StatelessWidget {
+  final ReviewCricketMatchScreenController controller;
+  const ReviewCricketMatchScreen(this.controller, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +21,8 @@ class CommenceCricketMatchScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: ListView(
           children: [
+            _TossPreviewSection(match.toss),
+            const SizedBox(height: 16),
             _MatchupPreviewSection(
               lineup1: match.lineup1,
               lineup2: match.lineup2,
@@ -46,10 +48,10 @@ class CommenceCricketMatchScreen extends StatelessWidget {
   }
 }
 
-class CommenceCricketGameScreenController {
+class ReviewCricketMatchScreenController {
   final InitializedCricketMatch match;
 
-  CommenceCricketGameScreenController(this.match);
+  ReviewCricketMatchScreenController(this.match);
 
   void onCommenceMatch(BuildContext context) {
     final ongoingMatch = _service.commenceCricketMatch(match);
@@ -89,6 +91,7 @@ class _MatchupPreviewSection extends StatelessWidget {
             Table(
               columnWidths: const {1: FlexColumnWidth(0.2)},
               border: const TableBorder(horizontalInside: BorderSide(width: 0)),
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
                 TableRow(children: [
                   Align(
@@ -104,12 +107,9 @@ class _MatchupPreviewSection extends StatelessWidget {
                   TableRow(
                     children: [
                       i < playerList1.length
-                          ? Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                      getPlayerName(playerList1[i], lineup1))),
+                          ? Text(
+                              _wPlayerName(playerList1[i], lineup1),
+                              textAlign: TextAlign.right,
                             )
                           : const SizedBox(),
                       Center(
@@ -118,11 +118,7 @@ class _MatchupPreviewSection extends StatelessWidget {
                         child: Text((i + 1).toString()),
                       )),
                       i < playerList2.length
-                          ? Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child:
-                                  Text(getPlayerName(playerList2[i], lineup2)),
-                            )
+                          ? Text(_wPlayerName(playerList2[i], lineup2))
                           : const SizedBox(),
                     ],
                   )
@@ -134,7 +130,7 @@ class _MatchupPreviewSection extends StatelessWidget {
     );
   }
 
-  String getPlayerName(Player player, Lineup lineup) {
+  String _wPlayerName(Player player, Lineup lineup) {
     final name = player.name.toUpperCase();
     if (player == lineup.captain) {
       return '$name (c)';
@@ -220,9 +216,17 @@ class _GameRulesPreviewSection extends StatelessWidget {
 
   Widget _wLabelWidget(String label) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: Align(
-          alignment: Alignment.centerRight,
-          child: Text(label),
-        ),
+        child: Text(label, textAlign: TextAlign.right),
       );
+}
+
+class _TossPreviewSection extends StatelessWidget {
+  final Toss toss;
+  const _TossPreviewSection(this.toss, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+        "${toss.winner.short} won the toss and chose to ${toss.choice.name}");
+  }
 }

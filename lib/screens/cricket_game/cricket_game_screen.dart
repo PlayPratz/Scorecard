@@ -72,22 +72,23 @@ class CricketGameScreen extends StatelessWidget {
                 // Recent Balls
                 _wHeader(context, "Recent Balls"),
                 RecentBallsSection(state.balls),
-
-                //Wicket Selector
-                // Wicket
-                //Ball Details Selector
               ],
             ),
           ),
           bottomNavigationBar: BottomAppBar(
-            height: 220,
+            height: 250,
             child: Column(
               // crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _wHeader(context, "Record Next Ball"),
-                _wSectionSeperator,
-                NextBallSelectorSection(nextBallSelectorController),
+                // _wHeader(context, "Record Next Ball"),
+                // _wSectionSeperator,
+                // Ball Detail Selector
+                NextBallSelectorSection(
+                  nextBallSelectorController,
+                  onSelectWicket: () =>
+                      _pickWicket(context, nextBallSelectorController),
+                ),
                 _wSectionSeperator,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -115,22 +116,22 @@ class CricketGameScreen extends StatelessWidget {
                 ? LimitedOversScoreFirstInningsState(
                     runs: state.runs,
                     wickets: state.wickets,
-                    battingTeam: state.battingTeam,
-                    bowlingTeam: state.bowlingTeam,
+                    team1: state.team1,
+                    team2: state.team2,
                     currentIndex:
                         state.latestPost?.index ?? const InningsIndex.zero(),
                     oversToBowl: game.rules.oversPerInnings,
-                    isFirstTeamBatting: state.battingTeam == game.lineup1.team,
+                    isFirstTeamBatting: state.isFirstTeamBatting,
                   )
                 : LimitedOversScoreSecondInningsState(
                     runs: state.runs,
                     wickets: state.wickets,
-                    battingTeam: state.battingTeam,
-                    bowlingTeam: state.bowlingTeam,
+                    team1: state.team1,
+                    team2: state.team2,
                     currentIndex:
                         state.latestPost?.index ?? const InningsIndex.zero(),
                     oversToBowl: game.rules.oversPerInnings,
-                    isFirstTeamBatting: state.battingTeam == game.lineup1.team,
+                    isFirstTeamBatting: state.isFirstTeamBatting,
                     target: 0,
                   ),
             onTap: () => controller.showScorecard(context),
@@ -171,7 +172,7 @@ class CricketGameScreen extends StatelessWidget {
         icon: const Icon(Icons.undo),
       );
 
-  Widget get _wSectionSeperator => const SizedBox(height: 12);
+  Widget get _wSectionSeperator => const SizedBox(height: 8);
 
   Widget _wHeader(BuildContext context, String text) =>
       Text(text, style: Theme.of(context).textTheme.titleSmall);
@@ -183,6 +184,10 @@ class CricketGameScreen extends StatelessWidget {
   void _pickBatter(BuildContext context) => controller.pickBatter(context);
 
   void _pickBowler(BuildContext context) => controller.pickBowler(context);
+
+  void _pickWicket(BuildContext context,
+          NextBallSelectorController nextBallSelectorController) =>
+      controller.pickWicket(context, nextBallSelectorController);
 
   void _endInnings() {}
 
@@ -222,33 +227,33 @@ class CricketGameScreenController {
     if (innings.batter1 == null ||
         innings.batter2 == null ||
         innings.striker == null) {
-      return PickBatterState(innings);
+      return PickBatterState(game);
     }
 
     if (innings.bowler == null) {
-      return PickBowlerState(innings);
+      return PickBowlerState(game);
     }
 
     final lastPost = innings.posts.last;
 
     switch (lastPost) {
       case BowlerRetire():
-        return PickBowlerState(innings);
+        return PickBowlerState(game);
       case BatterRetire():
       case RunoutBeforeDelivery():
-        return PickBatterState(innings);
+        return PickBatterState(game);
       case NextBowler():
       case NextBatter():
-        return PlayBallState(innings);
+        return PlayBallState(game);
       case Ball():
         if (game.currentInnings.isInningsComplete) {
-          return EndInningsState(innings);
+          return EndInningsState(game);
         } else if (lastPost.isWicket) {
-          return PickBatterState(innings);
+          return PickBatterState(game);
         } else if (lastPost.index.ball == innings.rules.ballsPerOver) {
-          return PickBowlerState(innings);
+          return PickBowlerState(game);
         }
-        return PlayBallState(innings);
+        return PlayBallState(game);
     }
   }
 
@@ -259,18 +264,12 @@ class CricketGameScreenController {
 
   void retireBatter(BatterInnings batterInnings, RetiredBatter retired) {
     _service.retireBatterInnings(currentInnings, batterInnings, retired);
-  }
-
-  void replaceBatter(Player nextBatter) {
-    _service.nextBatter(currentInnings, nextBatter);
+    _dispatchState();
   }
 
   void retireBowler(BowlerInnings bowlerInnings, RetiredBowler retired) {
     _service.retireBowlerInnings(currentInnings, bowlerInnings, retired);
-  }
-
-  void replaceBowler({required Player previous, required Player next}) {
-    _service.nextBowler(currentInnings, next);
+    _dispatchState();
   }
 
   Future<void> pickBowler(BuildContext context) async {
@@ -303,6 +302,28 @@ class CricketGameScreenController {
       return player;
     } else {
       return null;
+    }
+  }
+
+  Future<void> pickWicket(BuildContext context,
+      NextBallSelectorController nextBallSelectorController) async {
+    final wicket = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => _WicketPickerScreen(
+            striker: currentInnings.striker!,
+            nonStriker: currentInnings.nonStriker!,
+            bowler: currentInnings.bowler!,
+            fieldingPlayers: currentInnings.bowlingLineup.players,
+          ),
+        ));
+
+    if (wicket is Wicket) {
+      nextBallSelectorController.nextWicket = wicket;
+    } else if (wicket is RetiredBatter) {
+      final batterInnings =
+          _service.getBatterInningsOfPlayer(currentInnings, wicket.batter)!;
+      retireBatter(batterInnings, wicket);
     }
   }
 
@@ -346,8 +367,9 @@ sealed class CricketGameScreenState {
   final int runs;
   final int wickets;
   final InningsPost? latestPost;
-  final Team battingTeam;
-  final Team bowlingTeam;
+  final Team team1;
+  final Team team2;
+  final bool isFirstTeamBatting;
   // final InningsIndex currentIndex;
   final GameRules rules;
 
@@ -360,18 +382,20 @@ sealed class CricketGameScreenState {
   // Balls
   final UnmodifiableListView<Ball> balls;
 
-  CricketGameScreenState(Innings innings)
-      : runs = innings.runs,
-        wickets = innings.wickets,
-        battingTeam = innings.battingLineup.team,
-        bowlingTeam = innings.bowlingLineup.team,
-        rules = innings.rules,
-        latestPost = innings.posts.lastOrNull,
-        batter1 = innings.batter1,
-        batter2 = innings.batter2,
-        striker = innings.striker,
-        bowler = innings.bowler,
-        balls = innings.balls;
+  CricketGameScreenState(CricketGame game)
+      : runs = game.currentInnings.runs,
+        wickets = game.currentInnings.wickets,
+        team1 = game.lineup1.team,
+        team2 = game.lineup2.team,
+        isFirstTeamBatting =
+            game.lineup1.team == game.currentInnings.battingLineup.team,
+        rules = game.currentInnings.rules,
+        latestPost = game.currentInnings.posts.lastOrNull,
+        batter1 = game.currentInnings.batter1,
+        batter2 = game.currentInnings.batter2,
+        striker = game.currentInnings.striker,
+        bowler = game.currentInnings.bowler,
+        balls = game.currentInnings.balls;
 }
 
 class PickBowlerState extends CricketGameScreenState {
@@ -388,4 +412,223 @@ class EndInningsState extends CricketGameScreenState {
 
 class PlayBallState extends CricketGameScreenState {
   PlayBallState(super.innings);
+}
+
+class _WicketPickerScreen extends StatefulWidget {
+  final BatterInnings striker;
+  final BatterInnings? nonStriker;
+  final BowlerInnings bowler;
+
+  final Iterable<Player> fieldingPlayers;
+
+  const _WicketPickerScreen({
+    super.key,
+    required this.striker,
+    required this.nonStriker,
+    required this.bowler,
+    required this.fieldingPlayers,
+  });
+
+  @override
+  State<_WicketPickerScreen> createState() => _WicketPickerScreenState();
+}
+
+class _WicketPickerScreenState extends State<_WicketPickerScreen> {
+  Dismissal? _wicketDismissal;
+  Player? _wicketBatter;
+  Player? _wicketFielder;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        children: [
+          for (final dismissal in Dismissal.values) wDismissalTile(dismissal),
+          if (_wicketDismissal != null &&
+              canBatterBeNonStriker(_wicketDismissal!))
+            wPickBatter(),
+          if (_wicketDismissal != null && requiresFielder(_wicketDismissal!))
+            wPickFielder(),
+        ],
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FilledButton.icon(
+              onPressed: canReturnWicket ? returnWicket : null,
+              label: const Text("Add Wicket"),
+              icon: const Icon(Icons.stacked_bar_chart),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget wDismissalTile(Dismissal dismissal) => wSelectableOption(
+        stringifyWicketName(dismissal),
+        onSelect: () => setDismissal(dismissal),
+        isSelected: _wicketDismissal == dismissal,
+      );
+
+  Widget wPickBatter() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(height: 32),
+          wSectionHeader("Pick Batter"),
+          for (final batter in [widget.striker, widget.nonStriker])
+            wSelectableOption(
+              batter!.player.name,
+              isSelected: batter.player == _wicketBatter,
+              onSelect: () => setBatter(batter.player),
+            )
+        ],
+      );
+
+  Widget wPickFielder() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(height: 32),
+          wSectionHeader(_wicketDismissal == Dismissal.stumped
+              ? "Pick Wicket-Keeper"
+              : "Pick Fielder"),
+          for (final fielder in widget.fieldingPlayers)
+            wSelectableOption(
+              fielder.name,
+              isSelected: fielder == _wicketFielder,
+              onSelect: () => setFielder(fielder),
+            )
+        ],
+      );
+
+  Widget wSelectableOption(String name,
+          {void Function()? onSelect, bool isSelected = false}) =>
+      ListTile(
+        title: Text(name),
+        selected: isSelected,
+        // selectedTileColor: Colors.greenAccent,
+        trailing: isSelected
+            ? const Icon(Icons.check_circle, color: Colors.teal)
+            : null,
+        onTap: onSelect,
+      );
+
+  Widget wSectionHeader(String text) => Text(text);
+
+  bool requiresBowler(Dismissal dismissal) => switch (dismissal) {
+        Dismissal.bowled => true,
+        Dismissal.hitWicket => true,
+        Dismissal.lbw => true,
+        Dismissal.caught => true,
+        Dismissal.stumped => true,
+        Dismissal.runOut => false,
+        Dismissal.timedOut => false,
+        Dismissal.retired => false,
+        Dismissal.retiredHurt => false,
+      };
+
+  bool requiresFielder(Dismissal dismissal) => switch (dismissal) {
+        Dismissal.bowled => false,
+        Dismissal.hitWicket => false,
+        Dismissal.lbw => false,
+        Dismissal.caught => true,
+        Dismissal.stumped => true,
+        Dismissal.runOut => true,
+        Dismissal.timedOut => false,
+        Dismissal.retired => false,
+        Dismissal.retiredHurt => false,
+      };
+
+  bool canBatterBeNonStriker(Dismissal dismissal) => switch (dismissal) {
+        Dismissal.bowled => false,
+        Dismissal.hitWicket => false,
+        Dismissal.lbw => false,
+        Dismissal.caught => false,
+        Dismissal.stumped => false,
+        Dismissal.runOut => true,
+        Dismissal.timedOut => true,
+        Dismissal.retired => true,
+        Dismissal.retiredHurt => true,
+      };
+
+  String stringifyWicketName(Dismissal dismissal) => switch (dismissal) {
+        Dismissal.bowled => "Bowled",
+        Dismissal.hitWicket => "Hit Wicket",
+        Dismissal.lbw => "LBW",
+        Dismissal.caught => "Caught",
+        Dismissal.stumped => "Stumped",
+        Dismissal.runOut => "Run out",
+        Dismissal.timedOut => "Timed out",
+        Dismissal.retired => "Retired",
+        Dismissal.retiredHurt => "Retired Hurt",
+      };
+
+  void setDismissal(Dismissal dismissal) {
+    setState(() {
+      _wicketDismissal = dismissal;
+      _wicketBatter = null;
+      _wicketFielder = null;
+    });
+  }
+
+  void setBatter(Player batter) {
+    setState(() {
+      _wicketBatter = batter;
+    });
+  }
+
+  void setFielder(Player fielder) {
+    setState(() {
+      _wicketFielder = fielder;
+    });
+  }
+  // bool get canReturnWicket =>
+  //     _wicketDismissal != null &&
+  //     (requiresFielder(_wicketDismissal!) && _wicketFielder != null) &&
+  //     (canBatterBeNonStriker(_wicketDismissal!) && _wicketBatter != null);
+
+  bool get canReturnWicket {
+    if (_wicketDismissal == null) return false;
+
+    if (requiresFielder(_wicketDismissal!) && _wicketFielder == null)
+      return false;
+
+    if (canBatterBeNonStriker(_wicketDismissal!) && _wicketBatter == null)
+      return false;
+
+    return true;
+  }
+
+  void returnWicket() {
+    if (!canReturnWicket) {
+      return;
+    }
+
+    final result = switch (_wicketDismissal!) {
+      Dismissal.bowled => BowledWicket(
+          batter: widget.striker.player, bowler: widget.bowler.player),
+      Dismissal.hitWicket =>
+        HitWicket(batter: widget.striker.player, bowler: widget.bowler.player),
+      Dismissal.lbw =>
+        LbwWicket(batter: widget.striker.player, bowler: widget.bowler.player),
+      Dismissal.caught => CaughtWicket(
+          batter: widget.striker.player,
+          bowler: widget.bowler.player,
+          fielder: _wicketFielder!),
+      Dismissal.stumped => StumpedWicket(
+          batter: widget.striker.player,
+          bowler: widget.bowler.player,
+          wicketkeeper: _wicketFielder!),
+      Dismissal.runOut =>
+        RunoutWicket(batter: _wicketBatter!, fielder: _wicketFielder!),
+      Dismissal.timedOut => TimedOutWicket(batter: _wicketBatter!),
+      Dismissal.retired => RetiredDeclared(batter: _wicketBatter!),
+      Dismissal.retiredHurt => RetiredHurt(batter: _wicketBatter!),
+    };
+
+    Navigator.pop(context, result);
+  }
 }

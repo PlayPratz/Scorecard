@@ -30,10 +30,11 @@ class CricketMatchService {
   }
 
   InitializedCricketMatch initializeCricketMatch(
-      ScheduledCricketMatch scheduledMatch,
-      {required Toss toss,
-      required Lineup lineup1,
-      required Lineup lineup2}) {
+    ScheduledCricketMatch scheduledMatch, {
+    required Toss toss,
+    required Lineup lineup1,
+    required Lineup lineup2,
+  }) {
     final match = InitializedCricketMatch.fromScheduled(scheduledMatch,
         toss: toss, lineup1: lineup1, lineup2: lineup2);
 

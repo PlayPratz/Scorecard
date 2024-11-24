@@ -286,7 +286,7 @@ class TeamSelectController with ChangeNotifier {
   Team? get team1 => _team1;
   set team1(Team? x) {
     _team1 = x;
-    if (_team2 == x) {
+    if (_team2 == _team1) {
       _team2 = null;
     }
     _dispatchState();
@@ -295,7 +295,7 @@ class TeamSelectController with ChangeNotifier {
   Team? get team2 => _team2;
   set team2(Team? x) {
     _team2 = x;
-    if (_team1 == x) {
+    if (_team1 == _team2) {
       _team1 = null;
     }
     _dispatchState();

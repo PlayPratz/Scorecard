@@ -4,6 +4,7 @@ class BallColors {
   BallColors._();
 
   static const background = Color(0xFF121212);
+  static const pane = Colors.blueGrey;
   // static const elevated = Color(0xFF242424);
   // // static const card = Color(0xFF000041);
   // static const card = Color(0xFF1E1E1E);

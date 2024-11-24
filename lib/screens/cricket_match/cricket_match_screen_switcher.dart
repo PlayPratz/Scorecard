@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/screens/cricket_game/cricket_game_scorecard.dart';
 import 'package:scorecard/screens/cricket_game/cricket_game_screen.dart';
-import 'package:scorecard/screens/cricket_match/commence_cricket_match_screen.dart';
+import 'package:scorecard/screens/cricket_match/review_cricket_match_screen.dart';
 import 'package:scorecard/screens/cricket_match/initialize_cricket_match_screen.dart';
 
 class CricketMatchScreenSwitcher extends StatelessWidget {
@@ -20,8 +20,8 @@ class CricketMatchScreenSwitcher extends StatelessWidget {
         final controller = CricketGameScreenController(match.game);
         return CricketGameScreen(controller);
       case InitializedCricketMatch():
-        final controller = CommenceCricketGameScreenController(match);
-        return CommenceCricketMatchScreen(controller);
+        final controller = ReviewCricketMatchScreenController(match);
+        return ReviewCricketMatchScreen(controller);
       case ScheduledCricketMatch():
         final controller = InitializeCricketMatchScreenController(match);
         return InitializeCricketMatchScreen(controller);

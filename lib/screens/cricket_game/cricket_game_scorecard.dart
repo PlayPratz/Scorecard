@@ -4,6 +4,7 @@ import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/ui/ball_colors.dart';
+import 'package:scorecard/ui/stringify.dart';
 
 class CricketGameScorecard extends StatelessWidget {
   final CricketGame game;
@@ -80,8 +81,8 @@ class _BattingScorecardSection extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.sports_motorsports),
               title: Text(stringifyName(batterInnings.player)),
-              subtitle: Text(
-                  stringifyWicket(batterInnings.wicket, batterInnings.retired)),
+              subtitle: Text(Stringify.wicket(batterInnings.wicket,
+                  retired: batterInnings.retired)),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -134,23 +135,6 @@ class _BattingScorecardSection extends StatelessWidget {
       return name;
     }
   }
-
-  String stringifyWicket(Wicket? wicket, RetiredBatter? retired) =>
-      switch (wicket) {
-        null => switch (retired) {
-            null => "not out",
-            RetiredDeclared() => "retired",
-            RetiredHurt() => "retired hurt",
-          },
-        BowledWicket() => "b ${wicket.bowler.name}",
-        HitWicket() => "hit-wicket b ${wicket.bowler.name}",
-        LbwWicket() => "lbw b ${wicket.bowler.name}",
-        CaughtWicket() => "c ${wicket.fielder.name} b ${wicket.bowler.name}",
-        StumpedWicket() =>
-          "st ${wicket.wicketkeeper.name} b ${wicket.bowler.name}",
-        RunoutWicket() => "run-out ${wicket.fielder.name}",
-        TimedOutWicket() => "timed-out",
-      };
 }
 
 class _FallOfWicketsSection extends StatelessWidget {

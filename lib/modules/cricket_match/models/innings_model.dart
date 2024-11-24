@@ -152,6 +152,8 @@ sealed class Innings {
   BatterInnings? batter1;
   BatterInnings? batter2;
   BatterInnings? striker;
+  BatterInnings? get nonStriker => batter1 == striker ? batter2 : batter1;
+
   BowlerInnings? bowler;
 
   bool isForfeited = false;

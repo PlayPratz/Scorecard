@@ -213,7 +213,7 @@ class _InfoTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.info_outline, color: Colors.black54),
-      title: Text("Long press a player to retire",
+      title: Text("Tap a batter to set strike",
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Colors.black54,
               )),

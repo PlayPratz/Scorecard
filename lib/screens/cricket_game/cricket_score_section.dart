@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
-import 'package:scorecard/screens/cricket_game/cricket_game_screen.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 
 class LimitedOversScoreSection extends StatelessWidget {
@@ -21,56 +20,65 @@ class LimitedOversScoreSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
           child: Center(
             child: Table(
-              // defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-              columnWidths: const {1: FlexColumnWidth(0.4)},
-              children: [
-                TableRow(children: [
-                  Text(
-                    state.battingTeam.name.toUpperCase(),
-                    style: Theme.of(context).textTheme.titleSmall,
-                    textAlign: TextAlign.right,
-                  ),
-                  TableCell(
-                    verticalAlignment: TableCellVerticalAlignment.bottom,
-                    child: CircleAvatar(
-                      backgroundColor: BallColors.background,
-                      radius: 12,
-                      child: Text(
-                        'v',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  Text(state.bowlingTeam.name.toUpperCase(),
-                      style: Theme.of(context).textTheme.titleSmall),
+                // defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                columnWidths: const {
+                  1: FlexColumnWidth(0.4)
+                },
+                children: [
+                  TableRow(children: row1(context)),
+                  TableRow(children: row2(context, state.isFirstTeamBatting))
                 ]),
-                TableRow(children: [
-                  Text(
-                    "${state.runs}-${state.wickets}",
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    textAlign: TextAlign.right,
-                  ),
-                  const SizedBox(),
-                  Text("Overs ${state.currentIndex}/${state.oversToBowl}"),
-                ]),
-              ],
-            ),
           ),
         ),
       ),
     );
   }
+
+  List<Widget> row1(BuildContext context) => [
+        Text(
+          state.team1.name.toUpperCase(),
+          style: Theme.of(context).textTheme.titleSmall,
+          textAlign: TextAlign.right,
+        ),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.bottom,
+          child: CircleAvatar(
+            backgroundColor: BallColors.background,
+            radius: 12,
+            child: Text(
+              'v',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: Colors.white),
+            ),
+          ),
+        ),
+        Text(state.team2.name.toUpperCase(),
+            style: Theme.of(context).textTheme.titleSmall),
+      ];
+
+  List<Widget> row2(BuildContext context, bool isFirstTeamBatting) =>
+      isFirstTeamBatting
+          ? row2Widgets(context, isFirstTeamBatting)
+          : row2Widgets(context, isFirstTeamBatting).reversed.toList();
+
+  List<Widget> row2Widgets(BuildContext context, bool isFirstTeamBatting) => [
+        Text("${state.runs}-${state.wickets}",
+            style: Theme.of(context).textTheme.headlineSmall,
+            textAlign: isFirstTeamBatting ? TextAlign.right : TextAlign.left),
+        const SizedBox(),
+        Text("Overs ${state.currentIndex}/${state.oversToBowl}",
+            textAlign: isFirstTeamBatting ? TextAlign.left : TextAlign.right),
+      ];
 }
 
 sealed class LimitedOversScoreState {
   final int runs;
   final int wickets;
 
-  final Team battingTeam;
-  final Team bowlingTeam;
+  final Team team1;
+  final Team team2;
 
   final InningsIndex currentIndex;
   final int oversToBowl;
@@ -80,8 +88,8 @@ sealed class LimitedOversScoreState {
   LimitedOversScoreState({
     required this.runs,
     required this.wickets,
-    required this.battingTeam,
-    required this.bowlingTeam,
+    required this.team1,
+    required this.team2,
     required this.currentIndex,
     required this.oversToBowl,
     required this.isFirstTeamBatting,
@@ -101,8 +109,8 @@ class LimitedOversScoreFirstInningsState extends LimitedOversScoreState {
   LimitedOversScoreFirstInningsState({
     required super.runs,
     required super.wickets,
-    required super.battingTeam,
-    required super.bowlingTeam,
+    required super.team1,
+    required super.team2,
     required super.currentIndex,
     required super.oversToBowl,
     required super.isFirstTeamBatting,
@@ -115,8 +123,8 @@ class LimitedOversScoreSecondInningsState extends LimitedOversScoreState {
   LimitedOversScoreSecondInningsState({
     required super.runs,
     required super.wickets,
-    required super.battingTeam,
-    required super.bowlingTeam,
+    required super.team1,
+    required super.team2,
     required super.currentIndex,
     required super.oversToBowl,
     required super.isFirstTeamBatting,

@@ -50,6 +50,7 @@ class InningsService {
       late final BatterInnings previousBatterInnings;
       if (_isBatterToBeReplaced(innings.batter1)) {
         previousBatterInnings = innings.batter1!;
+        innings.batter1 = nextBatterInnings;
         nextBatterPost = NextBatter(
             index: _currentIndex(innings),
             next: nextBatter,
@@ -57,6 +58,7 @@ class InningsService {
       } else if (!innings.rules.onlySingleBatter &&
           _isBatterToBeReplaced(innings.batter2)) {
         previousBatterInnings = innings.batter2!;
+        innings.batter2 = nextBatterInnings;
         nextBatterPost = NextBatter(
             index: _currentIndex(innings),
             next: nextBatter,
@@ -99,6 +101,7 @@ class InningsService {
 
   void retireBatterInnings(
       Innings innings, BatterInnings batterInnings, RetiredBatter retired) {
+    batterInnings.retired = retired;
     _postToInnings(
       innings,
       BatterRetire(
@@ -252,6 +255,13 @@ class InningsService {
       case RunoutBeforeDelivery():
         _postToBatterInningsOfPlayer(innings, post, post.wicket.batter);
       case Ball():
+        if (post.wicket != null) {
+          final batterInnings =
+              getBatterInningsOfPlayer(innings, post.wicket!.batter);
+          if (batterInnings != null) {
+            batterInnings.wicket = post.wicket;
+          }
+        }
         _postToBowlerInningsOfPlayer(innings, post, post.bowler);
         _postToBatterInningsOfPlayer(innings, post, post.batter);
     }

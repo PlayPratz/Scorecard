@@ -11,7 +11,7 @@ class RecentBallsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final reversedBalls = balls.reversed.toList();
     return Card(
-      color: BallColors.pane,
+      // color: BallColors.pane,
       child: SizedBox(
         height: 56, // TODO
         child: ListView.builder(
@@ -58,13 +58,9 @@ class _BallPreview extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          ball.index.toString(),
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: Colors.white),
-        )
+        Text(ball.index.toString(), style: Theme.of(context).textTheme.bodySmall
+            // ?.copyWith(color: Colors.white),
+            )
       ],
     );
   }

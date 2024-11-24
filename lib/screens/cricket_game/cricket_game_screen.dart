@@ -58,11 +58,13 @@ class CricketGameScreen extends StatelessWidget {
                 _wHeader(context, "Players In Action"),
                 PlayersInActionSection(
                   state,
-                  onSetStrike: (bi) => controller.setStrike(bi),
+                  onSetStrike: state is PlayBallState
+                      ? (bi) => controller.setStrike(bi)
+                      : null,
                   isFirstTeamBatting: controller.game.lineup1.team ==
                       controller.game.currentInnings.battingLineup.team,
-                  onRetireBowler: (b, r) => controller.retireBowler(b, r),
-                  onRetireBatter: (b, r) => controller.retireBatter(b, r),
+                  onRetireBowler: (b) => controller.retireBowler(b),
+                  // onRetireBatter: (b, r) => controller.retireBatter(b, r),
                   onPickBatter: () => _pickBatter(context),
                   onPickBowler: () => _pickBowler(context),
                 ),
@@ -94,7 +96,7 @@ class CricketGameScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _wUndoButton(),
-                    _wSectionSeperator,
+                    const SizedBox(width: 8),
                     Expanded(
                         child: _wConfirmButton(
                             context, state, nextBallSelectorController)),
@@ -146,12 +148,12 @@ class CricketGameScreen extends StatelessWidget {
       switch (state) {
         PickBowlerState() => FilledButton.icon(
             onPressed: () => _pickBowler(context),
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.sports_baseball),
             label: const Text("Pick Bowler"),
           ),
         PickBatterState() => FilledButton.icon(
             onPressed: () => _pickBatter(context),
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.sports_motorsports),
             label: const Text("Pick Batter"),
           ),
         EndInningsState() => FilledButton.icon(
@@ -267,8 +269,8 @@ class CricketGameScreenController {
     _dispatchState();
   }
 
-  void retireBowler(BowlerInnings bowlerInnings, RetiredBowler retired) {
-    _service.retireBowlerInnings(currentInnings, bowlerInnings, retired);
+  void retireBowler(BowlerInnings bowlerInnings) {
+    _service.retireBowlerInnings(currentInnings, bowlerInnings);
     _dispatchState();
   }
 
@@ -343,8 +345,8 @@ class CricketGameScreenController {
         batter: playBallState.striker!.player,
         runsScored: nextBallSelectorState.nextRuns,
         wicket: nextBallSelectorState.nextWicket,
-        bowlingExtra: nextBallSelectorState.nextBowlingExtra,
-        battingExtra: nextBallSelectorState.nextBattingExtra,
+        bowlingExtraType: nextBallSelectorState.nextBowlingExtra,
+        battingExtraType: nextBallSelectorState.nextBattingExtra,
       );
       _dispatchState();
     } else {

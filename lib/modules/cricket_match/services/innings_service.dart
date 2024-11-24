@@ -165,8 +165,9 @@ class InningsService {
     return bowlerInnings;
   }
 
-  void retireBowlerInnings(
-      Innings innings, BowlerInnings bowlerInnings, RetiredBowler retired) {
+  void retireBowlerInnings(Innings innings, BowlerInnings bowlerInnings) {
+    final retired = RetiredBowler(bowler: bowlerInnings.player);
+
     _postToInnings(
       innings,
       BowlerRetire(
@@ -206,9 +207,15 @@ class InningsService {
     required Player batter,
     required int runsScored,
     required Wicket? wicket,
-    required BowlingExtra? bowlingExtra,
-    required BattingExtra? battingExtra,
+    required BowlingExtraType? bowlingExtraType,
+    required BattingExtraType? battingExtraType,
   }) {
+    final BowlingExtra? bowlingExtra = switch (bowlingExtraType) {
+      null => null,
+      BowlingExtraType.noBall => NoBall(innings.rules.noBallPenalty),
+      BowlingExtraType.wide => Wide(innings.rules.widePenalty),
+    };
+
     final index =
         bowlingExtra != null ? _currentIndex(innings) : _nextIndex(innings);
 
@@ -219,7 +226,7 @@ class InningsService {
       runsScoredByBattingTeam: runsScored,
       wicket: wicket,
       bowlingExtra: bowlingExtra,
-      battingExtra: battingExtra,
+      battingExtraType: battingExtraType,
     );
 
     // Add Post to Innings
@@ -275,16 +282,6 @@ class InningsService {
     }
   }
 
-  void _unPostFromBowlerInningsOfPlayer(Innings innings, Player bowler) {
-    // Get the BowlerInnings
-    final bowlerInnings = getBowlerInningsOfPlayer(innings, bowler);
-
-    // Remove post from BowlerInnings
-    if (bowlerInnings != null && bowlerInnings.posts.isNotEmpty) {
-      final last = bowlerInnings.posts.removeLast();
-    }
-  }
-
   void _postToBatterInningsOfPlayer(
       Innings innings, InningsPost post, Player batter) {
     final batterInnings = getBatterInningsOfPlayer(innings, batter);
@@ -293,61 +290,80 @@ class InningsService {
     }
   }
 
-  void _unPostFromBatterInningsOfPlayer(Innings innings, Player batter) {
-    // Get the BatterInnings
-    final batterInnings = getBatterInningsOfPlayer(innings, batter);
-
-    // Remove post from BatterInnings
-    if (batterInnings != null && batterInnings.posts.isNotEmpty) {
-      final last = batterInnings.posts.removeLast();
-    }
-  }
-
   void undoPostFromInnings(Innings innings) {
     if (innings.posts.isEmpty) return;
 
     final post = innings.posts.removeLast();
     switch (post) {
-      case NextBowler():
-        if (post.previous == null) {
-          innings.bowler = null;
-        } else {
-          innings.bowler = getBowlerInningsOfPlayer(innings, post.previous!);
-        }
       case BowlerRetire():
+        // Remove post from BowlerInnings
         final bowlerInnings = getBowlerInningsOfPlayer(innings, post.bowler);
-        if (bowlerInnings != null && bowlerInnings.posts.last is BowlerRetire) {
-          bowlerInnings.posts.removeLast();
+        if (bowlerInnings != null) {
+          bowlerInnings.posts.remove(post);
+        }
+      case NextBowler():
+        // Set the correct bowler in the innings
+        if (post.previous == null) {
+          // Set innings.bowler to previous bowler
+          innings.bowler = getBowlerInningsOfPlayer(innings, post.previous!);
+        } else {
+          // First bowler to be selected, can be cleared
+          innings.bowler = null;
+        }
+
+        // Remove any ghost BowlerInnings from Innings
+        final bowlerInnings = getBowlerInningsOfPlayer(innings, post.next);
+        if (bowlerInnings != null && bowlerInnings.posts.isEmpty) {
+          deleteBowlerInningsOfPlayer(innings, post.next);
         }
       case BatterRetire():
         final batterInnings = getBatterInningsOfPlayer(innings, post.batter);
         if (batterInnings != null) {
+          // Clear retirement from BatterInnings
           batterInnings.retired = null;
+
+          // Remove post from BatterInnings
+          batterInnings.posts.remove(post);
         }
-      case RunoutBeforeDelivery():
-        final batterInnings =
-            getBatterInningsOfPlayer(innings, post.wicket.batter);
-        if (batterInnings != null) {
-          batterInnings.wicket = null;
-        }
+
       case NextBatter():
+        // Remove ghost BatterInnings from Innings
         final batterInnings = deleteBatterInningsOfPlayer(innings, post.next);
         late final BatterInnings? restoredBatterInnings;
+
+        // Set the correct batter in the innings
         if (post.previous != null) {
+          // Set innings.batter to previous batter
           restoredBatterInnings =
               getBatterInningsOfPlayer(innings, post.previous!);
         } else {
+          // First bowler to be selected, can be cleared
           restoredBatterInnings = null;
         }
+        // Figure out whether batter1 was replaced or batter2 was
         if (innings.batter1 == batterInnings) {
           innings.batter1 = restoredBatterInnings;
         } else if (innings.batter2 == batterInnings) {
           innings.batter2 = restoredBatterInnings;
         }
+      case RunoutBeforeDelivery():
+        // Remove wicket from respective BatterInnings
+        final batterInnings =
+            getBatterInningsOfPlayer(innings, post.wicket.batter);
+        if (batterInnings != null) {
+          batterInnings.wicket = null;
+
+          // Remove post from respective BatterInnings
+          batterInnings.posts.remove(post);
+        }
       case Ball():
-        // Remove post from both players' Innings
-        _unPostFromBatterInningsOfPlayer(innings, post.batter);
-        _unPostFromBowlerInningsOfPlayer(innings, post.bowler);
+        // Remove post from BatterInnings
+        final batterInnings = getBatterInningsOfPlayer(innings, post.batter);
+        if (batterInnings != null) batterInnings.posts.remove(post);
+
+        // Remove post from BowlerInnings
+        final bowlerInnings = getBatterInningsOfPlayer(innings, post.bowler);
+        if (bowlerInnings != null) bowlerInnings.posts.remove(post);
 
         // Swap strike
         if (post.runsScoredByBattingTeam % 2 == 1) swapStrike(innings);

@@ -8,11 +8,10 @@ class PlayersInActionSection extends StatelessWidget {
 
   final bool isFirstTeamBatting;
 
-  final void Function(BatterInnings batterInnings) onSetStrike;
-  final void Function(BowlerInnings bowlerInnings, RetiredBowler retired)
-      onRetireBowler;
-  final void Function(BatterInnings batterInnings, RetiredBatter retired)
-      onRetireBatter;
+  final void Function(BatterInnings batterInnings)? onSetStrike;
+  final void Function(BowlerInnings bowlerInnings) onRetireBowler;
+  // final void Function(BatterInnings batterInnings, RetiredBatter retired)
+  //     onRetireBatter;
   final void Function() onPickBatter;
   final void Function() onPickBowler;
 
@@ -22,7 +21,7 @@ class PlayersInActionSection extends StatelessWidget {
     required this.onSetStrike,
     required this.isFirstTeamBatting,
     required this.onRetireBowler,
-    required this.onRetireBatter,
+    // required this.onRetireBatter,
     required this.onPickBatter,
     required this.onPickBowler,
   });
@@ -53,17 +52,17 @@ class PlayersInActionSection extends StatelessWidget {
           child: _BatterTile(
             state.batter1,
             isOnStrike: state.striker == state.batter1,
-            isOut: state.batter1 != null &&
-                (state.batter1!.isOut || state.batter1!.isRetired),
+            // isOut: state.batter1 != null &&
+            //     (state.batter1!.isOut || state.batter1!.isRetired),
             onSetStrike: onSetStrike,
-            onRetireBatter: (b) => onRetireBatter, //TODO
+            // onRetireBatter: (b) => onRetireBatter,
             onPickBatter: onPickBatter,
           ),
         ),
         _BowlerInAction(
           state.bowler,
           onPickBowler: onPickBowler,
-          onRetireBowler: (b) => onRetireBowler, //TODO
+          onRetireBowler: (b) => onRetireBowler(b), //TODO
         ),
       ];
 
@@ -73,10 +72,10 @@ class PlayersInActionSection extends StatelessWidget {
           child: _BatterTile(
             state.batter2,
             isOnStrike: state.striker == state.batter2,
-            isOut: state.batter2 != null &&
-                (state.batter2!.isOut || state.batter2!.isRetired),
+            // isOut: state.batter2 != null &&
+            //     (state.batter2!.isOut || state.batter2!.isRetired),
             onSetStrike: onSetStrike,
-            onRetireBatter: (b) => onRetireBatter, //TODO
+            // onRetireBatter: (b) => onRetireBatter, //TODO
             onPickBatter: onPickBatter,
           ),
         ),
@@ -89,21 +88,21 @@ class _BatterTile extends StatelessWidget {
 
   // final Color? color;
   final bool isOnStrike;
-  final bool isOut;
+  // final bool isOut;
 
   // final Color color;
-  final void Function(BatterInnings batterInnings) onSetStrike;
-  final void Function(BatterInnings batterInnings) onRetireBatter;
+  final void Function(BatterInnings batterInnings)? onSetStrike;
+  // final void Function(BatterInnings batterInnings) onRetireBatter;
   final void Function() onPickBatter;
 
   const _BatterTile(
     this.batterInnings, {
     super.key,
     required this.isOnStrike,
-    required this.isOut,
+    // required this.isOut,
     // required this.color,
     required this.onPickBatter,
-    required this.onRetireBatter,
+    // required this.onRetireBatter,
     required this.onSetStrike,
   });
 
@@ -145,19 +144,25 @@ class _BatterTile extends StatelessWidget {
         batterInnings!.player.name.toUpperCase(),
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      tileColor: isOut
-          ? Colors.red.withOpacity(0.3)
-          : isOnStrike
-              ? Colors.greenAccent
-              : null,
-      onTap: () => onSetStrike(batterInnings!),
-      onLongPress: () => onRetireBatter(batterInnings!),
+      tileColor: color,
+      onTap: onSetStrike == null ? null : () => onSetStrike!(batterInnings!),
+      // onLongPress: () => onRetireBatter(batterInnings!),
       // trailing: isOnStrike
       //     ? const Icon(Icons.chevron_left, color: Colors.greenAccent)
       //     : const SizedBox(),
       shape: shape,
     );
   }
+
+  bool get isOut =>
+      batterInnings != null &&
+      (batterInnings!.isOut || batterInnings!.isRetired);
+
+  Color? get color => isOut
+      ? Colors.red.withOpacity(0.3)
+      : isOnStrike
+          ? Colors.greenAccent
+          : null;
 }
 
 class _BowlerInAction extends StatelessWidget {
@@ -179,7 +184,7 @@ class _BowlerInAction extends StatelessWidget {
   Widget build(BuildContext context) {
     if (bowlerInnings == null) {
       return ListTile(
-        leading: const Icon(Icons.person),
+        leading: const Icon(Icons.sports_baseball),
         title: const Text("Pick Bowler"),
         subtitle: Text(
           "Tap to continue",
@@ -189,7 +194,7 @@ class _BowlerInAction extends StatelessWidget {
               ?.copyWith(color: Colors.black54),
         ),
         onTap: onPickBowler,
-        // tileColor: color,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       );
     }
     return ListTile(
@@ -201,9 +206,15 @@ class _BowlerInAction extends StatelessWidget {
         style: Theme.of(context).textTheme.bodySmall,
       ),
       onLongPress: () => onRetireBowler(bowlerInnings!),
-      // tileColor: color,
+      tileColor: color,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
+
+  Color? get color =>
+      (bowlerInnings != null && bowlerInnings!.posts.lastOrNull is BowlerRetire)
+          ? Colors.red.withOpacity(0.3)
+          : null;
 }
 
 class _InfoTile extends StatelessWidget {

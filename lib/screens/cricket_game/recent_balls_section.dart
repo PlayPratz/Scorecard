@@ -65,8 +65,8 @@ class _BallPreview extends StatelessWidget {
   }
 
   Color get borderColor => switch (ball.bowlingExtra) {
-        BowlingExtra.noBall => BallColors.noBall,
-        BowlingExtra.wide => BallColors.wide,
+        NoBall() => BallColors.noBall,
+        Wide() => BallColors.wide,
         // No border color if not an extra
         null => Colors.transparent,
       };

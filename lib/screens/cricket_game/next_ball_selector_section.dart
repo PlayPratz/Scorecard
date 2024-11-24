@@ -101,7 +101,7 @@ class _RunSelectorSection extends StatelessWidget {
 class _BattingExtraSelectorSection extends StatelessWidget {
   final NextBallSelectorState state;
 
-  final void Function(BattingExtra? extra) setExtra;
+  final void Function(BattingExtraType? extra) setExtra;
   const _BattingExtraSelectorSection(
     this.state, {
     super.key,
@@ -112,16 +112,16 @@ class _BattingExtraSelectorSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: BattingExtra.values.map((e) => chip(e)).toList(),
+      children: BattingExtraType.values.map((e) => chip(e)).toList(),
     );
   }
 
-  String stringify(BattingExtra extra) => switch (extra) {
-        BattingExtra.bye => "Bye",
-        BattingExtra.legBye => "Leg Bye"
+  String stringify(BattingExtraType extra) => switch (extra) {
+        BattingExtraType.bye => "Bye",
+        BattingExtraType.legBye => "Leg Bye"
       };
 
-  ChoiceChip chip(BattingExtra extra) {
+  ChoiceChip chip(BattingExtraType extra) {
     // This is not a mistake; it helps us avoid adding a type cast
     final state = this.state;
     return switch (state) {
@@ -146,7 +146,7 @@ class _BattingExtraSelectorSection extends StatelessWidget {
 class _BowlingExtraSelectorSection extends StatelessWidget {
   final NextBallSelectorState state;
 
-  final void Function(BowlingExtra? extra) setExtra;
+  final void Function(BowlingExtraType? extra) setExtra;
   const _BowlingExtraSelectorSection(
     this.state, {
     super.key,
@@ -157,16 +157,16 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: BowlingExtra.values.map((e) => chip(e)).toList(),
+      children: BowlingExtraType.values.map((e) => chip(e)).toList(),
     );
   }
 
-  String stringify(BowlingExtra extra) => switch (extra) {
-        BowlingExtra.noBall => "No Ball",
-        BowlingExtra.wide => "Wide"
+  String stringify(BowlingExtraType extra) => switch (extra) {
+        BowlingExtraType.noBall => "No Ball",
+        BowlingExtraType.wide => "Wide"
       };
 
-  ChoiceChip chip(BowlingExtra extra) {
+  ChoiceChip chip(BowlingExtraType extra) {
     // This is not a mistake; it helps us avoid adding a type cast
     final state = this.state;
     return switch (state) {
@@ -211,16 +211,16 @@ class NextBallSelectorController {
     _dispatchState();
   }
 
-  BowlingExtra? _nextBowlingExtra;
+  BowlingExtraType? _nextBowlingExtra;
   // BowlingExtra? get nextBowlingExtra => _nextBowlingExtra;
-  set nextBowlingExtra(BowlingExtra? x) {
+  set nextBowlingExtra(BowlingExtraType? x) {
     _nextBowlingExtra = x;
     _dispatchState();
   }
 
-  BattingExtra? _nextBattingExtra;
+  BattingExtraType? _nextBattingExtra;
   // BattingExtra? get nextBattingExtra => _nextBattingExtra;
-  set nextBattingExtra(BattingExtra? x) {
+  set nextBattingExtra(BattingExtraType? x) {
     _nextBattingExtra = x;
     _dispatchState();
   }
@@ -249,8 +249,8 @@ sealed class NextBallSelectorState {}
 
 class NextBallSelectorEnabledState extends NextBallSelectorState {
   final int nextRuns;
-  final BowlingExtra? nextBowlingExtra;
-  final BattingExtra? nextBattingExtra;
+  final BowlingExtraType? nextBowlingExtra;
+  final BattingExtraType? nextBattingExtra;
   final Wicket? nextWicket;
 
   NextBallSelectorEnabledState({

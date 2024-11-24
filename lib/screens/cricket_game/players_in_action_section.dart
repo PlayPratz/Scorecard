@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/screens/cricket_game/cricket_game_screen.dart';
+import 'package:scorecard/ui/ball_colors.dart';
+import 'package:scorecard/ui/stringify.dart';
 
 class PlayersInActionSection extends StatelessWidget {
   final CricketGameScreenState state;
@@ -159,7 +161,7 @@ class _BatterTile extends StatelessWidget {
       (batterInnings!.isOut || batterInnings!.isRetired);
 
   Color? get color => isOut
-      ? Colors.red.withOpacity(0.3)
+      ? BallColors.wicket
       : isOnStrike
           ? Colors.greenAccent
           : null;
@@ -199,8 +201,16 @@ class _BowlerInAction extends StatelessWidget {
     }
     return ListTile(
       leading: const Icon(Icons.sports_baseball),
-      title:
+      title: Row(
+        children: [
           Text("${bowlerInnings!.runsConceded}-${bowlerInnings!.wicketCount}"),
+          const SizedBox(width: 6),
+          Text(
+              Stringify.ballCount(
+                  bowlerInnings!.ballCount, bowlerInnings!.ballsPerOver),
+              style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
       subtitle: Text(
         bowlerInnings!.player.name.toUpperCase(),
         style: Theme.of(context).textTheme.bodySmall,
@@ -213,7 +223,7 @@ class _BowlerInAction extends StatelessWidget {
 
   Color? get color =>
       (bowlerInnings != null && bowlerInnings!.posts.lastOrNull is BowlerRetire)
-          ? Colors.red.withOpacity(0.3)
+          ? BallColors.wicket
           : null;
 }
 

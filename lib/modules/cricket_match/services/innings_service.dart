@@ -303,7 +303,7 @@ class InningsService {
         }
       case NextBowler():
         // Set the correct bowler in the innings
-        if (post.previous == null) {
+        if (post.previous != null) {
           // Set innings.bowler to previous bowler
           innings.bowler = getBowlerInningsOfPlayer(innings, post.previous!);
         } else {
@@ -359,10 +359,15 @@ class InningsService {
       case Ball():
         // Remove post from BatterInnings
         final batterInnings = getBatterInningsOfPlayer(innings, post.batter);
-        if (batterInnings != null) batterInnings.posts.remove(post);
+        if (batterInnings != null) {
+          batterInnings.posts.remove(post);
+          if (post.isWicket) {
+            batterInnings.wicket = null;
+          }
+        }
 
         // Remove post from BowlerInnings
-        final bowlerInnings = getBatterInningsOfPlayer(innings, post.bowler);
+        final bowlerInnings = getBowlerInningsOfPlayer(innings, post.bowler);
         if (bowlerInnings != null) bowlerInnings.posts.remove(post);
 
         // Swap strike
@@ -374,9 +379,17 @@ class InningsService {
     innings.isForfeited = true;
   }
 
-  InningsIndex _currentIndex(Innings innings) => innings.posts.isEmpty
-      ? const InningsIndex.zero()
-      : innings.posts.last.index;
+  InningsIndex _currentIndex(Innings innings) {
+    if (innings.posts.isEmpty) {
+      return const InningsIndex.zero();
+    }
+
+    final last = innings.posts.last;
+    if (last.index.ball == innings.rules.ballsPerOver) {
+      return InningsIndex(last.index.over + 1, 0);
+    }
+    return innings.posts.last.index;
+  }
 
   InningsIndex _nextIndex(Innings innings) {
     final currentIndex = _currentIndex(innings);

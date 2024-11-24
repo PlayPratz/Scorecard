@@ -20,4 +20,10 @@ class Stringify {
         RunoutWicket() => "run out (${wicket.fielder.name})",
         TimedOutWicket() => "timed-out",
       };
+
+  static String ballCount(int ballCount, int ballsPerOver) =>
+      "${ballCount ~/ ballsPerOver}.${ballCount % ballsPerOver}";
+
+  static String economy(double economy) =>
+      economy == double.infinity ? '∞' : economy.toStringAsFixed(2);
 }

@@ -26,14 +26,14 @@ class NextBallSelectorSection extends StatelessWidget {
         final state = snapshot.data!;
         return Column(
           children: [
+            _WicketChip(state,
+                onSelectWicket: onSelectWicket,
+                onClearWicket: () => controller.nextWicket = null),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _BattingExtraSelectorSection(state,
                     setExtra: (extra) => controller.nextBattingExtra = extra),
-                _WicketTile(state,
-                    onSelectWicket: onSelectWicket,
-                    onClearWicket: () => controller.nextWicket = null),
                 _BowlingExtraSelectorSection(state,
                     setExtra: (extra) => controller.nextBowlingExtra = extra),
               ],
@@ -110,8 +110,8 @@ class _BattingExtraSelectorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Wrap(
+      spacing: 2,
       children: BattingExtraType.values.map((e) => chip(e)).toList(),
     );
   }
@@ -155,8 +155,8 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Wrap(
+      spacing: 2,
       children: BowlingExtraType.values.map((e) => chip(e)).toList(),
     );
   }
@@ -173,6 +173,10 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
       NextBallSelectorEnabledState() => ChoiceChip(
           label: Text(stringify(extra)),
           selected: extra == state.nextBowlingExtra,
+          selectedColor: switch (extra) {
+            BowlingExtraType.noBall => BallColors.noBall,
+            BowlingExtraType.wide => BallColors.wide,
+          },
           onSelected: (x) {
             if (x) {
               setExtra(extra);
@@ -263,12 +267,12 @@ class NextBallSelectorEnabledState extends NextBallSelectorState {
 
 class NextBallSelectorDisabledState extends NextBallSelectorState {}
 
-class _WicketTile extends StatelessWidget {
+class _WicketChip extends StatelessWidget {
   final NextBallSelectorState state;
   final void Function()? onSelectWicket;
   final void Function()? onClearWicket;
 
-  const _WicketTile(this.state,
+  const _WicketChip(this.state,
       {super.key, required this.onSelectWicket, this.onClearWicket});
 
   @override
@@ -277,13 +281,19 @@ class _WicketTile extends StatelessWidget {
     switch (state) {
       case NextBallSelectorEnabledState():
         return ActionChip(
-          label: Text(Stringify.wicket(state.nextWicket, ifNone: "Add Wicket")),
+          label: _wicketSummary(state.nextWicket),
+          backgroundColor: state.nextWicket != null ? BallColors.wicket : null,
           onPressed: state.nextWicket == null ? onSelectWicket : onClearWicket,
         );
       case NextBallSelectorDisabledState():
-        return const ActionChip(
-          label: Text("Wicket"),
+        return ActionChip(
+          label: _wicketSummary(null),
         );
     }
+  }
+
+  Widget _wicketSummary(Wicket? wicket) {
+    if (wicket == null) return const Text("Add Wicket");
+    return Text("${wicket.batter.name} (${Stringify.wicket(wicket)})");
   }
 }

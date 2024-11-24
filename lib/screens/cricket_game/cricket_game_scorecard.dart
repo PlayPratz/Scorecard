@@ -213,21 +213,15 @@ class _BowlingScorecardSection extends StatelessWidget {
                   title: Text(bowlerInnings.player.name),
                 ),
                 Center(
-                    child: Text(stringifyBallCount(
+                    child: Text(Stringify.ballCount(
                         bowlerInnings.ballCount, bowlerInnings.ballsPerOver))),
                 Center(child: Text(bowlerInnings.wicketCount.toString())),
                 Center(child: Text(bowlerInnings.runsConceded.toString())),
-                Center(child: Text(stringifyEconomy(bowlerInnings.economy)))
+                Center(child: Text(Stringify.economy(bowlerInnings.economy)))
               ])
           ],
         ),
       ],
     );
   }
-
-  String stringifyBallCount(int ballCount, int ballsPerOver) =>
-      "${ballCount ~/ ballsPerOver}.${ballCount % ballsPerOver}";
-
-  String stringifyEconomy(double economy) =>
-      economy == double.infinity ? '∞' : economy.toStringAsFixed(2);
 }

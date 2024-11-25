@@ -1,17 +1,7 @@
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/repository/service/repostiory_service.dart';
+import 'package:scorecard/modules/repository/service/repository_service.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
 import 'package:scorecard/util/ulid.dart';
-
-// abstract class IPlayerService {
-//   Future<Player> createPlayer(String name);
-//   Future<Iterable<Player>> getAllPlayers(int page);
-//   Future<Player?> getPlayerById(String id);
-//   Iterable<Player> searchPlayer(String query);
-//   Future<void> savePlayer(Player player);
-//   Future<String> getPhotoOfPlayer(Player player);
-//   Future<void> deletePlayerById(String id);
-// }
 
 class PlayerService {
   /// Creates a player

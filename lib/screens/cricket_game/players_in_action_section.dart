@@ -50,7 +50,7 @@ class PlayersInActionSection extends StatelessWidget {
 
   List<Widget> get row1 => [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          padding: const EdgeInsets.symmetric(vertical: 2.0),
           child: _BatterTile(
             state.batter1,
             isOnStrike: state.striker == state.batter1,

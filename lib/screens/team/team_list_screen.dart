@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:scorecard/modules/repository/service/repostiory_service.dart';
+import 'package:scorecard/modules/repository/service/repository_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
 

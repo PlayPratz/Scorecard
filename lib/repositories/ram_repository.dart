@@ -11,6 +11,9 @@ class RAMPlayerRepository implements IRepository<Player> {
   };
 
   @override
+  Future<void> initialize() async {}
+
+  @override
   Future<void> create(Player player) async {
     if (_database.containsKey(player.id)) {
       throw StateError(
@@ -75,6 +78,12 @@ class RAMTeamRepository implements IRepository<Team> {
   };
 
   @override
+  Future<void> initialize() {
+    // TODO: implement initialize
+    throw UnimplementedError();
+  }
+
+  @override
   Future<void> create(Team team) async {
     if (_database.containsKey(team.id)) {
       throw StateError(
@@ -120,6 +129,12 @@ class RAMTeamRepository implements IRepository<Team> {
 
 class RAMCricketMatchRepository implements IRepository<CricketMatch> {
   final _database = <String, CricketMatch>{};
+
+  @override
+  Future<void> initialize() {
+    // TODO: implement initialize
+    throw UnimplementedError();
+  }
 
   @override
   Future<void> create(CricketMatch match) async {

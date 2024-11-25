@@ -26,9 +26,16 @@ class NextBallSelectorSection extends StatelessWidget {
         final state = snapshot.data!;
         return Column(
           children: [
-            _WicketChip(state,
-                onSelectWicket: onSelectWicket,
-                onClearWicket: () => controller.nextWicket = null),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Record Next Ball",
+                    style: Theme.of(context).textTheme.titleSmall),
+                _WicketChip(state,
+                    onSelectWicket: onSelectWicket,
+                    onClearWicket: () => controller.nextWicket = null),
+              ],
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

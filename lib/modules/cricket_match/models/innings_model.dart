@@ -67,11 +67,14 @@ class NextBowler extends InningsPost {
   /// The bowler who will bowl the next delivery
   final Player next;
 
+  // final bool isMidOverChange;
+
   NextBowler({
     required super.index,
     super.comment,
     required this.previous,
     required this.next,
+    // required this.isMidOverChange
   });
 }
 
@@ -187,6 +190,8 @@ class Ball extends InningsPost {
   final BattingExtraType? battingExtraType;
   bool get isBattingExtra => battingExtraType != null;
 
+  final DateTime datetime;
+
   /// Total runs awarded to the Batting Team
   int get runs {
     // Runs due to extra, if any
@@ -204,7 +209,18 @@ class Ball extends InningsPost {
     required this.wicket,
     required this.bowlingExtra,
     required this.battingExtraType,
+    required this.datetime,
   });
+
+  // Ball.now({
+  //   required super.index,
+  //   required this.bowler,
+  //   required this.batter,
+  //   required this.runsScoredByBattingTeam,
+  //   required this.wicket,
+  //   required this.bowlingExtra,
+  //   required this.battingExtraType,
+  // }) : datetime = DateTime.now();
 }
 
 class Score {
@@ -273,6 +289,23 @@ sealed class Innings {
         .fold(Score.zero(), (prevScore, ball) => prevScore.add(ball));
 
     return score;
+  }
+
+  Map<int, Iterable<InningsPost>> get overs {
+    final overs = <int, List<InningsPost>>{};
+
+    final currentOver = <InningsPost>[];
+
+    for (final post in posts) {
+      if (currentOver.isNotEmpty &&
+          currentOver.last.index.over != post.index.over) {
+        overs[currentOver.last.index.over] = currentOver.toList();
+        currentOver.clear();
+      }
+      currentOver.add(post);
+    }
+    overs[currentOver.last.index.over] = currentOver;
+    return overs;
   }
 
   /// Are all wickets lost by the batting team

@@ -14,6 +14,7 @@ import 'package:scorecard/screens/cricket_game/cricket_score_section.dart';
 import 'package:scorecard/screens/cricket_game/next_ball_selector_section.dart';
 import 'package:scorecard/screens/cricket_game/players_in_action_section.dart';
 import 'package:scorecard/screens/cricket_game/recent_balls_section.dart';
+import 'package:scorecard/screens/cricket_match/innings_timeline.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
 
 class CricketGameScreen extends StatelessWidget {
@@ -46,36 +47,39 @@ class CricketGameScreen extends StatelessWidget {
                   onPressed: _settings, icon: const Icon(Icons.settings)),
             ],
           ),
-          body: Padding(
+          body: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ListView(
-              children: [
-                //Cricket Match Tile
-                _wScoreSection(context, controller.game, state),
-                _wSectionSeperator,
+            children: [
+              //Cricket Match Tile
+              _wScoreSection(context, controller.game, state),
+              _wSectionSeparator,
 
-                //PlayersInAction
-                _wHeader(context, "Players In Action"),
-                PlayersInActionSection(
-                  state,
-                  onSetStrike: state is PlayBallState
-                      ? (bi) => controller.setStrike(bi)
-                      : null,
-                  isFirstTeamBatting: controller.game.lineup1.team ==
-                      controller.game.currentInnings.battingLineup.team,
-                  onRetireBowler: (b) => controller.retireBowler(b),
-                  // onRetireBatter: (b, r) => controller.retireBatter(b, r),
-                  onPickBatter: () => _pickBatter(context),
-                  onPickBowler: () => _pickBowler(context),
-                ),
+              //PlayersInAction
+              _wHeader(context, "Players In Action"),
+              PlayersInActionSection(
+                state,
+                onSetStrike: state is PlayBallState
+                    ? (bi) => controller.setStrike(bi)
+                    : null,
+                isFirstTeamBatting: controller.game.lineup1.team ==
+                    controller.game.currentInnings.battingLineup.team,
+                onRetireBowler: (b) => controller.retireBowler(b),
+                // onRetireBatter: (b, r) => controller.retireBatter(b, r),
+                onPickBatter: () => _pickBatter(context),
+                onPickBowler: () => _pickBowler(context),
+              ),
 
-                _wSectionSeperator,
+              _wSectionSeparator,
 
-                // Recent Balls
-                _wHeader(context, "Recent Balls"),
-                RecentBallsSection(state.balls),
-              ],
-            ),
+              // Recent Balls
+              _wHeader(context, "Recent Balls"),
+              RecentBallsSection(
+                state.balls,
+                onOpenTimeline: state.latestPost != null
+                    ? () => controller.goInningsTimeline(context)
+                    : null,
+              ),
+            ],
           ),
           bottomNavigationBar: BottomAppBar(
             height: 250,
@@ -83,15 +87,13 @@ class CricketGameScreen extends StatelessWidget {
               // crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // _wHeader(context, "Record Next Ball"),
-                // _wSectionSeperator,
                 // Ball Detail Selector
                 NextBallSelectorSection(
                   nextBallSelectorController,
                   onSelectWicket: () =>
                       _pickWicket(context, nextBallSelectorController),
                 ),
-                _wSectionSeperator,
+                _wSectionSeparator,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -134,7 +136,7 @@ class CricketGameScreen extends StatelessWidget {
                     isFirstTeamBatting: state.isFirstTeamBatting,
                     target: 0,
                   ),
-            onTap: () => controller.showScorecard(context),
+            onTap: () => controller.goScorecard(context),
           ),
 
         // TODO: Handle this case.
@@ -172,7 +174,7 @@ class CricketGameScreen extends StatelessWidget {
         icon: const Icon(Icons.undo),
       );
 
-  Widget get _wSectionSeperator => const SizedBox(height: 8);
+  Widget get _wSectionSeparator => const SizedBox(height: 8);
 
   Widget _wHeader(BuildContext context, String text) =>
       Text(text, style: Theme.of(context).textTheme.titleSmall);
@@ -196,32 +198,14 @@ class CricketGameScreen extends StatelessWidget {
 
 class CricketGameScreenController {
   final CricketGame game;
-  // final NextBallSelectorController nextBallSelectionsController;
   CricketGameScreenController(this.game);
-
-  // CricketGameScreenController(
-  //   this.game, {
-  //   required this.nextBallSelectionsController,
-  // });
-  // {
-  //   _postStream
-  //       .listen((post) => _streamController.add(_deduceStateFromPost(post)));
-  // }
 
   final _streamController = StreamController<CricketGameScreenState>();
   Stream<CricketGameScreenState> get stream => _streamController.stream;
 
-  // late final Stream<CricketGameScreenState> stream =
-  //     _streamController.stream.asBroadcastStream();
-
-  // final _postStreamController = StreamController<InningsPost>();
-  // Stream<InningsPost> get _postStream => _postStreamController.stream;
-
   void _dispatchState() => _streamController.add(_deduceState());
 
   CricketGameScreenState _deduceState() {
-    // _service.postToInnings(game.currentInnings, post);
-
     final innings = game.currentInnings;
 
     if (innings.batter1 == null ||
@@ -243,7 +227,11 @@ class CricketGameScreenController {
       case RunoutBeforeDelivery():
         return PickBatterState(game);
       case NextBowler():
+        return PlayBallState(game);
       case NextBatter():
+        if (lastPost.index.ball == innings.rules.ballsPerOver) {
+          return PickBowlerState(game);
+        }
         return PlayBallState(game);
       case Ball():
         if (game.currentInnings.isInningsComplete) {
@@ -295,7 +283,7 @@ class CricketGameScreenController {
     final player = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PlayerListScreen(players,
+          builder: (context) => PickPlayerScreen(players,
               onSelectPlayer: (p) => Navigator.pop(context, p)),
         ));
     if (player is Player) {
@@ -327,9 +315,16 @@ class CricketGameScreenController {
     }
   }
 
-  void showScorecard(BuildContext context) {
+  void goScorecard(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => CricketGameScorecard(game)));
+  }
+
+  void goInningsTimeline(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => InningsTimelineScreen(game.currentInnings)));
   }
 
   void play(PlayBallState playBallState,
@@ -397,19 +392,19 @@ sealed class CricketGameScreenState {
 }
 
 class PickBowlerState extends CricketGameScreenState {
-  PickBowlerState(super.innings);
+  PickBowlerState(super.game);
 }
 
 class PickBatterState extends CricketGameScreenState {
-  PickBatterState(super.innings);
+  PickBatterState(super.game);
 }
 
 class EndInningsState extends CricketGameScreenState {
-  EndInningsState(super.innings);
+  EndInningsState(super.game);
 }
 
 class PlayBallState extends CricketGameScreenState {
-  PlayBallState(super.innings);
+  PlayBallState(super.game);
 }
 
 class _WicketPickerScreen extends StatefulWidget {

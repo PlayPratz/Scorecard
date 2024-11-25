@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/screens/cricket_match/create_cricket_match_screen.dart';
+import 'package:scorecard/screens/player/player_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,10 +15,13 @@ class HomeScreen extends StatelessWidget {
           children: [
             _HomeScreenTile(
               title: "New Match",
-              onSelect: () => _createMatch(context),
+              onSelect: () => _goCreateMatch(context),
             ),
             _HomeScreenTile(title: "Load Match"),
-            _HomeScreenTile(title: "Players"),
+            _HomeScreenTile(
+              title: "Players",
+              onSelect: () => _goPlayerList(context),
+            ),
             _HomeScreenTile(title: "Venues"),
           ],
         ),
@@ -35,13 +39,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _createMatch(BuildContext context) {
+  void _goCreateMatch(BuildContext context) {
     final controller = CreateCricketMatchController();
     Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => CreateCricketMatchScreen(controller)),
     );
+  }
+
+  void _goPlayerList(BuildContext context) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const AllPlayersScreen()));
   }
 }
 

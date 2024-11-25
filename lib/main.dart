@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/modules/repository/service/repostiory_service.dart';
+import 'package:scorecard/modules/repository/service/repository_service.dart';
 import 'package:scorecard/screens/home_screen.dart';
 
 /// Welcome to [Scorecard]! You must be new here. The architecture and structure

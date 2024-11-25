@@ -1,7 +1,7 @@
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
-import 'package:scorecard/modules/repository/service/repostiory_service.dart';
+import 'package:scorecard/modules/repository/service/repository_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/modules/venue/models/venue_model.dart';
 import 'package:scorecard/repositories/generic_repository.dart';

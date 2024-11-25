@@ -1,7 +1,9 @@
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/modules/sql/handlers/sql_db_handler.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
+import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/ram_repository.dart';
 
 abstract class IRepositoryService {
@@ -28,9 +30,17 @@ class RepositoryService implements IRepositoryService {
   late final IRepository<CricketMatch> _cricketMatchRepository;
 
   @override
-  void initialize() {
-    _playerRepository = RAMPlayerRepository();
+  Future<void> initialize() async {
+    await SQLDBHandler.instance.initialize();
+
+    // Player Repository
+    _playerRepository = SQLPlayerRepository();
+    await _playerRepository.initialize();
+
+    // Team Repository
     _teamRepository = RAMTeamRepository();
+
+    // Cricket Match Repository
     _cricketMatchRepository = RAMCricketMatchRepository();
   }
 

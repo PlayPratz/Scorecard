@@ -1,4 +1,6 @@
 abstract class IRepository<T> {
+  Future<void> initialize();
+
   /// Creates an object in the database;
   ///
   /// Call this method to INSERT a new entry into the database. To update an

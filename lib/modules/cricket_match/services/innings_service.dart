@@ -143,13 +143,21 @@ class InningsService {
     final bowlerInnings = getBowlerInningsOfPlayer(innings, bowler) ??
         _createBowlerInnings(innings, bowler);
 
+    // Index according to mid-over change
+    final index =
+        innings.balls.isEmpty || innings.posts.lastOrNull is BowlerRetire
+            ? _currentIndex(innings)
+            : _nextIndex(innings);
+
     // Add post to Innings
     _postToInnings(
         innings,
         NextBowler(
-            index: _currentIndex(innings),
-            previous: innings.bowler?.player,
-            next: bowler));
+          index: index,
+          previous: innings.bowler?.player,
+          next: bowler,
+          // isMidOverChange: innings.posts.last is BowlerRetire,
+        ));
 
     // Change the current bowler
     innings.bowler = bowlerInnings;
@@ -209,7 +217,10 @@ class InningsService {
     required Wicket? wicket,
     required BowlingExtraType? bowlingExtraType,
     required BattingExtraType? battingExtraType,
+    DateTime? datetime,
   }) {
+    datetime ??= DateTime.now();
+
     final BowlingExtra? bowlingExtra = switch (bowlingExtraType) {
       null => null,
       BowlingExtraType.noBall => NoBall(innings.rules.noBallPenalty),
@@ -227,6 +238,7 @@ class InningsService {
       wicket: wicket,
       bowlingExtra: bowlingExtra,
       battingExtraType: battingExtraType,
+      datetime: datetime,
     );
 
     // Add Post to Innings
@@ -244,31 +256,15 @@ class InningsService {
 
     switch (post) {
       case NextBowler():
-        // _addPostToBowlerInningsOfPlayer(innings, post, post.next);
-        // if (post.previous != null) {
-        //   _addPostToBowlerInningsOfPlayer(innings, post, post.previous!);
-        // }
+      case NextBatter():
         break;
       case BowlerRetire():
         _postToBowlerInningsOfPlayer(innings, post, post.bowler);
-      case NextBatter():
-        // _addPostToBatterInningsOfPlayer(innings, post, post.next);
-        // if(post.previous != null) {
-        //   _addPostToBatterInningsOfPlayer(innings, post, post.previous!)
-        // }
-        break;
       case BatterRetire():
         _postToBatterInningsOfPlayer(innings, post, post.batter);
       case RunoutBeforeDelivery():
         _postToBatterInningsOfPlayer(innings, post, post.wicket.batter);
       case Ball():
-        if (post.wicket != null) {
-          final batterInnings =
-              getBatterInningsOfPlayer(innings, post.wicket!.batter);
-          if (batterInnings != null) {
-            batterInnings.wicket = post.wicket;
-          }
-        }
         _postToBowlerInningsOfPlayer(innings, post, post.bowler);
         _postToBatterInningsOfPlayer(innings, post, post.batter);
     }
@@ -278,6 +274,7 @@ class InningsService {
       Innings innings, InningsPost post, Player bowler) {
     final bowlerInnings = getBowlerInningsOfPlayer(innings, bowler);
     if (bowlerInnings != null) {
+      // Add post to bowler innings
       bowlerInnings.posts.add(post);
     }
   }
@@ -286,7 +283,13 @@ class InningsService {
       Innings innings, InningsPost post, Player batter) {
     final batterInnings = getBatterInningsOfPlayer(innings, batter);
     if (batterInnings != null) {
+      // Add post to batter innings
       batterInnings.posts.add(post);
+
+      // Add wicket if required
+      if (post is Ball && post.isWicket && post.wicket!.batter == batter) {
+        batterInnings.wicket = post.wicket;
+      }
     }
   }
 
@@ -372,6 +375,7 @@ class InningsService {
 
         // Swap strike
         if (post.runsScoredByBattingTeam % 2 == 1) swapStrike(innings);
+        if (post.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
     }
   }
 
@@ -379,12 +383,35 @@ class InningsService {
     innings.isForfeited = true;
   }
 
+  // InningsIndex _nextIndex(Innings innings, bool rollToNextOver) {
+  //   if (innings.posts.isEmpty) {
+  //     // First post
+  //     return const InningsIndex.zero();
+  //   }
+  //   // Posts already exist
+  //   final last = innings.posts.last;
+  //   switch(last) {
+  //     case BowlerRetire():
+  //     case NextBowler():
+  //     case BatterRetire():
+  //       // TODO: Handle this case.
+  //     case NextBatter():
+  //       // TODO: Handle this case.
+  //     case RunoutBeforeDelivery():
+  //       // TODO: Handle this case.
+  //     case Ball():
+  //       // TODO: Handle this case.
+  //   }
+  // }
+
   InningsIndex _currentIndex(Innings innings) {
     if (innings.posts.isEmpty) {
+      // First post
       return const InningsIndex.zero();
     }
 
     final last = innings.posts.last;
+
     if (last.index.ball == innings.rules.ballsPerOver) {
       return InningsIndex(last.index.over + 1, 0);
     }

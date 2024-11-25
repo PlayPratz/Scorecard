@@ -1,5 +1,5 @@
 import 'package:path/path.dart';
-import 'package:scorecard/modules/sql/keys.dart';
+import 'package:scorecard/repositories/sql/keys.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SQLDBHandler {
@@ -13,11 +13,11 @@ class SQLDBHandler {
       join(await getDatabasesPath(), "cricket_scorecard.db"),
       onCreate: (db, version) {
         return db.execute(
-            "CREATE TABLE ? (id INTEGER PRIMARY KEY, name TEXT, full_name TEXT)",
-            [Tables.players]);
+            "CREATE TABLE ${Tables.players} (id TEXT PRIMARY KEY, name TEXT, full_name TEXT)");
       },
       version: 1,
     );
+    final res = await _db.query(Tables.players);
   }
 
   Future<void> insert({

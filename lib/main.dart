@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/modules/repository/service/repository_service.dart';
+import 'package:scorecard/repositories/provider/repository_provider.dart';
 import 'package:scorecard/screens/home_screen.dart';
 
 /// Welcome to [Scorecard]! You must be new here. The architecture and structure
@@ -46,7 +46,6 @@ import 'package:scorecard/screens/home_screen.dart';
 /// components which may gain from importing other classes of the same kind.
 
 void main() {
-  RepositoryService().initialize();
   runApp(const ScorecardApp());
 }
 

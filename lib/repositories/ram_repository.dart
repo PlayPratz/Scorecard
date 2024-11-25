@@ -78,9 +78,8 @@ class RAMTeamRepository implements IRepository<Team> {
   };
 
   @override
-  Future<void> initialize() {
+  Future<void> initialize() async {
     // TODO: implement initialize
-    throw UnimplementedError();
   }
 
   @override
@@ -131,10 +130,7 @@ class RAMCricketMatchRepository implements IRepository<CricketMatch> {
   final _database = <String, CricketMatch>{};
 
   @override
-  Future<void> initialize() {
-    // TODO: implement initialize
-    throw UnimplementedError();
-  }
+  Future<void> initialize() async {}
 
   @override
   Future<void> create(CricketMatch match) async {

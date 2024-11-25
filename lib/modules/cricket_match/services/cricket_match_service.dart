@@ -1,11 +1,11 @@
+import 'package:scorecard/handlers/ulid.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
-import 'package:scorecard/modules/repository/service/repository_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/modules/venue/models/venue_model.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
-import 'package:scorecard/util/ulid.dart';
+import 'package:scorecard/repositories/provider/repository_provider.dart';
 
 class CricketMatchService {
   ScheduledCricketMatch createCricketMatch({
@@ -98,5 +98,5 @@ class CricketMatchService {
   }
 
   IRepository<CricketMatch> get _repository =>
-      RepositoryService().getCricketMatchRepository();
+      RepositoryProvider().getCricketMatchRepository();
 }

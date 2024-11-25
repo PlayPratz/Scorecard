@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class LoadingFutureBuilder<T> extends StatelessWidget {
   final Future<T> future;
 
-  final Widget Function(BuildContext context, T data) builder;
-  final Widget? onError;
+  final Widget Function(BuildContext context, T? data) builder;
+  final Widget Function(BuildContext context, Object? error)? onError;
   final Widget? child;
 
   const LoadingFutureBuilder({
@@ -27,12 +27,11 @@ class LoadingFutureBuilder<T> extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             case ConnectionState.done:
               if (snapshot.hasError) {
-                return onError ?? const Text("Error!");
+                return onError != null
+                    ? onError!(context, snapshot.error)
+                    : const Center(child: Text("Error!"));
               }
-              if (snapshot.hasData) {
-                return builder(context, snapshot.data as T);
-              }
-              return const Center(child: CircularProgressIndicator());
+              return builder(context, snapshot.data);
           }
         });
   }

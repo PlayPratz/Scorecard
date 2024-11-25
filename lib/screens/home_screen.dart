@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/repositories/provider/repository_provider.dart';
+import 'package:scorecard/screens/common/loading_future_builder.dart';
 import 'package:scorecard/screens/cricket_match/create_cricket_match_screen.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final Future<void> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _initializeApplication();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      appBar: AppBar(),
+      body: LoadingFutureBuilder(
+        future: _future,
+        builder: (context, data) => ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           children: [
             _HomeScreenTile(
               title: "New Match",
@@ -51,6 +67,10 @@ class HomeScreen extends StatelessWidget {
   void _goPlayerList(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => const AllPlayersScreen()));
+  }
+
+  Future<void> _initializeApplication() async {
+    await RepositoryProvider().initialize();
   }
 }
 

@@ -16,14 +16,16 @@ class CreateCricketMatchScreen extends StatelessWidget {
     final teamController = TeamSelectController();
     final gameRulesController = LimitedOverGameRulesController();
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text("Let's create a new match!"),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: ListView(
           children: [
-            Text("Let's create a new match!",
-                style: Theme.of(context).textTheme.headlineMedium),
-            const SizedBox(height: 32),
+            // Text("Let's create a new match!",
+            //     style: Theme.of(context).textTheme.headlineMedium),
+            // const SizedBox(height: 32),
             _TeamSelectorSection(teamController),
             const Divider(height: 64),
             _LimitedOverGameRulesSection(gameRulesController),

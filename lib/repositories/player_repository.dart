@@ -1,7 +1,7 @@
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/sql/handlers/sql_db_handler.dart';
-import 'package:scorecard/modules/sql/keys.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
+import 'package:scorecard/repositories/sql/handlers/sql_db_handler.dart';
+import 'package:scorecard/repositories/sql/keys.dart';
 
 class SQLPlayerRepository implements IRepository<Player> {
   @override
@@ -61,5 +61,5 @@ class SQLPlayerRepository implements IRepository<Player> {
   Player _deserialize(Map<String, Object?> map) => Player(
       id: map["id"] as String,
       name: map["name"] as String,
-      fullName: map["full_name"] as String);
+      fullName: map["full_name"] as String?);
 }

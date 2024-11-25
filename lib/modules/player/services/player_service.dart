@@ -1,13 +1,33 @@
+import 'package:scorecard/handlers/ulid.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/repository/service/repository_service.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
-import 'package:scorecard/util/ulid.dart';
+import 'package:scorecard/repositories/provider/repository_provider.dart';
 
 class PlayerService {
   /// Creates a player
-  Future<Player> createPlayer(String name) async {
-    final player = Player(id: ULID.generate(), name: name);
+  Future<Player> savePlayer(String name, {String? fullName, String? id}) async {
+    if (fullName != null && fullName.isEmpty) fullName = null;
+
+    if (id == null) {
+      // Create player
+      return _createPlayer(name, fullName: fullName);
+    } else {
+      return _updatePlayer(name, id: id, fullName: fullName);
+    }
+  }
+
+  Future<Player> _createPlayer(String name, {String? fullName}) async {
+    if (fullName != null && fullName.isEmpty) fullName = null;
+    final player = Player(id: ULID.generate(), name: name, fullName: fullName);
     _playerRepository.create(player);
+    return player;
+  }
+
+  /// Saves any changes made to the [Player].
+  Future<Player> _updatePlayer(String name,
+      {String? fullName, required String id}) async {
+    final player = Player(id: id, name: name, fullName: fullName);
+    await _playerRepository.update(player);
     return player;
   }
 
@@ -33,15 +53,10 @@ class PlayerService {
     return "";
   }
 
-  /// Saves any changes made to the [Player].
-  Future<void> savePlayer(Player player) async {
-    return await _playerRepository.update(player);
-  }
-
   Future<Iterable<Player>> searchPlayer(String query) async {
     return await _playerRepository.search(query);
   }
 
   IRepository<Player> get _playerRepository =>
-      RepositoryService().getPlayerRepository();
+      RepositoryProvider().getPlayerRepository();
 }

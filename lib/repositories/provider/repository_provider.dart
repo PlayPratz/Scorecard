@@ -1,13 +1,13 @@
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/sql/handlers/sql_db_handler.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/repositories/generic_repository.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/ram_repository.dart';
+import 'package:scorecard/repositories/sql/handlers/sql_db_handler.dart';
 
-abstract class IRepositoryService {
-  IRepositoryService._();
+abstract class IRepositoryProvider {
+  IRepositoryProvider._();
 
   void initialize();
   // void register(IRepository repository);
@@ -19,11 +19,10 @@ abstract class IRepositoryService {
   void shutdown();
 }
 
-// TODO This is probably not stateless, need to rework.
-class RepositoryService implements IRepositoryService {
-  RepositoryService._();
-  static final _instance = RepositoryService._();
-  factory RepositoryService() => _instance;
+class RepositoryProvider implements IRepositoryProvider {
+  RepositoryProvider._();
+  static final _instance = RepositoryProvider._();
+  factory RepositoryProvider() => _instance;
 
   late final IRepository<Player> _playerRepository;
   late final IRepository<Team> _teamRepository;
@@ -39,9 +38,11 @@ class RepositoryService implements IRepositoryService {
 
     // Team Repository
     _teamRepository = RAMTeamRepository();
+    await _teamRepository.initialize();
 
     // Cricket Match Repository
     _cricketMatchRepository = RAMCricketMatchRepository();
+    await _cricketMatchRepository.initialize();
   }
 
   @override

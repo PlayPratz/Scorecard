@@ -1,24 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/modules/player/player_model.dart';
 
-class CreatePlayerScreen extends StatefulWidget {
-  const CreatePlayerScreen({super.key});
+class PlayerFormScreen extends StatefulWidget {
+  final Player? player;
+  final void Function(String name, String fullName, {String? id}) onSavePlayer;
+
+  const PlayerFormScreen({super.key, this.player, required this.onSavePlayer});
 
   @override
-  State<CreatePlayerScreen> createState() => _CreatePlayerScreenState();
+  State<PlayerFormScreen> createState() => _PlayerFormScreenState();
 }
 
-class _CreatePlayerScreenState extends State<CreatePlayerScreen> {
+class _PlayerFormScreenState extends State<PlayerFormScreen> {
   final _nameController = TextEditingController();
   final _fullNameController = TextEditingController();
-  final _ = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.player != null) {
+      _nameController.text = widget.player!.name;
+      _fullNameController.text = widget.player!.fullName ?? "";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Create a Player"),
+        title: widget.player == null
+            ? const Text("Create a Player")
+            : const Text("Update a Player"),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -55,8 +70,8 @@ class _CreatePlayerScreenState extends State<CreatePlayerScreen> {
           children: [
             FilledButton.icon(
               onPressed: _onSubmitPlayer,
-              label: const Text("Create"),
-              icon: const Icon(Icons.person_add),
+              label: const Text("Save"),
+              icon: const Icon(Icons.save),
             ),
           ],
         ),
@@ -65,9 +80,11 @@ class _CreatePlayerScreenState extends State<CreatePlayerScreen> {
     );
   }
 
-  void _onSubmitPlayer() {
+  Future<void> _onSubmitPlayer() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    widget.onSavePlayer(_nameController.text, _fullNameController.text,
+        id: widget.player?.id);
   }
 }

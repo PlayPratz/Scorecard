@@ -116,8 +116,7 @@ class CricketGameScreen extends StatelessWidget {
         LimitedOversGame() => LimitedOversScoreSection(
             game.currentInnings is LimitedOversInningsWithTarget
                 ? LimitedOversScoreFirstInningsState(
-                    runs: state.runs,
-                    wickets: state.wickets,
+                    score: state.score,
                     team1: state.team1,
                     team2: state.team2,
                     currentIndex:
@@ -126,8 +125,7 @@ class CricketGameScreen extends StatelessWidget {
                     isFirstTeamBatting: state.isFirstTeamBatting,
                   )
                 : LimitedOversScoreSecondInningsState(
-                    runs: state.runs,
-                    wickets: state.wickets,
+                    score: state.score,
                     team1: state.team1,
                     team2: state.team2,
                     currentIndex:
@@ -366,8 +364,7 @@ class CricketGameScreenController {
 
 sealed class CricketGameScreenState {
   // Scoreboard
-  final int runs;
-  final int wickets;
+  final Score score;
   final InningsPost? latestPost;
   final Team team1;
   final Team team2;
@@ -385,8 +382,7 @@ sealed class CricketGameScreenState {
   final UnmodifiableListView<Ball> balls;
 
   CricketGameScreenState(CricketGame game)
-      : runs = game.currentInnings.runs,
-        wickets = game.currentInnings.wickets,
+      : score = game.currentInnings.score,
         team1 = game.lineup1.team,
         team2 = game.lineup2.team,
         isFirstTeamBatting =

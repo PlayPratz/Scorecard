@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/ui/ball_colors.dart';
+import 'package:scorecard/ui/stringify.dart';
 
 class LimitedOversScoreSection extends StatelessWidget {
   final LimitedOversScoreState state;
@@ -64,7 +65,7 @@ class LimitedOversScoreSection extends StatelessWidget {
           : row2Widgets(context, isFirstTeamBatting).reversed.toList();
 
   List<Widget> row2Widgets(BuildContext context, bool isFirstTeamBatting) => [
-        Text("${state.runs}-${state.wickets}",
+        Text(Stringify.score(state.score),
             style: Theme.of(context).textTheme.headlineSmall,
             textAlign: isFirstTeamBatting ? TextAlign.right : TextAlign.left),
         const SizedBox(),
@@ -74,8 +75,7 @@ class LimitedOversScoreSection extends StatelessWidget {
 }
 
 sealed class LimitedOversScoreState {
-  final int runs;
-  final int wickets;
+  final Score score;
 
   final Team team1;
   final Team team2;
@@ -86,8 +86,7 @@ sealed class LimitedOversScoreState {
   final bool isFirstTeamBatting;
 
   LimitedOversScoreState({
-    required this.runs,
-    required this.wickets,
+    required this.score,
     required this.team1,
     required this.team2,
     required this.currentIndex,
@@ -107,8 +106,7 @@ sealed class LimitedOversScoreState {
 
 class LimitedOversScoreFirstInningsState extends LimitedOversScoreState {
   LimitedOversScoreFirstInningsState({
-    required super.runs,
-    required super.wickets,
+    required super.score,
     required super.team1,
     required super.team2,
     required super.currentIndex,
@@ -121,8 +119,7 @@ class LimitedOversScoreSecondInningsState extends LimitedOversScoreState {
   final int target;
 
   LimitedOversScoreSecondInningsState({
-    required super.runs,
-    required super.wickets,
+    required super.score,
     required super.team1,
     required super.team2,
     required super.currentIndex,

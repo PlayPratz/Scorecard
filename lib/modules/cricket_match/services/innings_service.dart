@@ -54,7 +54,7 @@ class InningsService {
         nextBatterPost = NextBatter(
             index: _currentIndex(innings),
             next: nextBatter,
-            previous: innings.batter1!.player);
+            previous: previousBatterInnings.player);
       } else if (!innings.rules.onlySingleBatter &&
           _isBatterToBeReplaced(innings.batter2)) {
         previousBatterInnings = innings.batter2!;
@@ -62,7 +62,7 @@ class InningsService {
         nextBatterPost = NextBatter(
             index: _currentIndex(innings),
             next: nextBatter,
-            previous: innings.batter2!.player);
+            previous: previousBatterInnings.player);
       } else {
         throw StateError(
             "Attempted to add new batter without retiring previous");

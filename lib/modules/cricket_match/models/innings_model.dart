@@ -207,6 +207,26 @@ class Ball extends InningsPost {
   });
 }
 
+class Score {
+  final int runs;
+  final int wickets;
+
+  Score(this.runs, this.wickets);
+
+  Score.zero()
+      : runs = 0,
+        wickets = 0;
+
+  Score add(Ball ball) {
+    final runs = this.runs + ball.runs;
+    if (ball.isWicket) {
+      return Score(runs, wickets + 1);
+    } else {
+      return Score(runs, wickets);
+    }
+  }
+}
+
 /// An Innings is a major component of a game of cricket where one team scores
 /// runs (batting team) while the other tries to take their wickets and prevent
 /// the flow of runs (bowling/fielding team)
@@ -234,6 +254,26 @@ sealed class Innings {
   /// Total wickets taken by the bowling team
   int get wickets => wicketBalls.length;
   Iterable<Ball> get wicketBalls => balls.where((ball) => ball.isWicket);
+
+  Score get score => calculateScore();
+
+  Score calculateScore({Ball? from, Ball? at}) {
+    if (balls.isEmpty) {
+      return Score.zero();
+    }
+
+    from ??= balls.first;
+    at ??= balls.last;
+
+    final start = balls.indexOf(from);
+    final end = balls.indexOf(at, start) + 1;
+
+    final score = balls
+        .getRange(start, end)
+        .fold(Score.zero(), (prevScore, ball) => prevScore.add(ball));
+
+    return score;
+  }
 
   /// Are all wickets lost by the batting team
   // bool get isAllDown => wickets >= rules.wicketsPerSide; TODO
@@ -397,3 +437,20 @@ mixin BowlingCalculations {
         null || RunoutWicket() || TimedOutWicket() => false
       };
 }
+
+// class FallOfWicket {
+//   /// The wicket which fell
+//   final Wicket wicket; // TODO Should add retires?
+//
+//   /// Index at which the wicket fell
+//   final InningsIndex index;
+//
+//   /// Runs scored at that point
+//   final int runs;
+//
+//   /// Wickets scored at that point
+//   final int wickets;
+//
+//   FallOfWicket(this.wicket,
+//       {required this.index, required this.runs, required this.wickets});
+// }

@@ -1,6 +1,9 @@
+import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 
 class Stringify {
+  static String score(Score score) => "${score.runs}-${score.wickets}";
+
   static String wicket(Wicket? wicket,
           {RetiredBatter? retired, String ifNone = "not out"}) =>
       switch (wicket) {
@@ -23,6 +26,9 @@ class Stringify {
 
   static String ballCount(int ballCount, int ballsPerOver) =>
       "${ballCount ~/ ballsPerOver}.${ballCount % ballsPerOver}";
+
+  static String inningsIndex(InningsIndex index) =>
+      "${index.over}.${index.ball}";
 
   static String economy(double economy) =>
       economy == double.infinity ? '∞' : economy.toStringAsFixed(2);

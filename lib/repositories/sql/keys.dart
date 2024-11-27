@@ -5,9 +5,19 @@ class Tables {
   // Teams
   static const teams = "teams";
 
-  // Matches
-  static const matches = "cricket_matches";
-  static const innings = "innings";
-  static const posts = "innings_posts";
+  // Venues
+  static const venues = "venues";
+
+  // Cricket Matches
+  static const gameRules = "game_rules";
+  static const matches = "matches";
   static const lineups = "lineups";
+  static const innings = "innings";
+  static const posts = "posts";
+  static const wickets = "wickets";
+}
+
+class Views {
+  // Matches
+  static const matchesExpanded = "matches_expanded";
 }

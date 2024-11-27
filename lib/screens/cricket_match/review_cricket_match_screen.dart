@@ -24,7 +24,9 @@ class ReviewCricketMatchScreen extends StatelessWidget {
             _TossPreviewSection(match.toss),
             const SizedBox(height: 16),
             _MatchupPreviewSection(
+              team1: match.team1,
               lineup1: match.lineup1,
+              team2: match.team2,
               lineup2: match.lineup2,
             ),
             const SizedBox(height: 16),
@@ -66,19 +68,23 @@ class ReviewCricketMatchScreenController {
 }
 
 class _MatchupPreviewSection extends StatelessWidget {
+  final Team team1;
   final Lineup lineup1;
+  final Team team2;
   final Lineup lineup2;
 
   const _MatchupPreviewSection({
     super.key,
+    required this.team1,
+    required this.team2,
     required this.lineup1,
     required this.lineup2,
   });
 
   @override
   Widget build(BuildContext context) {
-    final playerList1 = lineup1.players.toList();
-    final playerList2 = lineup2.players.toList();
+    final playerList1 = lineup1.players;
+    final playerList2 = lineup2.players;
     final rowCount = max(playerList1.length, playerList2.length);
     return Card(
       child: Padding(
@@ -96,11 +102,11 @@ class _MatchupPreviewSection extends StatelessWidget {
                 TableRow(children: [
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Text(lineup1.team.name.toUpperCase(),
+                    child: Text(team1.name.toUpperCase(),
                         style: Theme.of(context).textTheme.titleSmall),
                   ),
                   const Center(child: Text('v')),
-                  Text(lineup2.team.name.toUpperCase(),
+                  Text(team2.name.toUpperCase(),
                       style: Theme.of(context).textTheme.titleSmall),
                 ]),
                 for (int i = 0; i < rowCount; i++)
@@ -108,7 +114,7 @@ class _MatchupPreviewSection extends StatelessWidget {
                     children: [
                       i < playerList1.length
                           ? Text(
-                              _wPlayerName(playerList1[i], lineup1),
+                              _wPlayerName(playerList1[i], lineup1.captain),
                               textAlign: TextAlign.right,
                             )
                           : const SizedBox(),
@@ -118,7 +124,7 @@ class _MatchupPreviewSection extends StatelessWidget {
                         child: Text((i + 1).toString()),
                       )),
                       i < playerList2.length
-                          ? Text(_wPlayerName(playerList2[i], lineup2))
+                          ? Text(_wPlayerName(playerList2[i], lineup2.captain))
                           : const SizedBox(),
                     ],
                   )
@@ -130,9 +136,9 @@ class _MatchupPreviewSection extends StatelessWidget {
     );
   }
 
-  String _wPlayerName(Player player, Lineup lineup) {
+  String _wPlayerName(Player player, Player captain) {
     final name = player.name.toUpperCase();
-    if (player == lineup.captain) {
+    if (player == captain) {
       return '$name (c)';
     } else {
       return name;
@@ -178,7 +184,7 @@ class _GameRulesPreviewSection extends StatelessWidget {
                   UnlimitedOversRules() => [
                       TableRow(children: [
                         _wLabelWidget("Overs per Bowler"),
-                        Text(rules.days.toString())
+                        Text(rules.daysOfPlay.toString())
                       ]),
                       TableRow(children: [
                         _wLabelWidget("Overs per Bowler"),

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:scorecard/repositories/sql/keys.dart';
 import 'package:sqflite/sqflite.dart';
@@ -10,21 +11,27 @@ class SQLDBHandler {
 
   Future<void> initialize() async {
     _db = await openDatabase(
-      join(await getDatabasesPath(), "cricket_scorecard.db"),
-      onCreate: (db, version) {
-        return db.execute(
-            "CREATE TABLE ${Tables.players} (id TEXT PRIMARY KEY, name TEXT, full_name TEXT)");
+      join(await getDatabasesPath(), "cricket.db"),
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
       },
+      onCreate: (db, version) async {
+        final sql =
+            await rootBundle.loadString("assets/sql/cricket-create.sql");
+        await db.execute(sql);
+      },
+      singleInstance: true,
       version: 1,
     );
     final res = await _db.query(Tables.players);
   }
 
-  Future<void> insert({
+  Future<int> insert({
     required String table,
     required Map<String, dynamic> values,
   }) async {
-    await _db.insert(table, values);
+    final id = await _db.insert(table, values);
+    return id;
   }
 
   Future<Iterable<dynamic>> query({
@@ -44,8 +51,8 @@ class SQLDBHandler {
     required String where,
     required List<Object?> whereArgs,
   }) async {
-    final result =
+    final rowsAffected =
         await _db.update(table, values, where: where, whereArgs: whereArgs);
-    return result;
+    return rowsAffected;
   }
 }

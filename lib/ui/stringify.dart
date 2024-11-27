@@ -27,8 +27,7 @@ class Stringify {
   static String ballCount(int ballCount, int ballsPerOver) =>
       "${ballCount ~/ ballsPerOver}.${ballCount % ballsPerOver}";
 
-  static String inningsIndex(InningsIndex index) =>
-      "${index.over}.${index.ball}";
+  static String postIndex(PostIndex index) => "${index.over}.${index.ball}";
 
   static String economy(double economy) =>
       economy == double.infinity ? '∞' : economy.toStringAsFixed(2);

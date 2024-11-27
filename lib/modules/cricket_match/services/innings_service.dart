@@ -2,7 +2,7 @@ import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 
-/// Handles the business logic with all operations related to an [Innings].
+/// Handles the business logic for all operations related to an [Innings].
 class InningsService {
   InningsService._();
   static final _instance = InningsService._();
@@ -106,7 +106,7 @@ class InningsService {
       innings,
       BatterRetire(
         index: _currentIndex(innings),
-        batter: batterInnings.player,
+        // batter: batterInnings.player,
         retired: retired,
       ),
     );
@@ -174,14 +174,14 @@ class InningsService {
   }
 
   void retireBowlerInnings(Innings innings, BowlerInnings bowlerInnings) {
-    final retired = RetiredBowler(bowler: bowlerInnings.player);
+    // final retired = RetiredBowler(bowler: bowlerInnings.player);
 
     _postToInnings(
       innings,
       BowlerRetire(
         index: _currentIndex(innings),
         bowler: bowlerInnings.player,
-        retired: retired,
+        // retired: retired,
       ),
     );
   }
@@ -227,6 +227,16 @@ class InningsService {
       BowlingExtraType.wide => Wide(innings.rules.widePenalty),
     };
 
+    final BattingExtra? battingExtra = switch (battingExtraType) {
+      null => null,
+      BattingExtraType.bye => Bye(runsScored),
+      BattingExtraType.legBye => LegBye(runsScored),
+    };
+
+    // This ensures that only the runs awarded to the batter are accounted for
+    // in this variable
+    final int runsScoredByBatter = battingExtra != null ? 0 : runsScored;
+
     final index =
         bowlingExtra != null ? _currentIndex(innings) : _nextIndex(innings);
 
@@ -234,18 +244,18 @@ class InningsService {
       index: index,
       bowler: bowler,
       batter: batter,
-      runsScoredByBattingTeam: runsScored,
+      runsScoredByBatter: runsScoredByBatter,
       wicket: wicket,
       bowlingExtra: bowlingExtra,
-      battingExtraType: battingExtraType,
-      datetime: datetime,
+      battingExtra: battingExtra,
+      timestamp: datetime,
     );
 
     // Add Post to Innings
     _postToInnings(innings, ball);
 
     // Swap strike for odd number of runs
-    if (ball.runsScoredByBattingTeam % 2 == 1) swapStrike(innings);
+    if (ball.runsScoredByBatter % 2 == 1) swapStrike(innings);
 
     // Swap strike whenever an over completes
     if (ball.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
@@ -374,7 +384,7 @@ class InningsService {
         if (bowlerInnings != null) bowlerInnings.posts.remove(post);
 
         // Swap strike
-        if (post.runsScoredByBattingTeam % 2 == 1) swapStrike(innings);
+        if (post.runsScoredByBatter % 2 == 1) swapStrike(innings);
         if (post.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
     }
   }
@@ -383,48 +393,27 @@ class InningsService {
     innings.isForfeited = true;
   }
 
-  // InningsIndex _nextIndex(Innings innings, bool rollToNextOver) {
-  //   if (innings.posts.isEmpty) {
-  //     // First post
-  //     return const InningsIndex.zero();
-  //   }
-  //   // Posts already exist
-  //   final last = innings.posts.last;
-  //   switch(last) {
-  //     case BowlerRetire():
-  //     case NextBowler():
-  //     case BatterRetire():
-  //       // TODO: Handle this case.
-  //     case NextBatter():
-  //       // TODO: Handle this case.
-  //     case RunoutBeforeDelivery():
-  //       // TODO: Handle this case.
-  //     case Ball():
-  //       // TODO: Handle this case.
-  //   }
-  // }
-
-  InningsIndex _currentIndex(Innings innings) {
+  PostIndex _currentIndex(Innings innings) {
     if (innings.posts.isEmpty) {
       // First post
-      return const InningsIndex.zero();
+      return const PostIndex.zero();
     }
 
     final last = innings.posts.last;
 
     if (last.index.ball == innings.rules.ballsPerOver) {
-      return InningsIndex(last.index.over + 1, 0);
+      return PostIndex(last.index.over + 1, 0);
     }
     return innings.posts.last.index;
   }
 
-  InningsIndex _nextIndex(Innings innings) {
+  PostIndex _nextIndex(Innings innings) {
     final currentIndex = _currentIndex(innings);
 
     if (currentIndex.ball == innings.rules.ballsPerOver) {
-      return InningsIndex(currentIndex.over + 1, 0);
+      return PostIndex(currentIndex.over + 1, 0);
     } else {
-      return InningsIndex(currentIndex.over, currentIndex.ball + 1);
+      return PostIndex(currentIndex.over, currentIndex.ball + 1);
     }
   }
 }

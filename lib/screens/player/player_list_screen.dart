@@ -53,7 +53,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
       _state = AllPlayersLoadingState();
     });
 
-    final players = await RepositoryProvider().getPlayerRepository().readAll();
+    final players = await RepositoryProvider().getPlayerRepository().fetchAll();
 
     setState(() {
       _state = AllPlayersLoadedState(players.toList());

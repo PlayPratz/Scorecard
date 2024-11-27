@@ -33,7 +33,7 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
       appBar: AppBar(
         title: widget.player == null
             ? const Text("Create a Player")
-            : const Text("Update a Player"),
+            : Text(widget.player!.name),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -41,6 +41,15 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
           key: _formKey,
           child: ListView(
             children: [
+              if (widget.player != null)
+                Text(
+                  "ID#${widget.player!.id}",
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall
+                      ?.copyWith(color: Colors.black54),
+                  textAlign: TextAlign.right,
+                ),
               TextFormField(
                 controller: _nameController,
                 maxLength: 10,

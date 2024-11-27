@@ -263,7 +263,7 @@ class CreateCricketMatchController {
     final match = _service.createCricketMatch(
       team1: team1,
       team2: team2,
-      venue: Venue(name: "default"),
+      venue: Venue(id: "default", name: "default"),
       rules: rules,
     );
 
@@ -319,7 +319,7 @@ class LimitedOverGameRulesController with ChangeNotifier {
   bool _allowLastMan = false;
   bool _allowSingleBatter = false;
 
-  LimitedOversRules _deduceState() => LimitedOversRules(
+  LimitedOversRules _deduceState() => LimitedOversRules.custom(
         ballsPerOver: _ballsPerOver,
         widePenalty: _widePenalty,
         noBallPenalty: _noBallPenalty,

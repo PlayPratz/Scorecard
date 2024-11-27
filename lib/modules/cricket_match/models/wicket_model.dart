@@ -101,11 +101,11 @@ class RetiredHurt extends RetiredBatter {
   Dismissal get dismissal => Dismissal.retiredHurt;
 }
 
-class RetiredBowler {
-  final Player bowler;
-
-  RetiredBowler({required this.bowler});
-}
+// class RetiredBowler {
+//   final Player bowler;
+//
+//   RetiredBowler({required this.bowler});
+// }
 
 enum Dismissal {
   bowled,

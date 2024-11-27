@@ -7,13 +7,13 @@ import 'package:scorecard/modules/team/models/team_model.dart';
 
 /// An index which locates events on a timeline of an innings.
 /// Commonly represented as `over.ball`
-class InningsIndex {
+class PostIndex {
   final int over;
   final int ball;
 
-  const InningsIndex(this.over, this.ball);
+  const PostIndex(this.over, this.ball);
 
-  const InningsIndex.zero()
+  const PostIndex.zero()
       : over = 0,
         ball = 0;
 
@@ -28,13 +28,20 @@ class InningsIndex {
 /// It made sense because you are *posting* every event to this innings. I did
 /// not want to name this InningsEvent because that sounds like a UI Event.
 sealed class InningsPost {
-  /// The index of this post
-  final InningsIndex index;
+  /// The index of this post in the innings
+  final PostIndex index;
 
   /// Any comment that the user would like to add about this post
   final String? comment;
 
-  InningsPost({required this.index, this.comment});
+  /// The timestamp of this post
+  final DateTime? timestamp;
+
+  InningsPost({
+    required this.index,
+    this.timestamp,
+    this.comment,
+  });
 }
 
 /// Posted when a Bowler Retires mid-over due to an injury, being sent off, or
@@ -49,12 +56,14 @@ class BowlerRetire extends InningsPost {
   final Player bowler;
 
   /// The bowler's retirement
-  final RetiredBowler retired;
+  // final RetiredBowler retired;
 
   BowlerRetire({
     required super.index,
+    super.timestamp,
+    super.comment,
     required this.bowler,
-    required this.retired,
+    // required this.retired,
   });
 }
 
@@ -71,6 +80,7 @@ class NextBowler extends InningsPost {
 
   NextBowler({
     required super.index,
+    super.timestamp,
     super.comment,
     required this.previous,
     required this.next,
@@ -84,16 +94,17 @@ class NextBowler extends InningsPost {
 /// This post should be followed by a [NextBatter] post since a new batter will
 /// walk out to bat, unless the innings has ended due to this post.
 class BatterRetire extends InningsPost {
-  /// The batter who has retired
-  final Player batter;
-
   /// The batter's retirement
   final RetiredBatter retired;
 
+  /// The batter who has retired
+  Player get batter => retired.batter;
+
   BatterRetire({
     required super.index,
+    super.timestamp,
     super.comment,
-    required this.batter,
+    // required this.batter,
     required this.retired,
   });
 }
@@ -108,6 +119,7 @@ class NextBatter extends InningsPost {
 
   NextBatter({
     required super.index,
+    super.timestamp,
     super.comment,
     required this.previous,
     required this.next,
@@ -125,12 +137,34 @@ class RunoutBeforeDelivery extends InningsPost {
 
   RunoutBeforeDelivery({
     required super.index,
+    super.timestamp,
     super.comment,
     required this.wicket,
   });
 }
 
-/// The types of Bowling Extras
+/// A simple container that conveniently packages the score of an innings.
+class Score {
+  final int runs;
+  final int wickets;
+
+  Score(this.runs, this.wickets);
+
+  Score.zero()
+      : runs = 0,
+        wickets = 0;
+
+  Score add(Ball ball) {
+    final runs = this.runs + ball.runs;
+    if (ball.isWicket) {
+      return Score(runs, wickets + 1);
+    } else {
+      return Score(runs, wickets);
+    }
+  }
+}
+
+/// Types of Bowling Extras
 enum BowlingExtraType { noBall, wide }
 
 /// A Bowling Extra is an extra due to the bowler's or the fielding team's
@@ -162,7 +196,39 @@ class Wide extends BowlingExtra {
   BowlingExtraType get type => BowlingExtraType.wide;
 }
 
+/// Types of Batting Extras
 enum BattingExtraType { bye, legBye }
+
+/// A Batting Extra is an extra due to the striking batter's fault.
+///
+/// In case of a Batting Extra, the batting team is still awarded the runs, but
+/// it's not accounted for in the batter's or the bowler's innings.
+sealed class BattingExtra {
+  /// Extra runs scored by the batting team
+  final int runs;
+
+  BattingExtraType get type;
+
+  BattingExtra(this.runs);
+}
+
+/// A Batting Extra where the batters score runs after the striker get neither
+/// bat nor body on ball.
+class Bye extends BattingExtra {
+  Bye(super.runs);
+
+  @override
+  BattingExtraType get type => BattingExtraType.bye;
+}
+
+/// A Batting Extra where the batters score runs after the striker gets body,
+/// but not bat, on ball.
+class LegBye extends BattingExtra {
+  LegBye(super.runs);
+
+  @override
+  BattingExtraType get type => BattingExtraType.legBye;
+}
 
 /// A ball is the most major event in a game of cricket.
 ///
@@ -176,7 +242,7 @@ class Ball extends InningsPost {
   final Player batter;
 
   /// Runs off the bat/ran by the batter(s)
-  final int runsScoredByBattingTeam;
+  final int runsScoredByBatter;
 
   /// A wicket, if any, that fell on this ball
   final Wicket? wicket;
@@ -185,31 +251,26 @@ class Ball extends InningsPost {
   /// An extra due to the bowler or fielding team's fault
   final BowlingExtra? bowlingExtra;
   bool get isBowlingExtra => bowlingExtra != null;
+  int get bowlingExtraRuns => bowlingExtra != null ? bowlingExtra!.penalty : 0;
 
   /// An extra when the batters score runs without the bat touching the ball
-  final BattingExtraType? battingExtraType;
-  bool get isBattingExtra => battingExtraType != null;
-
-  final DateTime datetime;
+  final BattingExtra? battingExtra; // TODO Make this like BowlingExtra
+  bool get isBattingExtra => battingExtra != null;
+  int get battingExtraRuns => battingExtra != null ? battingExtra!.runs : 0;
 
   /// Total runs awarded to the Batting Team
-  int get runs {
-    // Runs due to extra, if any
-    if (isBowlingExtra) {
-      return runsScoredByBattingTeam + bowlingExtra!.penalty;
-    }
-    return runsScoredByBattingTeam;
-  }
+  int get runs => runsScoredByBatter + bowlingExtraRuns + battingExtraRuns;
 
   Ball({
     required super.index,
+    super.timestamp,
+    super.comment,
     required this.bowler,
     required this.batter,
-    required this.runsScoredByBattingTeam,
+    required this.runsScoredByBatter,
     required this.wicket,
     required this.bowlingExtra,
-    required this.battingExtraType,
-    required this.datetime,
+    required this.battingExtra,
   });
 
   // Ball.now({
@@ -223,37 +284,32 @@ class Ball extends InningsPost {
   // }) : datetime = DateTime.now();
 }
 
-class Score {
-  final int runs;
-  final int wickets;
-
-  Score(this.runs, this.wickets);
-
-  Score.zero()
-      : runs = 0,
-        wickets = 0;
-
-  Score add(Ball ball) {
-    final runs = this.runs + ball.runs;
-    if (ball.isWicket) {
-      return Score(runs, wickets + 1);
-    } else {
-      return Score(runs, wickets);
-    }
-  }
-}
-
 /// An Innings is a major component of a game of cricket where one team scores
 /// runs (batting team) while the other tries to take their wickets and prevent
 /// the flow of runs (bowling/fielding team)
 sealed class Innings {
-  /// The lineup that will be scoring the runs by batting
+  /// The team that will be scoring the runs by batting
+  final Team battingTeam;
   final Lineup battingLineup;
 
-  /// The lineup that will bowl and field to take wickets and prevent runs
+  /// The team that will bowl and field to take wickets and prevent runs
+  final Team bowlingTeam;
   final Lineup bowlingLineup;
 
-  Innings({required this.battingLineup, required this.bowlingLineup});
+  Innings({
+    required this.battingTeam,
+    required this.battingLineup,
+    required this.bowlingTeam,
+    required this.bowlingLineup,
+  }) : target = null;
+
+  Innings.target({
+    required this.battingTeam,
+    required this.battingLineup,
+    required this.bowlingTeam,
+    required this.bowlingLineup,
+    required this.target,
+  });
 
   /// A set of rules that determines how this innings will proceed
   GameRules get rules;
@@ -345,12 +401,37 @@ sealed class Innings {
   BowlerInnings? bowler;
 
   bool isForfeited = false;
+  bool isDeclared = false;
+
+  final int? target;
+  bool get hasTarget => target != null;
+  bool get isTargetAchieved => hasTarget && runs >= target!;
+}
+
+class UnlimitedOversInnings extends Innings {
+  final UnlimitedOversRules _rules;
+  UnlimitedOversInnings({
+    required super.battingTeam,
+    required super.battingLineup,
+    required super.bowlingTeam,
+    required super.bowlingLineup,
+    required UnlimitedOversRules rules,
+  }) : _rules = rules;
+
+  @override
+  UnlimitedOversRules get rules => _rules;
+
+  @override
+  // TODO: implement isInningsComplete
+  bool get isInningsComplete => throw UnimplementedError();
 }
 
 class LimitedOversInnings extends Innings {
   final LimitedOversRules _rules;
   LimitedOversInnings({
+    required super.battingTeam,
     required super.battingLineup,
+    required super.bowlingTeam,
     required super.bowlingLineup,
     required LimitedOversRules rules,
   }) : _rules = rules;
@@ -366,41 +447,27 @@ class LimitedOversInnings extends Innings {
       balls.last.index.ball == rules.ballsPerOver;
 
   @override
-  bool get isInningsComplete => isBowlingComplete;
-}
-
-class LimitedOversInningsWithTarget extends LimitedOversInnings {
-  /// Runs required by the batting team to win the game
-  final int target;
-
-  LimitedOversInningsWithTarget({
-    required super.battingLineup,
-    required super.bowlingLineup,
-    required super.rules,
-    required this.target,
-  });
-
-  bool get isTargetAchieved => runs >= target;
-
-  @override
   bool get isInningsComplete => isTargetAchieved || isBowlingComplete;
 }
 
-class UnlimitedOversInnings extends Innings {
-  final UnlimitedOversRules _rules;
-  UnlimitedOversInnings({
-    required super.battingLineup,
-    required super.bowlingLineup,
-    required UnlimitedOversRules rules,
-  }) : _rules = rules;
-
-  @override
-  UnlimitedOversRules get rules => _rules;
-
-  @override
-  // TODO: implement isInningsComplete
-  bool get isInningsComplete => throw UnimplementedError();
-}
+// class LimitedOversInningsWithTarget extends LimitedOversInnings {
+//   /// Runs required by the batting team to win the game
+//   final int target;
+//
+//   LimitedOversInningsWithTarget({
+//     required super.battingTeam,
+//     required super.battingLineup,
+//     required super.bowlingTeam,
+//     required super.bowlingLineup,
+//     required super.rules,
+//     required this.target,
+//   });
+//
+//   bool get isTargetAchieved => runs >= target;
+//
+//   @override
+//   bool get isInningsComplete => isTargetAchieved || isBowlingComplete;
+// }
 
 abstract class PlayerInnings {
   final posts = <InningsPost>[];
@@ -434,8 +501,8 @@ class BowlerInnings extends PlayerInnings with BowlingCalculations {
 
 mixin BattingCalculations {
   Iterable<Ball> get balls;
-  int get runs =>
-      balls.fold(0, (runs, ball) => runs + ball.runsScoredByBattingTeam);
+
+  int get runs => balls.fold(0, (runs, ball) => runs + ball.runsScoredByBatter);
 
   int get ballCount => balls.where((ball) => ball.bowlingExtra is! Wide).length;
 
@@ -446,9 +513,8 @@ mixin BowlingCalculations {
   Iterable<Ball> get balls;
   int get ballsPerOver;
 
-  int get runsConceded => balls
-      .where((b) => !b.isBattingExtra)
-      .fold(0, (sum, ball) => sum + ball.runs);
+  int get runsConceded => balls.fold(
+      0, (sum, ball) => sum + ball.runsScoredByBatter + ball.bowlingExtraRuns);
 
   int get ballCount => balls.where((b) => !b.isBowlingExtra).length;
 

@@ -23,7 +23,7 @@ class BallMini extends StatelessWidget {
             radius: 14,
             child: Center(
                 child: Text(
-              ball.runsScoredByBattingTeam.toString(),
+              ball.runsScoredByBatter.toString(),
               style: Theme.of(context).textTheme.bodySmall,
             )),
           ),

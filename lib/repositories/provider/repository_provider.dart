@@ -1,58 +1,76 @@
-import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
-import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/team/models/team_model.dart';
-import 'package:scorecard/repositories/generic_repository.dart';
+import 'package:scorecard/modules/venue/models/venue_model.dart';
+import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/player_repository.dart';
-import 'package:scorecard/repositories/ram_repository.dart';
-import 'package:scorecard/repositories/sql/handlers/sql_db_handler.dart';
+import 'package:scorecard/repositories/sql/db/game_rules_table.dart';
+import 'package:scorecard/repositories/sql/db/innings_table.dart';
+import 'package:scorecard/repositories/sql/db/lineups_table.dart';
+import 'package:scorecard/repositories/sql/db/matches_expanded_view.dart';
+import 'package:scorecard/repositories/sql/db/matches_table.dart';
+import 'package:scorecard/repositories/sql/db/players_table.dart';
+import 'package:scorecard/repositories/sql/db/posts_table.dart';
+import 'package:scorecard/repositories/sql/db/teams_table.dart';
+import 'package:scorecard/repositories/sql/db/venues_table.dart';
+import 'package:scorecard/repositories/sql/db/wickets_table.dart';
+import 'package:scorecard/repositories/team_repository.dart';
+import 'package:scorecard/repositories/venue_repository.dart';
 
 abstract class IRepositoryProvider {
-  IRepositoryProvider._();
+  Future<void> initialize();
 
-  void initialize();
-  // void register(IRepository repository);
-  // IRepository get(Type T);
-  // void deregister(IRepository repository);
-  IRepository<Player> getPlayerRepository();
-  IRepository<Team> getTeamRepository();
-  IRepository<CricketMatch> getCricketMatchRepository();
-  void shutdown();
+  TeamRepository getTeamRepository();
+  PlayerRepository getPlayerRepository();
+  VenueRepository getVenueRepository();
+  CricketMatchRepository getCricketMatchRepository();
 }
 
 class RepositoryProvider implements IRepositoryProvider {
-  RepositoryProvider._();
-  static final _instance = RepositoryProvider._();
-  factory RepositoryProvider() => _instance;
-
-  late final IRepository<Player> _playerRepository;
-  late final IRepository<Team> _teamRepository;
-  late final IRepository<CricketMatch> _cricketMatchRepository;
+  late final PlayerRepository _playerRepository;
+  late final TeamRepository _teamRepository;
+  late final VenueRepository _venueRepository;
+  late final CricketMatchRepository _cricketMatchRepository;
 
   @override
   Future<void> initialize() async {
-    await SQLDBHandler.instance.initialize();
+    // Instantiate all tables and views
+    final playersTable = PlayersTable();
+    final teamsTable = TeamsTable();
+    final venuesTable = VenuesTable();
+    final gameRulesTable = GameRulesTable();
+    final matchesTable = MatchesTable();
+    final matchesExpandedView = MatchesExpandedView();
+    final lineupsTable = LineupsTable();
+    final inningsTable = InningsTable();
+    final wicketsTable = WicketsTable();
+    final postsTable = PostsTable();
 
-    // Player Repository
-    _playerRepository = SQLPlayerRepository();
-    await _playerRepository.initialize();
-
-    // Team Repository
-    _teamRepository = RAMTeamRepository();
-    await _teamRepository.initialize();
-
-    // Cricket Match Repository
-    _cricketMatchRepository = RAMCricketMatchRepository();
-    await _cricketMatchRepository.initialize();
+    // Instantiate all repositories
+    _playerRepository = PlayerRepository(playersTable: playersTable);
+    _teamRepository = TeamRepository(teamsTable: teamsTable);
+    _venueRepository = VenueRepository(venuesTable: venuesTable);
+    _cricketMatchRepository = CricketMatchRepository(
+      cricketMatchesTable: matchesTable,
+      cricketMatchesExpandedView: matchesExpandedView,
+      gameRulesTable: gameRulesTable,
+      lineupsTable: lineupsTable,
+      inningsTable: inningsTable,
+      wicketsTable: wicketsTable,
+      postsTable: postsTable,
+    );
   }
 
-  @override
-  IRepository<Player> getPlayerRepository() => _playerRepository;
-  @override
-  IRepository<Team> getTeamRepository() => _teamRepository;
-  @override
-  IRepository<CricketMatch> getCricketMatchRepository() =>
-      _cricketMatchRepository;
+  RepositoryProvider._();
+  static final instance = RepositoryProvider._();
+  factory RepositoryProvider() => instance;
 
   @override
-  void shutdown() {}
+  CricketMatchRepository getCricketMatchRepository() => _cricketMatchRepository;
+
+  @override
+  getPlayerRepository() => _playerRepository;
+
+  @override
+  getTeamRepository() => _teamRepository;
+
+  @override
+  VenueRepository getVenueRepository() => _venueRepository;
 }

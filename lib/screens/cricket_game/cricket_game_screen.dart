@@ -61,8 +61,8 @@ class CricketGameScreen extends StatelessWidget {
                 onSetStrike: state is PlayBallState
                     ? (bi) => controller.setStrike(bi)
                     : null,
-                isFirstTeamBatting: controller.game.lineup1.team ==
-                    controller.game.currentInnings.battingLineup.team,
+                isFirstTeamBatting: controller.game.team1 ==
+                    controller.game.currentInnings.battingTeam,
                 onRetireBowler: (b) => controller.retireBowler(b),
                 // onRetireBatter: (b, r) => controller.retireBatter(b, r),
                 onPickBatter: () => _pickBatter(context),
@@ -116,13 +116,13 @@ class CricketGameScreen extends StatelessWidget {
           CricketGameScreenState state) =>
       switch (game) {
         LimitedOversGame() => LimitedOversScoreSection(
-            game.currentInnings is LimitedOversInningsWithTarget
+            !game.currentInnings.hasTarget
                 ? LimitedOversScoreFirstInningsState(
                     score: state.score,
                     team1: state.team1,
                     team2: state.team2,
                     currentIndex:
-                        state.latestPost?.index ?? const InningsIndex.zero(),
+                        state.latestPost?.index ?? const PostIndex.zero(),
                     oversToBowl: game.rules.oversPerInnings,
                     isFirstTeamBatting: state.isFirstTeamBatting,
                   )
@@ -131,10 +131,10 @@ class CricketGameScreen extends StatelessWidget {
                     team1: state.team1,
                     team2: state.team2,
                     currentIndex:
-                        state.latestPost?.index ?? const InningsIndex.zero(),
+                        state.latestPost?.index ?? const PostIndex.zero(),
                     oversToBowl: game.rules.oversPerInnings,
                     isFirstTeamBatting: state.isFirstTeamBatting,
-                    target: 0,
+                    target: game.currentInnings.target!,
                   ),
             onTap: () => controller.goScorecard(context),
           ),
@@ -376,19 +376,34 @@ sealed class CricketGameScreenState {
   // Balls
   final UnmodifiableListView<Ball> balls;
 
+  CricketGameScreenState._({
+    required this.score,
+    required this.latestPost,
+    required this.team1,
+    required this.team2,
+    required this.isFirstTeamBatting,
+    required this.rules,
+    required this.batter1,
+    required this.batter2,
+    required this.striker,
+    required this.bowler,
+    required this.balls,
+  });
+
   CricketGameScreenState(CricketGame game)
-      : score = game.currentInnings.score,
-        team1 = game.lineup1.team,
-        team2 = game.lineup2.team,
-        isFirstTeamBatting =
-            game.lineup1.team == game.currentInnings.battingLineup.team,
-        rules = game.currentInnings.rules,
-        latestPost = game.currentInnings.posts.lastOrNull,
-        batter1 = game.currentInnings.batter1,
-        batter2 = game.currentInnings.batter2,
-        striker = game.currentInnings.striker,
-        bowler = game.currentInnings.bowler,
-        balls = game.currentInnings.balls;
+      : this._(
+          score: game.currentInnings.score,
+          team1: game.team1,
+          team2: game.team2,
+          isFirstTeamBatting: game.team1 == game.currentInnings.battingTeam,
+          rules: game.currentInnings.rules,
+          latestPost: game.currentInnings.posts.lastOrNull,
+          batter1: game.currentInnings.batter1,
+          batter2: game.currentInnings.batter2,
+          striker: game.currentInnings.striker,
+          bowler: game.currentInnings.bowler,
+          balls: game.currentInnings.balls,
+        );
 }
 
 class PickBowlerState extends CricketGameScreenState {

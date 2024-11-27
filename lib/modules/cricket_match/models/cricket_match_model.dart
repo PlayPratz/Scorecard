@@ -35,13 +35,13 @@ class ScheduledCricketMatch extends CricketMatch {
   final GameRules rules;
 
   /// The date and time at which play will commence.
-  final DateTime datetime;
+  final DateTime startsAt;
 
   ScheduledCricketMatch({
     required super.id,
     required this.team1,
     required this.team2,
-    required this.datetime,
+    required this.startsAt,
     required this.venue,
     required this.rules,
   });
@@ -56,17 +56,17 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
   /// The toss that takes place right before the match/
   final Toss toss;
 
-  /// The lineup for [team1]
+  /// The first team's lineup
   final Lineup lineup1;
 
-  /// The lineup for [team2]
+  /// The second team's lineup
   final Lineup lineup2;
 
   InitializedCricketMatch({
     required super.id,
     required super.team1,
     required super.team2,
-    required super.datetime,
+    required super.startsAt,
     required super.venue,
     required super.rules,
     required this.toss,
@@ -83,12 +83,12 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
           id: match.id,
           team1: match.team1,
           team2: match.team2,
-          datetime: match.datetime,
+          startsAt: match.startsAt,
           venue: match.venue,
           rules: match.rules,
-          toss: toss,
           lineup1: lineup1,
           lineup2: lineup2,
+          toss: toss,
         );
 }
 
@@ -104,7 +104,7 @@ class OngoingCricketMatch extends InitializedCricketMatch {
     required super.id,
     required super.team1,
     required super.team2,
-    required super.datetime,
+    required super.startsAt,
     required super.venue,
     required super.rules,
     required super.toss,
@@ -120,7 +120,7 @@ class OngoingCricketMatch extends InitializedCricketMatch {
           id: match.id,
           team1: match.team1,
           team2: match.team2,
-          datetime: match.datetime,
+          startsAt: match.startsAt,
           venue: match.venue,
           rules: match.rules,
           toss: match.toss,
@@ -144,7 +144,7 @@ class CompletedCricketMatch extends OngoingCricketMatch {
     required super.id,
     required super.team1,
     required super.team2,
-    required super.datetime,
+    required super.startsAt,
     required super.venue,
     required super.rules,
     required super.toss,
@@ -170,6 +170,8 @@ class Toss {
 }
 
 sealed class CricketMatchResult {}
+
+sealed class UnlimitedOversMatchResult extends CricketMatchResult {}
 
 sealed class LimitedOversMatchResult extends CricketMatchResult {}
 
@@ -201,8 +203,6 @@ class TieResult extends LimitedOversMatchResult {
   TieResult({required this.team1, required this.team2});
 }
 
-sealed class UnlimitedOversMatchResult extends CricketMatchResult {}
-
 /// This might be confusing -- what's the difference between a [CricketMatch]
 /// and a [CricketGame]?
 ///
@@ -219,7 +219,10 @@ sealed class UnlimitedOversMatchResult extends CricketMatchResult {}
 /// play any sport. The name might be misleading for now, but if this app
 /// expands and starts to cater to multiple sports, it might make more sense.
 sealed class CricketGame {
+  final Team team1;
   final Lineup lineup1;
+
+  final Team team2;
   final Lineup lineup2;
 
   GameRules get rules;
@@ -227,20 +230,45 @@ sealed class CricketGame {
   List<Innings> get innings;
   Innings get currentInnings => innings.last;
 
-  int get team1runs => _getTeamRuns(lineup1.team);
-  int get team2runs => _getTeamRuns(lineup2.team);
+  // int get team1runs => _getTeamRuns(lineup1.team);
+  // int get team2runs => _getTeamRuns(lineup2.team);
+  //
+  // int _getTeamRuns(Team team) {
+  //   return innings.fold(0, (value, innings) {
+  //     if (innings.battingTeam.team == team) {
+  //       return value + innings.runs;
+  //     } else {
+  //       return value;
+  //     }
+  //   });
+  // }
 
-  int _getTeamRuns(Team team) {
-    return innings.fold(0, (value, innings) {
-      if (innings.battingLineup.team == team) {
-        return value + innings.runs;
-      } else {
-        return value;
-      }
-    });
-  }
+  CricketGame({
+    required this.team1,
+    required this.lineup1,
+    required this.team2,
+    required this.lineup2,
+  });
+}
 
-  CricketGame({required this.lineup1, required this.lineup2});
+/// Represents an Unlimited Overs game where both teams play across a
+/// pre-defined number of days before the match is called a draw unless one
+/// team manages to win.
+class UnlimitedOversGame extends CricketGame {
+  final UnlimitedOversRules _rules;
+  @override
+  UnlimitedOversRules get rules => _rules;
+
+  @override
+  List<UnlimitedOversInnings> innings = [];
+
+  UnlimitedOversGame({
+    required super.team1,
+    required super.lineup1,
+    required super.team2,
+    required super.lineup2,
+    required UnlimitedOversRules rules,
+  }) : _rules = rules;
 }
 
 /// Represents a Limited Overs game where each team bowls a pre-defined number
@@ -260,26 +288,10 @@ class LimitedOversGame extends CricketGame {
   LimitedOversInnings get currentInnings => innings.last;
 
   LimitedOversGame({
+    required super.team1,
     required super.lineup1,
+    required super.team2,
     required super.lineup2,
     required LimitedOversRules rules,
-  }) : _rules = rules;
-}
-
-/// Represents an Unlimited Overs game where both teams play across a
-/// pre-defined number of days before the match is called a draw unless one
-/// team manages to win.
-class UnlimitedOversGame extends CricketGame {
-  final UnlimitedOversRules _rules;
-  @override
-  UnlimitedOversRules get rules => _rules;
-
-  @override
-  List<UnlimitedOversInnings> innings = [];
-
-  UnlimitedOversGame({
-    required super.lineup1,
-    required super.lineup2,
-    required UnlimitedOversRules rules,
   }) : _rules = rules;
 }

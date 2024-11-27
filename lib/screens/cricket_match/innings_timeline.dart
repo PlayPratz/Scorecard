@@ -42,7 +42,7 @@ class InningsTimelineScreen extends StatelessWidget {
                           Padding(
                             padding:
                                 const EdgeInsets.only(right: 8.0, top: 8.0),
-                            child: Text(Stringify.inningsIndex(post.index),
+                            child: Text(Stringify.postIndex(post.index),
                                 textAlign: TextAlign.right),
                           ),
                           widget(post),

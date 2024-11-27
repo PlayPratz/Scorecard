@@ -82,42 +82,53 @@ class InitializeCricketMatchScreenController {
     _dispatchState();
   }
 
-  Lineup? _selectedLineup1;
-  set lineup1(Lineup lineup) {
-    _selectedLineup1 = lineup;
+  Player? _selectedCaptain1;
+  set selectedCaptain1(Player captain) {
+    _selectedCaptain1 = captain;
     _dispatchState();
   }
 
-  Lineup? _selectedLineup2;
+  Player? _selectedCaptain2;
+  set selectedCaptain2(Player captain) {
+    _selectedCaptain2 = captain;
+    _dispatchState();
+  }
 
-  // final selectedWinner = ValueNotifier<Team?>(null);
-  // final selectedTossChoice = ValueNotifier<TossChoice?>(null);
-  // final selectedLineup1 = ValueNotifier<Lineup?>(null);
-  // final selectedLineup2 = ValueNotifier<Lineup?>(null);
-  //
-  // InitializeCricketMatchScreenController() {
-  //   selectedWinner.addListener(_dispatchState);
-  //   selectedTossChoice.addListener(_dispatchState);
-  //   selectedLineup1.addListener(_dispatchState);
-  //   selectedLineup2.addListener(_dispatchState);
-  // }
+  final List<Player> _selectedPlayers1 = [];
+  final List<Player> _selectedPlayers2 = [];
 
-  // InitializeCricketMatchScreenState _deduceState() =>
-  //     InitializeCricketMatchScreenState(
-  //       selectedWinner: selectedWinner.value,
-  //       selectedTossChoice: selectedTossChoice.value,
-  //       lineup1: selectedLineup1.value,
-  //       lineup2: selectedLineup2.value,
-  //     );
+  void addToLineup1(List<Player> players) {
+    _selectedPlayers1.addAll(players);
+    _dispatchState();
+  }
+
+  void removeFromLineup1(Player player) {
+    _selectedPlayers1.remove(player);
+    _dispatchState();
+  }
+
+  void addToLineup2(List<Player> players) {
+    _selectedPlayers2.addAll(players);
+    _dispatchState();
+  }
+
+  void removeFromLineup2(Player player) {
+    _selectedPlayers2.remove(player);
+    _dispatchState();
+  }
+
+  void _dispatchState() => _streamController.add(_deduceState());
 
   InitializeCricketMatchScreenState _deduceState() =>
       InitializeCricketMatchScreenState(
-        selectedWinner: _selectedWinner,
-        selectedTossChoice: _selectedTossChoice,
-        lineup1: _selectedLineup1,
-        lineup2: _selectedLineup2,
         team1: match.team1,
         team2: match.team2,
+        selectedWinner: _selectedWinner,
+        selectedTossChoice: _selectedTossChoice,
+        selectedCaptain1: _selectedCaptain1,
+        lineup1: _selectedPlayers1,
+        selectedCaptain2: _selectedCaptain2,
+        lineup2: _selectedPlayers2,
       );
 
   bool get canInitializeMatch =>
@@ -129,28 +140,12 @@ class InitializeCricketMatchScreenController {
           "Attempted to initialize match before selecting options");
     }
 
-    final players1 = [
-      const Player(id: "1", name: "Pratik"),
-      const Player(id: "2", name: "Rahul"),
-      const Player(id: "3", name: "Dhruv"),
-      const Player(id: "4", name: "Sidhu"),
-      // const Player(id: "5", name: "Vignesh"),
-    ];
-
-    final players2 = [
-      const Player(id: "11", name: "Chaitanya"),
-      const Player(id: "12", name: "Rutash"),
-      const Player(id: "13", name: "Darren"),
-      const Player(id: "14", name: "Kyle"),
-      const Player(id: "15", name: "Calden"),
-    ];
-
-    final initializedMatch = _service.initializeCricketMatch(match,
-        toss: Toss(winner: _selectedWinner!, choice: _selectedTossChoice!),
-        lineup1: Lineup(
-            team: match.team1, players: players1, captain: players1.first),
-        lineup2: Lineup(
-            team: match.team2, players: players2, captain: players2.last));
+    final initializedMatch = _service.initializeCricketMatch(
+      match,
+      toss: Toss(winner: _selectedWinner!, choice: _selectedTossChoice!),
+      lineup1: Lineup(players: _selectedPlayers1, captain: _selectedCaptain1!),
+      lineup2: Lineup(players: _selectedPlayers2, captain: _selectedCaptain2!),
+    );
 
     Navigator.pushReplacement(
         context,
@@ -159,8 +154,6 @@ class InitializeCricketMatchScreenController {
                 CricketMatchScreenSwitcher(initializedMatch)));
   }
 
-  void _dispatchState() => _streamController.add(_deduceState());
-
   CricketMatchService get _service => CricketMatchService();
 }
 
@@ -168,19 +161,24 @@ class InitializeCricketMatchScreenState {
   final Team team1;
   final Team team2;
 
+  final Player? selectedCaptain1;
+  final List<Player> lineup1;
+
+  final Player? selectedCaptain2;
+  final List<Player> lineup2;
+
   final Team? selectedWinner;
   final TossChoice? selectedTossChoice;
-
-  final Lineup? lineup1;
-  final Lineup? lineup2;
 
   InitializeCricketMatchScreenState({
     required this.team1,
     required this.team2,
+    required this.selectedCaptain1,
+    required this.lineup1,
+    required this.selectedCaptain2,
+    required this.lineup2,
     required this.selectedWinner,
     required this.selectedTossChoice,
-    required this.lineup1,
-    required this.lineup2,
   });
 }
 

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
-import 'package:scorecard/repositories/generic_repository.dart';
 import 'package:scorecard/repositories/provider/repository_provider.dart';
+import 'package:scorecard/repositories/team_repository.dart';
 
 class TeamListScreen extends StatelessWidget {
   final void Function(Team)? onSelect;
@@ -83,11 +83,11 @@ class TeamListController {
   void fetchAll() {
     _streamController.add(TeamListLoadingState());
     _repository
-        .readAll()
+        .fetchAll()
         .then((teams) => _streamController.add(TeamListLoadedState(teams)));
   }
 
-  IRepository<Team> get _repository => RepositoryProvider().getTeamRepository();
+  TeamRepository get _repository => RepositoryProvider().getTeamRepository();
 }
 
 sealed class TeamListState {}

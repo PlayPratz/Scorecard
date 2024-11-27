@@ -203,7 +203,7 @@ class _BattingScorecardSection extends StatelessWidget {
           radius: 16,
           backgroundColor: color,
           child: Text(batterInnings.balls
-              .where((b) => b.runsScoredByBattingTeam == runs)
+              .where((b) => b.runsScoredByBatter == runs)
               .length
               .toString()),
         ),
@@ -228,7 +228,7 @@ class _BattingScorecardSection extends StatelessWidget {
     for (final ball
         in allExtraBalls.where((b) => b.isBattingExtra || b.isBowlingExtra)) {
       if (ball.isBattingExtra) {
-        byes += ball.runsScoredByBattingTeam;
+        byes += ball.runsScoredByBatter;
       }
       if (ball.isBowlingExtra) {
         noBalls += ball.bowlingExtra!.penalty;
@@ -330,7 +330,7 @@ class _FallOfWicketsSection extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8.0, vertical: 2.0),
-                  child: Text(Stringify.inningsIndex(wicketBall.index)),
+                  child: Text(Stringify.postIndex(wicketBall.index)),
                 ),
               ])
           ],

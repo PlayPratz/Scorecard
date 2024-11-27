@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/repositories/provider/repository_provider.dart';
 import 'package:scorecard/screens/home_screen.dart';
 
 /// Welcome to [Scorecard]! You must be new here. The architecture and structure
@@ -17,6 +16,8 @@ import 'package:scorecard/screens/home_screen.dart';
 ///
 /// [Repositories] are only for STORING and RETRIEVING DATA. They are
 /// essentially an abstraction of a database.
+///
+/// [Providers] TODO
 ///
 /// [Services] are STATELESS classes that perform major Business Logic
 /// operations. They are initialized once and used throughout the app. Services

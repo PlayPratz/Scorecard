@@ -37,7 +37,7 @@ class LimitedOversScoreSection extends StatelessWidget {
 
   List<Widget> row1(BuildContext context) => [
         Text(
-          state.team1.name.toUpperCase(),
+          state.team1.short.toUpperCase(),
           style: Theme.of(context).textTheme.titleSmall,
           textAlign: TextAlign.right,
         ),
@@ -55,7 +55,7 @@ class LimitedOversScoreSection extends StatelessWidget {
             ),
           ),
         ),
-        Text(state.team2.name.toUpperCase(),
+        Text(state.team2.short.toUpperCase(),
             style: Theme.of(context).textTheme.titleSmall),
       ];
 
@@ -80,7 +80,7 @@ sealed class LimitedOversScoreState {
   final Team team1;
   final Team team2;
 
-  final InningsIndex currentIndex;
+  final PostIndex currentIndex;
   final int oversToBowl;
 
   final bool isFirstTeamBatting;
@@ -173,7 +173,7 @@ class _BowlingTeamTile extends StatelessWidget {
   final int totalOvers;
 
   final Color color;
-  final InningsIndex currentIndex;
+  final PostIndex currentIndex;
 
   final bool isLeftAligned;
 

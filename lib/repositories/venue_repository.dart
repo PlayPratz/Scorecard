@@ -8,8 +8,12 @@ class VenueRepository {
   VenueRepository({required this.venuesTable});
 
   Future<void> save(Venue venue, {bool update = true}) async {
-    final entity = EntityMappers.venue(venue);
+    final entity = EntityMappers.repackVenue(venue);
     await venuesTable.create(entity);
+  }
+
+  Future<Venue> fetchById(String id) async {
+    final entity = EntityMappers
   }
 
   Future<Iterable<Venue>> fetchAll() async {

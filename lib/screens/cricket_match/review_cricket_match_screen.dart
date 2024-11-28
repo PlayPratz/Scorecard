@@ -8,29 +8,29 @@ import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/screens/cricket_match/cricket_match_screen_switcher.dart';
 
-class ReviewCricketMatchScreen extends StatelessWidget {
-  final ReviewCricketMatchScreenController controller;
-  const ReviewCricketMatchScreen(this.controller, {super.key});
+class ReviewCricketGameScreen extends StatelessWidget {
+  final ReviewCricketGameScreenController controller;
+  const ReviewCricketGameScreen(this.controller, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    final match = controller.match;
+    final game = controller.game;
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: ListView(
           children: [
-            _TossPreviewSection(match.toss),
+            _TossPreviewSection(game.match.toss),
             const SizedBox(height: 16),
             _MatchupPreviewSection(
-              team1: match.team1,
-              lineup1: match.lineup1,
-              team2: match.team2,
-              lineup2: match.lineup2,
+              team1: game.team1,
+              lineup1: game.lineup1,
+              team2: game.team2,
+              lineup2: game.lineup2,
             ),
             const SizedBox(height: 16),
-            _GameRulesPreviewSection(match.rules),
+            _GameRulesPreviewSection(game.rules),
           ],
         ),
       ),
@@ -50,13 +50,13 @@ class ReviewCricketMatchScreen extends StatelessWidget {
   }
 }
 
-class ReviewCricketMatchScreenController {
-  final InitializedCricketMatch match;
+class ReviewCricketGameScreenController {
+  final CricketGame game;
 
-  ReviewCricketMatchScreenController(this.match);
+  ReviewCricketGameScreenController(this.game);
 
   void onCommenceMatch(BuildContext context) {
-    final ongoingMatch = _service.commenceCricketMatch(match);
+    final ongoingMatch = _service.commenceCricketGame(game);
 
     Navigator.pushReplacement(
         context,

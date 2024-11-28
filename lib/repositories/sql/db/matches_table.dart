@@ -4,13 +4,13 @@ import 'package:scorecard/repositories/sql/keys.dart';
 
 class MatchesEntity implements IEntity {
   final String id;
+  final int type;
   final int stage;
   final String team1_id;
   final String team2_id;
   final String venue_id;
   final DateTime starts_at;
   final int game_rules_id;
-  final int game_rules_type;
   final String? toss_winner_id;
   final int? toss_choice;
   final int? result_type;
@@ -22,13 +22,13 @@ class MatchesEntity implements IEntity {
 
   MatchesEntity({
     required this.id,
+    required this.type,
     required this.stage,
     required this.team1_id,
     required this.team2_id,
     required this.venue_id,
     required this.starts_at,
     required this.game_rules_id,
-    required this.game_rules_type,
     this.toss_winner_id,
     this.toss_choice,
     this.result_type,
@@ -133,13 +133,13 @@ class MatchesEntity implements IEntity {
   MatchesEntity.deserialize(Map<String, Object?> map)
       : this(
           id: map["id"] as String,
+          type: map["type"] as int,
           stage: map["stage"] as int,
           team1_id: map["team1_id"] as String,
           team2_id: map["team2_id"] as String,
           venue_id: map["venue_id"] as String,
           starts_at: map["starts_at"] as DateTime,
           game_rules_id: map["game_rules_id"] as int,
-          game_rules_type: map["game_rules_type"] as int,
           toss_winner_id: map["toss_winner_id"] as String?,
           toss_choice: map["toss_choice"] as int?,
           result_type: map["result_type"] as int?,
@@ -153,13 +153,13 @@ class MatchesEntity implements IEntity {
   @override
   Map<String, Object?> serialize() => {
         "id": id,
+        "type": type,
         "stage": stage,
         "team1_id": team1_id,
         "team2_id": team2_id,
         "venue_id": venue_id,
         "starts_at": starts_at,
         "game_rules_id": game_rules_id,
-        "game_rules_type": game_rules_type,
         "toss_winner_id": toss_winner_id,
         "toss_choice_id": toss_choice,
         "result_type": result_type,

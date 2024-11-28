@@ -57,10 +57,10 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
   final Toss toss;
 
   /// The first team's lineup
-  final Lineup lineup1;
+  // final Lineup lineup1;
 
   /// The second team's lineup
-  final Lineup lineup2;
+  // final Lineup lineup2;
 
   InitializedCricketMatch({
     required super.id,
@@ -70,15 +70,15 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
     required super.venue,
     required super.rules,
     required this.toss,
-    required this.lineup1,
-    required this.lineup2,
+    // required this.lineup1,
+    // required this.lineup2,
   });
 
   InitializedCricketMatch.fromScheduled(
     ScheduledCricketMatch match, {
     required Toss toss,
-    required Lineup lineup1,
-    required Lineup lineup2,
+    // required Lineup lineup1,
+    // required Lineup lineup2,
   }) : this(
           id: match.id,
           team1: match.team1,
@@ -86,8 +86,8 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
           startsAt: match.startsAt,
           venue: match.venue,
           rules: match.rules,
-          lineup1: lineup1,
-          lineup2: lineup2,
+          // lineup1: lineup1,
+          // lineup2: lineup2,
           toss: toss,
         );
 }
@@ -98,7 +98,7 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
 /// contains Head, it's an ongoing match. No, I'm not salty about 19 Nov 2023!
 class OngoingCricketMatch extends InitializedCricketMatch {
   /// The game that is played between the two teams, as it happens.
-  final CricketGame game;
+  // final CricketGame game;
 
   OngoingCricketMatch({
     required super.id,
@@ -108,15 +108,13 @@ class OngoingCricketMatch extends InitializedCricketMatch {
     required super.venue,
     required super.rules,
     required super.toss,
-    required super.lineup1,
-    required super.lineup2,
-    required this.game,
+    // required super.lineup1,
+    // required super.lineup2,
+    // required this.game,
   });
 
-  OngoingCricketMatch.fromInitialized(
-    InitializedCricketMatch match, {
-    required CricketGame game,
-  }) : this(
+  OngoingCricketMatch.fromInitialized(InitializedCricketMatch match)
+      : this(
           id: match.id,
           team1: match.team1,
           team2: match.team2,
@@ -124,9 +122,9 @@ class OngoingCricketMatch extends InitializedCricketMatch {
           venue: match.venue,
           rules: match.rules,
           toss: match.toss,
-          lineup1: match.lineup1,
-          lineup2: match.lineup2,
-          game: game,
+          // lineup1: match.lineup1,
+          // lineup2: match.lineup2,
+          // game: game,
         );
 }
 
@@ -148,9 +146,9 @@ class CompletedCricketMatch extends OngoingCricketMatch {
     required super.venue,
     required super.rules,
     required super.toss,
-    required super.lineup1,
-    required super.lineup2,
-    required super.game,
+    // required super.lineup1,
+    // required super.lineup2,
+    // required super.game,
     required this.result,
     required this.playerOfTheMatch,
   });
@@ -210,22 +208,27 @@ class TieResult extends LimitedOversMatchResult {
 /// the actual, ball-by-ball progression of the game. The latter is what
 /// [CricketGame] handles.
 ///
-/// Once a match becomes an [OngoingCricketMatch], it contains a `game` object
-/// that represents the ball-by-ball, moment-by-moment progression of a
-/// Cricket Match.
+/// Once a match becomes an [InitializedCricketMatch], it contains a `game` is
+/// created which contains the lineup of each team. Once progressed to
+/// [OngoingCricketMatch], it also contains the the ball-by-ball,
+/// moment-by-moment progression of a Cricket Match.
 ///
 /// The idea is that [CricketMatch] doesn't really have anything to do with
-/// Cricket, it's more of a Match between two teams. They could technically
-/// play any sport. The name might be misleading for now, but if this app
-/// expands and starts to cater to multiple sports, it might make more sense.
+/// Cricket, it's more of a Match Up between two teams. A Cricket Game contains
+/// a lot of heavy data and is loaded only once the user explicitly opens that
+/// Cricket Game.
 sealed class CricketGame {
-  final Team team1;
+  final InitializedCricketMatch match;
+
+  // final Team team1;
+  Team get team1 => match.team1;
   final Lineup lineup1;
 
-  final Team team2;
+  // final Team team2;
+  Team get team2 => match.team2;
   final Lineup lineup2;
 
-  GameRules get rules;
+  GameRules get rules => match.rules;
 
   List<Innings> get innings;
   Innings get currentInnings => innings.last;
@@ -244,31 +247,51 @@ sealed class CricketGame {
   // }
 
   CricketGame({
-    required this.team1,
+    required this.match,
     required this.lineup1,
-    required this.team2,
     required this.lineup2,
   });
+
+  factory CricketGame.auto(
+    InitializedCricketMatch match, {
+    // required InitializedCricketMatch match,
+    required Lineup lineup1,
+    required Lineup lineup2,
+  }) =>
+      switch (match.rules) {
+        UnlimitedOversRules() => UnlimitedOversGame._(
+            match: match, lineup1: lineup1, lineup2: lineup2),
+        LimitedOversRules() =>
+          LimitedOversGame._(match: match, lineup1: lineup1, lineup2: lineup2),
+      };
+
+  // CricketGame.of(
+  //   InitializedCricketMatch cricketMatch, {
+  //   required Lineup lineup1,
+  //   required Lineup lineup2,
+  // }) : this(
+  //         match: cricketMatch,
+  //         lineup1: lineup1,
+  //         lineup2: lineup2,
+  //       );
 }
 
 /// Represents an Unlimited Overs game where both teams play across a
 /// pre-defined number of days before the match is called a draw unless one
 /// team manages to win.
 class UnlimitedOversGame extends CricketGame {
-  final UnlimitedOversRules _rules;
   @override
-  UnlimitedOversRules get rules => _rules;
+  UnlimitedOversRules get rules => match.rules as UnlimitedOversRules;
+  // final UnlimitedOversRules _rules;
 
   @override
   List<UnlimitedOversInnings> innings = [];
 
-  UnlimitedOversGame({
-    required super.team1,
+  UnlimitedOversGame._({
+    required super.match,
     required super.lineup1,
-    required super.team2,
     required super.lineup2,
-    required UnlimitedOversRules rules,
-  }) : _rules = rules;
+  });
 }
 
 /// Represents a Limited Overs game where each team bowls a pre-defined number
@@ -277,21 +300,16 @@ class UnlimitedOversGame extends CricketGame {
 ///
 /// Examples: T20, ODI
 class LimitedOversGame extends CricketGame {
-  final LimitedOversRules _rules;
   @override
-  LimitedOversRules get rules => _rules;
+  LimitedOversRules get rules => match.rules as LimitedOversRules;
+  // final LimitedOversRules _rules;
 
   @override
   final List<LimitedOversInnings> innings = [];
 
-  @override
-  LimitedOversInnings get currentInnings => innings.last;
-
-  LimitedOversGame({
-    required super.team1,
+  LimitedOversGame._({
+    required super.match,
     required super.lineup1,
-    required super.team2,
     required super.lineup2,
-    required LimitedOversRules rules,
-  }) : _rules = rules;
+  });
 }

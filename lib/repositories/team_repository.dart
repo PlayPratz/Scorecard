@@ -8,7 +8,7 @@ class TeamRepository {
   TeamRepository({required this.teamsTable});
 
   Future<void> save(Team team, {bool update = true}) async {
-    final entity = EntityMappers.team(team);
+    final entity = EntityMappers.repackTeam(team);
     if (update) {
       await teamsTable.update(entity);
     } else {

@@ -29,44 +29,62 @@ class CricketMatchRepository {
       required this.postsTable});
 
   Future<void> saveGameRules(GameRules rules) async {
-    final entity = EntityMappers.gameRules(rules);
+    final entity = EntityMappers.repackGameRules(rules);
     if (rules.id == null) {
-      // Insert
+      // Insert the GameRules
       await gameRulesTable.create(entity);
     } else {
-      // Update
+      // Update the GameRules
       await gameRulesTable.update(entity);
     }
   }
 
   Future<void> scheduleCricketMatch(ScheduledCricketMatch match) async {
-    final entity = EntityMappers.match(match);
+    // Create match entry in DB
+    final entity = EntityMappers.repackMatch(match);
+
+    // Insert the match
     await cricketMatchesTable.create(entity);
   }
 
-  Future<void> initializeCricketMatch(InitializedCricketMatch match) async {
-    final entity = EntityMappers.match(match);
+  Future<void> initializeCricketGame(CricketGame game) async {
+    // Update match entry in DB (stage = 2, toss)
+    final entity = EntityMappers.repackMatch(game.match);
+
+    // Update the match
     await cricketMatchesTable.update(entity);
 
-    final lineup1Entity = EntityMappers.lineup(match.team1, matchId: match.id);
+    // Add lineups to DB
+    final lineup1Entity =
+        EntityMappers.lineup(game.match.team1, matchId: match.id);
     final lineup2Entity = EntityMappers.lineup(match.team1, matchId: match.id);
     await lineupsTable.create([...lineup1Entity, ...lineup2Entity]);
   }
 
-  Future<void> commenceCricketMatch(OngoingCricketMatch match) async {
-    final inningsEntity = EntityMappers.innings(match.game.innings.first,
-        matchId: match.id, inningsNumber: 1);
-    inningsTable.create(inningsEntity);
+  Future<void> commenceCricketGame(CricketGame game) async {
+    // Update match entry in DB (stage = 3)
+    final entity = EntityMappers.repackMatch(game.match);
 
-    // Update the stage of the cricket match
-    final entity = EntityMappers.match(match);
+    // Update the match
     cricketMatchesTable.update(entity);
   }
 
-  Future<void> postToMatch(
-      OngoingCricketMatch match, Innings innings, InningsPost post) async {
+  Future<void> putLastInningsOfGame(CricketGame game) async {
+    // Puts the last innings of the given game in the DB
+    final innings = game.innings.last;
+    final inningsEntity = EntityMappers.innings(innings,
+        matchId: game.match.id, inningsNumber: innings.inningsNumber);
+
+    // Insert the Innings
+    inningsTable.create(inningsEntity);
+  }
+
+  Future<void> postToGame(
+      CricketGame game, Innings innings, InningsPost post) async {
     final postEntity = EntityMappers.limitedOversPost(post,
-        matchId: match.id, inningsNumber: match.game.innings.indexOf(innings));
+        matchId: game.match.id, inningsNumber: game.innings.indexOf(innings));
+
+    // Insert the Post
     postsTable.create(postEntity);
   }
 }

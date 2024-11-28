@@ -288,6 +288,9 @@ class Ball extends InningsPost {
 /// runs (batting team) while the other tries to take their wickets and prevent
 /// the flow of runs (bowling/fielding team)
 sealed class Innings {
+  /// The ordinal number of the innings in the Cricket Game
+  final int inningsNumber;
+
   /// The team that will be scoring the runs by batting
   final Team battingTeam;
   final Lineup battingLineup;
@@ -297,6 +300,7 @@ sealed class Innings {
   final Lineup bowlingLineup;
 
   Innings({
+    required this.inningsNumber,
     required this.battingTeam,
     required this.battingLineup,
     required this.bowlingTeam,
@@ -304,6 +308,7 @@ sealed class Innings {
   }) : target = null;
 
   Innings.target({
+    required this.inningsNumber,
     required this.battingTeam,
     required this.battingLineup,
     required this.bowlingTeam,
@@ -411,6 +416,7 @@ sealed class Innings {
 class UnlimitedOversInnings extends Innings {
   final UnlimitedOversRules _rules;
   UnlimitedOversInnings({
+    required super.inningsNumber,
     required super.battingTeam,
     required super.battingLineup,
     required super.bowlingTeam,
@@ -429,6 +435,7 @@ class UnlimitedOversInnings extends Innings {
 class LimitedOversInnings extends Innings {
   final LimitedOversRules _rules;
   LimitedOversInnings({
+    required super.inningsNumber,
     required super.battingTeam,
     required super.battingLineup,
     required super.bowlingTeam,

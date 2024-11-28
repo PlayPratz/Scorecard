@@ -29,71 +29,52 @@ class CricketMatchService {
     return match;
   }
 
-  InitializedCricketMatch initializeCricketMatch(
+  CricketGame initializeCricketGame(
     ScheduledCricketMatch scheduledMatch, {
     required Toss toss,
     required Lineup lineup1,
     required Lineup lineup2,
   }) {
-    final match = InitializedCricketMatch.fromScheduled(scheduledMatch,
-        toss: toss, lineup1: lineup1, lineup2: lineup2);
+    final match =
+        InitializedCricketMatch.fromScheduled(scheduledMatch, toss: toss);
+
+    final CricketGame game =
+        CricketGame.auto(match, lineup1: lineup1, lineup2: lineup2);
 
     // Update match in repository
-    _repository.initializeCricketMatch(match);
+    _repository.initializeCricketGame(game);
 
-    return match;
+    return game;
   }
 
-  OngoingCricketMatch commenceCricketMatch(
-      InitializedCricketMatch initializedMatch) {
-    final rules = initializedMatch.rules;
-    final CricketGame game = switch (rules) {
-      LimitedOversRules() => LimitedOversGame(
-          rules: rules,
-          team1: initializedMatch.team1,
-          lineup1: initializedMatch.lineup1,
-          team2: initializedMatch.team2,
-          lineup2: initializedMatch.lineup2,
-        ),
-      UnlimitedOversRules() => UnlimitedOversGame(
-          rules: rules,
-          team1: initializedMatch.team1,
-          lineup1: initializedMatch.lineup1,
-          team2: initializedMatch.team2,
-          lineup2: initializedMatch.lineup2,
-        )
-    };
+  void commenceCricketGame(CricketGame game) {
+    // Update match in repository
+    _repository.commenceCricketGame(game);
 
-    final match =
-        OngoingCricketMatch.fromInitialized(initializedMatch, game: game);
-
+    final match = game.match;
     if (match.toss.winner == match.team1 &&
             match.toss.choice == TossChoice.bat ||
         match.toss.winner == match.team2 &&
             match.toss.choice == TossChoice.field) {
-      nextInnings(
+      _startFirstInningsInGame(
         game,
         battingTeam: match.team1,
-        battingLineup: match.lineup1,
+        battingLineup: game.lineup1,
         bowlingTeam: match.team2,
-        bowlingLineup: match.lineup2,
+        bowlingLineup: game.lineup2,
       );
     } else {
-      nextInnings(
+      _startFirstInningsInGame(
         game,
         battingTeam: match.team2,
-        battingLineup: match.lineup2,
+        battingLineup: game.lineup2,
         bowlingTeam: match.team1,
-        bowlingLineup: match.lineup1,
+        bowlingLineup: game.lineup1,
       );
     }
-
-    _repository.commenceCricketMatch(match);
-
-    return match;
   }
 
-  void nextInnings(
+  void _startFirstInningsInGame(
     CricketGame game, {
     required Team battingTeam,
     required Lineup battingLineup,
@@ -102,6 +83,7 @@ class CricketMatchService {
   }) {
     final Innings innings = switch (game) {
       LimitedOversGame() => LimitedOversInnings(
+          inningsNumber: _getNextInningsNumber(game),
           rules: game.rules,
           battingTeam: battingTeam,
           battingLineup: battingLineup,
@@ -109,6 +91,50 @@ class CricketMatchService {
           bowlingLineup: bowlingLineup,
         ),
       UnlimitedOversGame() => UnlimitedOversInnings(
+          inningsNumber: _getNextInningsNumber(game),
+          rules: game.rules,
+          battingTeam: battingTeam,
+          battingLineup: battingLineup,
+          bowlingTeam: bowlingTeam,
+          bowlingLineup: bowlingLineup,
+        ),
+    };
+    game.innings.add(innings);
+    _repository.putLastInningsOfGame(game);
+  }
+
+  void startNextInningsInGame(CricketGame game,
+      {required bool shouldSwitchRoles}) {
+    late final Team battingTeam;
+    late final Lineup battingLineup;
+    late final Team bowlingTeam;
+    late final Lineup bowlingLineup;
+
+    final previousInnings = game.innings.last;
+
+    if (shouldSwitchRoles) {
+      battingTeam = previousInnings.bowlingTeam;
+      battingLineup = previousInnings.bowlingLineup;
+      bowlingTeam = previousInnings.battingTeam;
+      bowlingLineup = previousInnings.battingLineup;
+    } else {
+      battingTeam = previousInnings.battingTeam;
+      battingLineup = previousInnings.battingLineup;
+      bowlingTeam = previousInnings.bowlingTeam;
+      bowlingLineup = previousInnings.bowlingLineup;
+    }
+
+    final Innings innings = switch (game) {
+      LimitedOversGame() => LimitedOversInnings(
+          inningsNumber: _getNextInningsNumber(game),
+          rules: game.rules,
+          battingTeam: battingTeam,
+          battingLineup: battingLineup,
+          bowlingTeam: bowlingTeam,
+          bowlingLineup: bowlingLineup,
+        ),
+      UnlimitedOversGame() => UnlimitedOversInnings(
+          inningsNumber: _getNextInningsNumber(game),
           rules: game.rules,
           battingTeam: battingTeam,
           battingLineup: battingLineup,
@@ -118,6 +144,8 @@ class CricketMatchService {
     };
     game.innings.add(innings);
   }
+
+  int _getNextInningsNumber(CricketGame game) => game.innings.length + 1;
 
   CricketMatchRepository get _repository =>
       RepositoryProvider().getCricketMatchRepository();

@@ -95,10 +95,24 @@ class InningsService {
   /// Call this function when a new batter walks out to bat.
   BatterInnings _createBatterInnings(Innings innings, Player batter) {
     final batterInnings = BatterInnings(batter);
-    innings.batters.add(batterInnings);
+    innings.batters[batter] = batterInnings;
     return batterInnings;
   }
 
+  /// Fetches the [BatterInnings] of the given [player]. Returns `null`
+  /// if the player hasn't batted.
+  BatterInnings? getBatterInningsOfPlayer(Innings innings, Player player) {
+    final batterInnings = innings.batters[player];
+    return batterInnings;
+  }
+
+  /// Deletes the [BatterInnings] of the given [player].
+  BatterInnings? deleteBatterInningsOfPlayer(Innings innings, Player player) {
+    final batterInnings = innings.batters.remove(player);
+    return batterInnings;
+  }
+
+  /// Retires the [BatterInnings] from the innings.
   void retireBatterInnings(
       Innings innings, BatterInnings batterInnings, RetiredBatter retired) {
     batterInnings.retired = retired;
@@ -112,32 +126,7 @@ class InningsService {
     );
   }
 
-  /// Fetches the [BatterInnings] of the given [player]. Returns `null`
-  /// if the player hasn't batted.
-  BatterInnings? getBatterInningsOfPlayer(Innings innings, Player player) {
-    try {
-      final batterInnings = innings.batters
-          .lastWhere((batterInnings) => batterInnings.player == player);
-      return batterInnings;
-    } on StateError {
-      return null;
-    }
-  }
-
-  /// Deletes the LAST [BatterInnings] of the given [player].
-  BatterInnings? deleteBatterInningsOfPlayer(Innings innings, Player player) {
-    final batterInnings = getBatterInningsOfPlayer(innings, player);
-    if (batterInnings != null) {
-      innings.batters.remove(batterInnings);
-    }
-    return batterInnings;
-  }
-
-  /// Deletes the LAST [BatterInnings] from the given [innings]
-  // void deleteLastBatterInnings(Innings innings) {
-  //   if (innings.batters.isNotEmpty) innings.batters.removeLast();
-  // }
-
+  /// Adds the given [bowler] to the [innings]
   void nextBowler(Innings innings, Player bowler) {
     // Find or create [BowlerInnings] for player
     final bowlerInnings = getBowlerInningsOfPlayer(innings, bowler) ??
@@ -169,7 +158,18 @@ class InningsService {
   BowlerInnings _createBowlerInnings(Innings innings, Player bowler) {
     final bowlerInnings =
         BowlerInnings(bowler, ballsPerOver: innings.rules.ballsPerOver);
-    innings.bowlers.add(bowlerInnings);
+    innings.bowlers[bowler] = bowlerInnings;
+    return bowlerInnings;
+  }
+
+  BowlerInnings? getBowlerInningsOfPlayer(Innings innings, Player player) {
+    final bowlerInnings = innings.bowlers[player];
+    return bowlerInnings;
+  }
+
+  /// Deletes the last bowler innings of the player
+  BowlerInnings? deleteBowlerInningsOfPlayer(Innings innings, Player player) {
+    final bowlerInnings = innings.bowlers.remove(player);
     return bowlerInnings;
   }
 
@@ -184,29 +184,6 @@ class InningsService {
         // retired: retired,
       ),
     );
-  }
-
-  BowlerInnings? getBowlerInningsOfPlayer(Innings innings, Player player) {
-    try {
-      final bowlerInnings = innings.bowlers
-          .lastWhere((bowlerInnings) => bowlerInnings.player == player);
-      return bowlerInnings;
-    } on StateError {
-      return null;
-    }
-  }
-
-  /// Deletes the last bowler innings of the player
-  BowlerInnings? deleteBowlerInningsOfPlayer(Innings innings, Player player) {
-    final bowlerInnings = getBowlerInningsOfPlayer(innings, player);
-    if (bowlerInnings != null) {
-      innings.bowlers.remove(bowlerInnings);
-    }
-    return bowlerInnings;
-  }
-
-  void deleteLastBowlerInnings(Innings innings) {
-    innings.bowlers.removeLast();
   }
 
   void play(

@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
@@ -299,6 +300,9 @@ sealed class Innings {
   final Team bowlingTeam;
   final Lineup bowlingLineup;
 
+  /// The game that this Innings is a part of
+  // final CricketGame game;
+
   Innings({
     required this.inningsNumber,
     required this.battingTeam,
@@ -380,10 +384,14 @@ sealed class Innings {
   bool get isInningsComplete;
 
   /// All batters that walk out to the pitch
-  List<BatterInnings> batters = [];
+  ///
+  /// Since a player can bat only once in an innings, a map is used.
+  /// The given literal produced a [LinkedHashMap] so insertion order is
+  /// preserved.
+  Map<Player, BatterInnings> batters = {};
 
   /// All bowlers that roll their arms
-  List<BowlerInnings> bowlers = [];
+  Map<Player, BowlerInnings> bowlers = {};
 
   /// A batter who is on the pitch
   BatterInnings? batter1;
@@ -509,11 +517,13 @@ class BowlerInnings extends PlayerInnings with BowlingCalculations {
 mixin BattingCalculations {
   Iterable<Ball> get balls;
 
-  int get runs => balls.fold(0, (runs, ball) => runs + ball.runsScoredByBatter);
+  int get runsScored =>
+      balls.fold(0, (runs, ball) => runs + ball.runsScoredByBatter);
 
-  int get ballCount => balls.where((ball) => ball.bowlingExtra is! Wide).length;
+  int get ballsFaced =>
+      balls.where((ball) => ball.bowlingExtra is! Wide).length;
 
-  double get strikeRate => 100 * runs / ballCount;
+  double get strikeRate => 100 * runsScored / ballsFaced;
 }
 
 mixin BowlingCalculations {
@@ -523,15 +533,17 @@ mixin BowlingCalculations {
   int get runsConceded => balls.fold(
       0, (sum, ball) => sum + ball.runsScoredByBatter + ball.bowlingExtraRuns);
 
-  int get ballCount => balls.where((b) => !b.isBowlingExtra).length;
+  int get ballsBowled => balls.where((b) => !b.isBowlingExtra).length;
 
-  double get economy => runsConceded / ballCount * ballsPerOver;
+  int get maidensBowled => -1; //TODO
 
-  double get average => runsConceded / wicketCount;
+  double get economy => runsConceded / ballsBowled * ballsPerOver;
+  double get average => runsConceded / wicketsTaken;
+  double get strikeRate => ballsBowled / wicketsTaken;
 
   Iterable<Ball> get wickets =>
       balls.where((ball) => _isBowlerWicket(ball.wicket));
-  int get wicketCount => wickets.length;
+  int get wicketsTaken => wickets.length;
 
   bool _isBowlerWicket(Wicket? wicket) => switch (wicket) {
         BowledWicket() ||

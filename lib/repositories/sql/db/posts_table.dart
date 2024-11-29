@@ -2,6 +2,7 @@ import 'package:scorecard/repositories/sql/db/sql_crud.dart';
 import 'package:scorecard/repositories/sql/keys.dart';
 
 class PostsEntity implements IEntity {
+  // Common
   final int? id;
   final String match_id;
   final int innings_number;
@@ -13,36 +14,23 @@ class PostsEntity implements IEntity {
   final int type;
   final String? bowler_id;
   final String? batter_id;
+
+  // Ball specific
   final int? runs_scored;
-  final int? wicket_id;
   final int? bowling_extra_type;
   final int? bowling_extra_penalty;
   final int? batting_extra_type;
   final int? batting_extra_runs;
-  final String? previous_player_id;
-  final String? comment;
+  // Wicket
+  final int? wicket_type;
+  final String? wicket_batter_id;
+  final String? wicket_bowler_id;
+  final String? wicket_fielder_id;
 
-  // PostsEntity._({
-  //   required this.id,
-  //   required this.match_id,
-  //   required this.innings_number,
-  //   required this.day_number,
-  //   required this.session_number,
-  //   required this.index_over,
-  //   required this.index_ball,
-  //   required this.timestamp,
-  //   required this.type,
-  //   required this.bowler_id,
-  //   required this.batter_id,
-  //   required this.runs_scored,
-  //   required this.wicket_id,
-  //   required this.bowling_extra_type,
-  //   required this.bowling_extra_penalty,
-  //   required this.batting_extra_type,
-  //   required this.batting_extra_runs,
-  //   required this.previous_player_id,
-  //   required this.comment,
-  // });
+  // NextBatter/NextBowler specific
+  final String? previous_player_id;
+
+  final String? comment;
 
   PostsEntity({
     this.id,
@@ -57,49 +45,17 @@ class PostsEntity implements IEntity {
     this.bowler_id,
     this.batter_id,
     this.runs_scored,
-    this.wicket_id,
     this.bowling_extra_type,
     this.bowling_extra_penalty,
     this.batting_extra_type,
     this.batting_extra_runs,
     this.previous_player_id,
+    this.wicket_type,
+    this.wicket_batter_id,
+    this.wicket_bowler_id,
+    this.wicket_fielder_id,
     this.comment,
   });
-
-  // PostsEntity._({
-  //   this.id,
-  //   required this.match_id,
-  //   required this.innings_number,
-  //   this.day_number,
-  //   this.session_number,
-  //   required this.index_over,
-  //   required this.index_ball,
-  //   this.timestamp,
-  //   required this.type,
-  //   this.bowler_id,
-  //   this.batter_id,
-  //   this.runs_scored,
-  //   this.wicket_id,
-  //   this.bowling_extra_type,
-  //   this.bowling_extra_penalty,
-  //   this.batting_extra_type,
-  //   this.batting_extra_runs,
-  //   this.previous_player_id,
-  //   this.comment,
-  // });
-
-//   PostEntity.ball({
-//     this.id,
-//     required this.match_id,
-//     required this.innings_number,
-//     required this.day_number,
-//     required this.session_number,
-//     required this.index_over,
-//     required this.index_ball,
-//     this.timestamp,
-//     required this.bowler_id,
-//     required this.batter_id,
-// })
 
   PostsEntity.deserialize(Map<String, Object?> map)
       : this(
@@ -115,11 +71,14 @@ class PostsEntity implements IEntity {
           bowler_id: map["bowler_id"] as String?,
           batter_id: map["batter_id"] as String?,
           runs_scored: map["runs_scored"] as int?,
-          wicket_id: map["wicket_id"] as int?,
           bowling_extra_type: map["bowling_extra_type"] as int?,
           bowling_extra_penalty: map["bowling_extra_penalty"] as int?,
           batting_extra_type: map["batting_extra_type"] as int?,
           batting_extra_runs: map["batting_extra_runs"] as int?,
+          wicket_type: map["wicket_type"] as int?,
+          wicket_batter_id: map["wicket_batter_id"] as String?,
+          wicket_bowler_id: map["wicket_bowler_id"] as String?,
+          wicket_fielder_id: map["wicket_fielder_id"] as String?,
           previous_player_id: map["previous_player_id"] as String?,
           comment: map["comment"] as String?,
         );
@@ -138,11 +97,13 @@ class PostsEntity implements IEntity {
         "bowler_id": bowler_id,
         "batter_id": batter_id,
         "runs_scored": runs_scored,
-        "wicket_id": wicket_id,
         "bowling_extra_type": bowling_extra_type,
         "bowling_extra_penalty": bowling_extra_penalty,
         "batting_extra_type": batting_extra_type,
         "batting_extra_runs": batting_extra_runs,
+        "wicket_batter_id": wicket_batter_id,
+        "wicket_bowler_id": wicket_bowler_id,
+        "wicket_fielder_id": wicket_fielder_id,
         "previous_player_id": previous_player_id,
         "comment": comment,
       };
@@ -158,4 +119,11 @@ class PostsTable extends ICrud<PostsEntity> {
   @override
   PostsEntity deserialize(Map<String, Object?> map) =>
       PostsEntity.deserialize(map);
+
+  Future<Iterable<PostsEntity>> readWhere({required String matchId}) async {
+    final result = await sql
+        .query(table: table, where: "match_id = ?", whereArgs: [matchId]);
+    final postsEntities = result.map((e) => PostsEntity.deserialize(e));
+    return postsEntities;
+  }
 }

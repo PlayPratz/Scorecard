@@ -136,9 +136,9 @@ class _BatterTile extends StatelessWidget {
       leading: const Icon(Icons.sports_motorsports),
       title: Row(
         children: [
-          Text("${batterInnings!.runs}"),
+          Text("${batterInnings!.runsScored}"),
           const SizedBox(width: 4),
-          Text("${batterInnings!.ballCount}",
+          Text("${batterInnings!.ballsFaced}",
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
@@ -203,11 +203,11 @@ class _BowlerInAction extends StatelessWidget {
       leading: const Icon(Icons.sports_baseball),
       title: Row(
         children: [
-          Text("${bowlerInnings!.runsConceded}-${bowlerInnings!.wicketCount}"),
+          Text("${bowlerInnings!.runsConceded}-${bowlerInnings!.wicketsTaken}"),
           const SizedBox(width: 6),
           Text(
               Stringify.ballCount(
-                  bowlerInnings!.ballCount, bowlerInnings!.ballsPerOver),
+                  bowlerInnings!.ballsBowled, bowlerInnings!.ballsPerOver),
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ),

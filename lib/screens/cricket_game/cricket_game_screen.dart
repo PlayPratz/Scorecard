@@ -250,7 +250,7 @@ class CricketGameScreenController {
     _dispatchState();
   }
 
-  void retireBatter(BatterInnings batterInnings, RetiredBatter retired) {
+  void retireBatter(BatterInnings batterInnings, Retire retired) {
     _service.retireBatterInnings(currentInnings, batterInnings, retired);
     _dispatchState();
   }
@@ -308,7 +308,7 @@ class CricketGameScreenController {
 
     if (wicket is Wicket) {
       nextBallSelectorController.nextWicket = wicket;
-    } else if (wicket is RetiredBatter) {
+    } else if (wicket is Retire) {
       final batterInnings =
           _service.getBatterInningsOfPlayer(currentInnings, wicket.batter)!;
       retireBatter(batterInnings, wicket);

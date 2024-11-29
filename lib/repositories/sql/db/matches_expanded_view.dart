@@ -43,21 +43,8 @@ class MatchesExpandedEntity implements IEntity {
   }
 
   @override
-  Map<String, Object?> serialize() => {
-        // This will never be called
-      };
-
-  // @override
-  // Map<String, Object?> serialize() => {
-  //       ...matchesEntity.serialize(),
-  //       ...team1Entity
-  //           .serialize()
-  //           .map((key, value) => MapEntry("team1_$key", value)),
-  //       ...team2Entity.serialize().map(
-  //             (key, value) => MapEntry("team2_$key", value),
-  //           ),
-  //       ...venueEntity.serialize().map((key, value) => MapEntry("venue_$key", value));
-  //     };
+  Map<String, Object?> serialize() =>
+      throw UnimplementedError("Attempted to serialize MatchesExpandedEntity");
 
   @override
   List get primary_key => [matchesEntity.primary_key];
@@ -102,12 +89,12 @@ class MatchesExpandedEntity implements IEntity {
 class MatchesExpandedView extends ICrud<MatchesExpandedEntity> {
   @override
   Future<int> create(MatchesExpandedEntity object) {
-    throw UnsupportedError("Attempted to insert into a View (id: ${object.id}");
+    throw UnsupportedError("Cannot insert into a View (id: ${object.id})");
   }
 
   @override
   Future<void> update(MatchesExpandedEntity object) {
-    throw UnsupportedError("Attempted to update a View (id: ${object.id}");
+    throw UnsupportedError("Cannot update a View (id: ${object.id})");
   }
 
   @override

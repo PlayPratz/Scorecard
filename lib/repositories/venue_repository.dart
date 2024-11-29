@@ -13,10 +13,17 @@ class VenueRepository {
   }
 
   Future<Venue> fetchById(String id) async {
-    final entity = EntityMappers
+    final entity = await venuesTable.read(id);
+    if (entity == null) {
+      throw StateError("Venue not found in DB! (id: $id)");
+    }
+    final venue = EntityMappers.unpackVenue(entity);
+    return venue;
   }
 
   Future<Iterable<Venue>> fetchAll() async {
     final entities = await venuesTable.readAll();
+    final venues = entities.map((e) => EntityMappers.unpackVenue(e));
+    return venues;
   }
 }

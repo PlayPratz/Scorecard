@@ -56,7 +56,7 @@ class ReviewCricketGameScreenController {
   ReviewCricketGameScreenController(this.game);
 
   void onCommenceMatch(BuildContext context) {
-    final ongoingMatch = _service.commenceCricketGame(game);
+    _service.commenceCricketGame(game);
 
     Navigator.pushReplacement(
         context,

@@ -3,7 +3,7 @@ import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/sql/db/game_rules_table.dart';
 import 'package:scorecard/repositories/sql/db/innings_table.dart';
-import 'package:scorecard/repositories/sql/db/lineups_table.dart';
+import 'package:scorecard/repositories/sql/db/players_in_match_table.dart';
 import 'package:scorecard/repositories/sql/db/matches_expanded_view.dart';
 import 'package:scorecard/repositories/sql/db/matches_table.dart';
 import 'package:scorecard/repositories/sql/db/players_table.dart';
@@ -38,7 +38,7 @@ class RepositoryProvider implements IRepositoryProvider {
     final gameRulesTable = GameRulesTable();
     final matchesTable = MatchesTable();
     final matchesExpandedView = MatchesExpandedView();
-    final lineupsTable = LineupsTable();
+    final lineupsTable = PlayersInMatchTable();
     final inningsTable = InningsTable();
     final wicketsTable = WicketsTable();
     final postsTable = PostsTable();
@@ -51,7 +51,7 @@ class RepositoryProvider implements IRepositoryProvider {
       cricketMatchesTable: matchesTable,
       cricketMatchesExpandedView: matchesExpandedView,
       gameRulesTable: gameRulesTable,
-      lineupsTable: lineupsTable,
+      playersInMatchTable: lineupsTable,
       inningsTable: inningsTable,
       wicketsTable: wicketsTable,
       postsTable: postsTable,

@@ -33,15 +33,16 @@ class _InningsScorecardSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wicketBalls = innings.wicketBalls;
+    final playersWhoHaveBatted = innings.batters.keys.toList();
     final allYetToBat = innings.battingLineup.players
-        .where((p) => innings.batters.every((b) => b.player != p));
+        .where((p) => !playersWhoHaveBatted.contains(p));
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         child: Column(
           children: [
             _BattingScorecardSection(
-              innings.batters,
+              innings.batters.values,
               captain: innings.battingLineup.captain,
               allExtraBalls: innings.balls
                   .where((b) => b.isBowlingExtra || b.isBattingExtra),
@@ -56,7 +57,7 @@ class _InningsScorecardSection extends StatelessWidget {
                 getScoreAt: (ball) => innings.calculateScore(at: ball),
               ),
             const SizedBox(height: 8),
-            _BowlingScorecardSection(innings.bowlers)
+            _BowlingScorecardSection(innings.bowlers.values)
           ],
         ),
       ),
@@ -121,7 +122,7 @@ class _BattingScorecardSection extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
-                    batterInnings.runs.toString(),
+                    batterInnings.runsScored.toString(),
                     style: Theme.of(context).textTheme.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -129,7 +130,7 @@ class _BattingScorecardSection extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
-                    batterInnings.ballCount.toString(),
+                    batterInnings.ballsFaced.toString(),
                     style: Theme.of(context).textTheme.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -376,9 +377,9 @@ class _BowlingScorecardSection extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                 ),
                 Center(
-                    child: Text(Stringify.ballCount(
-                        bowlerInnings.ballCount, bowlerInnings.ballsPerOver))),
-                Center(child: Text(bowlerInnings.wicketCount.toString())),
+                    child: Text(Stringify.ballCount(bowlerInnings.ballsBowled,
+                        bowlerInnings.ballsPerOver))),
+                Center(child: Text(bowlerInnings.wicketsTaken.toString())),
                 Center(child: Text(bowlerInnings.runsConceded.toString())),
                 Center(child: Text(Stringify.economy(bowlerInnings.economy)))
               ])

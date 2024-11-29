@@ -57,36 +57,45 @@ select m.id, m.stage, m.starts_at,
         JOIN teams t1 on m.team1_id = t1.id
         JOIN teams t2 on m.team2_id = t2.id;
 
-CREATE TABLE lineups (match_id TEXT NOT NULL REFERENCES matches (id),
+CREATE TABLE players_in_match (match_id TEXT NOT NULL REFERENCES matches (id),
                       team_id TEXT NOT NULL REFERENCES teams (id),
                       player_id TEXT NOT NULL REFERENCES players (id),
                       is_captain BOOLEAN NOT NULL,
+                      opponent_team_id TEXT NOT NULL REFERENCES teams (id),
+                      is_match_completed BOOLEAN DEFAULT FALSE,
+                      -- Batting
+                      batter_number INTEGER,
+                      runs_scored INTEGER,
+                      balls_faced INTEGER,
+                      is_out BOOLEAN,
+                      is_retired BOOLEAN,
+                      strike_rate DOUBLE,
+                      -- Bowling
+                      runs_conceded INTEGER,
+                      wickets_taken DOUBLE,
+                      maidens_bowled INTEGER,
+                      balls_bowled INTEGER,
+                      economy DOUBLE,
                       PRIMARY KEY (match_id, team_id, player_id));
+
+CREATE VIEW lineups AS
+SELECT match_id, team_id, player_id, is_captain, name, full_name
+FROM players_in_match
+JOIN players WHERE player_in_match.player_id = players.id;
 
 CREATE TABLE innings (match_id TEXT NOT NULL REFERENCES matches (id),
                       innings_number INTEGER NOT NULL,
                       type INTEGER NOT NULL,
                       batting_team_id TEXT NOT NULL REFERENCES teams (id),
                       bowling_team_id TEXT NOT NULL REFERENCES teams (id),
---                      game_rules_id TEXT NOT NULL,
                       is_forfeited BOOLEAN NOT NULL,
                       is_declared BOOLEAN NOT NULL,
                       batter1_id TEXT REFERENCES players (id),
                       batter2_id TEXT REFERENCES players (id),
+                      striker_id TEXT REFERENCES players (id),
                       bowler_id TEXT REFERENCES players (id),
                       target_runs INTEGER,
                       PRIMARY KEY (match_id, innings_number));
-
-CREATE TABLE wickets (id INTEGER PRIMARY KEY,
-                      match_id TEXT NOT NULL,
-                      innings_number INTEGER NOT NULL,
-                      day_number INTEGER,
-                      session_number INTEGER,
-					  type INTEGER NOT NULL,
-                      batter_id TEXT NOT NULL,
-                      bowler_id TEXT,
-                      fielder_id TEXT,
-                      FOREIGN KEY (match_id, innings_number) REFERENCES innings (match_id, innings_number));
 
 CREATE TABLE posts (id INTEGER PRIMARY KEY,
                     match_id TEXT NOT NULL,
@@ -97,14 +106,17 @@ CREATE TABLE posts (id INTEGER PRIMARY KEY,
                     index_ball INTEGER NOT NULL,
                		timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     type INTEGER NOT NULL,
-                    bowler_id TEXT  REFERENCES players (id),
-                    batter_id TEXT  REFERENCES players (id),
+                    bowler_id TEXT REFERENCES players (id),
+                    batter_id TEXT REFERENCES players (id),
                     runs_scored INTEGER,
-                    wicket_id INTEGER REFERENCES wickets (id),
                     bowling_extra_type INTEGER,
                     bowling_extra_penalty INTEGER,
                     batting_extra_type INTEGER,
                     batting_extra_runs INTEGER,
+                    wicket_type INTEGER,
+                    wicket_batter_id TEXT REFERENCES players (id),
+                    wicket_bowler_id TEXT REFERENCES players (id),
+                    wicket_fielder_id TEXT REFERENCES players (id),
                     previous_player_id TEXT REFERENCES players (id),
                     FOREIGN KEY (match_id, innings_number) REFERENCES innings (match_id, innings_number));
 
@@ -112,8 +124,9 @@ CREATE TABLE posts (id INTEGER PRIMARY KEY,
 --CREATE INDEX post_type_index on posts (type);
 
 create view balls as select id, match_id, innings_number, day_number, session_number, index_over, index_ball, timestamp, 
-                            bowler_id, batter_id, runs_scored, wicket_id,
-                            bowling_extra_type, bowling_extra_penalty, batting_extra_type, batting_extra_runs
+                            bowler_id, batter_id, runs_scored,
+                            bowling_extra_type, bowling_extra_penalty, batting_extra_type, batting_extra_runs,
+                            wicket_type, wicket_batter_id, wicket_bowler_id, wicket_fielder_id
                             FROM posts where type = 0;
 
 -- Added for reserving for future use.

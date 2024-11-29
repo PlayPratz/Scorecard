@@ -114,7 +114,7 @@ class InningsService {
 
   /// Retires the [BatterInnings] from the innings.
   void retireBatterInnings(
-      Innings innings, BatterInnings batterInnings, RetiredBatter retired) {
+      Innings innings, BatterInnings batterInnings, Retire retired) {
     batterInnings.retired = retired;
     _postToInnings(
       innings,

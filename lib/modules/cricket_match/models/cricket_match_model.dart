@@ -8,9 +8,26 @@ import 'package:scorecard/modules/venue/models/venue_model.dart';
 /// class which must never be instantiated. It serves as a common parent for
 /// every other stage.
 abstract class CricketMatch {
+  /// Predictably, a unique identifier for this CricketMatch
   final String id;
 
-  CricketMatch({required this.id});
+  /// The first team that will be playing the match. Usually represents the
+  /// Home team, but not in case of a tournament/friendly turf match.
+  final Team team1;
+
+  /// The second team that will be playing the match against the first. Usually
+  /// represents the Away team.
+  final Team team2;
+
+  /// The format and rules that will be followed for this match.
+  final GameRules rules;
+
+  CricketMatch({
+    required this.id,
+    required this.team1,
+    required this.team2,
+    required this.rules,
+  });
 }
 
 /// A [CricketMatch] is said to be *scheduled* when a match has been set up
@@ -20,30 +37,19 @@ abstract class CricketMatch {
 /// For example, an India v Australia T20 match is scheduled at Darren Sammy
 /// Cricket Ground on 24 June 2024. We don't know the playing eleven yet.
 class ScheduledCricketMatch extends CricketMatch {
-  /// The first team that will be playing the match. Usually represents the
-  /// Home team, but not in case of a tournament/friendly turf match.
-  final Team team1;
-
-  /// The second team that will be playing the match against the first. Usually
-  /// represents the Away team.
-  final Team team2;
-
   /// The stadium, ground or turf at which the match is to be played.
   final Venue venue;
-
-  /// The format and rules that will be followed for this match.
-  final GameRules rules;
 
   /// The date and time at which play will commence.
   final DateTime startsAt;
 
   ScheduledCricketMatch({
     required super.id,
-    required this.team1,
-    required this.team2,
+    required super.team1,
+    required super.team2,
+    required super.rules,
     required this.startsAt,
     required this.venue,
-    required this.rules,
   });
 }
 
@@ -56,11 +62,8 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
   /// The toss that takes place right before the match/
   final Toss toss;
 
-  /// The first team's lineup
-  // final Lineup lineup1;
-
-  /// The second team's lineup
-  // final Lineup lineup2;
+  /// The game that is played between the two teams, as it happens.
+  final CricketGame game;
 
   InitializedCricketMatch({
     required super.id,
@@ -70,15 +73,13 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
     required super.venue,
     required super.rules,
     required this.toss,
-    // required this.lineup1,
-    // required this.lineup2,
+    required this.game,
   });
 
   InitializedCricketMatch.fromScheduled(
     ScheduledCricketMatch match, {
     required Toss toss,
-    // required Lineup lineup1,
-    // required Lineup lineup2,
+    required CricketGame game,
   }) : this(
           id: match.id,
           team1: match.team1,
@@ -86,9 +87,8 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
           startsAt: match.startsAt,
           venue: match.venue,
           rules: match.rules,
-          // lineup1: lineup1,
-          // lineup2: lineup2,
           toss: toss,
+          game: game,
         );
 }
 
@@ -97,9 +97,6 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
 /// Continuing our example, as long as Rohit Sharma smacks Starc or Bumrah
 /// contains Head, it's an ongoing match. No, I'm not salty about 19 Nov 2023!
 class OngoingCricketMatch extends InitializedCricketMatch {
-  /// The game that is played between the two teams, as it happens.
-  // final CricketGame game;
-
   OngoingCricketMatch({
     required super.id,
     required super.team1,
@@ -108,9 +105,7 @@ class OngoingCricketMatch extends InitializedCricketMatch {
     required super.venue,
     required super.rules,
     required super.toss,
-    // required super.lineup1,
-    // required super.lineup2,
-    // required this.game,
+    required super.game,
   });
 
   OngoingCricketMatch.fromInitialized(InitializedCricketMatch match)
@@ -122,9 +117,7 @@ class OngoingCricketMatch extends InitializedCricketMatch {
           venue: match.venue,
           rules: match.rules,
           toss: match.toss,
-          // lineup1: match.lineup1,
-          // lineup2: match.lineup2,
-          // game: game,
+          game: match.game,
         );
 }
 
@@ -146,12 +139,27 @@ class CompletedCricketMatch extends OngoingCricketMatch {
     required super.venue,
     required super.rules,
     required super.toss,
-    // required super.lineup1,
-    // required super.lineup2,
-    // required super.game,
+    required super.game,
     required this.result,
     required this.playerOfTheMatch,
   });
+
+  CompletedCricketMatch.fromOngoing(
+    OngoingCricketMatch match, {
+    required CricketMatchResult result,
+    required Player? playerOfTheMatch,
+  }) : this(
+          id: match.id,
+          team1: match.team1,
+          team2: match.team2,
+          startsAt: match.startsAt,
+          venue: match.venue,
+          rules: match.rules,
+          toss: match.toss,
+          game: match.game,
+          result: result,
+          playerOfTheMatch: playerOfTheMatch,
+        );
 }
 
 enum TossChoice { bat, field }
@@ -218,42 +226,29 @@ class TieResult extends LimitedOversMatchResult {
 /// a lot of heavy data and is loaded only once the user explicitly opens that
 /// Cricket Game.
 sealed class CricketGame {
-  final InitializedCricketMatch match;
+  final String matchId;
 
-  // final Team team1;
-  Team get team1 => match.team1;
+  final Team team1;
   final Lineup lineup1;
 
-  // final Team team2;
-  Team get team2 => match.team2;
+  final Team team2;
   final Lineup lineup2;
 
-  GameRules get rules => match.rules;
+  GameRules get rules;
 
   List<Innings> get innings;
   Innings get currentInnings => innings.last;
 
-  // int get team1runs => _getTeamRuns(lineup1.team);
-  // int get team2runs => _getTeamRuns(lineup2.team);
-  //
-  // int _getTeamRuns(Team team) {
-  //   return innings.fold(0, (value, innings) {
-  //     if (innings.battingTeam.team == team) {
-  //       return value + innings.runs;
-  //     } else {
-  //       return value;
-  //     }
-  //   });
-  // }
-
   CricketGame({
-    required this.match,
+    required CricketMatch match,
     required this.lineup1,
     required this.lineup2,
-  });
+  })  : matchId = match.id,
+        team1 = match.team1,
+        team2 = match.team2;
 
   factory CricketGame.auto(
-    InitializedCricketMatch match, {
+    CricketMatch match, {
     // required InitializedCricketMatch match,
     required Lineup lineup1,
     required Lineup lineup2,
@@ -281,8 +276,8 @@ sealed class CricketGame {
 /// team manages to win.
 class UnlimitedOversGame extends CricketGame {
   @override
-  UnlimitedOversRules get rules => match.rules as UnlimitedOversRules;
-  // final UnlimitedOversRules _rules;
+  UnlimitedOversRules get rules => _rules;
+  final UnlimitedOversRules _rules;
 
   @override
   List<UnlimitedOversInnings> innings = [];
@@ -291,7 +286,7 @@ class UnlimitedOversGame extends CricketGame {
     required super.match,
     required super.lineup1,
     required super.lineup2,
-  });
+  }) : _rules = match.rules as UnlimitedOversRules;
 }
 
 /// Represents a Limited Overs game where each team bowls a pre-defined number
@@ -301,8 +296,8 @@ class UnlimitedOversGame extends CricketGame {
 /// Examples: T20, ODI
 class LimitedOversGame extends CricketGame {
   @override
-  LimitedOversRules get rules => match.rules as LimitedOversRules;
-  // final LimitedOversRules _rules;
+  LimitedOversRules get rules => _rules;
+  final LimitedOversRules _rules;
 
   @override
   final List<LimitedOversInnings> innings = [];
@@ -311,5 +306,5 @@ class LimitedOversGame extends CricketGame {
     required super.match,
     required super.lineup1,
     required super.lineup2,
-  });
+  }) : _rules = match.rules as LimitedOversRules;
 }

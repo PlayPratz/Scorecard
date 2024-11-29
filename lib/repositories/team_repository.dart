@@ -18,9 +18,16 @@ class TeamRepository {
 
   Future<Team> fetchById(String id) async {
     final entity = await teamsTable.read(id);
+    if (entity == null) {
+      throw StateError("Team not found in DB! (id: $id)");
+    }
+    final team = EntityMappers.unpackTeam(entity);
+    return team;
   }
 
   Future<Iterable<Team>> fetchAll() async {
-    final entities = teamsTable.readAll();
+    final entities = await teamsTable.readAll();
+    final teams = entities.map((e) => EntityMappers.unpackTeam(e));
+    return teams;
   }
 }

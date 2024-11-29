@@ -1,18 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
+import 'package:scorecard/modules/cricket_match/services/cricket_match_service.dart';
+import 'package:scorecard/screens/common/loading_future_builder.dart';
 import 'package:scorecard/screens/cricket_game/cricket_game_scorecard.dart';
 import 'package:scorecard/screens/cricket_game/cricket_game_screen.dart';
 import 'package:scorecard/screens/cricket_match/review_cricket_match_screen.dart';
 import 'package:scorecard/screens/cricket_match/initialize_cricket_match_screen.dart';
 
-class CricketMatchScreenSwitcher extends StatelessWidget {
+class CricketMatchScreenSwitcher extends StatefulWidget {
   final CricketMatch match;
 
   const CricketMatchScreenSwitcher(this.match, {super.key});
 
   @override
+  State<CricketMatchScreenSwitcher> createState() =>
+      _CricketMatchScreenSwitcherState();
+}
+
+class _CricketMatchScreenSwitcherState
+    extends State<CricketMatchScreenSwitcher> {
+  late bool _isLoading = false;
+
+  @override
   Widget build(BuildContext context) {
-    final match = this.match;
+    return Scaffold(
+      appBar: AppBar(),
+      body: Builder(builder: (context) {
+        if (_isLoading) return const Center(child: CircularProgressIndicator());
+      }),
+    );
+  }
+
+  void _showLoading() {
+    setState(() {
+      _isLoading = true;
+    });
+  }
+
+  void _hideLoading() {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<Widget> getScreen(BuildContext context) async {
+    final match = this.widget.match;
     switch (match) {
       case CompletedCricketMatch():
         return CricketGameScorecard(match);
@@ -26,6 +58,11 @@ class CricketMatchScreenSwitcher extends StatelessWidget {
         final controller = InitializeCricketMatchScreenController(match);
         return InitializeCricketMatchScreen(controller);
     }
-    return const Text("Error! This should not happen.");
+    throw UnsupportedError(
+        "Attempted to open match that was not of the defined types (id: ${match.id}");
+  }
+
+  Future<CricketGame> getGameForMatch(InitializedCricketMatch match) async {
+    CricketMatchService().
   }
 }

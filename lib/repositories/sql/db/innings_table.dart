@@ -11,7 +11,7 @@ class InningsEntity implements IEntity {
   final bool is_declared;
   final String? batter1_id;
   final String? batter2_id;
-  //final String? striker_id; // TODO is this needed?
+  final String? striker_id; // TODO is this needed?
   final String? bowler_id;
   final int? target_runs;
 
@@ -25,6 +25,7 @@ class InningsEntity implements IEntity {
     required this.is_declared,
     required this.batter1_id,
     required this.batter2_id,
+    required this.striker_id,
     required this.bowler_id,
     required this.target_runs,
   });
@@ -40,7 +41,7 @@ class InningsEntity implements IEntity {
           is_declared: map["is_declared"] as bool,
           batter1_id: map["batter1_id"] as String?,
           batter2_id: map["batter2_id"] as String?,
-          // striker_id: map["striker_id"] as String?,
+          striker_id: map["striker_id"] as String?,
           bowler_id: map["bowler_id"] as String?,
           target_runs: map["target_runs"] as int?,
         );
@@ -56,7 +57,7 @@ class InningsEntity implements IEntity {
         "is_declared": is_declared,
         "batter1_id": batter1_id,
         "batter2_is": batter2_id,
-        // "striker_id": striker_id,
+        "striker_id": striker_id,
         "bowler_id": bowler_id,
         "target_runs": target_runs,
       };
@@ -67,11 +68,15 @@ class InningsEntity implements IEntity {
 
 class InningsTable extends ICrud<InningsEntity> {
   @override
-  InningsEntity deserialize(Map<String, Object?> map) {
-    // TODO: implement deserialize
-    throw UnimplementedError();
-  }
-
+  InningsEntity deserialize(Map<String, Object?> map) =>
+      InningsEntity.deserialize(map);
   @override
   String get table => Tables.innings;
+
+  Future<Iterable<InningsEntity>> readWhere({required String matchId}) async {
+    final raw = await sql
+        .query(table: table, where: "match_id = ?", whereArgs: [matchId]);
+    final result = raw.map((e) => deserialize(e));
+    return result;
+  }
 }

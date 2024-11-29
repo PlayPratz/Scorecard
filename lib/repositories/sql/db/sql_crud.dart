@@ -25,7 +25,7 @@ abstract class ICrud<T extends IEntity> {
   ///
   /// throws [StateError] if an object of the same ID exists.
   Future<int> create(T object) async {
-    final id = await _sql.insert(table: table, values: object.serialize());
+    final id = await sql.insert(table: table, values: object.serialize());
     return id;
   }
 
@@ -37,8 +37,11 @@ abstract class ICrud<T extends IEntity> {
   /// database.
   ///
   Future<T?> read(String id) async {
-    final raw =
-        await _sql.query(table: table, where: "id = ?", whereArgs: [id]);
+    if (where != "id = ?") {
+      throw UnimplementedError(
+          "In case of custom 'where', child Must override read()");
+    }
+    final raw = await sql.query(table: table, where: where, whereArgs: [id]);
     final result = deserialize(raw.singleOrNull);
     return result;
   }
@@ -54,7 +57,7 @@ abstract class ICrud<T extends IEntity> {
   /// As can be guessed, this is an expensive operation and should be used
   /// sparingly. TODO implement pagination.
   Future<Iterable<T>> readAll() async {
-    final raw = await _sql.query(table: table);
+    final raw = await sql.query(table: table);
     final result = raw.map((m) => deserialize(m));
     return result;
   }
@@ -65,7 +68,7 @@ abstract class ICrud<T extends IEntity> {
   ///
   /// throws [StateError] if an object with the same ID does not exist.
   Future<void> update(T object) async {
-    await _sql.update(
+    await sql.update(
       table: table,
       values: object.serialize(),
       where: where,
@@ -82,7 +85,7 @@ abstract class ICrud<T extends IEntity> {
   /// throws [StateError] if an object of the given [id] does not exist.
   // Future<void> delete(String id);
 
-  SQLDBHandler get _sql => SQLDBHandler.instance;
+  SQLDBHandler get sql => SQLDBHandler.instance;
 }
 
 // abstract class ITable<T extends IEntity> {

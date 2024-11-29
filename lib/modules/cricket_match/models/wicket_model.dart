@@ -79,22 +79,22 @@ class TimedOutWicket extends Wicket {
 
 // Retirements
 
-sealed class RetiredBatter {
+sealed class Retire {
   final Player batter;
 
-  RetiredBatter({required this.batter});
+  Retire({required this.batter});
 
   Dismissal get dismissal;
 }
 
-class RetiredDeclared extends RetiredBatter {
+class RetiredDeclared extends Retire {
   RetiredDeclared({required super.batter});
 
   @override
   Dismissal get dismissal => Dismissal.retired;
 }
 
-class RetiredHurt extends RetiredBatter {
+class RetiredHurt extends Retire {
   RetiredHurt({required super.batter});
 
   @override

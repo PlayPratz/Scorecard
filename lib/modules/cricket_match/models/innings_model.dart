@@ -96,7 +96,7 @@ class NextBowler extends InningsPost {
 /// walk out to bat, unless the innings has ended due to this post.
 class BatterRetire extends InningsPost {
   /// The batter's retirement
-  final RetiredBatter retired;
+  final Retire retired;
 
   /// The batter who has retired
   Player get batter => retired.batter;
@@ -493,7 +493,7 @@ class BatterInnings extends PlayerInnings with BattingCalculations {
   BatterInnings(this.player);
 
   Wicket? wicket;
-  RetiredBatter? retired;
+  Retire? retired;
 
   @override
   Iterable<Ball> get balls => posts.whereType<Ball>();

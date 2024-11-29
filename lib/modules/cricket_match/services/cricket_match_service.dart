@@ -8,12 +8,12 @@ import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/provider/repository_provider.dart';
 
 class CricketMatchService {
-  ScheduledCricketMatch createCricketMatch({
+  Future<ScheduledCricketMatch> createCricketMatch({
     required Team team1,
     required Team team2,
     required Venue venue,
     required GameRules rules,
-  }) {
+  }) async {
     final match = ScheduledCricketMatch(
       id: ULID.generate(),
       team1: team1,
@@ -23,88 +23,76 @@ class CricketMatchService {
       rules: rules,
     );
 
-    // Add match to repository
-    _repository.scheduleCricketMatch(match);
+    // Add match to repository (stage = 1)
+    await _repository.scheduleCricketMatch(match);
 
     return match;
   }
 
-  CricketGame initializeCricketGame(
+  Future<InitializedCricketMatch> initializeCricketMatch(
     ScheduledCricketMatch scheduledMatch, {
     required Toss toss,
     required Lineup lineup1,
     required Lineup lineup2,
-  }) {
-    final match =
-        InitializedCricketMatch.fromScheduled(scheduledMatch, toss: toss);
+  }) async {
+    final game =
+        CricketGame.auto(scheduledMatch, lineup1: lineup1, lineup2: lineup2);
 
-    final CricketGame game =
-        CricketGame.auto(match, lineup1: lineup1, lineup2: lineup2);
+    final initializedMatch = InitializedCricketMatch.fromScheduled(
+      scheduledMatch,
+      toss: toss,
+      game: game,
+    );
 
-    // Update match in repository
-    _repository.initializeCricketGame(game);
+    // Update match in repository (stage = 2)
+    await _repository.updateCricketMatch(initializedMatch);
 
-    return game;
+    // Store lineups
+    await _repository.saveLineupsOfGame(game, update: false);
+
+    return initializedMatch;
   }
 
-  void commenceCricketGame(CricketGame game) {
-    // Update match in repository
-    _repository.commenceCricketGame(game);
+  Future<OngoingCricketMatch> commenceCricketMatch(
+      InitializedCricketMatch initializedMatch) async {
+    final ongoingMatch = OngoingCricketMatch.fromInitialized(initializedMatch);
 
-    final match = game.match;
-    if (match.toss.winner == match.team1 &&
-            match.toss.choice == TossChoice.bat ||
-        match.toss.winner == match.team2 &&
-            match.toss.choice == TossChoice.field) {
-      _startFirstInningsInGame(
-        game,
-        battingTeam: match.team1,
-        battingLineup: game.lineup1,
-        bowlingTeam: match.team2,
-        bowlingLineup: game.lineup2,
-      );
+    // Update match in repository (stage = 3)
+    await _repository.updateCricketMatch(ongoingMatch);
+
+    final Team battingTeam;
+    final Lineup battingLineup;
+    final Team bowlingTeam;
+    final Lineup bowlingLineup;
+
+    final game = ongoingMatch.game;
+
+    if (ongoingMatch.toss.winner == ongoingMatch.team1 &&
+            ongoingMatch.toss.choice == TossChoice.bat ||
+        ongoingMatch.toss.winner == ongoingMatch.team2 &&
+            ongoingMatch.toss.choice == TossChoice.field) {
+      battingTeam = game.team1;
+      battingLineup = game.lineup1;
+      bowlingTeam = game.team2;
+      bowlingLineup = game.lineup2;
     } else {
-      _startFirstInningsInGame(
-        game,
-        battingTeam: match.team2,
-        battingLineup: game.lineup2,
-        bowlingTeam: match.team1,
-        bowlingLineup: game.lineup1,
-      );
+      battingTeam = game.team2;
+      battingLineup = game.lineup2;
+      bowlingTeam = game.team1;
+      bowlingLineup = game.lineup1;
     }
+
+    await _startInningsInGame(game,
+        battingTeam: battingTeam,
+        battingLineup: battingLineup,
+        bowlingTeam: bowlingTeam,
+        bowlingLineup: bowlingLineup);
+
+    return ongoingMatch;
   }
 
-  void _startFirstInningsInGame(
-    CricketGame game, {
-    required Team battingTeam,
-    required Lineup battingLineup,
-    required Team bowlingTeam,
-    required Lineup bowlingLineup,
-  }) {
-    final Innings innings = switch (game) {
-      LimitedOversGame() => LimitedOversInnings(
-          inningsNumber: _getNextInningsNumber(game),
-          rules: game.rules,
-          battingTeam: battingTeam,
-          battingLineup: battingLineup,
-          bowlingTeam: bowlingTeam,
-          bowlingLineup: bowlingLineup,
-        ),
-      UnlimitedOversGame() => UnlimitedOversInnings(
-          inningsNumber: _getNextInningsNumber(game),
-          rules: game.rules,
-          battingTeam: battingTeam,
-          battingLineup: battingLineup,
-          bowlingTeam: bowlingTeam,
-          bowlingLineup: bowlingLineup,
-        ),
-    };
-    game.innings.add(innings);
-    _repository.putLastInningsOfGame(game);
-  }
-
-  void startNextInningsInGame(CricketGame game,
-      {required bool shouldSwitchRoles}) {
+  Future<Innings> startNextInningsInGame(CricketGame game,
+      {required bool shouldSwitchRoles}) async {
     late final Team battingTeam;
     late final Lineup battingLineup;
     late final Team bowlingTeam;
@@ -124,6 +112,22 @@ class CricketMatchService {
       bowlingLineup = previousInnings.bowlingLineup;
     }
 
+    final innings = await _startInningsInGame(game,
+        battingTeam: battingTeam,
+        battingLineup: battingLineup,
+        bowlingTeam: bowlingTeam,
+        bowlingLineup: bowlingLineup);
+
+    return innings;
+  }
+
+  Future<Innings> _startInningsInGame(
+    CricketGame game, {
+    required Team battingTeam,
+    required Lineup battingLineup,
+    required Team bowlingTeam,
+    required Lineup bowlingLineup,
+  }) async {
     final Innings innings = switch (game) {
       LimitedOversGame() => LimitedOversInnings(
           inningsNumber: _getNextInningsNumber(game),
@@ -143,9 +147,21 @@ class CricketMatchService {
         ),
     };
     game.innings.add(innings);
+    await _repository.storeLastInningsOfGame(game);
+
+    return innings;
   }
 
   int _getNextInningsNumber(CricketGame game) => game.innings.length + 1;
+
+  Future<CricketGame> getGameForMatch(
+      InitializedCricketMatch cricketMatch) async {
+    final game = await _repository.loadCricketGameForMatch(cricketMatch);
+    if (cricketMatch is OngoingCricketMatch) {
+      final innings = await _repository.loadAllInningsOfGame(game);
+    }
+    return game;
+  }
 
   CricketMatchRepository get _repository =>
       RepositoryProvider().getCricketMatchRepository();

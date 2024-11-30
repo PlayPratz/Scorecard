@@ -259,8 +259,10 @@ class _NumberChooser extends StatelessWidget {
 
 class CreateCricketMatchController {
   void scheduleMatch(BuildContext context,
-      {required Team team1, required Team team2, required GameRules rules}) {
-    final match = _service.createCricketMatch(
+      {required Team team1,
+      required Team team2,
+      required GameRules rules}) async {
+    final match = await _service.createCricketMatch(
       team1: team1,
       team2: team2,
       venue: Venue(id: "default", name: "default"),

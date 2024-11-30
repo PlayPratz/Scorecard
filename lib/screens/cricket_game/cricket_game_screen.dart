@@ -197,8 +197,10 @@ class CricketGameScreen extends StatelessWidget {
 }
 
 class CricketGameScreenController {
-  final CricketGame game;
-  CricketGameScreenController(this.game);
+  final OngoingCricketMatch _cricketMatch;
+  CricketGameScreenController(this._cricketMatch);
+
+  CricketGame get game => _cricketMatch.game;
 
   final _streamController = StreamController<CricketGameScreenState>();
   Stream<CricketGameScreenState> get stream => _streamController.stream;
@@ -316,8 +318,10 @@ class CricketGameScreenController {
   }
 
   void goScorecard(BuildContext context) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => CricketMatchScorecard(game)));
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => CricketMatchScorecard(_cricketMatch)));
   }
 
   void goInningsTimeline(BuildContext context) {
@@ -353,7 +357,7 @@ class CricketGameScreenController {
     _dispatchState();
   }
 
-  Innings get currentInnings => game.currentInnings;
+  Innings get currentInnings => _cricketMatch.game.currentInnings;
   InningsService get _service => InningsService();
 }
 

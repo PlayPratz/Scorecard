@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -16,53 +17,98 @@ class ReviewCricketGameScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cricketMatch = controller.cricketMatch;
     final game = cricketMatch.game;
-    return Scaffold(
-      appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: ListView(
-          children: [
-            _TossPreviewSection(cricketMatch.toss),
-            const SizedBox(height: 16),
-            _MatchupPreviewSection(
-              team1: game.team1,
-              lineup1: game.lineup1,
-              team2: game.team2,
-              lineup2: game.lineup2,
-            ),
-            const SizedBox(height: 16),
-            _GameRulesPreviewSection(game.rules),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FilledButton.icon(
-              onPressed: () => controller.onCommenceMatch(context),
-              label: const Text("Start!"),
-              icon: const Icon(Icons.sports_cricket),
-            )
-          ],
-        ),
-      ),
-    );
+    return StreamBuilder(
+        stream: controller._stream,
+        initialData: _ReviewScreenState(cricketMatch),
+        builder: (context, snapshot) {
+          final state = snapshot.data!;
+          switch (state) {
+            case _ReviewScreenState():
+              return Scaffold(
+                appBar: AppBar(),
+                body: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: ListView(
+                    children: [
+                      _TossPreviewSection(cricketMatch.toss),
+                      const SizedBox(height: 16),
+                      _MatchupPreviewSection(
+                        team1: game.team1,
+                        lineup1: game.lineup1,
+                        team2: game.team2,
+                        lineup2: game.lineup2,
+                      ),
+                      const SizedBox(height: 16),
+                      _GameRulesPreviewSection(game.rules),
+                    ],
+                  ),
+                ),
+                bottomNavigationBar: BottomAppBar(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: () => controller.onCommenceMatch(context),
+                        label: const Text("Start!"),
+                        icon: const Icon(Icons.sports_cricket),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            case _LoadingNextScreenState():
+              return Scaffold(
+                appBar: AppBar(),
+                body: const Center(child: CircularProgressIndicator()),
+                bottomNavigationBar: const BottomAppBar(),
+              );
+            case _GoNextScreenState():
+              controller.goNextScreen(context, state.cricketMatch);
+              return Scaffold(
+                appBar: AppBar(),
+                body: const Center(child: CircularProgressIndicator()),
+                bottomNavigationBar: const BottomAppBar(),
+              );
+          }
+        });
   }
+}
+
+sealed class _ScreenState {}
+
+class _ReviewScreenState extends _ScreenState {
+  final InitializedCricketMatch cricketMatch;
+
+  _ReviewScreenState(this.cricketMatch);
+}
+
+class _LoadingNextScreenState extends _ScreenState {}
+
+class _GoNextScreenState extends _ScreenState {
+  final OngoingCricketMatch cricketMatch;
+
+  _GoNextScreenState(this.cricketMatch);
 }
 
 class ReviewCricketGameScreenController {
   final InitializedCricketMatch cricketMatch;
-
   ReviewCricketGameScreenController(this.cricketMatch);
 
+  final _streamController = StreamController<_ScreenState>();
+  Stream<_ScreenState> get _stream => _streamController.stream;
+
   Future<void> onCommenceMatch(BuildContext context) async {
-    final ongoingCricketMatch = await _service.commenceCricketMatch(cricketMatch);
-    gg context
+    _streamController.add(_LoadingNextScreenState());
+    final ongoingCricketMatch =
+        await _service.commenceCricketMatch(cricketMatch);
+    _streamController.add(_GoNextScreenState(ongoingCricketMatch));
+  }
+
+  void goNextScreen(BuildContext context, OngoingCricketMatch cricketMatch) {
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => CricketMatchScreenSwitcher(ongoingCricketMatch)));
+            builder: (context) => CricketMatchScreenSwitcher(cricketMatch)));
   }
 
   CricketMatchService get _service => CricketMatchService();

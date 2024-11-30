@@ -14,32 +14,33 @@ class InitializeCricketMatchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<InitializeCricketMatchScreenState>(
-        stream: controller.stream,
+    return StreamBuilder(
+        stream: controller._stream,
         initialData: controller._deduceState(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+          final state = snapshot.data;
+          if (state == null || state is _InitializingCricketMatchState) {
+            return loadingScreen;
+          } else if (state is _InitializedCricketMatchState) {
+            controller.goNextScreen(context, state.initializedMatch);
           }
-          final state = snapshot.data!;
+          state as _InitializeCricketMatchScreenState;
           return Scaffold(
             appBar: AppBar(),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ListView(
-                // reverse: true,
-                children: [
-                  _TossChooserSection(
-                    team1: state.team1,
-                    team2: state.team2,
-                    onChooseTeam: (team) => controller.selectedWinner = team,
-                    onTossChoice: (choice) =>
-                        controller.selectedTossChoice = choice,
-                    selectedWinner: state.selectedWinner,
-                    selectedTossChoice: state.selectedTossChoice,
-                  )
-                ],
-              ),
+            body: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              // reverse: true,
+              children: [
+                _TossChooserSection(
+                  team1: state.team1,
+                  team2: state.team2,
+                  onChooseTeam: (team) => controller.selectedWinner = team,
+                  onTossChoice: (choice) =>
+                      controller.selectedTossChoice = choice,
+                  selectedWinner: state.selectedWinner,
+                  selectedTossChoice: state.selectedTossChoice,
+                )
+              ],
             ),
             bottomNavigationBar: BottomAppBar(
               child: Row(
@@ -58,17 +59,21 @@ class InitializeCricketMatchScreen extends StatelessWidget {
           );
         });
   }
+
+  Widget get loadingScreen => Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: CircularProgressIndicator()),
+        bottomNavigationBar: const BottomAppBar(),
+      );
 }
 
 class InitializeCricketMatchScreenController {
-  final ScheduledCricketMatch match;
+  final ScheduledCricketMatch cricketMatch;
 
-  InitializeCricketMatchScreenController(this.match);
+  InitializeCricketMatchScreenController(this.cricketMatch);
 
-  final _streamController =
-      StreamController<InitializeCricketMatchScreenState>();
-  Stream<InitializeCricketMatchScreenState> get stream =>
-      _streamController.stream;
+  final _streamController = StreamController<_ScreenState>();
+  Stream<_ScreenState> get _stream => _streamController.stream;
 
   Team? _selectedWinner;
   set selectedWinner(Team team) {
@@ -119,10 +124,10 @@ class InitializeCricketMatchScreenController {
 
   void _dispatchState() => _streamController.add(_deduceState());
 
-  InitializeCricketMatchScreenState _deduceState() =>
-      InitializeCricketMatchScreenState(
-        team1: match.team1,
-        team2: match.team2,
+  _InitializeCricketMatchScreenState _deduceState() =>
+      _InitializeCricketMatchScreenState(
+        team1: cricketMatch.team1,
+        team2: cricketMatch.team2,
         selectedWinner: _selectedWinner,
         selectedTossChoice: _selectedTossChoice,
         selectedCaptain1: _selectedCaptain1,
@@ -134,19 +139,31 @@ class InitializeCricketMatchScreenController {
   bool get canInitializeMatch =>
       _selectedTossChoice != null && _selectedWinner != null;
 
-  void initializeMatch(BuildContext context) {
+  Future<void> initializeMatch(BuildContext context) async {
     if (!canInitializeMatch) {
-      throw StateError(
-          "Attempted to initialize match before selecting options");
+      return;
     }
 
-    final initializedMatch = _service.initializeCricketMatch(
-      match,
-      toss: Toss(winner: _selectedWinner!, choice: _selectedTossChoice!),
-      lineup1: Lineup(players: _selectedPlayers1, captain: _selectedCaptain1!),
-      lineup2: Lineup(players: _selectedPlayers2, captain: _selectedCaptain2!),
-    );
+    _streamController.add(_InitializingCricketMatchState());
 
+    try {
+      final initializedMatch = await _service.initializeCricketMatch(
+        cricketMatch,
+        toss: Toss(winner: _selectedWinner!, choice: _selectedTossChoice!),
+        lineup1:
+            Lineup(players: _selectedPlayers1, captain: _selectedCaptain1!),
+        lineup2:
+            Lineup(players: _selectedPlayers2, captain: _selectedCaptain2!),
+      );
+
+      _streamController.add(_InitializedCricketMatchState(initializedMatch));
+    } catch (e) {
+      _streamController.add(_deduceState());
+    }
+  }
+
+  void goNextScreen(
+      BuildContext context, InitializedCricketMatch initializedMatch) {
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -157,7 +174,17 @@ class InitializeCricketMatchScreenController {
   CricketMatchService get _service => CricketMatchService();
 }
 
-class InitializeCricketMatchScreenState {
+sealed class _ScreenState {}
+
+// This is probably the worst naming scheme one could come up with
+class _InitializingCricketMatchState extends _ScreenState {}
+
+class _InitializedCricketMatchState extends _ScreenState {
+  final InitializedCricketMatch initializedMatch;
+  _InitializedCricketMatchState(this.initializedMatch);
+}
+
+class _InitializeCricketMatchScreenState extends _ScreenState {
   final Team team1;
   final Team team2;
 
@@ -170,7 +197,7 @@ class InitializeCricketMatchScreenState {
   final Team? selectedWinner;
   final TossChoice? selectedTossChoice;
 
-  InitializeCricketMatchScreenState({
+  _InitializeCricketMatchScreenState({
     required this.team1,
     required this.team2,
     required this.selectedCaptain1,

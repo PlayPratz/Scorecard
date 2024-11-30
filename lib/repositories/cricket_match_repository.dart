@@ -40,19 +40,18 @@ class CricketMatchRepository {
     }
   }
 
-  Future<void> createCricketMatch(ScheduledCricketMatch match) async {
-    // Create match entry in DB
-    final entity = EntityMappers.repackMatch(match);
-
-    // Insert the match
-    await cricketMatchesTable.create(entity);
-  }
-
   /// This will update the cricket match's details in the repository
-  Future<void> updateCricketMatch(CricketMatch match) async {
+  Future<void> saveCricketMatch(CricketMatch match,
+      {required bool update}) async {
     // Update match entry in DB
     final entity = EntityMappers.repackMatch(match);
-    await cricketMatchesTable.update(entity);
+    if (update) {
+      // Update
+      await cricketMatchesTable.update(entity);
+    } else {
+      // Insert
+      await cricketMatchesTable.create(entity);
+    }
   }
 
   Future<void> saveLineupsOfGame(CricketGame game,

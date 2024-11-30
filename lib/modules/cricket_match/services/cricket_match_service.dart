@@ -9,6 +9,8 @@ import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/provider/repository_provider.dart';
 
 class CricketMatchService {
+  /// Creates a cricket match from the provided data. Also saves the same in
+  /// the repository
   Future<ScheduledCricketMatch> createCricketMatch({
     required Team team1,
     required Team team2,
@@ -25,7 +27,7 @@ class CricketMatchService {
     );
 
     // Add match to repository (stage = 1)
-    await _repository.createCricketMatch(match);
+    await _repository.saveCricketMatch(match, update: false);
 
     return match;
   }
@@ -46,7 +48,7 @@ class CricketMatchService {
     );
 
     // Update match in repository (stage = 2)
-    await _repository.updateCricketMatch(initializedMatch);
+    await _repository.saveCricketMatch(initializedMatch, update: true);
 
     // Store lineups
     await _repository.saveLineupsOfGame(game, update: false);
@@ -59,7 +61,7 @@ class CricketMatchService {
     final ongoingMatch = OngoingCricketMatch.fromInitialized(initializedMatch);
 
     // Update match in repository (stage = 3)
-    await _repository.updateCricketMatch(ongoingMatch);
+    await _repository.saveCricketMatch(ongoingMatch, update: true);
 
     final Team battingTeam;
     final Lineup battingLineup;
@@ -155,10 +157,13 @@ class CricketMatchService {
 
   int _getNextInningsNumber(CricketGame game) => game.innings.length + 1;
 
-  Future<CricketGame> getGameForMatch(
-      InitializedCricketMatch cricketMatch) async {
+  /// Fetches the [CricketGame] data for the provided [CricketMatch]
+  /// from the repository and stores it within the cricket match's object
+  Future<void> getGameForMatch(InitializedCricketMatch cricketMatch) async {
     final game = await _repository.loadCricketGameForMatch(cricketMatch);
     if (cricketMatch is OngoingCricketMatch) {
+      // Since it's an OngoingMatch, it will have Innings and Posts as well
+      // All of this must be loaded from the repository
       final allInnings =
           (await _repository.loadAllInningsOfGame(game)).toList();
       final inningsNumberToPostMap = await _repository.loadAllPostsOfGame(game);
@@ -167,7 +172,8 @@ class CricketMatchService {
       }
       game.innings.addAll(allInnings);
     }
-    return game;
+    // Initialize the CricketGame in the match
+    cricketMatch.game = game;
   }
 
   CricketMatchRepository get _repository =>

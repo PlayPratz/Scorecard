@@ -15,7 +15,7 @@ CREATE TABLE game_rules (id INTEGER PRIMARY KEY,
                         no_ball_penalty INTEGER,
                         wide_penalty INTEGER,
                         only_single_batter BOOLEAN,
-                        allow_last_man BOOLEAN,
+                        last_wicket_batter BOOLEAN,
                         days_of_play INTEGER,
                         sessions_per_day INTEGER,
                         innings_per_side INTEGER,
@@ -115,9 +115,7 @@ CREATE TABLE posts (id INTEGER PRIMARY KEY,
                     batting_extra_runs INTEGER,
                     wicket_type INTEGER,
                     wicket_batter_id TEXT REFERENCES players (id),
-                    wicket_bowler_id TEXT REFERENCES players (id),
                     wicket_fielder_id TEXT REFERENCES players (id),
-                    previous_player_id TEXT REFERENCES players (id),
                     FOREIGN KEY (match_id, innings_number) REFERENCES innings (match_id, innings_number));
 
 --CREATE INDEX post_match_index ON posts (match_id);

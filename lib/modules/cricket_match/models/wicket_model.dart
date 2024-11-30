@@ -8,7 +8,7 @@ sealed class Wicket {
   Wicket({required this.batter});
 }
 
-class BowledWicket extends Wicket {
+class BowledWicket extends Wicket with BowlerWicket {
   final Player bowler;
 
   BowledWicket({required super.batter, required this.bowler});
@@ -17,7 +17,7 @@ class BowledWicket extends Wicket {
   Dismissal get dismissal => Dismissal.bowled;
 }
 
-class HitWicket extends Wicket {
+class HitWicket extends Wicket with BowlerWicket {
   final Player bowler;
 
   HitWicket({required super.batter, required this.bowler});
@@ -26,7 +26,7 @@ class HitWicket extends Wicket {
   Dismissal get dismissal => Dismissal.hitWicket;
 }
 
-class LbwWicket extends Wicket {
+class LbwWicket extends Wicket with BowlerWicket {
   final Player bowler;
 
   LbwWicket({required super.batter, required this.bowler});
@@ -35,7 +35,7 @@ class LbwWicket extends Wicket {
   Dismissal get dismissal => Dismissal.lbw;
 }
 
-class CaughtWicket extends Wicket {
+class CaughtWicket extends Wicket with BowlerWicket, FielderWicket {
   final Player bowler;
   final Player fielder;
 
@@ -46,11 +46,13 @@ class CaughtWicket extends Wicket {
   Dismissal get dismissal => Dismissal.caught;
 }
 
-class StumpedWicket extends Wicket {
+class StumpedWicket extends Wicket with BowlerWicket, FielderWicket {
   final Player bowler;
 
   // According to the laws of the game, only a wicket-keeper can stump a batter.
   final Player wicketkeeper;
+  @override
+  Player get fielder => wicketkeeper;
 
   StumpedWicket(
       {required super.batter,
@@ -61,7 +63,7 @@ class StumpedWicket extends Wicket {
   Dismissal get dismissal => Dismissal.stumped;
 }
 
-class RunoutWicket extends Wicket {
+class RunoutWicket extends Wicket with FielderWicket {
   final Player fielder;
 
   RunoutWicket({required super.batter, required this.fielder});
@@ -79,26 +81,34 @@ class TimedOutWicket extends Wicket {
 
 // Retirements
 
-sealed class Retire {
+sealed class Retired {
   final Player batter;
 
-  Retire({required this.batter});
+  Retired({required this.batter});
 
   Dismissal get dismissal;
 }
 
-class RetiredDeclared extends Retire {
+class RetiredDeclared extends Retired {
   RetiredDeclared({required super.batter});
 
   @override
   Dismissal get dismissal => Dismissal.retired;
 }
 
-class RetiredHurt extends Retire {
+class RetiredHurt extends Retired {
   RetiredHurt({required super.batter});
 
   @override
   Dismissal get dismissal => Dismissal.retiredHurt;
+}
+
+mixin BowlerWicket {
+  Player get bowler;
+}
+
+mixin FielderWicket {
+  Player get fielder;
 }
 
 // class RetiredBowler {

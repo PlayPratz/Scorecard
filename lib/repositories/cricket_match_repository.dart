@@ -40,7 +40,7 @@ class CricketMatchRepository {
     }
   }
 
-  Future<void> scheduleCricketMatch(ScheduledCricketMatch match) async {
+  Future<void> createCricketMatch(ScheduledCricketMatch match) async {
     // Create match entry in DB
     final entity = EntityMappers.repackMatch(match);
 
@@ -50,7 +50,7 @@ class CricketMatchRepository {
 
   /// This will update the cricket match's details in the repository
   Future<void> updateCricketMatch(CricketMatch match) async {
-    // Update match entry in DB (stage = 2, toss)
+    // Update match entry in DB
     final entity = EntityMappers.repackMatch(match);
     await cricketMatchesTable.update(entity);
   }
@@ -151,20 +151,38 @@ class CricketMatchRepository {
       game.team2: game.lineup2,
     };
 
-    final allInnings = inningsEntities.map((e) => EntityMappers.unpackInnings(
-          e,
-          teamMap: teamMap,
-          lineupMap: lineupMap,
-          rules: game.rules,
-        ));
+    final allInnings =
+        inningsEntities.map((entity) => EntityMappers.unpackInnings(
+              entity,
+              teamMap: teamMap,
+              lineupMap: lineupMap,
+              rules: game.rules,
+            ));
     return allInnings;
   }
 
-  Future<Iterable<InningsPost>> loadAllPostsOfGame(CricketGame game) async {
-    final id = game.match.id;
+  /// Returns all posts mapped the their respective [inningsNumber]s.
+  Future<Map<int, Iterable<InningsPost>>> loadAllPostsOfGame(
+      CricketGame game) async {
+    final id = game.matchId;
+
+    final playerMap = <String, Player>{
+      for (final player in game.lineup1.players) player.id: player,
+      for (final player in game.lineup2.players) player.id: player
+    };
     final postEntities = await postsTable.readWhere(matchId: id);
-    final posts = postEntities.map((e) => EntityMappers.unpackLimitedOversPost(
-          e,
-        ));
+    final postMap = <int, List<InningsPost>>{};
+
+    for (final entity in postEntities) {
+      final post =
+          EntityMappers.unpackLimitedOversPost(entity, playerMap: playerMap);
+      if (postMap.containsKey(entity.innings_number)) {
+        postMap[entity.innings_number]!.add(post);
+      } else {
+        postMap[entity.innings_number] = [post];
+      }
+    }
+
+    return postMap;
   }
 }

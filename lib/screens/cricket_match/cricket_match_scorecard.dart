@@ -5,12 +5,13 @@ import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
 
-class CricketGameScorecard extends StatelessWidget {
-  final CricketGame game;
-  const CricketGameScorecard(this.game, {super.key});
+class CricketMatchScorecard extends StatelessWidget {
+  final InitializedCricketMatch cricketMatch;
+  const CricketMatchScorecard(this.cricketMatch, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    final game = cricketMatch.game;
     return Scaffold(
       appBar: AppBar(),
       body: Padding(

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/services/cricket_match_service.dart';
-import 'package:scorecard/screens/common/loading_future_builder.dart';
-import 'package:scorecard/screens/cricket_game/cricket_game_scorecard.dart';
+import 'package:scorecard/screens/cricket_match/cricket_match_scorecard.dart';
 import 'package:scorecard/screens/cricket_game/cricket_game_screen.dart';
 import 'package:scorecard/screens/cricket_match/review_cricket_match_screen.dart';
 import 'package:scorecard/screens/cricket_match/initialize_cricket_match_screen.dart';
@@ -44,10 +43,10 @@ class _CricketMatchScreenSwitcherState
   }
 
   Future<Widget> getScreen(BuildContext context) async {
-    final match = this.widget.match;
+    final match = widget.match;
     switch (match) {
       case CompletedCricketMatch():
-        return CricketGameScorecard(match);
+        return CricketMatchScorecard(match);
       case OngoingCricketMatch():
         final controller = CricketGameScreenController(match.game);
         return CricketGameScreen(controller);

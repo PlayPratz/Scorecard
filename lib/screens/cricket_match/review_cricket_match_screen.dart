@@ -14,14 +14,15 @@ class ReviewCricketGameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final game = controller.game;
+    final cricketMatch = controller.cricketMatch;
+    final game = cricketMatch.game;
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: ListView(
           children: [
-            _TossPreviewSection(game.match.toss),
+            _TossPreviewSection(cricketMatch.toss),
             const SizedBox(height: 16),
             _MatchupPreviewSection(
               team1: game.team1,
@@ -51,17 +52,17 @@ class ReviewCricketGameScreen extends StatelessWidget {
 }
 
 class ReviewCricketGameScreenController {
-  final CricketGame game;
+  final InitializedCricketMatch cricketMatch;
 
-  ReviewCricketGameScreenController(this.game);
+  ReviewCricketGameScreenController(this.cricketMatch);
 
-  void onCommenceMatch(BuildContext context) {
-    _service.commenceCricketGame(game);
-
+  Future<void> onCommenceMatch(BuildContext context) async {
+    final ongoingCricketMatch = await _service.commenceCricketMatch(cricketMatch);
+    gg context
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => CricketMatchScreenSwitcher(ongoingMatch)));
+            builder: (context) => CricketMatchScreenSwitcher(ongoingCricketMatch)));
   }
 
   CricketMatchService get _service => CricketMatchService();
@@ -210,7 +211,7 @@ class _GameRulesPreviewSection extends StatelessWidget {
                 ]),
                 TableRow(children: [
                   _wLabelWidget("Allow Last Man"),
-                  Text(rules.allowLastMan.toString())
+                  Text(rules.lastWicketBatter.toString())
                 ]),
               ],
             ),

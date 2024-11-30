@@ -63,7 +63,7 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
   final Toss toss;
 
   /// The game that is played between the two teams, as it happens.
-  final CricketGame game;
+  late final CricketGame game;
 
   InitializedCricketMatch({
     required super.id,
@@ -73,7 +73,6 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
     required super.venue,
     required super.rules,
     required this.toss,
-    required this.game,
   });
 
   InitializedCricketMatch.fromScheduled(
@@ -88,7 +87,6 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
           venue: match.venue,
           rules: match.rules,
           toss: toss,
-          game: game,
         );
 }
 
@@ -105,7 +103,6 @@ class OngoingCricketMatch extends InitializedCricketMatch {
     required super.venue,
     required super.rules,
     required super.toss,
-    required super.game,
   });
 
   OngoingCricketMatch.fromInitialized(InitializedCricketMatch match)
@@ -117,7 +114,6 @@ class OngoingCricketMatch extends InitializedCricketMatch {
           venue: match.venue,
           rules: match.rules,
           toss: match.toss,
-          game: match.game,
         );
 }
 
@@ -139,7 +135,6 @@ class CompletedCricketMatch extends OngoingCricketMatch {
     required super.venue,
     required super.rules,
     required super.toss,
-    required super.game,
     required this.result,
     required this.playerOfTheMatch,
   });
@@ -156,7 +151,6 @@ class CompletedCricketMatch extends OngoingCricketMatch {
           venue: match.venue,
           rules: match.rules,
           toss: match.toss,
-          game: match.game,
           result: result,
           playerOfTheMatch: playerOfTheMatch,
         );

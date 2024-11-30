@@ -3,6 +3,7 @@ import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/sql/db/game_rules_table.dart';
 import 'package:scorecard/repositories/sql/db/innings_table.dart';
+import 'package:scorecard/repositories/sql/db/lineups_expanded_view.dart';
 import 'package:scorecard/repositories/sql/db/players_in_match_table.dart';
 import 'package:scorecard/repositories/sql/db/matches_expanded_view.dart';
 import 'package:scorecard/repositories/sql/db/matches_table.dart';
@@ -10,7 +11,6 @@ import 'package:scorecard/repositories/sql/db/players_table.dart';
 import 'package:scorecard/repositories/sql/db/posts_table.dart';
 import 'package:scorecard/repositories/sql/db/teams_table.dart';
 import 'package:scorecard/repositories/sql/db/venues_table.dart';
-import 'package:scorecard/repositories/sql/db/wickets_table.dart';
 import 'package:scorecard/repositories/team_repository.dart';
 import 'package:scorecard/repositories/venue_repository.dart';
 
@@ -38,9 +38,9 @@ class RepositoryProvider implements IRepositoryProvider {
     final gameRulesTable = GameRulesTable();
     final matchesTable = MatchesTable();
     final matchesExpandedView = MatchesExpandedView();
-    final lineupsTable = PlayersInMatchTable();
+    final playersInMatchTable = PlayersInMatchTable();
+    final lineupsExpandedView = LineupsExpandedView();
     final inningsTable = InningsTable();
-    final wicketsTable = WicketsTable();
     final postsTable = PostsTable();
 
     // Instantiate all repositories
@@ -51,9 +51,9 @@ class RepositoryProvider implements IRepositoryProvider {
       cricketMatchesTable: matchesTable,
       cricketMatchesExpandedView: matchesExpandedView,
       gameRulesTable: gameRulesTable,
-      playersInMatchTable: lineupsTable,
+      playersInMatchTable: playersInMatchTable,
+      lineupsExpandedView: lineupsExpandedView,
       inningsTable: inningsTable,
-      wicketsTable: wicketsTable,
       postsTable: postsTable,
     );
   }

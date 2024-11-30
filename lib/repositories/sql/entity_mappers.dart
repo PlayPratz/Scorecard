@@ -63,7 +63,7 @@ class EntityMappers {
             no_ball_penalty: rules.noBallPenalty,
             wide_penalty: rules.widePenalty,
             only_single_batter: rules.onlySingleBatter,
-            allow_last_man: rules.allowLastMan,
+            last_wicket_batter: rules.lastWicketBatter,
             days_of_play: rules.daysOfPlay,
             sessions_per_day: rules.sessionsPerDay,
             innings_per_side: rules.inningsPerSide,
@@ -76,7 +76,7 @@ class EntityMappers {
             no_ball_penalty: rules.noBallPenalty,
             wide_penalty: rules.widePenalty,
             only_single_batter: rules.onlySingleBatter,
-            allow_last_man: rules.allowLastMan,
+            last_wicket_batter: rules.lastWicketBatter,
             overs_per_innings: rules.oversPerInnings,
             overs_per_bowler: rules.oversPerBowler,
           ),
@@ -90,7 +90,7 @@ class EntityMappers {
             noBallPenalty: entity.no_ball_penalty,
             widePenalty: entity.wide_penalty,
             onlySingleBatter: entity.only_single_batter,
-            allowLastMan: entity.allow_last_man,
+            lastWicketBatter: entity.last_wicket_batter,
             daysOfPlay: entity.days_of_play!,
             sessionsPerDay: entity.sessions_per_day!,
             inningsPerSide: entity.innings_per_side!,
@@ -101,7 +101,7 @@ class EntityMappers {
             noBallPenalty: entity.no_ball_penalty,
             widePenalty: entity.wide_penalty,
             onlySingleBatter: entity.only_single_batter,
-            allowLastMan: entity.allow_last_man,
+            lastWicketBatter: entity.last_wicket_batter,
             oversPerInnings: entity.overs_per_innings!,
             oversPerBowler: entity.overs_per_bowler!,
           ),
@@ -191,15 +191,17 @@ class EntityMappers {
     final rules = unpackGameRules(entity.gameRulesEntity);
     final startsAt = entity.matchesEntity.starts_at;
 
+    final scheduledMatch = ScheduledCricketMatch(
+      id: id,
+      team1: team1,
+      team2: team2,
+      startsAt: startsAt,
+      venue: venue,
+      rules: rules,
+    );
+
     if (stage == 1) {
-      return ScheduledCricketMatch(
-        id: id,
-        team1: team1,
-        team2: team2,
-        startsAt: startsAt,
-        venue: venue,
-        rules: rules,
-      );
+      return scheduledMatch;
     }
 
     // InitializedCricketMatch
@@ -415,8 +417,9 @@ class EntityMappers {
             runs_scored: post.runsScoredByBatter,
             wicket_type: _wicketTypeToInt(post.wicket),
             wicket_batter_id: post.wicket?.batter.id,
-            wicket_bowler_id: post.wicket?.bowler?.id,
-            wicket_fielder_id: post.wicket?.fielder.id,
+            wicket_fielder_id: post.wicket is FielderWicket
+                ? (post.wicket as FielderWicket).fielder.id
+                : null,
             bowling_extra_type: _bowlingExtraTypeToInt(post.bowlingExtra),
             bowling_extra_penalty: post.bowlingExtraRuns,
             batting_extra_type: _battingExtraType(post.battingExtra),
@@ -443,7 +446,7 @@ class EntityMappers {
             timestamp: post.timestamp,
             type: 2,
             bowler_id: post.next.id,
-            previous_player_id: post.previous?.id,
+            wicket_fielder_id: post.previous?.id,
             comment: post.comment,
           ),
         BatterRetire() => PostsEntity(
@@ -454,7 +457,8 @@ class EntityMappers {
             index_ball: post.index.ball,
             timestamp: post.timestamp,
             type: 3,
-            batter_id: post.retired.batter.id,
+            wicket_batter_id: post.retired.batter.id,
+            wicket_type: _retiredTypeToInt(post.retired),
             comment: post.comment,
           ),
         NextBatter() => PostsEntity(
@@ -466,7 +470,7 @@ class EntityMappers {
             timestamp: post.timestamp,
             type: 4,
             batter_id: post.next.id,
-            previous_player_id: post.previous?.id,
+            wicket_batter_id: post.previous?.id,
             comment: post.comment,
           ),
         RunoutBeforeDelivery() => PostsEntity(
@@ -477,6 +481,9 @@ class EntityMappers {
             index_ball: post.index.ball,
             timestamp: post.timestamp,
             type: 5,
+            wicket_type: _wicketTypeToInt(post.wicket),
+            wicket_batter_id: post.wicket.batter.id,
+            wicket_fielder_id: post.wicket.fielder.id,
             comment: post.comment,
           ),
       };
@@ -509,8 +516,22 @@ class EntityMappers {
         _ => throw UnsupportedError("batting_extra_type out of bounds!"),
       };
 
+  static int? _retiredTypeToInt(Retired retired) => switch (retired) {
+        RetiredDeclared() => 0,
+        RetiredHurt() => 1,
+      };
+
+  static Retired _decipherRetired(
+          PostsEntity entity, Map<String, Player> playerMap) =>
+      switch (entity.wicket_type) {
+        0 => RetiredDeclared(batter: playerMap[entity.wicket_batter_id]!),
+        1 => RetiredHurt(batter: playerMap[entity.wicket_batter_id]!),
+        // null => null,
+        _ => throw UnsupportedError(
+            "retired_type (stored in wicket_type) out of bounds! (id: ${entity.id}, wicket_type: ${entity.wicket_type})")
+      };
+
   static int? _wicketTypeToInt(Wicket? wicket) => switch (wicket) {
-        null => null,
         BowledWicket() => 0,
         HitWicket() => 1,
         LbwWicket() => 2,
@@ -518,21 +539,54 @@ class EntityMappers {
         StumpedWicket() => 4,
         RunoutWicket() => 5,
         TimedOutWicket() => 6,
+        null => null,
+      };
+
+  static Wicket? _decipherWicket(
+          PostsEntity entity, Map<String, Player> playerMap) =>
+      switch (entity.wicket_type) {
+        0 => BowledWicket(
+            batter: playerMap[entity.wicket_batter_id]!,
+            bowler: playerMap[entity.bowler_id]!,
+          ),
+        1 => HitWicket(
+            batter: playerMap[entity.wicket_batter_id]!,
+            bowler: playerMap[entity.bowler_id]!,
+          ),
+        2 => LbwWicket(
+            batter: playerMap[entity.wicket_batter_id]!,
+            bowler: playerMap[entity.bowler_id]!,
+          ),
+        3 => CaughtWicket(
+            batter: playerMap[entity.wicket_batter_id]!,
+            bowler: playerMap[entity.bowler_id]!,
+            fielder: playerMap[entity.wicket_fielder_id]!),
+        4 => StumpedWicket(
+            batter: playerMap[entity.wicket_batter_id]!,
+            bowler: playerMap[entity.bowler_id]!,
+            wicketkeeper: playerMap[entity.wicket_fielder_id]!),
+        5 => RunoutWicket(
+            batter: playerMap[entity.wicket_batter_id]!,
+            fielder: playerMap[entity.wicket_fielder_id]!),
+        6 => TimedOutWicket(batter: playerMap[entity.wicket_batter_id]!),
+        null => null,
+        _ => throw UnsupportedError(
+            "wicket_type out of bounds! (id: ${entity.id}, wicket_type: ${entity.wicket_type})"),
       };
 
   static InningsPost unpackLimitedOversPost(
     PostsEntity entity, {
-    required Map<String, Player> players,
+    required Map<String, Player> playerMap,
   }) =>
       switch (entity.type) {
         0 => Ball(
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
-            bowler: players[entity.bowler_id]!,
-            batter: players[entity.batter_id]!,
+            bowler: playerMap[entity.bowler_id]!,
+            batter: playerMap[entity.batter_id]!,
             runsScoredByBatter: entity.runs_scored!,
-            wicket: wickets[entity.wicket_id],
+            wicket: _decipherWicket(entity, playerMap),
             bowlingExtra: _decipherBowlingExtra(
                 entity.bowling_extra_type, entity.bowling_extra_penalty),
             battingExtra: _decipherBattingExtra(
@@ -542,33 +596,33 @@ class EntityMappers {
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
-            bowler: players[entity.bowler_id]!,
+            bowler: playerMap[entity.bowler_id]!,
           ),
         2 => NextBowler(
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
-            next: players[entity.bowler_id]!,
-            previous: players[entity.previous_player_id],
+            next: playerMap[entity.bowler_id]!,
+            previous: playerMap[entity.wicket_fielder_id],
           ),
         3 => BatterRetire(
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
-            retired: Ret,
+            retired: _decipherRetired(entity, playerMap),
           ),
         4 => NextBatter(
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
-            previous: players[entity.previous_player_id]!,
-            next: players[entity.batter_id]!,
+            next: playerMap[entity.batter_id]!,
+            previous: playerMap[entity.wicket_batter_id]!,
           ),
         5 => RunoutBeforeDelivery(
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
-            wicket: wickets[entity.wicket_id]! as RunoutWicket,
+            wicket: _decipherWicket(entity, playerMap) as RunoutWicket,
           ),
         _ =>
           throw UnsupportedError("posts.type out of bounds! (id:${entity.id})"),

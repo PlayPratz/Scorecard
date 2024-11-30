@@ -9,7 +9,7 @@ import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/cricket_match/services/innings_service.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
-import 'package:scorecard/screens/cricket_game/cricket_game_scorecard.dart';
+import 'package:scorecard/screens/cricket_match/cricket_match_scorecard.dart';
 import 'package:scorecard/screens/cricket_game/cricket_score_section.dart';
 import 'package:scorecard/screens/cricket_game/next_ball_selector_section.dart';
 import 'package:scorecard/screens/cricket_game/players_in_action_section.dart';
@@ -250,7 +250,7 @@ class CricketGameScreenController {
     _dispatchState();
   }
 
-  void retireBatter(BatterInnings batterInnings, Retire retired) {
+  void retireBatter(BatterInnings batterInnings, Retired retired) {
     _service.retireBatterInnings(currentInnings, batterInnings, retired);
     _dispatchState();
   }
@@ -308,7 +308,7 @@ class CricketGameScreenController {
 
     if (wicket is Wicket) {
       nextBallSelectorController.nextWicket = wicket;
-    } else if (wicket is Retire) {
+    } else if (wicket is Retired) {
       final batterInnings =
           _service.getBatterInningsOfPlayer(currentInnings, wicket.batter)!;
       retireBatter(batterInnings, wicket);
@@ -317,7 +317,7 @@ class CricketGameScreenController {
 
   void goScorecard(BuildContext context) {
     Navigator.push(context,
-        MaterialPageRoute(builder: (context) => CricketGameScorecard(game)));
+        MaterialPageRoute(builder: (context) => CricketMatchScorecard(game)));
   }
 
   void goInningsTimeline(BuildContext context) {

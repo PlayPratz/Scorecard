@@ -5,7 +5,7 @@ class Stringify {
   static String score(Score score) => "${score.runs}-${score.wickets}";
 
   static String wicket(Wicket? wicket,
-          {Retire? retired, String ifNone = "not out"}) =>
+          {Retired? retired, String ifNone = "not out"}) =>
       switch (wicket) {
         null => switch (retired) {
             null => ifNone,

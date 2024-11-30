@@ -10,16 +10,16 @@ class PlayerService {
 
     if (id == null) {
       // Create player
-      return _createPlayer(name, fullName: fullName);
+      return await _createPlayer(name, fullName: fullName);
     } else {
-      return _updatePlayer(name, id: id, fullName: fullName);
+      return await _updatePlayer(name, id: id, fullName: fullName);
     }
   }
 
   Future<Player> _createPlayer(String name, {String? fullName}) async {
     if (fullName != null && fullName.isEmpty) fullName = null;
     final player = Player(id: ULID.generate(), name: name, fullName: fullName);
-    _playerRepository.save(player);
+    await _playerRepository.save(player, update: false);
     return player;
   }
 
@@ -27,13 +27,13 @@ class PlayerService {
   Future<Player> _updatePlayer(String name,
       {String? fullName, required String id}) async {
     final player = Player(id: id, name: name, fullName: fullName);
-    await _playerRepository.save(player);
+    await _playerRepository.save(player, update: true);
     return player;
   }
 
   /// Fetches a player of the given [id]
   Future<Player?> getPlayerById(String id) async {
-    final player = _playerRepository.fetchById(id);
+    final player = await _playerRepository.fetchById(id);
     return player;
   }
 
@@ -50,7 +50,7 @@ class PlayerService {
 
   /// Returns the [String] path of the photo of the player.
   Future<String> getPhotoOfPlayer(Player player) async {
-    return "";
+    return ""; // TODO
   }
 
   // Future<Iterable<Player>> searchPlayer(String query) async {

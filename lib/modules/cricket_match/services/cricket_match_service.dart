@@ -2,6 +2,7 @@ import 'package:scorecard/handlers/ulid.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
+import 'package:scorecard/modules/cricket_match/services/innings_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/modules/venue/models/venue_model.dart';
 import 'package:scorecard/repositories/cricket_match_repository.dart';
@@ -24,7 +25,7 @@ class CricketMatchService {
     );
 
     // Add match to repository (stage = 1)
-    await _repository.scheduleCricketMatch(match);
+    await _repository.createCricketMatch(match);
 
     return match;
   }
@@ -158,7 +159,13 @@ class CricketMatchService {
       InitializedCricketMatch cricketMatch) async {
     final game = await _repository.loadCricketGameForMatch(cricketMatch);
     if (cricketMatch is OngoingCricketMatch) {
-      final innings = await _repository.loadAllInningsOfGame(game);
+      final allInnings =
+          (await _repository.loadAllInningsOfGame(game)).toList();
+      final inningsNumberToPostMap = await _repository.loadAllPostsOfGame(game);
+      for (int i = 0; i < allInnings.length; i++) {
+        InningsService().loadInnings(allInnings[i], inningsNumberToPostMap[i]!);
+      }
+      game.innings.addAll(allInnings);
     }
     return game;
   }

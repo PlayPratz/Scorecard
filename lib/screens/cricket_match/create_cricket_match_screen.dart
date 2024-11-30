@@ -316,7 +316,7 @@ class LimitedOverGameRulesController with ChangeNotifier {
   int _widePenalty = 1;
   int _oversPerInnings = 10;
   int _oversPerBowler = 10;
-  bool _allowLastMan = false;
+  bool _lastWicketBatter = false;
   bool _allowSingleBatter = false;
 
   LimitedOversRules _deduceState() => LimitedOversRules.custom(
@@ -326,7 +326,7 @@ class LimitedOverGameRulesController with ChangeNotifier {
         oversPerInnings: _oversPerInnings,
         oversPerBowler: _oversPerBowler,
         onlySingleBatter: _allowSingleBatter,
-        allowLastMan: _allowLastMan,
+        lastWicketBatter: _lastWicketBatter,
       );
 
   void _dispatchState() {
@@ -361,15 +361,15 @@ class LimitedOverGameRulesController with ChangeNotifier {
     _dispatchState();
   }
 
-  set allowLastMan(bool x) {
-    _allowLastMan = x;
+  set lastWicketBatter(bool x) {
+    _lastWicketBatter = x;
     _dispatchState();
   }
 
   set allowSingleBatter(bool x) {
     _allowSingleBatter = x;
     if (_allowSingleBatter) {
-      _allowLastMan = true;
+      _lastWicketBatter = true;
     }
     _dispatchState();
   }

@@ -9,7 +9,7 @@ class GameRulesEntity implements IEntity {
   final int no_ball_penalty;
   final int wide_penalty;
   final bool only_single_batter;
-  final bool allow_last_man;
+  final bool last_wicket_batter;
 
   // Unlimited Overs (Type 0)
   final int? days_of_play;
@@ -27,7 +27,7 @@ class GameRulesEntity implements IEntity {
     required this.no_ball_penalty,
     required this.wide_penalty,
     required this.only_single_batter,
-    required this.allow_last_man,
+    required this.last_wicket_batter,
     this.days_of_play,
     this.sessions_per_day,
     this.innings_per_side,
@@ -86,7 +86,7 @@ class GameRulesEntity implements IEntity {
           no_ball_penalty: map["no_ball_penalty"] as int,
           wide_penalty: map["wide_penalty"] as int,
           only_single_batter: map["only_single_batter"] as bool,
-          allow_last_man: map["allow_last_man"] as bool,
+          last_wicket_batter: map["allow_last_man"] as bool,
           days_of_play: map["days_of_play"] as int?,
           sessions_per_day: map["sessions_per_day"] as int?,
           innings_per_side: map["innings_per_side"] as int?,
@@ -102,7 +102,7 @@ class GameRulesEntity implements IEntity {
         "no_ball_penalty": no_ball_penalty,
         "wide_penalty": wide_penalty,
         "only_single_batter": only_single_batter,
-        "allow_last_man": allow_last_man,
+        "allow_last_man": last_wicket_batter,
         "days_of_play": days_of_play,
         "sessions_per_day": sessions_per_day,
         "innings_per_side": innings_per_side,

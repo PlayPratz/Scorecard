@@ -45,6 +45,50 @@ sealed class InningsPost {
   });
 }
 
+/// A ball is the most major event in a game of cricket.
+///
+/// A bowler delivers the ball to a batter who then attempts to get bat on ball
+/// and score runs.
+class Ball extends InningsPost {
+  /// The bowler who delivered this ball
+  final Player bowler;
+
+  /// The batter who faced this ball
+  final Player batter;
+
+  /// Runs off the bat/ran by the batter(s)
+  final int runsScoredByBatter;
+
+  /// A wicket, if any, that fell on this ball
+  final Wicket? wicket;
+  bool get isWicket => wicket != null;
+
+  /// An extra due to the bowler or fielding team's fault
+  final BowlingExtra? bowlingExtra;
+  bool get isBowlingExtra => bowlingExtra != null;
+  int get bowlingExtraRuns => bowlingExtra != null ? bowlingExtra!.penalty : 0;
+
+  /// An extra when the batters score runs without the bat touching the ball
+  final BattingExtra? battingExtra; // TODO Make this like BowlingExtra
+  bool get isBattingExtra => battingExtra != null;
+  int get battingExtraRuns => battingExtra != null ? battingExtra!.runs : 0;
+
+  /// Total runs awarded to the Batting Team
+  int get runs => runsScoredByBatter + bowlingExtraRuns + battingExtraRuns;
+
+  Ball({
+    required super.index,
+    super.timestamp,
+    super.comment,
+    required this.bowler,
+    required this.batter,
+    required this.runsScoredByBatter,
+    required this.wicket,
+    required this.bowlingExtra,
+    required this.battingExtra,
+  });
+}
+
 /// Posted when a Bowler Retires mid-over due to an injury, being sent off, or
 /// any other reason.
 ///
@@ -96,7 +140,7 @@ class NextBowler extends InningsPost {
 /// walk out to bat, unless the innings has ended due to this post.
 class BatterRetire extends InningsPost {
   /// The batter's retirement
-  final Retire retired;
+  final Retired retired;
 
   /// The batter who has retired
   Player get batter => retired.batter;
@@ -135,6 +179,8 @@ class NextBatter extends InningsPost {
 class RunoutBeforeDelivery extends InningsPost {
   /// The run out that took place before the ball was bowled
   final RunoutWicket wicket;
+
+  Player get batter => wicket.batter;
 
   RunoutBeforeDelivery({
     required super.index,
@@ -229,60 +275,6 @@ class LegBye extends BattingExtra {
 
   @override
   BattingExtraType get type => BattingExtraType.legBye;
-}
-
-/// A ball is the most major event in a game of cricket.
-///
-/// A bowler delivers the ball to a batter who then attempts to get bat on ball
-/// and score runs.
-class Ball extends InningsPost {
-  /// The bowler who delivered this ball
-  final Player bowler;
-
-  /// The batter who faced this ball
-  final Player batter;
-
-  /// Runs off the bat/ran by the batter(s)
-  final int runsScoredByBatter;
-
-  /// A wicket, if any, that fell on this ball
-  final Wicket? wicket;
-  bool get isWicket => wicket != null;
-
-  /// An extra due to the bowler or fielding team's fault
-  final BowlingExtra? bowlingExtra;
-  bool get isBowlingExtra => bowlingExtra != null;
-  int get bowlingExtraRuns => bowlingExtra != null ? bowlingExtra!.penalty : 0;
-
-  /// An extra when the batters score runs without the bat touching the ball
-  final BattingExtra? battingExtra; // TODO Make this like BowlingExtra
-  bool get isBattingExtra => battingExtra != null;
-  int get battingExtraRuns => battingExtra != null ? battingExtra!.runs : 0;
-
-  /// Total runs awarded to the Batting Team
-  int get runs => runsScoredByBatter + bowlingExtraRuns + battingExtraRuns;
-
-  Ball({
-    required super.index,
-    super.timestamp,
-    super.comment,
-    required this.bowler,
-    required this.batter,
-    required this.runsScoredByBatter,
-    required this.wicket,
-    required this.bowlingExtra,
-    required this.battingExtra,
-  });
-
-  // Ball.now({
-  //   required super.index,
-  //   required this.bowler,
-  //   required this.batter,
-  //   required this.runsScoredByBattingTeam,
-  //   required this.wicket,
-  //   required this.bowlingExtra,
-  //   required this.battingExtraType,
-  // }) : datetime = DateTime.now();
 }
 
 /// An Innings is a major component of a game of cricket where one team scores
@@ -465,25 +457,6 @@ class LimitedOversInnings extends Innings {
   bool get isInningsComplete => isTargetAchieved || isBowlingComplete;
 }
 
-// class LimitedOversInningsWithTarget extends LimitedOversInnings {
-//   /// Runs required by the batting team to win the game
-//   final int target;
-//
-//   LimitedOversInningsWithTarget({
-//     required super.battingTeam,
-//     required super.battingLineup,
-//     required super.bowlingTeam,
-//     required super.bowlingLineup,
-//     required super.rules,
-//     required this.target,
-//   });
-//
-//   bool get isTargetAchieved => runs >= target;
-//
-//   @override
-//   bool get isInningsComplete => isTargetAchieved || isBowlingComplete;
-// }
-
 abstract class PlayerInnings {
   final posts = <InningsPost>[];
 }
@@ -493,7 +466,7 @@ class BatterInnings extends PlayerInnings with BattingCalculations {
   BatterInnings(this.player);
 
   Wicket? wicket;
-  Retire? retired;
+  Retired? retired;
 
   @override
   Iterable<Ball> get balls => posts.whereType<Ball>();
@@ -555,20 +528,3 @@ mixin BowlingCalculations {
         null || RunoutWicket() || TimedOutWicket() => false
       };
 }
-
-// class FallOfWicket {
-//   /// The wicket which fell
-//   final Wicket wicket; // TODO Should add retires?
-//
-//   /// Index at which the wicket fell
-//   final InningsIndex index;
-//
-//   /// Runs scored at that point
-//   final int runs;
-//
-//   /// Wickets scored at that point
-//   final int wickets;
-//
-//   FallOfWicket(this.wicket,
-//       {required this.index, required this.runs, required this.wickets});
-// }

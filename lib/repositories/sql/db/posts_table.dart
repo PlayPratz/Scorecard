@@ -24,11 +24,7 @@ class PostsEntity implements IEntity {
   // Wicket
   final int? wicket_type;
   final String? wicket_batter_id;
-  final String? wicket_bowler_id;
   final String? wicket_fielder_id;
-
-  // NextBatter/NextBowler specific
-  final String? previous_player_id;
 
   final String? comment;
 
@@ -49,10 +45,8 @@ class PostsEntity implements IEntity {
     this.bowling_extra_penalty,
     this.batting_extra_type,
     this.batting_extra_runs,
-    this.previous_player_id,
     this.wicket_type,
     this.wicket_batter_id,
-    this.wicket_bowler_id,
     this.wicket_fielder_id,
     this.comment,
   });
@@ -77,9 +71,7 @@ class PostsEntity implements IEntity {
           batting_extra_runs: map["batting_extra_runs"] as int?,
           wicket_type: map["wicket_type"] as int?,
           wicket_batter_id: map["wicket_batter_id"] as String?,
-          wicket_bowler_id: map["wicket_bowler_id"] as String?,
           wicket_fielder_id: map["wicket_fielder_id"] as String?,
-          previous_player_id: map["previous_player_id"] as String?,
           comment: map["comment"] as String?,
         );
 
@@ -102,9 +94,7 @@ class PostsEntity implements IEntity {
         "batting_extra_type": batting_extra_type,
         "batting_extra_runs": batting_extra_runs,
         "wicket_batter_id": wicket_batter_id,
-        "wicket_bowler_id": wicket_bowler_id,
         "wicket_fielder_id": wicket_fielder_id,
-        "previous_player_id": previous_player_id,
         "comment": comment,
       };
 

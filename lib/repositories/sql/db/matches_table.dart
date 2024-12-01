@@ -10,7 +10,7 @@ class MatchesEntity implements IEntity {
   final String team2_id;
   final String venue_id;
   final DateTime starts_at;
-  final int game_rules_id;
+  final int rules_id;
   final String? toss_winner_id;
   final int? toss_choice;
   final int? result_type;
@@ -28,7 +28,7 @@ class MatchesEntity implements IEntity {
     required this.team2_id,
     required this.venue_id,
     required this.starts_at,
-    required this.game_rules_id,
+    required this.rules_id,
     this.toss_winner_id,
     this.toss_choice,
     this.result_type,
@@ -47,8 +47,8 @@ class MatchesEntity implements IEntity {
           team1_id: map["team1_id"] as String,
           team2_id: map["team2_id"] as String,
           venue_id: map["venue_id"] as String,
-          starts_at: map["starts_at"] as DateTime,
-          game_rules_id: map["game_rules_id"] as int,
+          starts_at: readDateTime(map["starts_at"] as int)!,
+          rules_id: map["rules_id"] as int,
           toss_winner_id: map["toss_winner_id"] as String?,
           toss_choice: map["toss_choice"] as int?,
           result_type: map["result_type"] as int?,
@@ -56,7 +56,7 @@ class MatchesEntity implements IEntity {
           result_loser_id: map["result_loser_id"] as String?,
           result_margin_1: map["result_margin_1"] as int?,
           result_margin_2: map["result_margin_2"] as int?,
-          potm_id: map["potm_id"] as String,
+          potm_id: map["potm_id"] as String?,
         );
 
   @override
@@ -67,10 +67,10 @@ class MatchesEntity implements IEntity {
         "team1_id": team1_id,
         "team2_id": team2_id,
         "venue_id": venue_id,
-        "starts_at": starts_at,
-        "game_rules_id": game_rules_id,
+        "starts_at": starts_at.microsecondsSinceEpoch,
+        "rules_id": rules_id,
         "toss_winner_id": toss_winner_id,
-        "toss_choice_id": toss_choice,
+        "toss_choice": toss_choice,
         "result_type": result_type,
         "result_winner_id": result_winner_id,
         "result_loser_id": result_loser_id,

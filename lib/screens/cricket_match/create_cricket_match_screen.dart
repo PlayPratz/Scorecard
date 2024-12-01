@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/services/cricket_match_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
-import 'package:scorecard/modules/venue/models/venue_model.dart';
 import 'package:scorecard/screens/cricket_match/cricket_match_screen_switcher.dart';
 import 'package:scorecard/screens/team/team_list_screen.dart';
 
@@ -23,9 +22,6 @@ class CreateCricketMatchScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: ListView(
           children: [
-            // Text("Let's create a new match!",
-            //     style: Theme.of(context).textTheme.headlineMedium),
-            // const SizedBox(height: 32),
             _TeamSelectorSection(teamController),
             const Divider(height: 64),
             _LimitedOverGameRulesSection(gameRulesController),
@@ -265,7 +261,6 @@ class CreateCricketMatchController {
     final match = await _service.createCricketMatch(
       team1: team1,
       team2: team2,
-      venue: Venue(id: "default", name: "default"),
       rules: rules,
     );
 
@@ -304,12 +299,6 @@ class TeamSelectController with ChangeNotifier {
     }
     _dispatchState();
   }
-}
-
-class TeamSelectState {
-  final Team? team;
-
-  TeamSelectState(this.team);
 }
 
 class LimitedOverGameRulesController with ChangeNotifier {

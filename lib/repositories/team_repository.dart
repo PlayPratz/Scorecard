@@ -25,7 +25,7 @@ class TeamRepository {
     return team;
   }
 
-  Future<Iterable<Team>> fetchAll() async {
+  Future<Iterable<Team>> loadAll() async {
     final entities = await teamsTable.readAll();
     final teams = entities.map((e) => EntityMappers.unpackTeam(e));
     return teams;

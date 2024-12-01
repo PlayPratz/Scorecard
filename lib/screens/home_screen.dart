@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/repositories/provider/repository_provider.dart';
 import 'package:scorecard/screens/common/loading_future_builder.dart';
 import 'package:scorecard/screens/cricket_match/create_cricket_match_screen.dart';
+import 'package:scorecard/screens/cricket_match/cricket_match_list_screen.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,12 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
               title: "New Match",
               onSelect: () => _goCreateMatch(context),
             ),
-            _HomeScreenTile(title: "Load Match"),
+            _HomeScreenTile(
+              title: "Load Match",
+              onSelect: () => _goCricketMatchList(context),
+            ),
             _HomeScreenTile(
               title: "Players",
               onSelect: () => _goPlayerList(context),
             ),
-            _HomeScreenTile(title: "Venues"),
+            // _HomeScreenTile(title: "Venues"),
           ],
         ),
       ),
@@ -62,6 +66,13 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(
           builder: (context) => CreateCricketMatchScreen(controller)),
     );
+  }
+
+  void _goCricketMatchList(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const CricketMatchListScreen()));
   }
 
   void _goPlayerList(BuildContext context) {

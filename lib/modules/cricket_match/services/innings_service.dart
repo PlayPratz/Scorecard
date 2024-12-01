@@ -1,6 +1,8 @@
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/repositories/cricket_match_repository.dart';
+import 'package:scorecard/repositories/provider/repository_provider.dart';
 
 /// Handles the business logic for all operations related to an [Innings].
 class InningsService {
@@ -35,34 +37,29 @@ class InningsService {
   ///
   /// Call this function when a bowler retires mid-over and walks back
   /// to the pavilion.
-  void retireBowlerInnings(Innings innings, BowlerInnings bowlerInnings) {
-    _postToInnings(
-      innings,
-      BowlerRetire(
-        index: _currentIndex(innings),
-        bowler: bowlerInnings.player,
-        // retired: retired,
-      ),
+  Future<void> retireBowlerInnings(
+      Innings innings, BowlerInnings bowlerInnings) async {
+    final post = BowlerRetire(
+      index: _currentIndex(innings),
+      bowler: bowlerInnings.player,
+      // retired: retired,
     );
+    await _postToInnings(innings, post);
   }
 
   /// Adds the given [bowler] to the [innings]
-  void nextBowler(Innings innings, Player bowler) {
+  Future<void> nextBowler(Innings innings, Player bowler) async {
     // Index according to mid-over change
     final index =
         innings.balls.isEmpty || innings.posts.lastOrNull is BowlerRetire
             ? _currentIndex(innings)
             : _nextIndex(innings);
 
+    final post = NextBowler(
+        index: index, previous: innings.bowler?.player, next: bowler);
+
     // Add post to Innings
-    _postToInnings(
-        innings,
-        NextBowler(
-          index: index,
-          previous: innings.bowler?.player,
-          next: bowler,
-          // isMidOverChange: innings.posts.last is BowlerRetire,
-        ));
+    await _postToInnings(innings, post);
   }
 
   /// Creates a new [BowlerInnings] in the given [innings].
@@ -90,19 +87,13 @@ class InningsService {
   ///
   /// Call this function when a batter retires their innings and walks back
   /// to the pavilion.
-  void retireBatterInnings(
-      Innings innings, BatterInnings batterInnings, Retired retired) {
-    _postToInnings(
-      innings,
-      BatterRetire(
-        index: _currentIndex(innings),
-        // batter: batterInnings.player,
-        retired: retired,
-      ),
-    );
+  Future<void> retireBatterInnings(
+      Innings innings, BatterInnings batterInnings, Retired retired) async {
+    final post = BatterRetire(index: _currentIndex(innings), retired: retired);
+    await _postToInnings(innings, post);
   }
 
-  void nextBatter(Innings innings, Player nextBatter) {
+  Future<void> nextBatter(Innings innings, Player nextBatter) async {
     final BatterInnings? previous;
 
     if (_isBatterToBeReplaced(innings.batter1)) {
@@ -120,7 +111,7 @@ class InningsService {
         previous: previous?.player);
 
     // Add Post to Innings
-    _postToInnings(innings, post);
+    await _postToInnings(innings, post);
   }
 
   bool _isBatterToBeReplaced(BatterInnings? batterInnings) =>
@@ -149,7 +140,7 @@ class InningsService {
   }
 
   /// Creates a [Ball] of the given data and adds it to the innings
-  void play(
+  Future<void> play(
     Innings innings, {
     required Player bowler,
     required Player batter,
@@ -158,7 +149,7 @@ class InningsService {
     required BowlingExtraType? bowlingExtraType,
     required BattingExtraType? battingExtraType,
     DateTime? datetime,
-  }) {
+  }) async {
     datetime ??= DateTime.now();
 
     final BowlingExtra? bowlingExtra = switch (bowlingExtraType) {
@@ -192,12 +183,12 @@ class InningsService {
     );
 
     // Add Post to Innings
-    _postToInnings(innings, ball);
+    await _postToInnings(innings, ball);
   }
 
-  void loadInnings(Innings innings, Iterable<InningsPost> posts) {
+  Future<void> loadInnings(Innings innings, Iterable<InningsPost> posts) async {
     for (final post in posts) {
-      _postToInnings(innings, post);
+      await _postToInnings(innings, post, skipSave: true);
     }
   }
 
@@ -205,8 +196,14 @@ class InningsService {
   //   innings.isForfeited = true;
   // }
 
-  void _postToInnings(Innings innings, InningsPost post) {
+  Future<void> _postToInnings(Innings innings, InningsPost post,
+      {bool skipSave = false}) async {
+    if (!skipSave) {
+      final postId = await _repository.post(innings, post);
+      post.id = postId;
+    }
     innings.posts.add(post);
+
     switch (post) {
       case Ball():
         _handleBallPost(innings, post);
@@ -403,10 +400,12 @@ class InningsService {
     batterInnings?.posts.remove(post);
   }
 
-  void undoPostFromInnings(Innings innings) {
+  Future<void> undoPostFromInnings(Innings innings) async {
     if (innings.posts.isEmpty) return;
 
     final post = innings.posts.removeLast();
+    await _repository.unpost(innings, post);
+
     switch (post) {
       case Ball():
         _undoBallPost(innings, post);
@@ -447,4 +446,7 @@ class InningsService {
       return PostIndex(currentIndex.over, currentIndex.ball + 1);
     }
   }
+
+  CricketMatchRepository get _repository =>
+      RepositoryProvider().getCricketMatchRepository();
 }

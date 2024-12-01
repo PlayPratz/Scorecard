@@ -51,41 +51,6 @@ class MatchesExpandedEntity implements IEntity {
   String get id => matchesEntity.id;
 }
 
-// {
-//   "id": "m1",
-//   "stage": 3,
-//   "starts_at": "29/06/2024",
-//   "toss_winner_id": "t3",
-//   "toss_choice": 1,
-//   "result_type": null,
-//   "result_winner_id": null,
-//   "result_loser_id": null,
-//   "result_margin_1": null,
-//   "result_margin_2": null,
-//   "potm_id": null,
-//   "venue_id:1": "v1",
-//   "venue_name": "default",
-//   "rules_type": 1,
-//   "rules_balls_per_over": 6,
-//   "rules_no_ball_penalty": 1,
-//   "rules_wide_penalty": 1,
-//   "rules_only_single_batter": 0,
-//   "rules_allow_last_man": 0,
-//   "rules_days_of_play": null,
-//   "rules_session_per_day": null,
-//   "rules_innings_per_side": null,
-//   "rules_overs_per_innings": 5,
-//   "rules_overs_per_bowler": 2,
-//   "team1_id": "t1",
-//   "team1_name": "Mumbai Indians",
-//   "team1_short": "MI",
-//   "team1_color": null,
-//   "team2_id": "t3",
-//   "team2_name": "Royal Challengers Bengaluru",
-//   "team2_short": "RCB",
-//   "team2_color": null
-// };
-
 class MatchesExpandedView extends ICrud<MatchesExpandedEntity> {
   @override
   Future<int> create(MatchesExpandedEntity object) {

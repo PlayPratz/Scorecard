@@ -10,7 +10,7 @@ class PostsEntity implements IEntity {
   final int? session_number;
   final int index_over;
   final int index_ball;
-  final DateTime? timestamp;
+  final DateTime timestamp;
   final int type;
   final String? bowler_id;
   final String? batter_id;
@@ -36,7 +36,7 @@ class PostsEntity implements IEntity {
     this.session_number,
     required this.index_over,
     required this.index_ball,
-    this.timestamp,
+    required this.timestamp,
     required this.type,
     this.bowler_id,
     this.batter_id,
@@ -60,7 +60,7 @@ class PostsEntity implements IEntity {
           session_number: map["session_number"] as int?,
           index_over: map["index_over"] as int,
           index_ball: map["index_ball"] as int,
-          timestamp: map["timestamp"] as DateTime,
+          timestamp: readDateTime(map["timestamp"] as int)!,
           type: map["type"] as int,
           bowler_id: map["bowler_id"] as String?,
           batter_id: map["batter_id"] as String?,
@@ -84,7 +84,7 @@ class PostsEntity implements IEntity {
         "session_number": session_number,
         "index_over": index_over,
         "index_ball": index_ball,
-        "timestamp": timestamp,
+        "timestamp": timestamp?.microsecondsSinceEpoch,
         "type": type,
         "bowler_id": bowler_id,
         "batter_id": batter_id,
@@ -93,6 +93,7 @@ class PostsEntity implements IEntity {
         "bowling_extra_penalty": bowling_extra_penalty,
         "batting_extra_type": batting_extra_type,
         "batting_extra_runs": batting_extra_runs,
+        "wicket_type": wicket_type,
         "wicket_batter_id": wicket_batter_id,
         "wicket_fielder_id": wicket_fielder_id,
         "comment": comment,
@@ -115,5 +116,9 @@ class PostsTable extends ICrud<PostsEntity> {
         .query(table: table, where: "match_id = ?", whereArgs: [matchId]);
     final postsEntities = result.map((e) => PostsEntity.deserialize(e));
     return postsEntities;
+  }
+
+  Future<void> delete(int id) async {
+    await sql.delete(table: table, where: where, whereArgs: [id]);
   }
 }

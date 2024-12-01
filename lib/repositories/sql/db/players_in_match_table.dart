@@ -48,14 +48,15 @@ class PlayersInMatchEntity implements IEntity {
           match_id: map["match_id"] as String,
           team_id: map["team_id"] as String,
           player_id: map["player_id"] as String,
-          is_captain: map["is_captain"] as bool,
+          is_captain: readBool(map["is_captain"] as int)!,
           opponent_team_id: map["opponent_team_id"] as String,
-          is_match_completed: map["is_match_completed"] as bool,
+          is_match_completed:
+              readBool(map["is_match_completed"] as int?) ?? false, // TODO
           batter_number: map["batter_number"] as int?,
           runs_scored: map["runs_scored"] as int?,
           balls_faced: map["balls_faced"] as int?,
-          is_out: map["is_out"] as bool?,
-          is_retired: map["is_retired"] as bool?,
+          is_out: readBool(map["is_out"] as int?),
+          is_retired: readBool(map["is_retired"] as int?),
           strike_rate: map["strike_rate"] as double?,
           runs_conceded: map["runs_conceded"] as int?,
           wickets_taken: map["wickets_taken"] as int?,
@@ -69,14 +70,22 @@ class PlayersInMatchEntity implements IEntity {
         "match_id": match_id,
         "team_id": team_id,
         "player_id": player_id,
-        "is_captain": is_captain,
+        "is_captain": is_captain ? 1 : 0,
         "opponent_team_id": opponent_team_id,
-        "is_match_completed": is_match_completed,
+        "is_match_completed": is_match_completed ? 1 : 0,
         "batter_number": batter_number,
         "runs_scored": runs_scored,
         "balls_faced": balls_faced,
-        "is_out": is_out,
-        "is_retired": is_retired,
+        "is_out": is_out == null
+            ? null
+            : is_out!
+                ? 1
+                : 0,
+        "is_retired": is_retired == null
+            ? null
+            : is_retired!
+                ? 1
+                : 0,
         "strike_rate": strike_rate,
         "runs_conceded": runs_conceded,
         "wickets_taken": wickets_taken,

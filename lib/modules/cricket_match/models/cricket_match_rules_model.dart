@@ -1,5 +1,5 @@
 sealed class GameRules {
-  final int? id; // TODO
+  int? id; // TODO
 
   final int ballsPerOver;
   // final int wicketsPerInnings; TODO

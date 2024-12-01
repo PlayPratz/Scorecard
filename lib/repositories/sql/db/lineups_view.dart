@@ -5,12 +5,6 @@ import 'package:scorecard/repositories/sql/handlers/sql_db_handler.dart';
 import 'package:scorecard/repositories/sql/keys.dart';
 
 class LineupsExpandedEntity implements IEntity {
-  // final String match_id;
-  // final String team_id;
-  // final String player_id;
-  // final bool is_captain;
-  // final String name;
-  // final String full_name;
   final PlayersInMatchEntity lineupsEntity;
   final PlayersEntity playersEntity;
 
@@ -72,5 +66,5 @@ class LineupsExpandedView extends ICrud<LineupsExpandedEntity> {
   SQLDBHandler get _sql => SQLDBHandler.instance;
 
   @override
-  String get table => Views.lineupsExpanded;
+  String get table => Views.lineups;
 }

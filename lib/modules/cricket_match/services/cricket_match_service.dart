@@ -9,20 +9,29 @@ import 'package:scorecard/repositories/cricket_match_repository.dart';
 import 'package:scorecard/repositories/provider/repository_provider.dart';
 
 class CricketMatchService {
+  Future<Iterable<ScheduledCricketMatch>> getAllMatches() async {
+    final result = await _repository.loadAllCricketMatches();
+    return result.cast();
+  }
+
   /// Creates a cricket match from the provided data. Also saves the same in
   /// the repository
   Future<ScheduledCricketMatch> createCricketMatch({
     required Team team1,
     required Team team2,
-    required Venue venue,
     required GameRules rules,
   }) async {
+    if (rules.id == null) {
+      final rulesId = await _repository.saveGameRules(rules);
+      rules.id = rulesId;
+    }
+
     final match = ScheduledCricketMatch(
-      id: ULID.generate(),
+      id: UlidHandler.generate(),
       team1: team1,
       team2: team2,
       startsAt: DateTime.now(),
-      venue: venue,
+      venue: Venue(id: "default", name: "default"), // TODO
       rules: rules,
     );
 
@@ -59,6 +68,7 @@ class CricketMatchService {
   Future<OngoingCricketMatch> commenceCricketMatch(
       InitializedCricketMatch initializedMatch) async {
     final ongoingMatch = OngoingCricketMatch.fromInitialized(initializedMatch);
+    ongoingMatch.game = initializedMatch.game;
 
     // Update match in repository (stage = 3)
     await _repository.saveCricketMatch(ongoingMatch, update: true);
@@ -94,7 +104,21 @@ class CricketMatchService {
     return ongoingMatch;
   }
 
-  Future<Innings> startNextInningsInGame(CricketGame game,
+  Future<CricketMatch> progressMatch(OngoingCricketMatch match) async {
+    final game = match.game;
+    if (game is LimitedOversGame) {
+      if (game.innings.length == 2) {
+        return await _endMatch(match);
+      } else {
+        await startNextInningsInGame(game, shouldSwitchRoles: true);
+        return match;
+      }
+    } else {
+      throw UnimplementedError("Unlimited Overs Game!");
+    }
+  }
+
+  Future<void> startNextInningsInGame(CricketGame game,
       {required bool shouldSwitchRoles}) async {
     late final Team battingTeam;
     late final Lineup battingLineup;
@@ -120,11 +144,9 @@ class CricketMatchService {
         battingLineup: battingLineup,
         bowlingTeam: bowlingTeam,
         bowlingLineup: bowlingLineup);
-
-    return innings;
   }
 
-  Future<Innings> _startInningsInGame(
+  Future<void> _startInningsInGame(
     CricketGame game, {
     required Team battingTeam,
     required Lineup battingLineup,
@@ -133,6 +155,7 @@ class CricketMatchService {
   }) async {
     final Innings innings = switch (game) {
       LimitedOversGame() => LimitedOversInnings(
+          matchId: game.matchId,
           inningsNumber: _getNextInningsNumber(game),
           rules: game.rules,
           battingTeam: battingTeam,
@@ -141,6 +164,7 @@ class CricketMatchService {
           bowlingLineup: bowlingLineup,
         ),
       UnlimitedOversGame() => UnlimitedOversInnings(
+          matchId: game.matchId,
           inningsNumber: _getNextInningsNumber(game),
           rules: game.rules,
           battingTeam: battingTeam,
@@ -151,8 +175,54 @@ class CricketMatchService {
     };
     game.innings.add(innings);
     await _repository.storeLastInningsOfGame(game);
+  }
 
-    return innings;
+  Future<CompletedCricketMatch> _endMatch(
+      OngoingCricketMatch cricketMatch) async {
+    final game = cricketMatch.game;
+    switch (game) {
+      case UnlimitedOversGame():
+        throw UnimplementedError("I haven't coded for Unlimited Overs yet :-(");
+      case LimitedOversGame():
+        int team1Runs = 0;
+        int team2Runs = 0;
+
+        for (final innings in game.innings) {
+          if (innings.battingTeam == game.team1) {
+            team1Runs += innings.runs;
+          } else if (innings.battingTeam == game.team2) {
+            team2Runs += innings.runs;
+          }
+        }
+
+        final LimitedOversMatchResult result;
+
+        if (team1Runs == team2Runs) {
+          result = TieResult(team1: game.team1, team2: game.team2);
+        } else if (team1Runs > team2Runs &&
+                game.innings.first.battingTeam == game.team1 ||
+            team2Runs > team1Runs &&
+                game.innings.first.battingTeam == game.team2) {
+          result = WinByDefendingResult(
+              winner: game.innings.first.battingTeam,
+              loser: game.innings.first.bowlingTeam,
+              runsMargin: (team1Runs - team2Runs).abs());
+        } else {
+          result = WinByChasingResult(
+            winner: game.innings.last.battingTeam,
+            loser: game.innings.last.bowlingTeam,
+            wicketsLeft: -1,
+            ballsToSpare: game.innings.last.ballsLeft,
+          );
+        }
+
+        final completedMatch = CompletedCricketMatch.fromOngoing(cricketMatch,
+            result: result, playerOfTheMatch: null); // TODO POTM
+
+        await _repository.saveCricketMatch(completedMatch, update: true);
+
+        return completedMatch;
+    }
   }
 
   int _getNextInningsNumber(CricketGame game) => game.innings.length + 1;
@@ -168,9 +238,12 @@ class CricketMatchService {
           (await _repository.loadAllInningsOfGame(game)).toList();
       final inningsNumberToPostMap = await _repository.loadAllPostsOfGame(game);
       for (int i = 0; i < allInnings.length; i++) {
-        InningsService().loadInnings(allInnings[i], inningsNumberToPostMap[i]!);
+        if (inningsNumberToPostMap.containsKey(i + 1)) {
+          await InningsService()
+              .loadInnings(allInnings[i], inningsNumberToPostMap[i + 1]!);
+        }
       }
-      game.innings.addAll(allInnings);
+      game.innings.addAll(allInnings.cast<LimitedOversInnings>());
     }
     // Initialize the CricketGame in the match
     cricketMatch.game = game;

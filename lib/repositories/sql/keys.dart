@@ -20,6 +20,6 @@ class Tables {
 class Views {
   // Matches
   static const matchesExpanded = "matches_expanded";
-  // static const lineups = "lineups";
-  static const lineupsExpanded = "lineups_expanded";
+  static const lineups = "lineups";
+  // static const lineupsExpanded = "lineups_expanded";
 }

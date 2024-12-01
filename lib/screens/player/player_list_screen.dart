@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/player/services/player_service.dart';
-import 'package:scorecard/repositories/provider/repository_provider.dart';
 import 'package:scorecard/screens/player/player_form_screen.dart';
 
 class AllPlayersScreen extends StatefulWidget {
@@ -12,16 +13,13 @@ class AllPlayersScreen extends StatefulWidget {
 }
 
 class _AllPlayersScreenState extends State<AllPlayersScreen> {
-  // late final Future<Iterable<Player>> _future;
-
-  late AllPlayersState _state;
+  late _PlayerListState _state;
 
   @override
   void initState() {
     super.initState();
 
     _loadAllPlayers();
-    // _future = RepositoryProvider().getPlayerRepository().readAll();
   }
 
   @override
@@ -31,11 +29,10 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
         title: const Text("All Players"),
       ),
       body: switch (_state) {
-        AllPlayersLoadingState() => const Center(
+        _LoadingState() => const Center(
             child: CircularProgressIndicator(),
           ),
-        AllPlayersLoadedState() => _PlayerListBuilder(
-            (_state as AllPlayersLoadedState).players,
+        _LoadedState() => _PlayerListBuilder((_state as _LoadedState).players,
             onSelectPlayer: (player) =>
                 _goCreatePlayerScreen(context, player: player)),
       },
@@ -46,18 +43,6 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: const BottomAppBar(),
     );
-  }
-
-  Future<void> _loadAllPlayers() async {
-    setState(() {
-      _state = AllPlayersLoadingState();
-    });
-
-    final players = await RepositoryProvider().getPlayerRepository().fetchAll();
-
-    setState(() {
-      _state = AllPlayersLoadedState(players.toList());
-    });
   }
 
   void _goCreatePlayerScreen(BuildContext context, {Player? player}) {
@@ -72,36 +57,105 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
 
   Future<void> _onSavePlayer(String name, String? fullName,
       {String? id}) async {
-    Navigator.pop(context);
     setState(() {
-      _state = AllPlayersLoadingState();
+      _state = _LoadingState();
     });
+    await PlayerService().savePlayer(name, fullName: fullName, id: id);
+    await _loadAllPlayers();
+  }
+
+  Future<void> _loadAllPlayers() async {
+    setState(() {
+      _state = _LoadingState();
+    });
+
+    final players = (await PlayerService().getAllPlayers()).toList();
+
+    setState(() {
+      _state = _LoadedState(players);
+    });
+  }
+}
+
+class PlayerListController {
+  List<Player>? players;
+
+  PlayerListController(this.players);
+
+  final _streamController = StreamController<_PlayerListState>();
+  Stream<_PlayerListState> get _stream => _streamController.stream;
+
+  Future<void> _loadAllPlayers() async {
+    if (players != null) {
+      _streamController.add(_LoadedState(players!));
+      return;
+    }
+    _streamController.add(_LoadingState());
+
+    players = (await PlayerService().getAllPlayers()).toList();
+
+    _streamController.add(_LoadedState(players!));
+  }
+
+  void _goCreatePlayerScreen(BuildContext context, {Player? player}) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => PlayerFormScreen(
+                  player: player,
+                  onSavePlayer: (n, fn, {id}) => _onSavePlayer(n, fn, id: id),
+                )));
+  }
+
+  Future<void> _onSavePlayer(String name, String? fullName,
+      {String? id}) async {
+    _streamController.add(_LoadingState());
+    players = null;
     await PlayerService().savePlayer(name, fullName: fullName, id: id);
     await _loadAllPlayers();
   }
 }
 
-sealed class AllPlayersState {}
+sealed class _PlayerListState {}
 
-class AllPlayersLoadingState extends AllPlayersState {}
+class _LoadingState extends _PlayerListState {}
 
-class AllPlayersLoadedState extends AllPlayersState {
+class _LoadedState extends _PlayerListState {
   final List<Player> players;
 
-  AllPlayersLoadedState(this.players);
+  _LoadedState(this.players);
 }
 
 class PickPlayerScreen extends StatelessWidget {
-  final List<Player> players;
+  final List<Player>? players;
 
   final void Function(Player player)? onSelectPlayer;
-  const PickPlayerScreen(this.players, {super.key, this.onSelectPlayer});
+  const PickPlayerScreen({this.players, super.key, this.onSelectPlayer});
 
   @override
   Widget build(BuildContext context) {
+    final controller = PlayerListController(players);
+    controller._loadAllPlayers();
     return Scaffold(
       appBar: AppBar(),
-      body: _PlayerListBuilder(players, onSelectPlayer: onSelectPlayer),
+      body: StreamBuilder(
+          stream: controller._stream,
+          initialData: _LoadingState(),
+          builder: (context, snapshot) {
+            final state = snapshot.data;
+            if (state is _LoadedState) {
+              return _PlayerListBuilder(state.players,
+                  onSelectPlayer: onSelectPlayer);
+            }
+            return const Center(child: CircularProgressIndicator());
+          }),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: players == null
+          ? FloatingActionButton(
+              child: const Icon(Icons.add),
+              onPressed: () => controller._goCreatePlayerScreen(context))
+          : null,
+      bottomNavigationBar: const BottomAppBar(),
     );
   }
 }

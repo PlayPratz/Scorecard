@@ -179,11 +179,15 @@ class WinByChasingResult extends LimitedOversMatchResult {
   final Team winner;
   final Team loser;
 
-  // final int wicketsMargin; TODO
+  final int wicketsLeft;
   final int ballsToSpare;
 
-  WinByChasingResult(
-      {required this.winner, required this.loser, required this.ballsToSpare});
+  WinByChasingResult({
+    required this.winner,
+    required this.loser,
+    required this.ballsToSpare,
+    required this.wicketsLeft,
+  });
 }
 
 class WinByDefendingResult extends LimitedOversMatchResult {
@@ -243,7 +247,6 @@ sealed class CricketGame {
 
   factory CricketGame.auto(
     CricketMatch match, {
-    // required InitializedCricketMatch match,
     required Lineup lineup1,
     required Lineup lineup2,
   }) =>
@@ -253,16 +256,6 @@ sealed class CricketGame {
         LimitedOversRules() =>
           LimitedOversGame._(match: match, lineup1: lineup1, lineup2: lineup2),
       };
-
-  // CricketGame.of(
-  //   InitializedCricketMatch cricketMatch, {
-  //   required Lineup lineup1,
-  //   required Lineup lineup2,
-  // }) : this(
-  //         match: cricketMatch,
-  //         lineup1: lineup1,
-  //         lineup2: lineup2,
-  //       );
 }
 
 /// Represents an Unlimited Overs game where both teams play across a

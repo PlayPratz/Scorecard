@@ -4,7 +4,7 @@ import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/repositories/sql/db/game_rules_table.dart';
 import 'package:scorecard/repositories/sql/db/innings_table.dart';
-import 'package:scorecard/repositories/sql/db/lineups_expanded_view.dart';
+import 'package:scorecard/repositories/sql/db/lineups_view.dart';
 import 'package:scorecard/repositories/sql/db/players_in_match_table.dart';
 import 'package:scorecard/repositories/sql/db/matches_expanded_view.dart';
 import 'package:scorecard/repositories/sql/db/matches_table.dart';
@@ -29,14 +29,16 @@ class CricketMatchRepository {
       required this.inningsTable,
       required this.postsTable});
 
-  Future<void> saveGameRules(GameRules rules) async {
+  Future<int> saveGameRules(GameRules rules) async {
     final entity = EntityMappers.repackGameRules(rules);
     if (rules.id == null) {
       // Insert the GameRules
-      await gameRulesTable.create(entity);
+      final result = await gameRulesTable.create(entity);
+      return result;
     } else {
       // Update the GameRules
-      await gameRulesTable.update(entity);
+      final result = await gameRulesTable.update(entity);
+      return rules.id!;
     }
   }
 
@@ -77,7 +79,7 @@ class CricketMatchRepository {
       bowlers: bowlers,
     );
     final lineup2Entities = EntityMappers.repackLineup(
-      game.lineup1,
+      game.lineup2,
       matchId: id,
       teamId: game.team2.id,
       opponentTeamId: game.team1.id,
@@ -86,13 +88,16 @@ class CricketMatchRepository {
       bowlers: bowlers,
     );
 
+    final allEntities = [...lineup1Entities, ...lineup2Entities];
+
     if (update) {
-      // TODO Optimize
-      [...lineup1Entities, ...lineup2Entities]
-          .map((e) async => await playersInMatchTable.update(e));
+      for (final entity in allEntities) {
+        await playersInMatchTable.update(entity);
+      }
     } else {
-      [...lineup1Entities, ...lineup2Entities]
-          .map((e) async => await playersInMatchTable.create(e));
+      for (final entity in allEntities) {
+        await playersInMatchTable.create(entity);
+      }
     }
   }
 
@@ -100,20 +105,28 @@ class CricketMatchRepository {
     final id = game.matchId;
     // Put the last innings of the given game in the DB
     final innings = game.innings.last;
-    final inningsEntity = EntityMappers.repackInnings(innings, matchId: id);
+    final inningsEntity = EntityMappers.repackInnings(innings);
 
     // Insert the Innings
-    inningsTable.create(inningsEntity);
+    await inningsTable.create(inningsEntity);
   }
 
-  Future<void> postToGame(
-      CricketGame game, Innings innings, InningsPost post) async {
-    final id = game.matchId;
+  Future<int> post(Innings innings, InningsPost post) async {
+    final id = innings.matchId;
     final postEntity = EntityMappers.repackLimitedOversPost(post,
-        matchId: id, inningsNumber: game.innings.indexOf(innings));
+        matchId: id, inningsNumber: innings.inningsNumber);
 
     // Insert the Post
-    postsTable.create(postEntity);
+    final postId = await postsTable.create(postEntity);
+    return postId;
+  }
+
+  Future<void> unpost(Innings innings, InningsPost post) async {
+    final id = post.id;
+    if (id == null) {
+      throw UnsupportedError("Cannot delete post when id is null!");
+    }
+    await postsTable.delete(id);
   }
 
   Future<CricketGame> loadCricketGameForMatch(
@@ -183,5 +196,11 @@ class CricketMatchRepository {
     }
 
     return postMap;
+  }
+
+  Future<Iterable<CricketMatch>> loadAllCricketMatches() async {
+    final entities = await cricketMatchesExpandedView.readAll();
+    final cricketMatches = entities.map((e) => EntityMappers.unpackMatch(e));
+    return cricketMatches;
   }
 }

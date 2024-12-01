@@ -10,6 +10,20 @@ class Player {
     this.fullName,
     // required this.gender,
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (other is Player &&
+        other.id == id &&
+        other.name == name &&
+        other.fullName == fullName) {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
 //
 // class Player extends PlayerDraft {

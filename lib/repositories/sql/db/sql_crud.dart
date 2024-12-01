@@ -11,6 +11,16 @@ abstract class IEntity {
   // factory deserialize(Map<String, Object> map)
 }
 
+bool? readBool(Object? object) {
+  if (object == null) return null;
+  return object as int == 1;
+}
+
+DateTime? readDateTime(int? micros) {
+  if (micros == null) return null;
+  return DateTime.fromMicrosecondsSinceEpoch(micros);
+}
+
 abstract class ICrud<T extends IEntity> {
   // Future<void> initialize();
 
@@ -83,7 +93,7 @@ abstract class ICrud<T extends IEntity> {
   /// Call this function to DELETE an object from the database.
   ///
   /// throws [StateError] if an object of the given [id] does not exist.
-  // Future<void> delete(String id);
+  // Future<void> delete(String id) async
 
   SQLDBHandler get sql => SQLDBHandler.instance;
 }

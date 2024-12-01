@@ -18,7 +18,8 @@ class PlayerService {
 
   Future<Player> _createPlayer(String name, {String? fullName}) async {
     if (fullName != null && fullName.isEmpty) fullName = null;
-    final player = Player(id: ULID.generate(), name: name, fullName: fullName);
+    final player =
+        Player(id: UlidHandler.generate(), name: name, fullName: fullName);
     await _playerRepository.save(player, update: false);
     return player;
   }
@@ -38,8 +39,8 @@ class PlayerService {
   }
 
   /// Fetches all players
-  Future<Iterable<Player>> getAllPlayers(int page) async {
-    final players = await _playerRepository.fetchAll();
+  Future<Iterable<Player>> getAllPlayers() async {
+    final players = await _playerRepository.loadAll();
     return players;
   }
 

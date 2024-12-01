@@ -35,22 +35,22 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
             ? const Text("Create a Player")
             : Text(widget.player!.name),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              if (widget.player != null)
-                Text(
-                  "ID#${widget.player!.id}",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(color: Colors.black54),
-                  textAlign: TextAlign.right,
-                ),
-              TextFormField(
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          children: [
+            if (widget.player != null)
+              Text(
+                "#${widget.player!.id}",
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall
+                    ?.copyWith(color: Colors.black54),
+                textAlign: TextAlign.right,
+              ),
+            ListTile(
+              title: TextFormField(
                 controller: _nameController,
                 maxLength: 10,
                 decoration: const InputDecoration(hintText: "Name"),
@@ -61,16 +61,17 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 32),
-              TextFormField(
+            ),
+            ListTile(
+              title: TextFormField(
                 controller: _fullNameController,
                 maxLength: 32,
                 decoration:
                     const InputDecoration(hintText: "Full Name (optional)"),
                 validator: (_) => null,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -95,5 +96,6 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
     }
     widget.onSavePlayer(_nameController.text, _fullNameController.text,
         id: widget.player?.id);
+    Navigator.pop(context);
   }
 }

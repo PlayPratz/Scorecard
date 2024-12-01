@@ -25,7 +25,7 @@ class PlayerRepository {
     return player;
   }
 
-  Future<Iterable<Player>> fetchAll() async {
+  Future<Iterable<Player>> loadAll() async {
     final entities = await playersTable.readAll();
     final players = entities.map((e) => EntityMappers.unpackPlayer(e));
     return players;

@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
@@ -29,6 +30,9 @@ class PostIndex {
 /// It made sense because you are *posting* every event to this innings. I did
 /// not want to name this InningsEvent because that sounds like a UI Event.
 sealed class InningsPost {
+  /// The unique identifier of this Post
+  int? id; // TODO This is not final
+
   /// The index of this post in the innings
   final PostIndex index;
 
@@ -36,13 +40,14 @@ sealed class InningsPost {
   final String? comment;
 
   /// The timestamp of this post
-  final DateTime? timestamp;
+  final DateTime timestamp;
 
   InningsPost({
+    this.id,
     required this.index,
-    this.timestamp,
+    DateTime? timestamp,
     this.comment,
-  });
+  }) : timestamp = timestamp ?? DateTime.now();
 }
 
 /// A ball is the most major event in a game of cricket.
@@ -77,6 +82,7 @@ class Ball extends InningsPost {
   int get runs => runsScoredByBatter + bowlingExtraRuns + battingExtraRuns;
 
   Ball({
+    super.id,
     required super.index,
     super.timestamp,
     super.comment,
@@ -104,6 +110,7 @@ class BowlerRetire extends InningsPost {
   // final RetiredBowler retired;
 
   BowlerRetire({
+    super.id,
     required super.index,
     super.timestamp,
     super.comment,
@@ -124,6 +131,7 @@ class NextBowler extends InningsPost {
   // final bool isMidOverChange;
 
   NextBowler({
+    super.id,
     required super.index,
     super.timestamp,
     super.comment,
@@ -146,6 +154,7 @@ class BatterRetire extends InningsPost {
   Player get batter => retired.batter;
 
   BatterRetire({
+    super.id,
     required super.index,
     super.timestamp,
     super.comment,
@@ -163,6 +172,7 @@ class NextBatter extends InningsPost {
   final Player next;
 
   NextBatter({
+    super.id,
     required super.index,
     super.timestamp,
     super.comment,
@@ -183,6 +193,7 @@ class RunoutBeforeDelivery extends InningsPost {
   Player get batter => wicket.batter;
 
   RunoutBeforeDelivery({
+    super.id,
     required super.index,
     super.timestamp,
     super.comment,
@@ -281,6 +292,9 @@ class LegBye extends BattingExtra {
 /// runs (batting team) while the other tries to take their wickets and prevent
 /// the flow of runs (bowling/fielding team)
 sealed class Innings {
+  /// The unique identifier of the match in which this innings takes place
+  final String matchId;
+
   /// The ordinal number of the innings in the Cricket Game
   final int inningsNumber;
 
@@ -296,6 +310,7 @@ sealed class Innings {
   // final CricketGame game;
 
   Innings({
+    required this.matchId,
     required this.inningsNumber,
     required this.battingTeam,
     required this.battingLineup,
@@ -304,6 +319,7 @@ sealed class Innings {
   }) : target = null;
 
   Innings.target({
+    required this.matchId,
     required this.inningsNumber,
     required this.battingTeam,
     required this.battingLineup,
@@ -416,6 +432,7 @@ sealed class Innings {
 class UnlimitedOversInnings extends Innings {
   final UnlimitedOversRules _rules;
   UnlimitedOversInnings({
+    required super.matchId,
     required super.inningsNumber,
     required super.battingTeam,
     required super.battingLineup,
@@ -435,6 +452,7 @@ class UnlimitedOversInnings extends Innings {
 class LimitedOversInnings extends Innings {
   final LimitedOversRules _rules;
   LimitedOversInnings({
+    required super.matchId,
     required super.inningsNumber,
     required super.battingTeam,
     required super.battingLineup,
@@ -448,10 +466,11 @@ class LimitedOversInnings extends Innings {
   @override
   LimitedOversRules get rules => _rules;
 
-  bool get isBowlingComplete =>
-      balls.isNotEmpty &&
-      balls.last.index.over + 1 == rules.oversPerInnings &&
-      balls.last.index.ball == rules.ballsPerOver;
+  int get ballsBowled => balls.where((ball) => !ball.isBowlingExtra).length;
+  int get ballsToBeBowled => rules.oversPerInnings * rules.ballsPerOver;
+  int get ballsLeft => max(ballsToBeBowled - ballsBowled, 0);
+
+  bool get isBowlingComplete => ballsLeft == 0;
 
   @override
   bool get isInningsComplete => isTargetAchieved || isBowlingComplete;

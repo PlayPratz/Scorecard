@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
-import 'package:scorecard/repositories/sql/keys.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SQLDBHandler {
@@ -16,14 +15,124 @@ class SQLDBHandler {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onCreate: (db, version) async {
-        final sql =
+        final completeSql =
             await rootBundle.loadString("assets/sql/cricket-create.sql");
-        await db.execute(sql);
+        final sqlList = completeSql.split(";");
+        for (final query in sqlList) {
+          final sql = query.trim();
+          if (sql.isNotEmpty) await db.execute('$sql;');
+        }
+
+        await db.rawInsert('''
+        INSERT INTO venues (id, name) VALUES ('default', 'default');
+        ''');
+
+        await db.rawInsert('''
+INSERT INTO game_rules (type, balls_per_over, no_ball_penalty, wide_penalty, only_single_batter, last_wicket_batter, overs_per_innings, overs_per_bowler) VALUES
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1),
+    (-1, -1, -1, -1, FALSE, FALSE, -1, -1);''');
       },
       singleInstance: true,
-      version: 1,
+      version: 2,
     );
-    final res = await _db.query(Tables.players);
   }
 
   Future<int> insert({
@@ -53,6 +162,15 @@ class SQLDBHandler {
   }) async {
     final rowsAffected =
         await _db.update(table, values, where: where, whereArgs: whereArgs);
+    return rowsAffected;
+  }
+
+  Future<int> delete(
+      {required String table,
+      required String where,
+      required List<Object?> whereArgs}) async {
+    final rowsAffected =
+        await _db.delete(table, where: where, whereArgs: whereArgs);
     return rowsAffected;
   }
 }

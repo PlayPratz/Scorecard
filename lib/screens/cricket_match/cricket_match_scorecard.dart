@@ -14,14 +14,11 @@ class CricketMatchScorecard extends StatelessWidget {
     final game = cricketMatch.game;
     return Scaffold(
       appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: ListView(
-          children: [
-            for (final innings in game.innings)
-              _InningsScorecardSection(innings)
-          ],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+        children: [
+          for (final innings in game.innings) _InningsScorecardSection(innings)
+        ],
       ),
     );
   }
@@ -29,7 +26,7 @@ class CricketMatchScorecard extends StatelessWidget {
 
 class _InningsScorecardSection extends StatelessWidget {
   final Innings innings;
-  const _InningsScorecardSection(this.innings, {super.key});
+  const _InningsScorecardSection(this.innings);
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +35,9 @@ class _InningsScorecardSection extends StatelessWidget {
     final allYetToBat = innings.battingLineup.players
         .where((p) => !playersWhoHaveBatted.contains(p));
     return Card(
+      // color: Color(innings.battingTeam.color).withOpacity(0.0),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Column(
           children: [
             _BattingScorecardSection(
@@ -57,7 +55,8 @@ class _InningsScorecardSection extends StatelessWidget {
                 wicketBalls,
                 getScoreAt: (ball) => innings.calculateScore(at: ball),
               ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+            const Divider(height: 32),
             _BowlingScorecardSection(innings.bowlers.values)
           ],
         ),
@@ -75,7 +74,6 @@ class _BattingScorecardSection extends StatelessWidget {
 
   const _BattingScorecardSection(
     this.allBatterInnings, {
-    super.key,
     required this.captain,
     required this.allExtraBalls,
     required this.total,
@@ -90,11 +88,11 @@ class _BattingScorecardSection extends StatelessWidget {
         Text("Batting", style: Theme.of(context).textTheme.titleMedium),
         Table(
           border: const TableBorder(
-            verticalInside: BorderSide(width: 0.1),
+            // verticalInside: BorderSide(width: 0.1),
             horizontalInside: BorderSide(width: 0.1),
           ),
           // defaultVerticalAlignment: TableCellVerticalAlignment.top,
-          defaultColumnWidth: const FixedColumnWidth(32),
+          defaultColumnWidth: const FixedColumnWidth(48),
           columnWidths: const {
             0: FlexColumnWidth(),
           },
@@ -104,24 +102,31 @@ class _BattingScorecardSection extends StatelessWidget {
               Text("R", textAlign: TextAlign.center),
               Text("B", textAlign: TextAlign.center),
               Text("SR", textAlign: TextAlign.center),
-              // Text("4s", textAlign: TextAlign.center),
-              SizedBox(),
-              // Text("6s", textAlign: TextAlign.center),
+              SizedBox()
+              // Text("4s/6s", textAlign: TextAlign.center),
             ]),
             for (final batterInnings in allBatterInnings)
               TableRow(children: [
                 ListTile(
-                  leading: const Icon(Icons.sports_motorsports),
-                  title: Text(stringifyName(batterInnings.player)),
-                  subtitle: Text(Stringify.wicket(batterInnings.wicket,
-                      retired: batterInnings.retired)),
+                  leading: const CircleAvatar(
+                    radius: 18,
+                    child: Icon(Icons.sports_motorsports),
+                  ),
+                  title: Text(
+                    stringifyName(batterInnings.player).toUpperCase(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  subtitle: Text(
+                    Stringify.wicket(batterInnings.wicket,
+                        retired: batterInnings.retired),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                   contentPadding: EdgeInsets.zero,
+                  horizontalTitleGap: 10,
                   minTileHeight: 0,
-
-                  // dense: true,
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
                   child: Text(
                     batterInnings.runsScored.toString(),
                     style: Theme.of(context).textTheme.bodyLarge,
@@ -129,7 +134,7 @@ class _BattingScorecardSection extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
                   child: Text(
                     batterInnings.ballsFaced.toString(),
                     style: Theme.of(context).textTheme.bodyLarge,
@@ -137,18 +142,18 @@ class _BattingScorecardSection extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
                   child: Text(
                     batterInnings.strikeRate.toStringAsFixed(2),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodySmall,
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    _wBoundaryCount(batterInnings, 4, BallColors.four),
-                    _wBoundaryCount(batterInnings, 6, BallColors.six),
+                    _wBoundaryCount(context, batterInnings, 4, BallColors.four),
+                    _wBoundaryCount(context, batterInnings, 6, BallColors.six),
                   ],
                 ),
               ])
@@ -156,6 +161,10 @@ class _BattingScorecardSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Table(
+          border: const TableBorder(
+            horizontalInside: BorderSide(width: 0.1),
+            top: BorderSide(width: 0.1),
+          ),
           columnWidths: const {
             0: FixedColumnWidth(42),
             1: FlexColumnWidth(1),
@@ -168,13 +177,21 @@ class _BattingScorecardSection extends StatelessWidget {
             TableRow(
               children: [
                 const SizedBox(height: 32),
-                const Text("Extras"),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text("Extras",
+                      style: Theme.of(context).textTheme.bodySmall),
+                ),
                 ...stringifyExtras(context),
               ],
             ),
             TableRow(children: [
               const SizedBox(height: 32),
-              Text("Total", style: Theme.of(context).textTheme.bodyLarge),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text("Total".toUpperCase(),
+                    style: Theme.of(context).textTheme.bodyMedium),
+              ),
               Padding(
                 padding: const EdgeInsets.only(right: 4),
                 child: Text(Stringify.score(total),
@@ -185,29 +202,24 @@ class _BattingScorecardSection extends StatelessWidget {
             ]),
           ],
         ),
-        // ListTile(
-        //   title: const Text("Extras"),
-        //   trailing: stringifyExtras(context),
-        // ),
-        // ListTile(
-        //   title: Text("Total", style: Theme.of(context).textTheme.bodyLarge),
-        //   trailing: Text(Stringify.score(total),
-        //       style: Theme.of(context).textTheme.titleMedium),
-        // ),
       ],
     );
   }
 
-  Widget _wBoundaryCount(BatterInnings batterInnings, int runs, Color color) =>
+  Widget _wBoundaryCount(BuildContext context, BatterInnings batterInnings,
+          int runs, Color color) =>
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+        padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 1.0),
         child: CircleAvatar(
-          radius: 16,
+          radius: 10,
           backgroundColor: color,
-          child: Text(batterInnings.balls
-              .where((b) => b.runsScoredByBatter == runs)
-              .length
-              .toString()),
+          child: Text(
+            batterInnings.balls
+                .where((b) => b.runsScoredByBatter == runs)
+                .length
+                .toString(),
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
         ),
       );
 
@@ -256,10 +268,7 @@ class _BattingScorecardSection extends StatelessWidget {
 class _YetToBatSection extends StatelessWidget {
   final Iterable<Player> allYetToBat;
 
-  const _YetToBatSection(
-    this.allYetToBat, {
-    super.key,
-  });
+  const _YetToBatSection(this.allYetToBat);
 
   @override
   Widget build(BuildContext context) {
@@ -276,7 +285,7 @@ class _YetToBatSection extends StatelessWidget {
               spacing: 4,
               children: [
                 for (final player in allYetToBat) ...[
-                  Text(player.name),
+                  Text(player.name.toUpperCase()),
                   if (player != allYetToBat.lastOrNull) const Text('•'),
                 ]
               ],
@@ -291,8 +300,7 @@ class _YetToBatSection extends StatelessWidget {
 class _FallOfWicketsSection extends StatelessWidget {
   final Iterable<Ball> allWicketBalls;
   final Score Function(Ball ball) getScoreAt;
-  const _FallOfWicketsSection(this.allWicketBalls,
-      {super.key, required this.getScoreAt});
+  const _FallOfWicketsSection(this.allWicketBalls, {required this.getScoreAt});
 
   @override
   Widget build(BuildContext context) {
@@ -301,28 +309,32 @@ class _FallOfWicketsSection extends StatelessWidget {
       children: [
         const SizedBox(height: 8),
         Text("Fall of Wickets", style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
         Table(
           columnWidths: const {
-            0: FixedColumnWidth(48),
+            0: FixedColumnWidth(64),
             1: FlexColumnWidth(),
-            2: FixedColumnWidth(48),
+            2: FixedColumnWidth(64),
           },
           border: const TableBorder.symmetric(
             inside: BorderSide(width: 0.1),
-            // outside: BorderSide(width: 0.3 ),
+            outside: BorderSide(width: 0.2),
           ),
           children: [
             const TableRow(children: [
-              Center(child: Text("#")),
+              Center(child: Text("Score")),
               Center(child: Text("Batter")),
               Center(child: Text("Overs"))
             ]),
             for (final wicketBall in allWicketBalls)
               TableRow(children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0, vertical: 2.0),
-                  child: Text(Stringify.score(getScoreAt(wicketBall))),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 2.0),
+                    child: Text(Stringify.score(getScoreAt(wicketBall))),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -345,21 +357,21 @@ class _FallOfWicketsSection extends StatelessWidget {
 class _BowlingScorecardSection extends StatelessWidget {
   final Iterable<BowlerInnings> allBowlerInnings;
 
-  const _BowlingScorecardSection(this.allBowlerInnings, {super.key});
+  const _BowlingScorecardSection(this.allBowlerInnings);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
         Text("Bowling", style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Table(
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           defaultColumnWidth: const FixedColumnWidth(42),
           columnWidths: const {0: FlexColumnWidth()},
           border: const TableBorder(
-            verticalInside: BorderSide(width: 0.1),
+            // verticalInside: BorderSide(width: 0.1),
             horizontalInside: BorderSide(width: 0.1),
           ),
           children: [
@@ -373,9 +385,17 @@ class _BowlingScorecardSection extends StatelessWidget {
             for (final bowlerInnings in allBowlerInnings)
               TableRow(children: [
                 ListTile(
-                  leading: const Icon(Icons.people),
-                  title: Text(bowlerInnings.player.name),
+                  leading: const CircleAvatar(
+                    radius: 18,
+                    child: Icon(Icons.sports_baseball),
+                  ),
+                  title: Text(
+                    bowlerInnings.player.name.toUpperCase(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   contentPadding: EdgeInsets.zero,
+                  horizontalTitleGap: 10,
+                  minTileHeight: 50,
                 ),
                 Center(
                     child: Text(Stringify.ballCount(bowlerInnings.ballsBowled,

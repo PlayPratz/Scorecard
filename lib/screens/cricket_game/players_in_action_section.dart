@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
-import 'package:scorecard/modules/cricket_match/models/wicket_model.dart';
 import 'package:scorecard/screens/cricket_game/cricket_game_screen.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';

@@ -20,69 +20,66 @@ class InitializeCricketMatchScreen extends StatelessWidget {
         initialData: controller._deduceState(),
         builder: (context, snapshot) {
           final state = snapshot.data;
-          if (state == null || state is _InitializingCricketMatchState) {
-            return loadingScreen;
-          } else if (state is _InitializedCricketMatchState) {
-            return Text("Done");
-          }
-          state as _InitializeCricketMatchScreenState;
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text("Time for the toss!"),
-            ),
-            body: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              // reverse: true,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 16.0),
-                  child: _TossChooserSection(
-                    team1: state.team1,
-                    team2: state.team2,
-                    onChooseTeam: (team) => controller.selectedWinner = team,
-                    onTossChoice: (choice) =>
-                        controller.selectedTossChoice = choice,
-                    selectedWinner: state.selectedWinner,
-                    selectedTossChoice: state.selectedTossChoice,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                const Divider(height: 32),
-                Text(state.team1.name.toUpperCase()),
-                const Text("Tap a player to make them the captain"),
-                const SizedBox(height: 16),
-                _LineupSelectSection(state.lineup1,
-                    captain: state.selectedCaptain1,
-                    onSelectPlayers: controller.addToLineup1,
-                    onDeletePlayer: controller.removeFromLineup1,
-                    onSelectCaptain: (p) => controller.selectedCaptain1 = p),
-                const Divider(height: 32),
-                Text(state.team2.name.toUpperCase()),
-                const Text("Tap a player to make them the captain"),
-                const SizedBox(height: 16),
-                _LineupSelectSection(state.lineup2,
-                    captain: state.selectedCaptain2,
-                    onSelectPlayers: controller.addToLineup2,
-                    onDeletePlayer: controller.removeFromLineup2,
-                    onSelectCaptain: (p) => controller.selectedCaptain2 = p),
-              ],
-            ),
-            bottomNavigationBar: BottomAppBar(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+          if (state is _InitializedState) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text("Time for the toss!"),
+              ),
+              body: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                // reverse: true,
                 children: [
-                  FilledButton.icon(
-                    onPressed: controller.canInitializeMatch
-                        ? () => controller.initializeMatch(context)
-                        : null,
-                    label: const Text("Preview"),
-                    icon: const Icon(Icons.preview),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 16.0),
+                    child: _TossChooserSection(
+                      team1: state.team1,
+                      team2: state.team2,
+                      onChooseTeam: (team) => controller.selectedWinner = team,
+                      onTossChoice: (choice) =>
+                          controller.selectedTossChoice = choice,
+                      selectedWinner: state.selectedWinner,
+                      selectedTossChoice: state.selectedTossChoice,
+                    ),
                   ),
+                  const SizedBox(height: 32),
+                  const Divider(height: 32),
+                  Text(state.team1.name.toUpperCase()),
+                  const Text("Tap a player to make them the captain"),
+                  const SizedBox(height: 16),
+                  _LineupSelectSection(state.lineup1,
+                      captain: state.selectedCaptain1,
+                      onSelectPlayers: controller.addToLineup1,
+                      onDeletePlayer: controller.removeFromLineup1,
+                      onSelectCaptain: (p) => controller.selectedCaptain1 = p),
+                  const Divider(height: 32),
+                  Text(state.team2.name.toUpperCase()),
+                  const Text("Tap a player to make them the captain"),
+                  const SizedBox(height: 16),
+                  _LineupSelectSection(state.lineup2,
+                      captain: state.selectedCaptain2,
+                      onSelectPlayers: controller.addToLineup2,
+                      onDeletePlayer: controller.removeFromLineup2,
+                      onSelectCaptain: (p) => controller.selectedCaptain2 = p),
                 ],
               ),
-            ),
-          );
+              bottomNavigationBar: BottomAppBar(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FilledButton.icon(
+                      onPressed: controller.canInitializeMatch
+                          ? () => controller.initializeMatch(context)
+                          : null,
+                      label: const Text("Preview"),
+                      icon: const Icon(Icons.preview),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          return loadingScreen;
         });
   }
 
@@ -156,8 +153,7 @@ class InitializeCricketMatchScreenController {
 
   void _dispatchState() => _streamController.add(_deduceState());
 
-  _InitializeCricketMatchScreenState _deduceState() =>
-      _InitializeCricketMatchScreenState(
+  _InitializedState _deduceState() => _InitializedState(
         team1: cricketMatch.team1,
         team2: cricketMatch.team2,
         selectedWinner: _selectedWinner,
@@ -181,7 +177,7 @@ class InitializeCricketMatchScreenController {
       return;
     }
 
-    _streamController.add(_InitializingCricketMatchState());
+    _streamController.add(_InitializingState());
 
     try {
       final initializedMatch = await _service.initializeCricketMatch(
@@ -192,8 +188,9 @@ class InitializeCricketMatchScreenController {
         lineup2: Lineup(
             players: _selectedPlayers2.toList(), captain: _selectedCaptain2!),
       );
-
-      _streamController.add(_InitializedCricketMatchState(initializedMatch));
+      if (context.mounted) {
+        goNextScreen(context, initializedMatch);
+      }
     } catch (e) {
       _streamController.add(_deduceState());
     }
@@ -213,15 +210,9 @@ class InitializeCricketMatchScreenController {
 
 sealed class _ScreenState {}
 
-// This is probably the worst naming scheme one could come up with
-class _InitializingCricketMatchState extends _ScreenState {}
+class _InitializingState extends _ScreenState {}
 
-class _InitializedCricketMatchState extends _ScreenState {
-  final InitializedCricketMatch initializedMatch;
-  _InitializedCricketMatchState(this.initializedMatch);
-}
-
-class _InitializeCricketMatchScreenState extends _ScreenState {
+class _InitializedState extends _ScreenState {
   final Team team1;
   final Team team2;
 
@@ -234,7 +225,7 @@ class _InitializeCricketMatchScreenState extends _ScreenState {
   final Team? selectedWinner;
   final TossChoice? selectedTossChoice;
 
-  _InitializeCricketMatchScreenState({
+  _InitializedState({
     required this.team1,
     required this.team2,
     required this.selectedCaptain1,
@@ -256,7 +247,6 @@ class _TossChooserSection extends StatelessWidget {
   final void Function(TossChoice choice) onTossChoice;
 
   const _TossChooserSection({
-    super.key,
     required this.team1,
     required this.team2,
     required this.onChooseTeam,
@@ -319,8 +309,7 @@ class _LineupSelectSection extends StatelessWidget {
   final void Function(Player player) onSelectCaptain;
 
   const _LineupSelectSection(this.players,
-      {super.key,
-      required this.captain,
+      {required this.captain,
       required this.onSelectPlayers,
       required this.onDeletePlayer,
       required this.onSelectCaptain});
@@ -360,8 +349,8 @@ class _LineupSelectSection extends StatelessWidget {
     final player = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => PickPlayerScreen(
-                  onSelectPlayer: (p) => Navigator.pop(context, p),
+            builder: (context) => PickFromAllPlayersScreen(
+                  onPickPlayer: (p) => Navigator.pop(context, p),
                 )));
 
     if (player is Player) {

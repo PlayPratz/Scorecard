@@ -44,9 +44,13 @@ class CricketGameScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            actions: [
+            actions: const [
               IconButton(
-                  onPressed: _settings, icon: const Icon(Icons.settings)),
+                  onPressed: null,
+                  icon: Icon(
+                    Icons.dangerous,
+                    color: Colors.red,
+                  )),
             ],
           ),
           body: ListView(
@@ -193,8 +197,6 @@ class CricketGameScreen extends StatelessWidget {
   void _pickWicket(BuildContext context,
           NextBallSelectorController nextBallSelectorController) =>
       controller.pickWicket(context, nextBallSelectorController);
-
-  void _settings() {}
 }
 
 class CricketGameScreenController {
@@ -292,8 +294,7 @@ class CricketGameScreenController {
     final player = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PickPlayerScreen(
-              players: players,
+          builder: (context) => PickPlayerScreen(players,
               onSelectPlayer: (p) => Navigator.pop(context, p)),
         ));
     if (player is Player) {

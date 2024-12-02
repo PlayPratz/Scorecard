@@ -131,7 +131,7 @@ INSERT INTO game_rules (type, balls_per_over, no_ball_penalty, wide_penalty, onl
     (-1, -1, -1, -1, FALSE, FALSE, -1, -1);''');
       },
       singleInstance: true,
-      version: 2,
+      version: 1,
     );
   }
 

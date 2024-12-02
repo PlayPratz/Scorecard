@@ -4,6 +4,7 @@ import 'package:scorecard/screens/common/loading_future_builder.dart';
 import 'package:scorecard/screens/cricket_match/create_cricket_match_screen.dart';
 import 'package:scorecard/screens/cricket_match/cricket_match_list_screen.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
+import 'package:scorecard/screens/team/team_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,20 +43,24 @@ class _HomeScreenState extends State<HomeScreen> {
               title: "Players",
               onSelect: () => _goPlayerList(context),
             ),
+            _HomeScreenTile(
+              title: "Teams",
+              onSelect: () => _goTeamList(context),
+            )
             // _HomeScreenTile(title: "Venues"),
           ],
         ),
       ),
       bottomNavigationBar: const BottomAppBar(
-        child: Row(
-          children: [
-            Icon(Icons.hearing),
-            Icon(Icons.favorite),
-            Icon(Icons.sports),
-          ],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
+          // child: Row(
+          //   children: [
+          //     Icon(Icons.hearing),
+          //     Icon(Icons.favorite),
+          //     Icon(Icons.sports),
+          //   ],
+          // ),
+          ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
     );
   }
 
@@ -80,6 +85,11 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (context) => const AllPlayersScreen()));
   }
 
+  void _goTeamList(BuildContext context) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const TeamListScreen()));
+  }
+
   Future<void> _initializeApplication() async {
     await RepositoryProvider().initialize();
   }
@@ -89,7 +99,7 @@ class _HomeScreenTile extends StatelessWidget {
   final String title;
   final void Function()? onSelect;
 
-  const _HomeScreenTile({super.key, required this.title, this.onSelect});
+  const _HomeScreenTile({required this.title, this.onSelect});
 
   @override
   Widget build(BuildContext context) {

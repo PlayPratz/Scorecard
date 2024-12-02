@@ -27,10 +27,12 @@ class NextBallSelectorSection extends StatelessWidget {
         return Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Record Next Ball",
-                    style: Theme.of(context).textTheme.titleSmall),
+                if (state is NextBallSelectorEnabledState &&
+                    state.nextWicket == null)
+                  Text("Record Next Ball",
+                      style: Theme.of(context).textTheme.titleSmall),
+                const Spacer(),
                 _WicketChip(state,
                     onSelectWicket: onSelectWicket,
                     onClearWicket: () => controller.nextWicket = null),

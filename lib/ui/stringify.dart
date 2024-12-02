@@ -30,5 +30,5 @@ class Stringify {
   static String postIndex(PostIndex index) => "${index.over}.${index.ball}";
 
   static String economy(double economy) =>
-      economy == double.infinity ? '∞' : economy.toStringAsFixed(2);
+      economy.isNaN || economy.isInfinite ? '∞' : economy.toStringAsFixed(2);
 }

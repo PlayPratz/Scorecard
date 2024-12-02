@@ -175,6 +175,23 @@ sealed class UnlimitedOversMatchResult extends CricketMatchResult {}
 
 sealed class LimitedOversMatchResult extends CricketMatchResult {}
 
+class TieResult extends LimitedOversMatchResult {
+  final Team team1;
+  final Team team2;
+
+  TieResult({required this.team1, required this.team2});
+}
+
+class WinByDefendingResult extends LimitedOversMatchResult {
+  final Team winner;
+  final Team loser;
+
+  final int runsMargin;
+
+  WinByDefendingResult(
+      {required this.winner, required this.loser, required this.runsMargin});
+}
+
 class WinByChasingResult extends LimitedOversMatchResult {
   final Team winner;
   final Team loser;
@@ -188,23 +205,6 @@ class WinByChasingResult extends LimitedOversMatchResult {
     required this.ballsToSpare,
     required this.wicketsLeft,
   });
-}
-
-class WinByDefendingResult extends LimitedOversMatchResult {
-  final Team winner;
-  final Team loser;
-
-  final int runsMargin;
-
-  WinByDefendingResult(
-      {required this.winner, required this.loser, required this.runsMargin});
-}
-
-class TieResult extends LimitedOversMatchResult {
-  final Team team1;
-  final Team team2;
-
-  TieResult({required this.team1, required this.team2});
 }
 
 /// This might be confusing -- what's the difference between a [CricketMatch]

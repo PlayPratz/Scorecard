@@ -62,13 +62,6 @@ class ReviewCricketGameScreen extends StatelessWidget {
                 body: const Center(child: CircularProgressIndicator()),
                 bottomNavigationBar: const BottomAppBar(),
               );
-            case _GoNextScreenState():
-              controller.goNextScreen(context, state.cricketMatch);
-              return Scaffold(
-                appBar: AppBar(),
-                body: const Center(child: CircularProgressIndicator()),
-                bottomNavigationBar: const BottomAppBar(),
-              );
           }
         });
   }
@@ -84,12 +77,6 @@ class _ReviewScreenState extends _ScreenState {
 
 class _LoadingNextScreenState extends _ScreenState {}
 
-class _GoNextScreenState extends _ScreenState {
-  final OngoingCricketMatch cricketMatch;
-
-  _GoNextScreenState(this.cricketMatch);
-}
-
 class ReviewCricketGameScreenController {
   final InitializedCricketMatch cricketMatch;
   ReviewCricketGameScreenController(this.cricketMatch);
@@ -99,9 +86,15 @@ class ReviewCricketGameScreenController {
 
   Future<void> onCommenceMatch(BuildContext context) async {
     _streamController.add(_LoadingNextScreenState());
-    final ongoingCricketMatch =
-        await _service.commenceCricketMatch(cricketMatch);
-    _streamController.add(_GoNextScreenState(ongoingCricketMatch));
+    try {
+      final ongoingCricketMatch =
+          await _service.commenceCricketMatch(cricketMatch);
+      if (context.mounted) {
+        goNextScreen(context, ongoingCricketMatch);
+      }
+    } catch (e) {
+      _streamController.add(_LoadingNextScreenState());
+    }
   }
 
   void goNextScreen(BuildContext context, OngoingCricketMatch cricketMatch) {

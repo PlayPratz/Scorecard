@@ -68,7 +68,6 @@ class EntityMappers {
             sessions_per_day: rules.sessionsPerDay,
             innings_per_side: rules.inningsPerSide,
           ),
-        // TODO: Handle this case.
         LimitedOversRules() => GameRulesEntity(
             id: rules.id,
             type: _gameRulesToInt(rules),
@@ -116,6 +115,7 @@ class EntityMappers {
 
   static MatchesEntity repackMatch(CricketMatch match) {
     if (match is CompletedCricketMatch) {
+      final result = _DecipheredResult(match.result);
       return MatchesEntity(
         id: match.id,
         type: _gameRulesToInt(match.rules),
@@ -127,11 +127,11 @@ class EntityMappers {
         rules_id: match.rules.id!,
         toss_winner_id: match.toss.winner.id,
         toss_choice: _tossChoiceToInt(match.toss.choice),
-        result_type: null,
-        result_winner_id: null,
-        result_loser_id: null,
-        result_margin_1: null,
-        result_margin_2: null,
+        result_type: result.type,
+        result_winner_id: result.winnerId,
+        result_loser_id: result.loserId,
+        result_margin_1: result.margin1,
+        result_margin_2: result.margin2,
         potm_id: match.playerOfTheMatch?.id,
       );
     } else if (match is OngoingCricketMatch) {
@@ -245,8 +245,65 @@ class EntityMappers {
 
     assert(stage == 4);
 
-    // TODO
-    throw UnimplementedError("CompletedCricketMatch");
+    final resultWinnerId = entity.matchesEntity.result_winner_id;
+    final resultLoserId = entity.matchesEntity.result_loser_id;
+
+    final resultMargin1 = entity.matchesEntity.result_margin_1;
+    final resultMargin2 = entity.matchesEntity.result_margin_2;
+    final resultType = entity.matchesEntity.result_type;
+
+    final result = switch (resultType) {
+      0 => TieResult(
+          team1: team1,
+          team2: team2,
+        ),
+      1 => WinByDefendingResult(
+          winner: resultWinnerId == team1.id
+              ? team1
+              : resultWinnerId == team2.id
+                  ? team2
+                  : throw UnsupportedError(
+                      "result_winner_id out of bounds! (match_id: $id"),
+          loser: resultLoserId == team1.id
+              ? team1
+              : resultLoserId == team2.id
+                  ? team2
+                  : throw UnsupportedError(
+                      "result_loser_id out of bounds! (match_id: $id"),
+          runsMargin: resultMargin1!,
+        ),
+      2 => WinByChasingResult(
+          winner: resultWinnerId == team1.id
+              ? team1
+              : resultWinnerId == team2.id
+                  ? team2
+                  : throw UnsupportedError(
+                      "result_winner_id out of bounds! (match_id: $id"),
+          loser: resultLoserId == team1.id
+              ? team1
+              : resultLoserId == team2.id
+                  ? team2
+                  : throw UnsupportedError(
+                      "result_loser_id out of bounds! (match_id: $id"),
+          wicketsLeft: resultMargin1!,
+          ballsToSpare: resultMargin2!,
+        ),
+      _ => throw UnsupportedError(
+          "result_type out of bounds! (id: $id result_type: ${entity.matchesEntity.result_type})"),
+    };
+
+    return CompletedCricketMatch(
+      id: id,
+      team1: team1,
+      team2: team2,
+      startsAt: startsAt,
+      venue: venue,
+      rules: rules,
+      toss: toss,
+      result: result,
+      playerOfTheMatch:
+          null, // TODO find a solution for this, possible move to CricketGame
+    );
   }
 
   static int _tossChoiceToInt(TossChoice choice) => switch (choice) {
@@ -634,5 +691,44 @@ class EntityMappers {
           ),
         _ =>
           throw UnsupportedError("posts.type out of bounds! (id:${entity.id})"),
+      };
+}
+
+class _DecipheredResult {
+  final int type;
+  final String? winnerId;
+  final String? loserId;
+  final int margin1;
+  final int? margin2;
+
+  _DecipheredResult._(
+      {required this.type,
+      required this.winnerId,
+      required this.loserId,
+      required this.margin1,
+      required this.margin2});
+
+  factory _DecipheredResult(CricketMatchResult result) => switch (result) {
+        TieResult() => _DecipheredResult._(
+            type: 0,
+            winnerId: null,
+            loserId: null,
+            margin1: 0,
+            margin2: null,
+          ),
+        WinByDefendingResult() => _DecipheredResult._(
+            type: 1,
+            winnerId: result.winner.id,
+            loserId: result.loser.id,
+            margin1: result.runsMargin,
+            margin2: null,
+          ),
+        WinByChasingResult() => _DecipheredResult._(
+            type: 2,
+            winnerId: result.winner.id,
+            loserId: result.loser.id,
+            margin1: result.wicketsLeft,
+            margin2: result.ballsToSpare,
+          ),
       };
 }

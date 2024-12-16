@@ -134,8 +134,12 @@ class InningsService {
   }
 
   /// Deletes the [BatterInnings] of the given [player].
-  BatterInnings? deleteBatterInningsOfPlayer(Innings innings, Player player) {
-    final batterInnings = innings.batters.remove(player);
+  BatterInnings? deleteBatterInningsOfPlayerIfEmpty(
+      Innings innings, Player player) {
+    final batterInnings = getBatterInningsOfPlayer(innings, player);
+    if (batterInnings != null && batterInnings.posts.isEmpty) {
+      innings.batters.remove(player);
+    }
     return batterInnings;
   }
 
@@ -335,15 +339,24 @@ class InningsService {
 
   void _undoNextBatterPost(Innings innings, NextBatter post) {
     // Remove ghost BatterInnings from Innings
-    final batterInnings = deleteBatterInningsOfPlayer(innings, post.next);
+    // Do this only if the next batter is not the same as the previous batter
+    final batterInnings =
+        deleteBatterInningsOfPlayerIfEmpty(innings, post.next);
     final BatterInnings? restoredBatterInnings;
 
     // Set the correct batter in the innings
     if (post.previous != null) {
       // Set innings.batter to previous batter
       restoredBatterInnings = getBatterInningsOfPlayer(innings, post.previous!);
+
+      // Add wicket again if it exists
+      if (restoredBatterInnings!.wicket == null &&
+          restoredBatterInnings.balls.isNotEmpty &&
+          restoredBatterInnings.balls.last.isWicket) {
+        restoredBatterInnings.wicket = restoredBatterInnings.balls.last.wicket;
+      }
     } else {
-      // First bowler to be selected, can be cleared
+      // Batter can be cleared
       restoredBatterInnings = null;
     }
     // Figure out whether batter1 was replaced or batter2 was
@@ -427,12 +440,6 @@ class InningsService {
     if (innings.posts.isEmpty) {
       // First post
       return const PostIndex.zero();
-    }
-
-    final last = innings.posts.last;
-
-    if (last.index.ball == innings.rules.ballsPerOver) {
-      return PostIndex(last.index.over + 1, 0);
     }
     return innings.posts.last.index;
   }

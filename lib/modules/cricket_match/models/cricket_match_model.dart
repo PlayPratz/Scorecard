@@ -62,9 +62,6 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
   /// The toss that takes place right before the match/
   final Toss toss;
 
-  /// The game that is played between the two teams, as it happens.
-  late final CricketGame game;
-
   InitializedCricketMatch({
     required super.id,
     required super.team1,
@@ -78,7 +75,6 @@ class InitializedCricketMatch extends ScheduledCricketMatch {
   InitializedCricketMatch.fromScheduled(
     ScheduledCricketMatch match, {
     required Toss toss,
-    required CricketGame game,
   }) : this(
           id: match.id,
           team1: match.team1,

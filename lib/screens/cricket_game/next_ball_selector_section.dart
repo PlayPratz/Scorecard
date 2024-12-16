@@ -282,7 +282,7 @@ class _WicketChip extends StatelessWidget {
   final void Function()? onClearWicket;
 
   const _WicketChip(this.state,
-      {super.key, required this.onSelectWicket, this.onClearWicket});
+      {required this.onSelectWicket, this.onClearWicket});
 
   @override
   Widget build(BuildContext context) {

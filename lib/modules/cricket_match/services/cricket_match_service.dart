@@ -1,4 +1,5 @@
 import 'package:scorecard/handlers/ulid.dart';
+import 'package:scorecard/modules/cricket_match/cache/cricket_game_cache.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
@@ -47,14 +48,13 @@ class CricketMatchService {
     required Lineup lineup1,
     required Lineup lineup2,
   }) async {
-    final game =
-        CricketGame.auto(scheduledMatch, lineup1: lineup1, lineup2: lineup2);
-
     final initializedMatch = InitializedCricketMatch.fromScheduled(
       scheduledMatch,
       toss: toss,
-      game: game,
     );
+
+    final game =
+        CricketGame.auto(scheduledMatch, lineup1: lineup1, lineup2: lineup2);
 
     // Update match in repository (stage = 2)
     await _repository.saveCricketMatch(initializedMatch, update: true);
@@ -62,13 +62,15 @@ class CricketMatchService {
     // Store lineups
     await _repository.saveLineupsOfGame(game, update: false);
 
+    // Cache
+    CricketGameCache.store(initializedMatch, game);
+
     return initializedMatch;
   }
 
   Future<OngoingCricketMatch> commenceCricketMatch(
       InitializedCricketMatch initializedMatch) async {
     final ongoingMatch = OngoingCricketMatch.fromInitialized(initializedMatch);
-    ongoingMatch.game = initializedMatch.game;
 
     // Update match in repository (stage = 3)
     await _repository.saveCricketMatch(ongoingMatch, update: true);
@@ -78,7 +80,7 @@ class CricketMatchService {
     final Team bowlingTeam;
     final Lineup bowlingLineup;
 
-    final game = ongoingMatch.game;
+    final game = CricketGameCache.of(ongoingMatch);
 
     if (ongoingMatch.toss.winner == ongoingMatch.team1 &&
             ongoingMatch.toss.choice == TossChoice.bat ||
@@ -104,14 +106,14 @@ class CricketMatchService {
     return ongoingMatch;
   }
 
-  Future<CricketMatch> progressMatch(OngoingCricketMatch match) async {
-    final game = match.game;
+  Future<CricketMatch> progressMatch(OngoingCricketMatch cricketMatch) async {
+    final game = CricketGameCache.of(cricketMatch);
     if (game is LimitedOversGame) {
       if (game.innings.length == 2) {
-        return await _endMatch(match);
+        return await _endMatch(cricketMatch);
       } else {
         await startNextInningsInGame(game, shouldSwitchRoles: true);
-        return match;
+        return cricketMatch;
       }
     } else {
       throw UnimplementedError("Unlimited Overs Game!");
@@ -179,7 +181,7 @@ class CricketMatchService {
 
   Future<CompletedCricketMatch> _endMatch(
       OngoingCricketMatch cricketMatch) async {
-    final game = cricketMatch.game;
+    final game = CricketGameCache.of(cricketMatch);
     switch (game) {
       case UnlimitedOversGame():
         throw UnimplementedError("I haven't coded for Unlimited Overs yet :-(");
@@ -229,7 +231,8 @@ class CricketMatchService {
 
   /// Fetches the [CricketGame] data for the provided [CricketMatch]
   /// from the repository and stores it within the cricket match's object
-  Future<void> getGameForMatch(InitializedCricketMatch cricketMatch) async {
+  Future<CricketGame> getGameForMatch(
+      InitializedCricketMatch cricketMatch) async {
     final game = await _repository.loadCricketGameForMatch(cricketMatch);
     if (cricketMatch is OngoingCricketMatch) {
       // Since it's an OngoingMatch, it will have Innings and Posts as well
@@ -245,8 +248,10 @@ class CricketMatchService {
       }
       game.innings.addAll(allInnings.cast<LimitedOversInnings>());
     }
-    // Initialize the CricketGame in the match
-    cricketMatch.game = game;
+    // Cache the Cricket Game
+    CricketGameCache.store(cricketMatch, game);
+
+    return game;
   }
 
   CricketMatchRepository get _repository =>

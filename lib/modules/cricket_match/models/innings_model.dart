@@ -211,7 +211,7 @@ class Score {
       : runs = 0,
         wickets = 0;
 
-  Score add(Ball ball) {
+  Score plus(Ball ball) {
     final runs = this.runs + ball.runs;
     if (ball.isWicket) {
       return Score(runs, wickets + 1);
@@ -358,26 +358,24 @@ sealed class Innings {
 
     final score = balls
         .getRange(start, end)
-        .fold(Score.zero(), (prevScore, ball) => prevScore.add(ball));
+        .fold(Score.zero(), (prevScore, ball) => prevScore.plus(ball));
 
     return score;
   }
 
   Map<int, Iterable<InningsPost>> get overs {
-    final overs = <int, List<InningsPost>>{};
+    if (posts.isEmpty) return {};
 
-    final currentOver = <InningsPost>[];
-
+    final map = <int, List<InningsPost>>{};
     for (final post in posts) {
-      if (currentOver.isNotEmpty &&
-          currentOver.last.index.over != post.index.over) {
-        overs[currentOver.last.index.over] = currentOver.toList();
-        currentOver.clear();
+      final overIndex = post.index.over + 1;
+      if (!map.containsKey(overIndex)) {
+        map[overIndex] = [];
       }
-      currentOver.add(post);
+      map[overIndex]!.add(post);
     }
-    overs[currentOver.last.index.over] = currentOver;
-    return overs;
+
+    return map;
   }
 
   /// Are all wickets lost by the batting team

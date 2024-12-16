@@ -16,7 +16,7 @@ import 'package:scorecard/screens/cricket_game/next_ball_selector_section.dart';
 import 'package:scorecard/screens/cricket_game/players_in_action_section.dart';
 import 'package:scorecard/screens/cricket_game/recent_balls_section.dart';
 import 'package:scorecard/screens/cricket_match/cricket_match_screen_switcher.dart';
-import 'package:scorecard/screens/cricket_match/innings_timeline.dart';
+import 'package:scorecard/screens/cricket_match/innings_timeline_screen.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
 
 class CricketGameScreen extends StatelessWidget {
@@ -57,9 +57,8 @@ class CricketGameScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             children: [
               //Cricket Match Tile
-              _wScoreSection(context, controller.game, state),
+              _wScoreSection(context, controller._game, state),
               _wSectionSeparator,
-
               //PlayersInAction
               _wHeader(context, "Players In Action"),
               PlayersInActionSection(
@@ -67,8 +66,8 @@ class CricketGameScreen extends StatelessWidget {
                 onSetStrike: state is PlayBallState
                     ? (bi) => controller.setStrike(bi)
                     : null,
-                isFirstTeamBatting: controller.game.team1 ==
-                    controller.game.currentInnings.battingTeam,
+                isFirstTeamBatting: controller._game.team1 ==
+                    controller._game.currentInnings.battingTeam,
                 onRetireBowler: (b) => controller.retireBowler(b),
                 // onRetireBatter: (b, r) => controller.retireBatter(b, r),
                 onPickBatter: () => _pickBatter(context),
@@ -201,53 +200,52 @@ class CricketGameScreen extends StatelessWidget {
 
 class CricketGameScreenController {
   final OngoingCricketMatch _cricketMatch;
-  CricketGameScreenController(this._cricketMatch);
-
-  CricketGame get game => _cricketMatch.game;
+  final CricketGame _game;
+  CricketGameScreenController(this._cricketMatch, this._game);
 
   final _streamController = StreamController<CricketGameScreenState>();
   Stream<CricketGameScreenState> get stream => _streamController.stream;
 
-  void _dispatchLoading() => _streamController.add(LoadingState(game));
+  void _dispatchLoading() => _streamController.add(LoadingState(_game));
   void _dispatchState() => _streamController.add(_deduceState());
 
   CricketGameScreenState _deduceState() {
-    final innings = game.currentInnings;
+    final innings = _game.currentInnings;
 
     if (innings.batter1 == null ||
         innings.batter2 == null ||
         innings.striker == null) {
-      return PickBatterState(game);
+      return PickBatterState(_game);
     }
 
     if (innings.bowler == null) {
-      return PickBowlerState(game);
+      return PickBowlerState(_game);
     }
 
     final lastPost = innings.posts.last;
 
     switch (lastPost) {
       case BowlerRetire():
-        return PickBowlerState(game);
+        return PickBowlerState(_game);
       case BatterRetire():
       case RunoutBeforeDelivery():
-        return PickBatterState(game);
+        return PickBatterState(_game);
       case NextBowler():
-        return PlayBallState(game);
+        return PlayBallState(_game);
       case NextBatter():
         if (lastPost.index.ball == innings.rules.ballsPerOver) {
-          return PickBowlerState(game);
+          return PickBowlerState(_game);
         }
-        return PlayBallState(game);
+        return PlayBallState(_game);
       case Ball():
-        if (game.currentInnings.isInningsComplete) {
-          return EndInningsState(game);
+        if (_game.currentInnings.isInningsComplete) {
+          return EndInningsState(_game);
         } else if (lastPost.isWicket) {
-          return PickBatterState(game);
+          return PickBatterState(_game);
         } else if (lastPost.index.ball == innings.rules.ballsPerOver) {
-          return PickBowlerState(game);
+          return PickBowlerState(_game);
         }
-        return PlayBallState(game);
+        return PlayBallState(_game);
     }
   }
 
@@ -331,14 +329,14 @@ class CricketGameScreenController {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => CricketMatchScorecard(_cricketMatch)));
+            builder: (context) => CricketMatchScorecard(_cricketMatch, _game)));
   }
 
   void goInningsTimeline(BuildContext context) {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => InningsTimelineScreen(game.currentInnings)));
+            builder: (context) => InningsTimelineScreen(_game.currentInnings)));
   }
 
   Future<void> play(PlayBallState playBallState,
@@ -372,13 +370,15 @@ class CricketGameScreenController {
     _dispatchLoading();
     final cricketMatch =
         await CricketMatchService().progressMatch(_cricketMatch);
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => CricketMatchScreenSwitcher(cricketMatch)));
+    if (context.mounted) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => CricketMatchScreenSwitcher(cricketMatch)));
+    }
   }
 
-  Innings get currentInnings => _cricketMatch.game.currentInnings;
+  Innings get currentInnings => _game.currentInnings;
   InningsService get _service => InningsService();
 }
 
@@ -459,7 +459,6 @@ class _WicketPickerScreen extends StatefulWidget {
   final Iterable<Player> fieldingPlayers;
 
   const _WicketPickerScreen({
-    super.key,
     required this.striker,
     required this.nonStriker,
     required this.bowler,
@@ -622,19 +621,17 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
       _wicketFielder = fielder;
     });
   }
-  // bool get canReturnWicket =>
-  //     _wicketDismissal != null &&
-  //     (requiresFielder(_wicketDismissal!) && _wicketFielder != null) &&
-  //     (canBatterBeNonStriker(_wicketDismissal!) && _wicketBatter != null);
 
   bool get canReturnWicket {
     if (_wicketDismissal == null) return false;
 
-    if (requiresFielder(_wicketDismissal!) && _wicketFielder == null)
+    if (requiresFielder(_wicketDismissal!) && _wicketFielder == null) {
       return false;
+    }
 
-    if (canBatterBeNonStriker(_wicketDismissal!) && _wicketBatter == null)
+    if (canBatterBeNonStriker(_wicketDismissal!) && _wicketBatter == null) {
       return false;
+    }
 
     return true;
   }

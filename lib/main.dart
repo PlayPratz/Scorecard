@@ -17,7 +17,9 @@ import 'package:scorecard/screens/home_screen.dart';
 /// [Repositories] are only for STORING and RETRIEVING DATA. They are
 /// essentially an abstraction of a database.
 ///
-/// [Providers] TODO
+/// [Caches] are used for storing temporary objects. Suppose instantiating a
+/// certain class is a heavy asynchronous operation (like DB, IO or Network),
+/// it makes sense to cache the object for as long as it is needed.
 ///
 /// [Services] are STATELESS classes that perform major Business Logic
 /// operations. They are initialized once and used throughout the app. Services

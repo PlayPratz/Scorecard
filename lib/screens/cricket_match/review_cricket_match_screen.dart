@@ -15,8 +15,8 @@ class ReviewCricketGameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cricketMatch = controller.cricketMatch;
-    final game = cricketMatch.game;
+    final cricketMatch = controller._cricketMatch;
+    final game = controller._game;
     return StreamBuilder(
         stream: controller._stream,
         initialData: _ReviewScreenState(cricketMatch),
@@ -78,8 +78,9 @@ class _ReviewScreenState extends _ScreenState {
 class _LoadingNextScreenState extends _ScreenState {}
 
 class ReviewCricketGameScreenController {
-  final InitializedCricketMatch cricketMatch;
-  ReviewCricketGameScreenController(this.cricketMatch);
+  final InitializedCricketMatch _cricketMatch;
+  final CricketGame _game;
+  ReviewCricketGameScreenController(this._cricketMatch, this._game);
 
   final _streamController = StreamController<_ScreenState>();
   Stream<_ScreenState> get _stream => _streamController.stream;
@@ -88,7 +89,7 @@ class ReviewCricketGameScreenController {
     _streamController.add(_LoadingNextScreenState());
     try {
       final ongoingCricketMatch =
-          await _service.commenceCricketMatch(cricketMatch);
+          await _service.commenceCricketMatch(_cricketMatch);
       if (context.mounted) {
         goNextScreen(context, ongoingCricketMatch);
       }
@@ -114,7 +115,6 @@ class _MatchupPreviewSection extends StatelessWidget {
   final Lineup lineup2;
 
   const _MatchupPreviewSection({
-    super.key,
     required this.team1,
     required this.team2,
     required this.lineup1,
@@ -188,7 +188,7 @@ class _MatchupPreviewSection extends StatelessWidget {
 
 class _GameRulesPreviewSection extends StatelessWidget {
   final GameRules rules;
-  const _GameRulesPreviewSection(this.rules, {super.key});
+  const _GameRulesPreviewSection(this.rules);
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +268,7 @@ class _GameRulesPreviewSection extends StatelessWidget {
 
 class _TossPreviewSection extends StatelessWidget {
   final Toss toss;
-  const _TossPreviewSection(this.toss, {super.key});
+  const _TossPreviewSection(this.toss);
 
   @override
   Widget build(BuildContext context) {

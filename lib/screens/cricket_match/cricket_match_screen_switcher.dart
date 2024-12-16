@@ -19,10 +19,13 @@ class CricketMatchScreenSwitcher extends StatelessWidget {
     return StreamBuilder(
         stream: controller._stream,
         initialData: _CMSSLoadingState(),
-        builder: (context, snapshot) => switch (snapshot.data!) {
-              _CMSSLoadingState() => loadingScreen,
-              _CMSSLoadedState() => getScreen(context, cricketMatch),
-            });
+        builder: (context, snapshot) {
+          final state = snapshot.data!;
+          return switch (state) {
+            _CMSSLoadingState() => loadingScreen,
+            _CMSSLoadedState() => getScreen(context, cricketMatch, state.game),
+          };
+        });
   }
 
   Widget get loadingScreen => Scaffold(
@@ -33,15 +36,17 @@ class CricketMatchScreenSwitcher extends StatelessWidget {
         bottomNavigationBar: const BottomAppBar(),
       );
 
-  Widget getScreen(BuildContext context, CricketMatch cricketMatch) {
+  Widget getScreen(
+      BuildContext context, CricketMatch cricketMatch, CricketGame? game) {
     switch (cricketMatch) {
       case CompletedCricketMatch():
-        return CricketMatchScorecard(cricketMatch);
+        return CricketMatchScorecard(cricketMatch, game!);
       case OngoingCricketMatch():
-        final controller = CricketGameScreenController(cricketMatch);
+        final controller = CricketGameScreenController(cricketMatch, game!);
         return CricketGameScreen(controller);
       case InitializedCricketMatch():
-        final controller = ReviewCricketGameScreenController(cricketMatch);
+        final controller =
+            ReviewCricketGameScreenController(cricketMatch, game!);
         return ReviewCricketGameScreen(controller);
       case ScheduledCricketMatch():
         final controller = InitializeCricketMatchScreenController(cricketMatch);
@@ -56,7 +61,11 @@ sealed class _CMSSState {}
 
 class _CMSSLoadingState extends _CMSSState {}
 
-class _CMSSLoadedState extends _CMSSState {}
+class _CMSSLoadedState extends _CMSSState {
+  final CricketGame? game;
+
+  _CMSSLoadedState(this.game);
+}
 
 class CricketMatchScreenSwitcherController {
   final CricketMatch cricketMatch;
@@ -71,11 +80,13 @@ class CricketMatchScreenSwitcherController {
   Future<void> loadCricketGame() async {
     _streamController.add(_CMSSLoadingState());
 
+    CricketGame? game;
+
     final cricketMatch = this.cricketMatch;
     if (cricketMatch is InitializedCricketMatch) {
-      await CricketMatchService().getGameForMatch(cricketMatch);
+      game = await CricketMatchService().getGameForMatch(cricketMatch);
     }
 
-    _streamController.add(_CMSSLoadedState());
+    _streamController.add(_CMSSLoadedState(game));
   }
 }

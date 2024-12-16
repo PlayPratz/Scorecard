@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
 import 'package:scorecard/screens/common/ball_widgets.dart';
-import 'package:scorecard/ui/ball_colors.dart';
 
 class RecentBallsSection extends StatelessWidget {
   final List<Ball> reversedBalls;

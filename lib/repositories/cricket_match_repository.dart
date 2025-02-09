@@ -111,6 +111,11 @@ class CricketMatchRepository {
     await inningsTable.create(inningsEntity);
   }
 
+  Future<void> saveInnings(Innings innings) async {
+    final id = innings.matchId;
+
+  }
+
   Future<int> post(Innings innings, InningsPost post) async {
     final id = innings.matchId;
     final postEntity = EntityMappers.repackLimitedOversPost(post,

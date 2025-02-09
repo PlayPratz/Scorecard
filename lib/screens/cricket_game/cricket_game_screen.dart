@@ -10,7 +10,7 @@ import 'package:scorecard/modules/cricket_match/services/cricket_match_service.d
 import 'package:scorecard/modules/cricket_match/services/innings_service.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
-import 'package:scorecard/screens/cricket_match/cricket_match_scorecard.dart';
+import 'package:scorecard/screens/cricket_scorecard/cricket_match_scorecard.dart';
 import 'package:scorecard/screens/cricket_game/cricket_score_section.dart';
 import 'package:scorecard/screens/cricket_game/next_ball_selector_section.dart';
 import 'package:scorecard/screens/cricket_game/players_in_action_section.dart';
@@ -44,10 +44,10 @@ class CricketGameScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            actions: const [
+            actions: [
               IconButton(
-                  onPressed: null,
-                  icon: Icon(
+                  onPressed: () => _forfeitInnings(context),
+                  icon: const Icon(
                     Icons.dangerous,
                     color: Colors.red,
                   )),
@@ -196,6 +196,23 @@ class CricketGameScreen extends StatelessWidget {
   void _pickWicket(BuildContext context,
           NextBallSelectorController nextBallSelectorController) =>
       controller.pickWicket(context, nextBallSelectorController);
+
+  void _forfeitInnings(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text("Forfeit this Innings?"),
+              content: const Text(
+                  "This will end the innings. Tap outside to cancel."),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      controller.forfeitInnings(context);
+                    },
+                    child: const Text("Forfeit"))
+              ],
+            ));
+  }
 }
 
 class CricketGameScreenController {
@@ -238,7 +255,7 @@ class CricketGameScreenController {
         }
         return PlayBallState(_game);
       case Ball():
-        if (_game.currentInnings.isInningsComplete) {
+        if (_game.currentInnings.isEnded) {
           return EndInningsState(_game);
         } else if (lastPost.isWicket) {
           return PickBatterState(_game);
@@ -376,6 +393,11 @@ class CricketGameScreenController {
           MaterialPageRoute(
               builder: (context) => CricketMatchScreenSwitcher(cricketMatch)));
     }
+  }
+
+  void forfeitInnings(BuildContext context) {
+    _service.forfeitInnings(currentInnings);
+    progressGame(context);
   }
 
   Innings get currentInnings => _game.currentInnings;

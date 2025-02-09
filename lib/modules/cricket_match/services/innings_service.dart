@@ -196,9 +196,9 @@ class InningsService {
     }
   }
 
-  // void forfeitInnings(Innings innings) {
-  //   innings.isForfeited = true;
-  // }
+  void forfeitInnings(Innings innings) {
+    innings.isForfeited = true;
+  }
 
   Future<void> _postToInnings(Innings innings, InningsPost post,
       {bool skipSave = false}) async {

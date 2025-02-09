@@ -343,55 +343,10 @@ sealed class Innings {
   int get wickets => wicketBalls.length;
   Iterable<Ball> get wicketBalls => balls.where((ball) => ball.isWicket);
 
-  Score get score => calculateScore();
-
-  Score calculateScore({Ball? from, Ball? at}) {
-    if (balls.isEmpty) {
-      return Score.zero();
-    }
-
-    from ??= balls.first;
-    at ??= balls.last;
-
-    final start = balls.indexOf(from);
-    final end = balls.indexOf(at, start) + 1;
-
-    final score = balls
-        .getRange(start, end)
-        .fold(Score.zero(), (prevScore, ball) => prevScore.plus(ball));
-
-    return score;
-  }
-
-  Map<int, Iterable<InningsPost>> get overs {
-    if (posts.isEmpty) return {};
-
-    final map = <int, List<InningsPost>>{};
-    for (final post in posts) {
-      final overIndex = post.index.over + 1;
-      if (!map.containsKey(overIndex)) {
-        map[overIndex] = [];
-      }
-      map[overIndex]!.add(post);
-    }
-
-    return map;
-  }
-
-  /// Are all wickets lost by the batting team
-  // bool get isAllDown => wickets >= rules.wicketsPerSide; TODO
-
-  // int get oversBowled {
-  //   if (balls.isEmpty) return 0;
-  //   return balls.last.index.over + 1;
-  // }
-
-  bool get isInningsComplete;
-
   /// All batters that walk out to the pitch
   ///
   /// Since a player can bat only once in an innings, a map is used.
-  /// The given literal produced a [LinkedHashMap] so insertion order is
+  /// The given literal produces a [LinkedHashMap], so insertion order is
   /// preserved.
   Map<Player, BatterInnings> batters = {};
 
@@ -418,12 +373,63 @@ sealed class Innings {
   /// The bowler who is bowling the current over
   BowlerInnings? bowler;
 
+  bool get isComplete;
   bool isForfeited = false;
   bool isDeclared = false;
 
-  final int? target;
+  bool get isEnded => isComplete || isForfeited || isDeclared;
+
+  int? target;
   bool get hasTarget => target != null;
   bool get isTargetAchieved => hasTarget && runs >= target!;
+
+  Score get score => calculateScore();
+
+  Score calculateScore({Ball? from, Ball? at}) {
+    if (balls.isEmpty) {
+      return Score.zero();
+    }
+
+    from ??= balls.first;
+    at ??= balls.last;
+
+    final start = balls.indexOf(from);
+    final end = balls.indexOf(at, start) + 1;
+
+    final score = balls
+        .getRange(start, end)
+        .fold(Score.zero(), (prevScore, ball) => prevScore.plus(ball));
+
+    return score;
+  }
+
+  // List<Partnership> get partnerships {
+  //   if (rules.onlySingleBatter) return [];
+  //
+  //   final batters = this.batters.values.toList();
+  //
+  //   List<Partnership> partnerships = [
+  //     Partnership(batter1: batters[0].player, batter2: batters[1].player),
+  //   ];
+  //   for (final post in posts) {
+  //     if (post is Ball && (post.isWicket)) {}
+  //   }
+  // }
+
+  Map<int, Iterable<InningsPost>> get overs {
+    if (posts.isEmpty) return {};
+
+    final map = <int, List<InningsPost>>{};
+    for (final post in posts) {
+      final overIndex = post.index.over + 1;
+      if (!map.containsKey(overIndex)) {
+        map[overIndex] = [];
+      }
+      map[overIndex]!.add(post);
+    }
+
+    return map;
+  }
 }
 
 class UnlimitedOversInnings extends Innings {
@@ -443,7 +449,7 @@ class UnlimitedOversInnings extends Innings {
 
   @override
   // TODO: implement isInningsComplete
-  bool get isInningsComplete => throw UnimplementedError();
+  bool get isComplete => throw UnimplementedError();
 }
 
 class LimitedOversInnings extends Innings {
@@ -470,11 +476,23 @@ class LimitedOversInnings extends Innings {
   bool get isBowlingComplete => ballsLeft == 0;
 
   @override
-  bool get isInningsComplete => isTargetAchieved || isBowlingComplete;
+  bool get isComplete => isTargetAchieved || isBowlingComplete;
 }
 
 abstract class PlayerInnings {
   final posts = <InningsPost>[];
+}
+
+class BowlerInnings extends PlayerInnings with BowlingCalculations {
+  final Player player;
+
+  @override
+  Iterable<Ball> get balls => posts.whereType<Ball>();
+
+  @override
+  final int ballsPerOver;
+
+  BowlerInnings(this.player, {required this.ballsPerOver});
 }
 
 class BatterInnings extends PlayerInnings with BattingCalculations {
@@ -491,16 +509,38 @@ class BatterInnings extends PlayerInnings with BattingCalculations {
   bool get isRetired => retired != null;
 }
 
-class BowlerInnings extends PlayerInnings with BowlingCalculations {
-  final Player player;
+class BatterScore {
+  final int runsScored;
+  final int ballsFaced;
 
-  @override
-  Iterable<Ball> get balls => posts.whereType<Ball>();
+  BatterScore(this.runsScored, this.ballsFaced);
+}
 
-  @override
-  final int ballsPerOver;
+class Partnership {
+  final Player batter1;
+  final Player batter2;
 
-  BowlerInnings(this.player, {required this.ballsPerOver});
+  Partnership({required this.batter1, required this.batter2});
+
+  BatterScore get batter1Contribution => _getBatterScore(batter1);
+  BatterScore get batter2Contribution => _getBatterScore(batter2);
+
+  BatterScore _getBatterScore(Player batter) {
+    return calculateBatterScore(balls.where((b) => b.batter == batter));
+  }
+
+  List<InningsPost> posts = [];
+  UnmodifiableListView<Ball> get balls =>
+      UnmodifiableListView(posts.whereType<Ball>());
+}
+
+// TODO Move to a better place
+BatterScore calculateBatterScore(Iterable<Ball> balls) {
+  final int runsScored =
+      balls.fold(0, (runs, ball) => runs + ball.runsScoredByBatter);
+  final int ballsFaced =
+      balls.where((ball) => ball.bowlingExtra is! Wide).length;
+  return BatterScore(runsScored, ballsFaced);
 }
 
 mixin BattingCalculations {
@@ -511,6 +551,8 @@ mixin BattingCalculations {
 
   int get ballsFaced =>
       balls.where((ball) => ball.bowlingExtra is! Wide).length;
+
+  BatterScore get batterScore => BatterScore(runsScored, ballsFaced);
 
   double get strikeRate => 100 * runsScored / ballsFaced;
 }

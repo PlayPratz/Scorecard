@@ -97,11 +97,14 @@ class CricketMatchService {
       bowlingLineup = game.lineup1;
     }
 
-    await _startInningsInGame(game,
-        battingTeam: battingTeam,
-        battingLineup: battingLineup,
-        bowlingTeam: bowlingTeam,
-        bowlingLineup: bowlingLineup);
+    await _startInningsInGame(
+      game,
+      battingTeam: battingTeam,
+      battingLineup: battingLineup,
+      bowlingTeam: bowlingTeam,
+      bowlingLineup: bowlingLineup,
+      target: null,
+    );
 
     return ongoingMatch;
   }
@@ -112,7 +115,8 @@ class CricketMatchService {
       if (game.innings.length == 2) {
         return await _endMatch(cricketMatch);
       } else {
-        await startNextInningsInGame(game, shouldSwitchRoles: true);
+        final innings = await startNextInningsInGame(game,
+            shouldSwitchRoles: true, target: game.innings.first.runs + 1);
         return cricketMatch;
       }
     } else {
@@ -120,8 +124,11 @@ class CricketMatchService {
     }
   }
 
-  Future<void> startNextInningsInGame(CricketGame game,
-      {required bool shouldSwitchRoles}) async {
+  Future<Innings> startNextInningsInGame(
+    CricketGame game, {
+    required bool shouldSwitchRoles,
+    required int? target,
+  }) async {
     late final Team battingTeam;
     late final Lineup battingLineup;
     late final Team bowlingTeam;
@@ -145,15 +152,19 @@ class CricketMatchService {
         battingTeam: battingTeam,
         battingLineup: battingLineup,
         bowlingTeam: bowlingTeam,
-        bowlingLineup: bowlingLineup);
+        bowlingLineup: bowlingLineup,
+        target: target);
+
+    return innings;
   }
 
-  Future<void> _startInningsInGame(
+  Future<Innings> _startInningsInGame(
     CricketGame game, {
     required Team battingTeam,
     required Lineup battingLineup,
     required Team bowlingTeam,
     required Lineup bowlingLineup,
+    required int? target,
   }) async {
     final Innings innings = switch (game) {
       LimitedOversGame() => LimitedOversInnings(
@@ -175,8 +186,10 @@ class CricketMatchService {
           bowlingLineup: bowlingLineup,
         ),
     };
+    innings.target = target;
     game.innings.add(innings);
     await _repository.storeLastInningsOfGame(game);
+    return innings;
   }
 
   Future<CompletedCricketMatch> _endMatch(

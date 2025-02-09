@@ -192,6 +192,7 @@ class _PlayerListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    players.sort((a, b) => a.name.compareTo(b.name));
     return ListView.builder(
       itemCount: players.length,
       itemBuilder: (context, index) =>

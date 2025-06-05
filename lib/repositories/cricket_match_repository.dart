@@ -1,3 +1,4 @@
+import 'package:scorecard/modules/cricket_match/models/cricket_friendly_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
@@ -54,6 +55,10 @@ class CricketMatchRepository {
       // Insert
       await cricketMatchesTable.create(entity);
     }
+  }
+
+  Future<void> saveCricketFriendly(CricketFriendly friendly) {
+    final entity = EntityMappers.repackFriendly(friendly);
   }
 
   Future<void> saveLineupsOfGame(CricketGame game,

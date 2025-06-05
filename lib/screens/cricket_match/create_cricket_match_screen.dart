@@ -3,7 +3,6 @@ import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model
 import 'package:scorecard/modules/cricket_match/services/cricket_match_service.dart';
 import 'package:scorecard/modules/team/models/team_model.dart';
 import 'package:scorecard/screens/cricket_match/cricket_match_screen_switcher.dart';
-import 'package:scorecard/screens/team/team_list_screen.dart';
 
 class CreateCricketMatchScreen extends StatelessWidget {
   final CreateCricketMatchController controller;
@@ -12,21 +11,15 @@ class CreateCricketMatchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final teamController = TeamSelectController();
     final gameRulesController = LimitedOverGameRulesController();
+    final teamController = TeamSelectController();
     return Scaffold(
       appBar: AppBar(
         title: const Text("Let's create a new match!"),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: ListView(
-          children: [
-            _TeamSelectorSection(teamController),
-            const Divider(height: 64),
-            _LimitedOverGameRulesSection(gameRulesController),
-          ],
-        ),
+        child: LimitedOverGameRulesSection(gameRulesController),
       ),
       bottomNavigationBar: BottomAppBar(
           child: Row(
@@ -54,89 +47,10 @@ class CreateCricketMatchScreen extends StatelessWidget {
   }
 }
 
-class _TeamSelectorSection extends StatelessWidget {
-  final TeamSelectController controller;
-  const _TeamSelectorSection(this.controller, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Teams", style: Theme.of(context).textTheme.titleSmall),
-        Text(
-          "Which great sides will be clashing?",
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 8),
-        ListenableBuilder(
-          listenable: controller,
-          builder: (context, child) => Column(
-            children: [
-              _TeamSelectTile(
-                controller.team1,
-                onSelect: () => onSelectTeam(context, 1),
-              ),
-              const SizedBox(height: 8),
-              _TeamSelectTile(
-                controller.team2,
-                onSelect: () => onSelectTeam(context, 2),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  void onSelectTeam(BuildContext context, int index) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TeamListScreen(onSelect: (team) {
-          if (index == 1) {
-            controller.team1 = team;
-          } else if (index == 2) {
-            controller.team2 = team;
-          }
-          Navigator.pop(context);
-        }),
-      ),
-    );
-  }
-}
-
-class _TeamSelectTile extends StatelessWidget {
-  final Team? team;
-  final void Function() onSelect;
-
-  const _TeamSelectTile(this.team, {super.key, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    if (team == null) {
-      return ListTile(
-        leading: const Icon(Icons.people),
-        title: const Text("Select Team"),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onSelect,
-      );
-    }
-    return ListTile(
-      leading: const Icon(Icons.people),
-      title: Text(team!.name),
-      trailing: const Icon(Icons.chevron_right),
-      tileColor: Color(team!.color).withOpacity(0.8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      onTap: onSelect,
-    );
-  }
-}
-
-class _LimitedOverGameRulesSection extends StatelessWidget {
+class LimitedOverGameRulesSection extends StatelessWidget {
   final LimitedOverGameRulesController controller;
 
-  const _LimitedOverGameRulesSection(this.controller, {super.key});
+  const LimitedOverGameRulesSection(this.controller, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -319,6 +233,8 @@ class LimitedOverGameRulesController with ChangeNotifier {
         onlySingleBatter: _allowSingleBatter,
         lastWicketBatter: _lastWicketBatter,
       );
+
+  LimitedOversRules get state => _deduceState();
 
   void _dispatchState() {
     notifyListeners();

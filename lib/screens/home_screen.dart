@@ -4,7 +4,6 @@ import 'package:scorecard/screens/common/loading_future_builder.dart';
 import 'package:scorecard/screens/cricket_match/create_cricket_match_screen.dart';
 import 'package:scorecard/screens/cricket_match/cricket_match_list_screen.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
-import 'package:scorecard/screens/team/team_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,11 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
               title: "Players",
               onSelect: () => _goPlayerList(context),
             ),
-            // _HomeScreenTile(
-            //   title: "Teams",
-            //   onSelect: () => _goTeamList(context),
-            // )
-            // _HomeScreenTile(title: "Venues"),
           ],
         ),
       ),
@@ -84,11 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => const AllPlayersScreen()));
   }
-
-  // void _goTeamList(BuildContext context) {
-  //   Navigator.push(context,
-  //       MaterialPageRoute(builder: (context) => const TeamListScreen()));
-  // }
 
   Future<void> _initializeApplication() async {
     await RepositoryProvider().initialize();

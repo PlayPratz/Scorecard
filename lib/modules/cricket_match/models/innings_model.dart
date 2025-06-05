@@ -338,10 +338,10 @@ sealed class Innings {
   /// Since a player can bat only once in an innings, a map is used.
   /// The given literal produces a [LinkedHashMap], so insertion order is
   /// preserved.
-  Map<Player, BatterInnings> batters = {};
+  final Map<Player, BatterInnings> batters = {};
 
   /// All bowlers that roll their arms
-  Map<Player, BowlerInnings> bowlers = {};
+  final Map<Player, BowlerInnings> bowlers = {};
 
   /// A batter who is on the pitch
   BatterInnings? batter1;

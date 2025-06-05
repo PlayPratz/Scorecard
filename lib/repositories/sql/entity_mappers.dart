@@ -1,3 +1,4 @@
+import 'package:scorecard/modules/cricket_match/models/cricket_friendly_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
@@ -112,6 +113,21 @@ class EntityMappers {
         UnlimitedOversRules() => 0,
         LimitedOversRules() => 1,
       };
+
+  static MatchesEntity repackFriendly(CricketFriendly friendly) {
+    final stage = friendly is CompletedCricketMatch ? 2 : 1;
+
+    return MatchesEntity(
+      id: friendly.id,
+      type: 9,
+      stage: stage,
+      team1_id: "",
+      team2_id: "",
+      venue_id: "",
+      starts_at: friendly.startsAt,
+      rules_id: friendly.rules.id!,
+    );
+  }
 
   static MatchesEntity repackMatch(CricketMatch match) {
     if (match is CompletedCricketMatch) {

@@ -1,5 +1,6 @@
 import 'package:scorecard/handlers/ulid.dart';
 import 'package:scorecard/modules/cricket_match/cache/cricket_game_cache.dart';
+import 'package:scorecard/modules/cricket_match/models/cricket_friendly_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_model.dart';
 import 'package:scorecard/modules/cricket_match/models/cricket_match_rules_model.dart';
 import 'package:scorecard/modules/cricket_match/models/innings_model.dart';
@@ -107,6 +108,14 @@ class CricketMatchService {
     // );
 
     return ongoingMatch;
+  }
+
+  Future<CricketFriendly> createCricketFriendly(
+      {required LimitedOversRules rules}) async {
+    final cricketFriendly = InProgressCricketFriendly(
+        id: UlidHandler.generate(), rules: rules, startsAt: DateTime.now());
+
+    await _repository.saveCricketFriendly(cricketFriendly);
   }
 
   int _getNextInningsNumber(CricketGame game) => game.innings.length + 1;

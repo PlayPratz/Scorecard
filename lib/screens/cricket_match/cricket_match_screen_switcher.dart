@@ -42,8 +42,11 @@ class CricketMatchScreenSwitcher extends StatelessWidget {
       case CompletedCricketMatch():
         return CricketMatchScorecard(cricketMatch, game!);
       case OngoingCricketMatch():
-        final controller = CricketGameScreenController(cricketMatch, game!);
-        return CricketGameScreen(controller);
+        if (game is LimitedOversGame) {
+          final controller =
+              LimitedOversCricketGameScreenController(cricketMatch, game!);
+          return CricketGameScreen(controller);
+        }
       case InitializedCricketMatch():
         final controller =
             ReviewCricketGameScreenController(cricketMatch, game!);

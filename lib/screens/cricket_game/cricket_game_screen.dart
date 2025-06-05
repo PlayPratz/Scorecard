@@ -20,7 +20,7 @@ import 'package:scorecard/screens/cricket_match/innings_timeline_screen.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
 
 class CricketGameScreen extends StatelessWidget {
-  final CricketGameScreenController controller;
+  final LimitedOversCricketGameScreenController controller;
 
   const CricketGameScreen(this.controller, {super.key});
 
@@ -68,7 +68,7 @@ class CricketGameScreen extends StatelessWidget {
                     : null,
                 isFirstTeamBatting: controller._game.team1 ==
                     controller._game.currentInnings.battingTeam,
-                onRetireBowler: (b) => controller.retireBowler(b),
+                onRetireBowler: (b) => controller.onRetireBowler(b),
                 // onRetireBatter: (b, r) => controller.retireBatter(b, r),
                 onPickBatter: () => _pickBatter(context),
                 onPickBowler: () => _pickBowler(context),
@@ -119,33 +119,35 @@ class CricketGameScreen extends StatelessWidget {
 
   Widget _wScoreSection(BuildContext context, CricketGame game,
           CricketGameScreenState state) =>
-      switch (game) {
-        LimitedOversGame() => LimitedOversScoreSection(
-            !game.currentInnings.hasTarget
-                ? LimitedOversScoreFirstInningsState(
-                    score: state.score,
-                    team1: state.team1,
-                    team2: state.team2,
-                    currentIndex:
-                        state.latestPost?.index ?? const PostIndex.zero(),
-                    oversToBowl: game.rules.oversPerInnings,
-                    isFirstTeamBatting: state.isFirstTeamBatting,
-                  )
-                : LimitedOversScoreSecondInningsState(
-                    score: state.score,
-                    team1: state.team1,
-                    team2: state.team2,
-                    currentIndex:
-                        state.latestPost?.index ?? const PostIndex.zero(),
-                    oversToBowl: game.rules.oversPerInnings,
-                    isFirstTeamBatting: state.isFirstTeamBatting,
-                    target: game.currentInnings.target!,
-                  ),
+      switch (game.currentInnings) {
+        // TODO: Handle this case.
+        UnlimitedOversInnings() =>
+          throw UnimplementedError("Unlimited Overs :-("),
+        // TODO: Handle this case.
+        FirstLimitedOversInnings() => LimitedOversScoreSection(
+            FirstInningsScoreState(
+              score: state.score,
+              team1: state.team1,
+              team2: state.team2,
+              currentIndex: state.latestPost?.index ?? const PostIndex.zero(),
+              oversToBowl: (game as LimitedOversGame).rules.oversPerInnings,
+              isFirstTeamBatting: state.isFirstTeamBatting,
+            ),
             onTap: () => controller.goScorecard(context),
           ),
-
         // TODO: Handle this case.
-        UnlimitedOversGame() => throw UnimplementedError("Unlimited Over Game"),
+        SecondLimitedOversInnings() => LimitedOversScoreSection(
+            SecondInningsScoreState(
+              score: state.score,
+              team1: state.team1,
+              team2: state.team2,
+              currentIndex: state.latestPost?.index ?? const PostIndex.zero(),
+              oversToBowl: (game as LimitedOversGame).rules.oversPerInnings,
+              isFirstTeamBatting: state.isFirstTeamBatting,
+              target: (game.currentInnings as SecondLimitedOversInnings).target,
+            ),
+            onTap: () => controller.goScorecard(context),
+          ),
       };
 
   Widget _wConfirmButton(BuildContext context, CricketGameScreenState state,
@@ -162,7 +164,7 @@ class CricketGameScreen extends StatelessWidget {
             label: const Text("Pick Batter"),
           ),
         EndInningsState() => FilledButton.icon(
-            onPressed: () => controller.progressGame(context),
+            onPressed: () => controller.onEndInnings(context),
             icon: const Icon(Icons.done),
             label: const Text("End Innings"),
           ),
@@ -175,7 +177,7 @@ class CricketGameScreen extends StatelessWidget {
       };
 
   Widget _wUndoButton() => OutlinedButton.icon(
-        onPressed: controller.undo,
+        onPressed: controller.onUndo,
         label: const Text("Undo"),
         icon: const Icon(Icons.undo),
       );
@@ -187,15 +189,15 @@ class CricketGameScreen extends StatelessWidget {
 
   void _playBall(PlayBallState playBallState,
           NextBallSelectorController nextBallSelectorController) =>
-      controller.play(playBallState, nextBallSelectorController.state);
+      controller.onPlay(playBallState, nextBallSelectorController.state);
 
-  void _pickBatter(BuildContext context) => controller.pickBatter(context);
+  void _pickBatter(BuildContext context) => controller.onPickBatter(context);
 
-  void _pickBowler(BuildContext context) => controller.pickBowler(context);
+  void _pickBowler(BuildContext context) => controller.onPickBowler(context);
 
   void _pickWicket(BuildContext context,
           NextBallSelectorController nextBallSelectorController) =>
-      controller.pickWicket(context, nextBallSelectorController);
+      controller.onPickWicket(context, nextBallSelectorController);
 
   void _forfeitInnings(BuildContext context) {
     showDialog(
@@ -207,7 +209,7 @@ class CricketGameScreen extends StatelessWidget {
               actions: [
                 TextButton(
                     onPressed: () {
-                      controller.forfeitInnings(context);
+                      controller.onForfeitInnings(context);
                     },
                     child: const Text("Forfeit"))
               ],
@@ -215,10 +217,10 @@ class CricketGameScreen extends StatelessWidget {
   }
 }
 
-class CricketGameScreenController {
+class LimitedOversCricketGameScreenController {
   final OngoingCricketMatch _cricketMatch;
-  final CricketGame _game;
-  CricketGameScreenController(this._cricketMatch, this._game);
+  final LimitedOversGame _game;
+  LimitedOversCricketGameScreenController(this._cricketMatch, this._game);
 
   final _streamController = StreamController<CricketGameScreenState>();
   Stream<CricketGameScreenState> get stream => _streamController.stream;
@@ -267,44 +269,45 @@ class CricketGameScreenController {
   }
 
   void setStrike(BatterInnings batterInnings) {
-    _service.setStrike(currentInnings, batterInnings);
+    _inningsService.setStrike(currentInnings, batterInnings);
     _dispatchState();
   }
 
-  Future<void> retireBatter(
+  Future<void> onRetireBatter(
       BatterInnings batterInnings, Retired retired) async {
     _dispatchLoading();
-    await _service.retireBatterInnings(currentInnings, batterInnings, retired);
+    await _inningsService.retireBatterInnings(
+        currentInnings, batterInnings, retired);
     _dispatchState();
   }
 
-  Future<void> retireBowler(BowlerInnings bowlerInnings) async {
+  Future<void> onRetireBowler(BowlerInnings bowlerInnings) async {
     _dispatchLoading();
-    await _service.retireBowlerInnings(currentInnings, bowlerInnings);
+    await _inningsService.retireBowlerInnings(currentInnings, bowlerInnings);
     _dispatchState();
   }
 
-  Future<void> pickBowler(BuildContext context) async {
+  Future<void> onPickBowler(BuildContext context) async {
     _dispatchLoading();
-    final bowler = await _pickPlayer(
+    final bowler = await _onPickPlayer(
         context, currentInnings.bowlingLineup.players.toList());
     if (bowler != null) {
-      await _service.nextBowler(currentInnings, bowler);
+      await _inningsService.nextBowler(currentInnings, bowler);
     }
     _dispatchState();
   }
 
-  Future<void> pickBatter(BuildContext context) async {
+  Future<void> onPickBatter(BuildContext context) async {
     _dispatchLoading();
-    final batter = await _pickPlayer(
+    final batter = await _onPickPlayer(
         context, currentInnings.battingLineup.players.toList());
     if (batter != null) {
-      await _service.nextBatter(currentInnings, batter);
+      await _inningsService.nextBatter(currentInnings, batter);
     }
     _dispatchState();
   }
 
-  Future<Player?> _pickPlayer(
+  Future<Player?> _onPickPlayer(
       BuildContext context, List<Player> players) async {
     final player = await Navigator.push(
         context,
@@ -319,7 +322,7 @@ class CricketGameScreenController {
     }
   }
 
-  Future<void> pickWicket(BuildContext context,
+  Future<void> onPickWicket(BuildContext context,
       NextBallSelectorController nextBallSelectorController) async {
     final wicket = await Navigator.push(
         context,
@@ -336,9 +339,9 @@ class CricketGameScreenController {
       nextBallSelectorController.nextWicket = wicket;
     } else if (wicket is Retired) {
       // TODO Improve
-      final batterInnings =
-          _service.getBatterInningsOfPlayer(currentInnings, wicket.batter)!;
-      await retireBatter(batterInnings, wicket);
+      final batterInnings = _inningsService.getBatterInningsOfPlayer(
+          currentInnings, wicket.batter)!;
+      await onRetireBatter(batterInnings, wicket);
     }
   }
 
@@ -356,12 +359,12 @@ class CricketGameScreenController {
             builder: (context) => InningsTimelineScreen(_game.currentInnings)));
   }
 
-  Future<void> play(PlayBallState playBallState,
+  Future<void> onPlay(PlayBallState playBallState,
       NextBallSelectorState nextBallSelectorState) async {
     nextBallSelectorState as NextBallSelectorEnabledState;
     if (playBallState.bowler != null && playBallState.striker != null) {
       _dispatchLoading();
-      await _service.play(
+      await _inningsService.play(
         currentInnings,
         bowler: playBallState.bowler!.player,
         batter: playBallState.striker!.player,
@@ -377,31 +380,24 @@ class CricketGameScreenController {
     }
   }
 
-  Future<void> undo() async {
+  Future<void> onUndo() async {
     _dispatchLoading();
-    await _service.undoPostFromInnings(currentInnings);
+    await _inningsService.undoPostFromInnings(currentInnings);
     _dispatchState();
   }
 
-  Future<void> progressGame(BuildContext context) async {
-    _dispatchLoading();
-    final cricketMatch =
-        await CricketMatchService().progressMatch(_cricketMatch);
-    if (context.mounted) {
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => CricketMatchScreenSwitcher(cricketMatch)));
-    }
+  void onForfeitInnings(BuildContext context) {
+    _inningsService.forfeitInnings(currentInnings);
+    _dispatchState();
   }
 
-  void forfeitInnings(BuildContext context) {
-    _service.forfeitInnings(currentInnings);
-    progressGame(context);
+  Future<void> onEndInnings(BuildContext context) async {
+    await _matchService.endCurrentInnings(_cricketMatch, _game);
   }
 
   Innings get currentInnings => _game.currentInnings;
-  InningsService get _service => InningsService();
+  InningsService get _inningsService => InningsService();
+  LimitedOversMatchService get _matchService => LimitedOversMatchService();
 }
 
 sealed class CricketGameScreenState {

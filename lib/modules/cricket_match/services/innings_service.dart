@@ -200,6 +200,10 @@ class InningsService {
     innings.isForfeited = true;
   }
 
+  void declareInnings(Innings innings) {
+    innings.isDeclared = true;
+  }
+
   Future<void> _postToInnings(Innings innings, InningsPost post,
       {bool skipSave = false}) async {
     if (!skipSave) {

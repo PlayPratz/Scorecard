@@ -43,10 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
               title: "Players",
               onSelect: () => _goPlayerList(context),
             ),
-            _HomeScreenTile(
-              title: "Teams",
-              onSelect: () => _goTeamList(context),
-            )
+            // _HomeScreenTile(
+            //   title: "Teams",
+            //   onSelect: () => _goTeamList(context),
+            // )
             // _HomeScreenTile(title: "Venues"),
           ],
         ),
@@ -85,10 +85,10 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (context) => const AllPlayersScreen()));
   }
 
-  void _goTeamList(BuildContext context) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => const TeamListScreen()));
-  }
+  // void _goTeamList(BuildContext context) {
+  //   Navigator.push(context,
+  //       MaterialPageRoute(builder: (context) => const TeamListScreen()));
+  // }
 
   Future<void> _initializeApplication() async {
     await RepositoryProvider().initialize();

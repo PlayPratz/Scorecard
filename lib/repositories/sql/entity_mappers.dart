@@ -409,8 +409,15 @@ class EntityMappers {
         batter2_id: innings.batter2?.player.id,
         striker_id: innings.striker?.player.id,
         bowler_id: innings.bowler?.player.id,
-        target_runs: innings.target,
+        target_runs:
+            innings is SecondLimitedOversInnings ? innings.target : null,
       );
+
+  static int _inningsType(Innings innings) => switch (innings) {
+        UnlimitedOversInnings() => 10,
+        FirstLimitedOversInnings() => 21,
+        SecondLimitedOversInnings() => 22,
+      };
 
   static Innings unpackInnings(
     InningsEntity inningsEntity, {
@@ -428,7 +435,7 @@ class EntityMappers {
     final Lineup bowlingLineup = lineupMap[bowlingTeam]!;
 
     final innings = switch (inningsEntity.type) {
-      0 => UnlimitedOversInnings(
+      10 => UnlimitedOversInnings(
           matchId: inningsEntity.match_id,
           inningsNumber: inningsEntity.innings_number,
           battingTeam: battingTeam,
@@ -437,7 +444,7 @@ class EntityMappers {
           bowlingLineup: bowlingLineup,
           rules: rules as UnlimitedOversRules,
         ),
-      1 => LimitedOversInnings(
+      21 => FirstLimitedOversInnings(
           matchId: inningsEntity.match_id,
           inningsNumber: inningsEntity.innings_number,
           battingTeam: battingTeam,
@@ -446,17 +453,22 @@ class EntityMappers {
           bowlingLineup: bowlingLineup,
           rules: rules as LimitedOversRules,
         ),
+      22 => SecondLimitedOversInnings(
+          matchId: inningsEntity.match_id,
+          inningsNumber: inningsEntity.innings_number,
+          battingTeam: battingTeam,
+          battingLineup: battingLineup,
+          bowlingTeam: bowlingTeam,
+          bowlingLineup: bowlingLineup,
+          rules: rules as LimitedOversRules,
+          target: inningsEntity.target_runs!,
+        ),
       _ => throw UnsupportedError(
           "innings.type not in bounds (match_id: ${inningsEntity.match_id})"),
     };
 
     return innings;
   }
-
-  static int _inningsType(Innings innings) => switch (innings) {
-        UnlimitedOversInnings() => 0,
-        LimitedOversInnings() => 1,
-      };
 
   static PostsEntity repackLimitedOversPost(InningsPost post,
           {required String matchId, required int inningsNumber}) =>

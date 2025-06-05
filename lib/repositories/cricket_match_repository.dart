@@ -101,19 +101,20 @@ class CricketMatchRepository {
     }
   }
 
-  Future<void> storeLastInningsOfGame(CricketGame game) async {
-    final id = game.matchId;
-    // Put the last innings of the given game in the DB
-    final innings = game.innings.last;
-    final inningsEntity = EntityMappers.repackInnings(innings);
-
-    // Insert the Innings
-    await inningsTable.create(inningsEntity);
-  }
+  // Future<void> storeLastInningsOfGame(CricketGame game) async {
+  //   final id = game.matchId;
+  //   // Put the last innings of the given game in the DB
+  //   final innings = game.innings.last;
+  //   final inningsEntity = EntityMappers.repackInnings(innings);
+  //
+  //   // Insert the Innings
+  //   await inningsTable.create(inningsEntity);
+  // }
 
   Future<void> saveInnings(Innings innings) async {
-    final id = innings.matchId;
-
+    final inningsEntity = EntityMappers.repackInnings(innings);
+    // Insert the Innings
+    await inningsTable.create(inningsEntity);
   }
 
   Future<int> post(Innings innings, InningsPost post) async {

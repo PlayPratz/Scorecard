@@ -104,8 +104,8 @@ sealed class LimitedOversScoreState {
   //       oversToBowl = state.rules.ovre;
 }
 
-class LimitedOversScoreFirstInningsState extends LimitedOversScoreState {
-  LimitedOversScoreFirstInningsState({
+class FirstInningsScoreState extends LimitedOversScoreState {
+  FirstInningsScoreState({
     required super.score,
     required super.team1,
     required super.team2,
@@ -115,10 +115,10 @@ class LimitedOversScoreFirstInningsState extends LimitedOversScoreState {
   });
 }
 
-class LimitedOversScoreSecondInningsState extends LimitedOversScoreState {
+class SecondInningsScoreState extends LimitedOversScoreState {
   final int target;
 
-  LimitedOversScoreSecondInningsState({
+  SecondInningsScoreState({
     required super.score,
     required super.team1,
     required super.team2,

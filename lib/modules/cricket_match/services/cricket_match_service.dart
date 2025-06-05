@@ -80,164 +80,33 @@ class CricketMatchService {
     final Team bowlingTeam;
     final Lineup bowlingLineup;
 
-    final game = CricketGameCache.of(ongoingMatch);
+    // final game = CricketGameCache.of(ongoingMatch);
 
-    if (ongoingMatch.toss.winner == ongoingMatch.team1 &&
-            ongoingMatch.toss.choice == TossChoice.bat ||
-        ongoingMatch.toss.winner == ongoingMatch.team2 &&
-            ongoingMatch.toss.choice == TossChoice.field) {
-      battingTeam = game.team1;
-      battingLineup = game.lineup1;
-      bowlingTeam = game.team2;
-      bowlingLineup = game.lineup2;
-    } else {
-      battingTeam = game.team2;
-      battingLineup = game.lineup2;
-      bowlingTeam = game.team1;
-      bowlingLineup = game.lineup1;
-    }
-
-    await _startInningsInGame(
-      game,
-      battingTeam: battingTeam,
-      battingLineup: battingLineup,
-      bowlingTeam: bowlingTeam,
-      bowlingLineup: bowlingLineup,
-      target: null,
-    );
+    // if (ongoingMatch.toss.winner == ongoingMatch.team1 &&
+    //         ongoingMatch.toss.choice == TossChoice.bat ||
+    //     ongoingMatch.toss.winner == ongoingMatch.team2 &&
+    //         ongoingMatch.toss.choice == TossChoice.field) {
+    //   battingTeam = game.team1;
+    //   battingLineup = game.lineup1;
+    //   bowlingTeam = game.team2;
+    //   bowlingLineup = game.lineup2;
+    // } else {
+    //   battingTeam = game.team2;
+    //   battingLineup = game.lineup2;
+    //   bowlingTeam = game.team1;
+    //   bowlingLineup = game.lineup1;
+    // }
+    //
+    // await _startInningsInGame(
+    //   game,
+    //   battingTeam: battingTeam,
+    //   battingLineup: battingLineup,
+    //   bowlingTeam: bowlingTeam,
+    //   bowlingLineup: bowlingLineup,
+    //   target: null,
+    // );
 
     return ongoingMatch;
-  }
-
-  Future<CricketMatch> progressMatch(OngoingCricketMatch cricketMatch) async {
-    final game = CricketGameCache.of(cricketMatch);
-    if (game is LimitedOversGame) {
-      if (game.innings.length == 2) {
-        return await _endMatch(cricketMatch);
-      } else {
-        final innings = await startNextInningsInGame(game,
-            shouldSwitchRoles: true, target: game.innings.first.runs + 1);
-        return cricketMatch;
-      }
-    } else {
-      throw UnimplementedError("Unlimited Overs Game!");
-    }
-  }
-
-  Future<Innings> startNextInningsInGame(
-    CricketGame game, {
-    required bool shouldSwitchRoles,
-    required int? target,
-  }) async {
-    late final Team battingTeam;
-    late final Lineup battingLineup;
-    late final Team bowlingTeam;
-    late final Lineup bowlingLineup;
-
-    final previousInnings = game.innings.last;
-
-    if (shouldSwitchRoles) {
-      battingTeam = previousInnings.bowlingTeam;
-      battingLineup = previousInnings.bowlingLineup;
-      bowlingTeam = previousInnings.battingTeam;
-      bowlingLineup = previousInnings.battingLineup;
-    } else {
-      battingTeam = previousInnings.battingTeam;
-      battingLineup = previousInnings.battingLineup;
-      bowlingTeam = previousInnings.bowlingTeam;
-      bowlingLineup = previousInnings.bowlingLineup;
-    }
-
-    final innings = await _startInningsInGame(game,
-        battingTeam: battingTeam,
-        battingLineup: battingLineup,
-        bowlingTeam: bowlingTeam,
-        bowlingLineup: bowlingLineup,
-        target: target);
-
-    return innings;
-  }
-
-  Future<Innings> _startInningsInGame(
-    CricketGame game, {
-    required Team battingTeam,
-    required Lineup battingLineup,
-    required Team bowlingTeam,
-    required Lineup bowlingLineup,
-    required int? target,
-  }) async {
-    final Innings innings = switch (game) {
-      LimitedOversGame() => LimitedOversInnings(
-          matchId: game.matchId,
-          inningsNumber: _getNextInningsNumber(game),
-          rules: game.rules,
-          battingTeam: battingTeam,
-          battingLineup: battingLineup,
-          bowlingTeam: bowlingTeam,
-          bowlingLineup: bowlingLineup,
-        ),
-      UnlimitedOversGame() => UnlimitedOversInnings(
-          matchId: game.matchId,
-          inningsNumber: _getNextInningsNumber(game),
-          rules: game.rules,
-          battingTeam: battingTeam,
-          battingLineup: battingLineup,
-          bowlingTeam: bowlingTeam,
-          bowlingLineup: bowlingLineup,
-        ),
-    };
-    innings.target = target;
-    game.innings.add(innings);
-    await _repository.storeLastInningsOfGame(game);
-    return innings;
-  }
-
-  Future<CompletedCricketMatch> _endMatch(
-      OngoingCricketMatch cricketMatch) async {
-    final game = CricketGameCache.of(cricketMatch);
-    switch (game) {
-      case UnlimitedOversGame():
-        throw UnimplementedError("I haven't coded for Unlimited Overs yet :-(");
-      case LimitedOversGame():
-        int team1Runs = 0;
-        int team2Runs = 0;
-
-        for (final innings in game.innings) {
-          if (innings.battingTeam == game.team1) {
-            team1Runs += innings.runs;
-          } else if (innings.battingTeam == game.team2) {
-            team2Runs += innings.runs;
-          }
-        }
-
-        final LimitedOversMatchResult result;
-
-        if (team1Runs == team2Runs) {
-          result = TieResult(team1: game.team1, team2: game.team2);
-        } else if (team1Runs > team2Runs &&
-                game.innings.first.battingTeam == game.team1 ||
-            team2Runs > team1Runs &&
-                game.innings.first.battingTeam == game.team2) {
-          result = WinByDefendingResult(
-              winner: game.innings.first.battingTeam,
-              loser: game.innings.first.bowlingTeam,
-              runsMargin: (team1Runs - team2Runs).abs());
-        } else {
-          result = WinByChasingResult(
-            winner: game.innings.last.battingTeam,
-            loser: game.innings.last.bowlingTeam,
-            wicketsLeft: -1,
-            ballsToSpare: game.innings.last.ballsLeft,
-          );
-        }
-
-        final completedMatch = CompletedCricketMatch.fromOngoing(cricketMatch,
-            result: result, playerOfTheMatch: null); // TODO POTM
-
-        await _repository.saveCricketMatch(completedMatch, update: true);
-
-        return completedMatch;
-    }
   }
 
   int _getNextInningsNumber(CricketGame game) => game.innings.length + 1;
@@ -269,4 +138,97 @@ class CricketMatchService {
 
   CricketMatchRepository get _repository =>
       RepositoryProvider().getCricketMatchRepository();
+}
+
+class LimitedOversMatchService extends CricketMatchService {
+  Future<void> startFirstInnings(
+    LimitedOversGame game, {
+    required Team battingTeam,
+    required Lineup battingLineup,
+    required Team bowlingTeam,
+    required Lineup bowlingLineup,
+  }) async {
+    final innings = FirstLimitedOversInnings(
+      matchId: game.matchId,
+      battingTeam: battingTeam,
+      battingLineup: battingLineup,
+      bowlingTeam: bowlingTeam,
+      bowlingLineup: bowlingLineup,
+      rules: game.rules,
+    );
+
+    await _repository.saveInnings(innings);
+
+    game.innings.add(innings);
+  }
+
+  Future<void> _startSecondInnings(
+    LimitedOversGame game, {
+    required FirstLimitedOversInnings firstInnings,
+    required int target,
+  }) async {
+    final innings = SecondLimitedOversInnings.from(firstInnings);
+
+    await _repository.saveInnings(innings);
+    game.innings.add(innings);
+  }
+
+  Future<void> endCurrentInnings(
+      OngoingCricketMatch match, LimitedOversGame game) async {
+    if (game.innings.length == 1) {
+      // First innings over; start second innings
+      final firstInnings = game.innings.single;
+      if (firstInnings is! FirstLimitedOversInnings) {
+        throw UnsupportedError(
+            "The First Innings is not of type FirstLimitedOversInnings! matchId: ${game.matchId}");
+      }
+      await _startSecondInnings(game,
+          firstInnings: firstInnings, target: firstInnings.runs + 1);
+    } else if (game.innings.length == 2) {
+      // Second innings over; prepare result
+      final firstInnings = game.innings[0];
+      final secondInnings = game.innings[1];
+      if (firstInnings is! FirstLimitedOversInnings) {
+        throw UnsupportedError(
+            "The First Innings is not of type FirstLimitedOversInnings! matchId: ${game.matchId}");
+      }
+      if (secondInnings is! SecondLimitedOversInnings) {
+        throw UnsupportedError(
+            "The Second Innings is not of type SecondLimitedOversInnings! matchId: ${game.matchId}");
+      }
+
+      await _generateResult(match, game, firstInnings, secondInnings);
+    }
+  }
+
+  Future<void> _generateResult(
+      OngoingCricketMatch match,
+      LimitedOversGame game,
+      FirstLimitedOversInnings firstInnings,
+      SecondLimitedOversInnings secondInnings) async {
+    late LimitedOversMatchResult result;
+    if (firstInnings.runs > secondInnings.runs) {
+      result = WinByDefendingResult(
+        winner: firstInnings.battingTeam,
+        loser: secondInnings.battingTeam,
+        runsMargin: firstInnings.runs - secondInnings.runs,
+      );
+    } else if (firstInnings.runs < secondInnings.runs) {
+      // TODO Handle changed target/DLS
+      result = WinByChasingResult(
+        winner: secondInnings.battingTeam,
+        loser: firstInnings.battingTeam,
+        ballsToSpare: secondInnings.ballsLeft,
+        wicketsLeft: -1, // TODO
+      );
+    } else {
+      result = TieResult(team1: game.team1, team2: game.team2);
+    }
+
+    final completedMatch = CompletedCricketMatch.fromOngoing(match,
+        result: result, playerOfTheMatch: null);
+
+    // Save to repository
+    await _repository.saveCricketMatch(completedMatch, update: true);
+  }
 }

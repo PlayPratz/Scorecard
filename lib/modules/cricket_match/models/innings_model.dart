@@ -315,16 +315,6 @@ sealed class Innings {
     required this.battingLineup,
     required this.bowlingTeam,
     required this.bowlingLineup,
-  }) : target = null;
-
-  Innings.target({
-    required this.matchId,
-    required this.inningsNumber,
-    required this.battingTeam,
-    required this.battingLineup,
-    required this.bowlingTeam,
-    required this.bowlingLineup,
-    required this.target,
   });
 
   /// A set of rules that determines how this innings will proceed
@@ -373,15 +363,11 @@ sealed class Innings {
   /// The bowler who is bowling the current over
   BowlerInnings? bowler;
 
-  bool get isComplete;
+  bool get _isComplete;
   bool isForfeited = false;
   bool isDeclared = false;
 
-  bool get isEnded => isComplete || isForfeited || isDeclared;
-
-  int? target;
-  bool get hasTarget => target != null;
-  bool get isTargetAchieved => hasTarget && runs >= target!;
+  bool get isEnded => _isComplete || isForfeited || isDeclared;
 
   Score get score => calculateScore();
 
@@ -449,10 +435,10 @@ class UnlimitedOversInnings extends Innings {
 
   @override
   // TODO: implement isInningsComplete
-  bool get isComplete => throw UnimplementedError();
+  bool get _isComplete => throw UnimplementedError();
 }
 
-class LimitedOversInnings extends Innings {
+sealed class LimitedOversInnings extends Innings {
   final LimitedOversRules _rules;
   LimitedOversInnings({
     required super.matchId,
@@ -475,8 +461,59 @@ class LimitedOversInnings extends Innings {
 
   bool get isBowlingComplete => ballsLeft == 0;
 
+  /// Represents whether the batting team has lost all their wickets.
+  // bool isAllDown = false;
+
+  /// As in most casual game scenarios, the number of wickets cannot be
+  /// pre-decided since the lineup changes dynamically. To account for this,
+  /// the user must specifically mark the innings as exhausted.
+  // bool isExhausted;
+
   @override
-  bool get isComplete => isTargetAchieved || isBowlingComplete;
+  bool get _isComplete => isBowlingComplete;
+}
+
+class FirstLimitedOversInnings extends LimitedOversInnings {
+  FirstLimitedOversInnings(
+      {required super.matchId,
+      required super.battingTeam,
+      required super.battingLineup,
+      required super.bowlingTeam,
+      required super.bowlingLineup,
+      required super.rules,
+      super.inningsNumber = 1});
+}
+
+class SecondLimitedOversInnings extends LimitedOversInnings {
+  final int target; // TODO Make this changeable
+
+  SecondLimitedOversInnings({
+    required super.matchId,
+    required super.inningsNumber,
+    required super.battingTeam,
+    required super.battingLineup,
+    required super.bowlingTeam,
+    required super.bowlingLineup,
+    required super.rules,
+    required this.target,
+  });
+
+  SecondLimitedOversInnings.from(FirstLimitedOversInnings firstInnings)
+      : this(
+          matchId: firstInnings.matchId,
+          inningsNumber: firstInnings.inningsNumber + 1,
+          target: firstInnings.runs + 1,
+          rules: firstInnings.rules,
+          // Swap batting and bowling teams/lineups
+          battingTeam: firstInnings.bowlingTeam,
+          battingLineup: firstInnings.bowlingLineup,
+          bowlingTeam: firstInnings.battingTeam,
+          bowlingLineup: firstInnings.battingLineup,
+        );
+
+  bool get isTargetAchieved => runs >= target;
+  @override
+  bool get _isComplete => super._isComplete || isTargetAchieved;
 }
 
 abstract class PlayerInnings {

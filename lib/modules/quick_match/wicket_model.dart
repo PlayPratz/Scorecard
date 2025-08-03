@@ -1,79 +1,89 @@
 import 'package:scorecard/modules/player/player_model.dart';
 
 sealed class Wicket {
-  final Player batter;
+  final String batterId;
 
   Dismissal get dismissal;
 
-  Wicket({required this.batter});
+  Wicket({required this.batterId});
 }
 
 class BowledWicket extends Wicket with BowlerWicket {
-  final Player bowler;
+  @override
+  final String bowlerId;
 
-  BowledWicket({required super.batter, required this.bowler});
+  BowledWicket({required super.batterId, required this.bowlerId});
 
   @override
   Dismissal get dismissal => Dismissal.bowled;
 }
 
 class HitWicket extends Wicket with BowlerWicket {
-  final Player bowler;
+  @override
+  final String bowlerId;
 
-  HitWicket({required super.batter, required this.bowler});
+  HitWicket({required super.batterId, required this.bowlerId});
 
   @override
   Dismissal get dismissal => Dismissal.hitWicket;
 }
 
 class LbwWicket extends Wicket with BowlerWicket {
-  final Player bowler;
+  @override
+  final String bowlerId;
 
-  LbwWicket({required super.batter, required this.bowler});
+  LbwWicket({required super.batterId, required this.bowlerId});
 
   @override
   Dismissal get dismissal => Dismissal.lbw;
 }
 
 class CaughtWicket extends Wicket with BowlerWicket, FielderWicket {
-  final Player bowler;
-  final Player fielder;
+  @override
+  final String bowlerId;
+  @override
+  final String fielderId;
 
   CaughtWicket(
-      {required super.batter, required this.bowler, required this.fielder});
+      {required super.batterId,
+      required this.bowlerId,
+      required this.fielderId});
 
   @override
   Dismissal get dismissal => Dismissal.caught;
 }
 
 class StumpedWicket extends Wicket with BowlerWicket, FielderWicket {
-  final Player bowler;
+  @override
+  final String bowlerId;
 
   // According to the laws of the game, only a wicket-keeper can stump a batter.
-  final Player wicketkeeper;
+  final String wicketkeeperId;
+
   @override
-  Player get fielder => wicketkeeper;
+  String get fielderId => wicketkeeperId;
 
   StumpedWicket(
-      {required super.batter,
-      required this.bowler,
-      required this.wicketkeeper});
+      {required super.batterId,
+      required this.bowlerId,
+      required this.wicketkeeperId});
 
   @override
   Dismissal get dismissal => Dismissal.stumped;
 }
 
 class RunoutWicket extends Wicket with FielderWicket {
-  final Player fielder;
+  @override
+  final String fielderId;
 
-  RunoutWicket({required super.batter, required this.fielder});
+  RunoutWicket({required super.batterId, required this.fielderId});
 
   @override
   Dismissal get dismissal => Dismissal.runOut;
 }
 
 class TimedOutWicket extends Wicket {
-  TimedOutWicket({required super.batter});
+  TimedOutWicket({required super.batterId});
 
   @override
   Dismissal get dismissal => Dismissal.timedOut;
@@ -82,37 +92,37 @@ class TimedOutWicket extends Wicket {
 // Retirements
 
 sealed class Retired {
-  final Player batter;
+  final String batterId;
 
-  Retired({required this.batter});
+  Retired({required this.batterId});
 
   Dismissal get dismissal;
 }
 
 class RetiredDeclared extends Retired {
-  RetiredDeclared({required super.batter});
+  RetiredDeclared({required super.batterId});
 
   @override
   Dismissal get dismissal => Dismissal.retired;
 }
 
 class RetiredHurt extends Retired {
-  RetiredHurt({required super.batter});
+  RetiredHurt({required super.batterId});
 
   @override
   Dismissal get dismissal => Dismissal.retiredHurt;
 }
 
 mixin BowlerWicket {
-  Player get bowler;
+  String get bowlerId;
 }
 
 mixin FielderWicket {
-  Player get fielder;
+  String get fielderId;
 }
 
 // class RetiredBowler {
-//   final Player bowler;
+//   final String bowlerId;
 //
 //   RetiredBowler({required this.bowler});
 // }

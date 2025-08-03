@@ -1,33 +1,16 @@
+import 'package:scorecard/handlers/ulid.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/repositories/sql/db/players_table.dart';
-import 'package:scorecard/repositories/sql/entity_mappers.dart';
 
 class PlayerRepository {
-  final PlayersTable playersTable;
+  final _repo = <String, Player>{};
 
-  PlayerRepository({required this.playersTable});
+  Future<List<Player>> getAllPlayers() async => _repo.values.toList();
 
-  Future<void> save(Player player, {required bool update}) async {
-    final entity = EntityMappers.repackPlayer(player);
-    if (update) {
-      await playersTable.update(entity);
-    } else {
-      await playersTable.create(entity);
-    }
+  Future<void> createPlayer({required String name}) async {
+    final player = Player(UlidHandler.generate(), name: name);
   }
 
-  Future<Player> fetchById(String id) async {
-    final entity = await playersTable.read(id);
-    if (entity == null) {
-      throw StateError("Player not found in DB! (id: $id)");
-    }
-    final player = EntityMappers.unpackPlayer(entity);
-    return player;
-  }
-
-  Future<Iterable<Player>> loadAll() async {
-    final entities = await playersTable.readAll();
-    final players = entities.map((e) => EntityMappers.unpackPlayer(e));
-    return players;
+  Future<void> saveMatch(Player player) async {
+    _repo[player.id] = player;
   }
 }

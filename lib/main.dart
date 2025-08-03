@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/screens/home_screen.dart';
+import 'package:scorecard/services/quick_match_service.dart';
 
 /// Welcome to [Scorecard]! You must be new here. The architecture and structure
 /// of this application might be a little overwhelming. To help you out,
@@ -57,13 +59,16 @@ class ScorecardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Scorecard',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.teal,
+    return Provider(
+      create: (context) => QuickMatchService(),
+      child: MaterialApp(
+        title: 'Scorecard',
+        theme: ThemeData(
+          useMaterial3: true,
+          colorSchemeSeed: Colors.teal,
+        ),
+        home: const HomeScreen(),
       ),
-      home: const HomeScreen(),
     );
   }
 }

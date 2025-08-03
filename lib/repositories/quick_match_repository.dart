@@ -1,4 +1,5 @@
 import 'package:scorecard/handlers/ulid.dart';
+import 'package:scorecard/modules/quick_match/match_rules_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 
 class QuickMatchRepository {
@@ -6,11 +7,13 @@ class QuickMatchRepository {
 
   Future<List<QuickMatch>> getAllMatches() async => _repo.values.toList();
 
-  Future<void> createMatch() async {
-    final match =
-        QuickMatch(UlidHandler.generate(), startsAt: DateTime.now().toUtc());
+  Future<QuickMatch> createMatch(QuickMatchRules rules) async {
+    final match = QuickMatch(UlidHandler.generate(),
+        startsAt: DateTime.now().toUtc(), rules: rules);
 
     _repo[match.id] = match;
+
+    return match;
   }
 
   Future<void> saveMatch(QuickMatch quickMatch) async {

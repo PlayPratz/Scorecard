@@ -4,13 +4,16 @@ import 'package:scorecard/modules/player/player_model.dart';
 class PlayerRepository {
   final _repo = <String, Player>{};
 
-  Future<List<Player>> getAllPlayers() async => _repo.values.toList();
+  Future<List<Player>> getAllPlayers() async =>
+      _repo.values.toList()..sort((a, b) => a.name.compareTo(b.name));
 
-  Future<void> createPlayer({required String name}) async {
+  Future<Player> createPlayer({required String name}) async {
     final player = Player(UlidHandler.generate(), name: name);
+    savePlayer(player);
+    return player;
   }
 
-  Future<void> saveMatch(Player player) async {
+  Future<void> savePlayer(Player player) async {
     _repo[player.id] = player;
   }
 }

@@ -1,6 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/repositories/player_repository.dart';
+import 'package:scorecard/repositories/quick_innings_repository.dart';
+import 'package:scorecard/repositories/quick_match_repository.dart';
 import 'package:scorecard/screens/home_screen.dart';
+import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 
 /// Welcome to [Scorecard]! You must be new here. The architecture and structure
@@ -59,16 +65,78 @@ class ScorecardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Provider(
-      create: (context) => QuickMatchService(),
-      child: MaterialApp(
-        title: 'Scorecard',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.teal,
-        ),
-        home: const HomeScreen(),
+    final controller = _ScorecardAppController();
+    controller.startup();
+    return MaterialApp(
+      title: "Scorecard",
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.teal,
       ),
+      home: const HomeScreen(),
+      builder: (context, child) => StreamBuilder(
+          stream: controller._stateStreamController.stream,
+          initialData: _AppStartupLoadingState(),
+          builder: (context, snapshot) {
+            final state = snapshot.data!;
+            return switch (state) {
+              _AppStartupLoadingState() => const Scaffold(
+                  body: Center(child: CircularProgressIndicator())),
+              // TODO: Handle this case.
+              _StartupFailState() => const Scaffold(
+                  body: Center(
+                    child: Text("Error starting app! Try restarting."),
+                  ),
+                ),
+              // TODO: Handle this case.
+              _StartupSuccessfulState() => MultiProvider(providers: [
+                  Provider(
+                      create: (context) => QuickMatchService(
+                          state.matchRepository, state.inningsRepository)),
+                  Provider(
+                      create: (context) =>
+                          PlayerService(state.playerRepository)),
+                ], child: child),
+            };
+            return const HomeScreen();
+          }),
     );
   }
 }
+
+class _ScorecardAppController {
+  final _stateStreamController = StreamController<_ScorecardAppState>();
+
+  Future<void> startup() async {
+    final playerRepository = PlayerRepository();
+    final matchRepository = QuickMatchRepository();
+    final inningsRepository = QuickInningsRepository();
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    _stateStreamController.add(
+      _StartupSuccessfulState(
+          playerRepository: playerRepository,
+          matchRepository: matchRepository,
+          inningsRepository: inningsRepository),
+    );
+  }
+}
+
+sealed class _ScorecardAppState {}
+
+class _AppStartupLoadingState extends _ScorecardAppState {}
+
+class _StartupSuccessfulState extends _ScorecardAppState {
+  final PlayerRepository playerRepository;
+  final QuickMatchRepository matchRepository;
+  final QuickInningsRepository inningsRepository;
+
+  _StartupSuccessfulState({
+    required this.playerRepository,
+    required this.matchRepository,
+    required this.inningsRepository,
+  });
+}
+
+class _StartupFailState extends _ScorecardAppState {}

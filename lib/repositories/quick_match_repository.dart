@@ -1,5 +1,4 @@
 import 'package:scorecard/handlers/ulid.dart';
-import 'package:scorecard/modules/quick_match/match_rules_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 
 class QuickMatchRepository {

@@ -110,7 +110,7 @@ class BowlerRetire extends InningsPost {
 /// started by another bowler.
 class NextBowler extends InningsPost {
   /// The bowler who bowled the previous delivery
-  final String previousId;
+  final String? previousId;
 
   /// The bowler who will bowl the next delivery
   final String nextId;
@@ -180,7 +180,7 @@ class RunoutBeforeDelivery extends InningsPost {
   /// The run out that took place before the ball was bowled
   final RunoutWicket wicket;
 
-  String get batter => wicket.batterId;
+  String get batterId => wicket.batterId;
 
   RunoutBeforeDelivery(
     super.matchId,
@@ -208,9 +208,6 @@ class PostIndex {
   String toString() => "$over.$ball";
 }
 
-/// Types of Bowling Extras
-enum BowlingExtraType { noBall, wide }
-
 /// A Bowling Extra is an extra due to the bowler's or the fielding team's
 /// fault.
 ///
@@ -220,28 +217,16 @@ sealed class BowlingExtra {
   /// The amount of additional runs awarded to the Batting Team
   final int penalty;
 
-  /// The type of Bowling Extra
-  BowlingExtraType get type;
-
   BowlingExtra(this.penalty);
 }
 
 class NoBall extends BowlingExtra {
   NoBall(super.penalty);
-
-  @override
-  BowlingExtraType get type => BowlingExtraType.noBall;
 }
 
 class Wide extends BowlingExtra {
   Wide(super.penalty);
-
-  @override
-  BowlingExtraType get type => BowlingExtraType.wide;
 }
-
-/// Types of Batting Extras
-enum BattingExtraType { bye, legBye }
 
 /// A Batting Extra is an extra due to the striking batter's fault.
 ///
@@ -251,8 +236,6 @@ sealed class BattingExtra {
   /// Extra runs scored by the batting team
   final int runs;
 
-  BattingExtraType get type;
-
   BattingExtra(this.runs);
 }
 
@@ -260,16 +243,10 @@ sealed class BattingExtra {
 /// bat nor body on ball.
 class Bye extends BattingExtra {
   Bye(super.runs);
-
-  @override
-  BattingExtraType get type => BattingExtraType.bye;
 }
 
 /// A Batting Extra where the batters score runs after the striker gets body,
 /// but not bat, on ball.
 class LegBye extends BattingExtra {
   LegBye(super.runs);
-
-  @override
-  BattingExtraType get type => BattingExtraType.legBye;
 }

@@ -12,7 +12,7 @@ class BallColors {
   // static const selected = Colors.blue;
   // static const text = Colors.white;
   // static const remove = Colors.redAccent;
-  static const border = Colors.white24; // TODO Move to theme
+  static const border = Colors.white24;
 
   // Balls
   static final Color four = Colors.indigoAccent.shade100;

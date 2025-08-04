@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/modules/quick_match/match_rules_model.dart';
-import 'package:scorecard/screens/quick_match/play_quick_innings_screen.dart';
+import 'package:scorecard/modules/quick_match/quick_match_model.dart';
+import 'package:scorecard/screens/quick_match/play_quick_match_screen.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 
 class CreateQuickMatchScreen extends StatelessWidget {
@@ -73,16 +73,11 @@ class CreateQuickMatchScreen extends StatelessWidget {
             },
           )),
       bottomNavigationBar: BottomAppBar(
-          child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FilledButton.icon(
-            onPressed: () =>
-                scheduleMatch(context, rules: controller._deduceState()),
-            label: const Text("Start"),
-            icon: const Icon(Icons.sports_cricket),
-          ),
-        ],
+          child: FilledButton.icon(
+        onPressed: () =>
+            scheduleMatch(context, rules: controller._deduceState()),
+        label: const Text("Start"),
+        icon: const Icon(Icons.sports_cricket),
       )),
     );
   }
@@ -91,13 +86,8 @@ class CreateQuickMatchScreen extends StatelessWidget {
       {required QuickMatchRules rules}) async {
     final match = await _service(context).createQuickMatch(rules);
     if (context.mounted) {
-      final innings = await _service(context).createInnings(match);
-      if (context.mounted) {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => PlayQuickInningsScreen(innings)));
-      }
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => PlayQuickMatchScreen(match)));
     }
   }
 
@@ -167,7 +157,7 @@ class QuickMatchRulesController with ChangeNotifier {
   int _oversPerInnings = 4;
   int _noBallPenalty = 1;
   int _widePenalty = 1;
-  bool _lastWicketBatter = false;
+  // bool _lastWicketBatter = false;
   bool _onlySingleBatter = false;
 
   int get _maxBalls => _ballsPerOver * _oversPerInnings;
@@ -178,7 +168,7 @@ class QuickMatchRulesController with ChangeNotifier {
         noBallPenalty: _noBallPenalty,
         widePenalty: _widePenalty,
         onlySingleBatter: _onlySingleBatter,
-        lastWicketBatter: _lastWicketBatter,
+        // lastWicketBatter: _lastWicketBatter,
       );
 
   void _dispatchState() {
@@ -206,13 +196,13 @@ class QuickMatchRulesController with ChangeNotifier {
   }
 
   set lastWicketBatter(bool x) {
-    _lastWicketBatter = x;
+    // _lastWicketBatter = x;
     _dispatchState();
   }
 
   set onlySingleBatter(bool x) {
     _onlySingleBatter = x;
-    _lastWicketBatter = _lastWicketBatter || _onlySingleBatter;
+    // _lastWicketBatter = _lastWicketBatter || _onlySingleBatter;
     _dispatchState();
   }
 }

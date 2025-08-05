@@ -16,14 +16,20 @@ class QuickMatch {
   final DateTime startsAt;
 
   /// Whether the match is completed
-  bool isCompleted = false;
+  bool isCompleted;
 
-  QuickMatch(this.id, {required this.rules, required this.startsAt});
+  QuickMatch(
+    this.id, {
+    required this.rules,
+    required this.startsAt,
+    this.isCompleted = false,
+  });
 }
 
 class QuickMatchRules {
   final int ballsPerOver;
-  final int maxBalls;
+  // final int oversPerBowler;
+  final int ballsPerInnings;
 
   final int noBallPenalty;
   final int widePenalty;
@@ -33,7 +39,7 @@ class QuickMatchRules {
 
   QuickMatchRules({
     required this.ballsPerOver,
-    required this.maxBalls,
+    required this.ballsPerInnings,
     required this.noBallPenalty,
     required this.widePenalty,
     required this.onlySingleBatter,
@@ -60,6 +66,17 @@ class QuickInnings {
 
   QuickInnings(this.matchId, this.inningsNumber,
       {required this.rules, this.target});
+
+  QuickInnings.load(
+    this.matchId,
+    this.inningsNumber, {
+    required this.rules,
+    required this.target,
+    required this.batter1Id,
+    required this.batter2Id,
+    required this.strikerId,
+    required this.bowlerId,
+  });
 
   QuickInnings.of(QuickMatch match, this.inningsNumber)
       : matchId = match.id,
@@ -104,7 +121,7 @@ class QuickInnings {
   int? get runsRequired => target == null ? null : max(target! - runs, 0);
 
   /// The balls left to win the match
-  int get ballsLeft => rules.maxBalls - numBalls;
+  int get ballsLeft => rules.ballsPerInnings - numBalls;
 
   double? get requiredRunRate => runsRequired == null
       ? null

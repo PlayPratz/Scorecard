@@ -82,7 +82,7 @@ class _InningsScorecard extends StatelessWidget {
               score: innings.score,
               target: innings.target,
               extras: innings.extras,
-              maxBalls: innings.rules.maxBalls,
+              ballsPerInnings: innings.rules.ballsPerInnings,
               ballsPerOver: innings.rules.ballsPerOver,
               getPlayerName: getPlayerName,
             ),
@@ -123,7 +123,7 @@ class _BattingScorecard extends StatelessWidget {
   final int? target;
   final Map<String, int> extras;
 
-  final int maxBalls;
+  final int ballsPerInnings;
   final int ballsPerOver;
 
   const _BattingScorecard(
@@ -131,7 +131,7 @@ class _BattingScorecard extends StatelessWidget {
     required this.score,
     required this.target,
     required this.extras,
-    required this.maxBalls,
+    required this.ballsPerInnings,
     required this.ballsPerOver,
     required this.getPlayerName,
   });
@@ -285,7 +285,7 @@ class _BattingScorecard extends StatelessWidget {
                     textAlign: TextAlign.right),
               ),
               Text(
-                  "(${Stringify.ballCount(maxBalls, ballsPerOver)}${targetString(target)})",
+                  "(${Stringify.ballCount(ballsPerInnings, ballsPerOver)}${targetString(target)})",
                   style: Theme.of(context).textTheme.bodySmall),
             ]),
           ],

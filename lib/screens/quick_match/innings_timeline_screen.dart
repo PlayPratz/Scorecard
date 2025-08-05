@@ -157,7 +157,7 @@ class _InningsPostWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-                "${playerCache.get(post.bowlerId).name.toUpperCase()} to ${playerCache.get(post.bowlerId).name.toUpperCase()}, ${post.runs} runs"),
+                "${playerCache.get(post.bowlerId).name.toUpperCase()} to ${playerCache.get(post.batterId).name.toUpperCase()}, ${post.runs} runs"),
             if (post.isWicket)
               Text(
                   "Wicket: ${playerCache.get(post.bowlerId).name.toUpperCase()} (${Stringify.wicket(post.wicket!, getPlayerName: getPlayerName)})")

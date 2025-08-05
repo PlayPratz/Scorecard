@@ -3,8 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/repositories/player_repository.dart';
-import 'package:scorecard/repositories/quick_innings_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
+import 'package:scorecard/repositories/sql/db/players_table.dart';
+import 'package:scorecard/repositories/sql/db/posts_table.dart';
+import 'package:scorecard/repositories/sql/db/quick_innings_table.dart';
+import 'package:scorecard/repositories/sql/db/quick_matches_table.dart';
+import 'package:scorecard/handlers/sql_db_handler.dart';
 import 'package:scorecard/screens/home_screen.dart';
 import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/services/quick_match_service.dart';
@@ -46,7 +50,7 @@ import 'package:scorecard/services/quick_match_service.dart';
 /// utilizes the [Scaffold] widget as its root.
 ///
 /// The above list is ordered such that every [Component] may import other
-/// components of the same level or any component above it, but CANNOT import
+/// components of the same level or any component above it, but SHOULD NOT import
 /// any component below it. To clarify, a Model can only see other Models, but
 /// MUST NOT import a Handler, Repository, Service, Controller and of course,
 /// Screen. Similarly, a Service can import Repositories, Handlers, Models and
@@ -91,8 +95,8 @@ class ScorecardApp extends StatelessWidget {
               // TODO: Handle this case.
               _StartupSuccessfulState() => MultiProvider(providers: [
                   Provider(
-                      create: (context) => QuickMatchService(
-                          state.matchRepository, state.inningsRepository)),
+                      create: (context) =>
+                          QuickMatchService(state.quickMatchRepository)),
                   Provider(
                       create: (context) =>
                           PlayerService(state.playerRepository)),
@@ -105,20 +109,39 @@ class ScorecardApp extends StatelessWidget {
 }
 
 class _ScorecardAppController {
+  late final PlayerRepository _playerRepository;
+  late final QuickMatchRepository _quickMatchRepository;
+
   final _stateStreamController = StreamController<_ScorecardAppState>();
 
   Future<void> startup() async {
-    final playerRepository = PlayerRepository();
-    final matchRepository = QuickMatchRepository();
-    final inningsRepository = QuickInningsRepository();
-
+    await _initializeRepositories();
     await Future.delayed(const Duration(seconds: 1));
 
     _stateStreamController.add(
       _StartupSuccessfulState(
-          playerRepository: playerRepository,
-          matchRepository: matchRepository,
-          inningsRepository: inningsRepository),
+        playerRepository: _playerRepository,
+        quickMatchRepository: _quickMatchRepository,
+      ),
+    );
+  }
+
+  Future<void> _initializeRepositories() async {
+    // Initialize the DB
+    await SQLDBHandler.instance.initialize();
+
+    // Instantiate all tables and views
+    final playersTable = PlayersTable();
+    final quickMatchesTable = QuickMatchesTable();
+    final quickInningsTable = QuickInningsTable();
+    final postsTable = PostsTable();
+
+    // Instantiate all repositories
+    _playerRepository = PlayerRepository(playersTable);
+    _quickMatchRepository = QuickMatchRepository(
+      quickMatchesTable,
+      quickInningsTable,
+      postsTable,
     );
   }
 }
@@ -129,13 +152,11 @@ class _AppStartupLoadingState extends _ScorecardAppState {}
 
 class _StartupSuccessfulState extends _ScorecardAppState {
   final PlayerRepository playerRepository;
-  final QuickMatchRepository matchRepository;
-  final QuickInningsRepository inningsRepository;
+  final QuickMatchRepository quickMatchRepository;
 
   _StartupSuccessfulState({
     required this.playerRepository,
-    required this.matchRepository,
-    required this.inningsRepository,
+    required this.quickMatchRepository,
   });
 }
 

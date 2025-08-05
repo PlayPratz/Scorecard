@@ -25,7 +25,7 @@ class PlayerService {
   }
 
   /// Fetches a player of the given [id]
-  Future<Map<String, Player?>> getPlayersByIds(Set<String> ids) async {
+  Future<List<Player>> getPlayersByIds(Set<String> ids) async {
     final players = await _playerRepository.loadMultiple(ids);
     return players;
   }

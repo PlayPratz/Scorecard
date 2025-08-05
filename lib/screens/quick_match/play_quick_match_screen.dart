@@ -62,7 +62,7 @@ class PlayQuickMatchScreen extends StatelessWidget {
                       score: innings.score,
                       currentRunRate: innings.currentRunRate,
                       ballsBowled: innings.numBalls,
-                      maxBalls: innings.rules.maxBalls,
+                      ballsPerInnings: innings.rules.ballsPerInnings,
                       ballsPerOver: innings.rules.ballsPerOver,
                       target: innings.target,
                       requiredRunRate: innings.requiredRunRate,
@@ -228,7 +228,7 @@ class _PlayQuickMatchScreenController {
   final QuickMatch match;
 
   /// The innings which will be played
-  late QuickInnings innings;
+  late final QuickInnings innings;
 
   final QuickMatchService _matchService;
   final PlayerService _playerService;
@@ -245,6 +245,7 @@ class _PlayQuickMatchScreenController {
 
   Future<void> initialize() async {
     _dispatchLoading();
+    _playerCache.clear();
 
     QuickInnings? loadInnings = await _matchService.loadLastInnings(match);
     if (loadInnings != null) {
@@ -256,12 +257,12 @@ class _PlayQuickMatchScreenController {
             .where((b) => b.wicket is FielderWicket)
             .map((b) => (b.wicket as FielderWicket).fielderId),
       };
-      final players = await _playerService.getPlayersByIds(ids);
-      for (final id in players.keys) {
-        final player = players[id];
-        if (player != null) _cachePlayer(player);
+      if (ids.isNotEmpty) {
+        final players = await _playerService.getPlayersByIds(ids);
+        for (final player in players) {
+          _cachePlayer(player);
+        }
       }
-
       innings = loadInnings;
     } else {
       // Create new
@@ -494,7 +495,7 @@ class _ScoreBar extends StatelessWidget {
   final int ballsLeft;
 
   final int ballsBowled;
-  final int maxBalls;
+  final int ballsPerInnings;
   final int ballsPerOver;
 
   final void Function() onGoScorecard;
@@ -504,7 +505,7 @@ class _ScoreBar extends StatelessWidget {
     required this.currentRunRate,
     required this.requiredRunRate,
     required this.ballsBowled,
-    required this.maxBalls,
+    required this.ballsPerInnings,
     required this.ballsPerOver,
     required this.target,
     required this.runsRequired,
@@ -550,7 +551,7 @@ class _ScoreBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                      "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(maxBalls, ballsPerOver)}ov",
+                      "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(ballsPerInnings, ballsPerOver)}ov",
                       style: Theme.of(context).textTheme.bodyLarge),
                   if (target != null)
                     Text(

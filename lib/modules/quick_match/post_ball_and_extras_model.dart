@@ -7,6 +7,9 @@ import 'package:scorecard/modules/quick_match/wicket_model.dart';
 /// It made sense because you are *posting* every event to this innings. I did
 /// not want to name this InningsEvent because that sounds like a UI Event.
 sealed class InningsPost {
+  /// The ID of the Post as in the database
+  int? id; // TODO Can make this final?
+
   /// The ID of the Match as in the database
   final String matchId;
 
@@ -16,19 +19,20 @@ sealed class InningsPost {
   /// The index of this post in the innings
   final PostIndex index;
 
-  /// Any comment that the user would like to add about this post
-  final String? comment;
-
   /// The timestamp of this post
   final DateTime timestamp;
 
+  /// Any comment that the user would like to add about this post
+  final String? comment;
+
   InningsPost(
+    this.id,
     this.matchId,
     this.inningsNumber, {
     required this.index,
-    DateTime? timestamp,
+    required this.timestamp,
     this.comment,
-  }) : timestamp = timestamp ?? DateTime.now();
+  });
 }
 
 /// A ball is the most major event in a game of cricket.
@@ -66,10 +70,11 @@ class Ball extends InningsPost {
   int get runs => batterRuns + bowlingExtraRuns + battingExtraRuns;
 
   Ball(
+    super.id,
     super.matchId,
     super.inningsNumber, {
     required super.index,
-    super.timestamp,
+    required super.timestamp,
     super.comment,
     required this.bowlerId,
     required this.batterId,
@@ -96,10 +101,11 @@ class BowlerRetire extends InningsPost {
   // final RetiredBowler retired;
 
   BowlerRetire(
+    super.id,
     super.matchId,
     super.inningsNumber, {
     required super.index,
-    super.timestamp,
+    required super.timestamp,
     super.comment,
     required this.bowlerId,
     // required this.retired,
@@ -118,10 +124,11 @@ class NextBowler extends InningsPost {
   // final bool isMidOverChange;
 
   NextBowler(
+    super.id,
     super.matchId,
     super.inningsNumber, {
     required super.index,
-    super.timestamp,
+    required super.timestamp,
     super.comment,
     required this.previousId,
     required this.nextId,
@@ -142,10 +149,11 @@ class BatterRetire extends InningsPost {
   String get batterId => retired.batterId;
 
   BatterRetire(
+    super.id,
     super.matchId,
     super.inningsNumber, {
     required super.index,
-    super.timestamp,
+    required super.timestamp,
     super.comment,
     // required this.batter,
     required this.retired,
@@ -161,10 +169,11 @@ class NextBatter extends InningsPost {
   final String nextId;
 
   NextBatter(
+    super.id,
     super.matchId,
     super.inningsNumber, {
     required super.index,
-    super.timestamp,
+    required super.timestamp,
     super.comment,
     required this.previousId,
     required this.nextId,
@@ -183,10 +192,11 @@ class RunoutBeforeDelivery extends InningsPost {
   String get batterId => wicket.batterId;
 
   RunoutBeforeDelivery(
+    super.id,
     super.matchId,
     super.inningsNumber, {
     required super.index,
-    super.timestamp,
+    required super.timestamp,
     super.comment,
     required this.wicket,
   });

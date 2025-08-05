@@ -1,14 +1,12 @@
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/quick_match/wicket_model.dart';
-import 'package:scorecard/repositories/quick_innings_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
 
 class QuickMatchService {
   final QuickMatchRepository _matchRepo;
-  final QuickInningsRepository _inningsRepo;
 
-  QuickMatchService(this._matchRepo, this._inningsRepo);
+  QuickMatchService(this._matchRepo);
 
   Future<QuickMatch> createQuickMatch(QuickMatchRules rules) async {
     final match = await _matchRepo.createMatch(rules);
@@ -21,19 +19,21 @@ class QuickMatchService {
   }
 
   Future<QuickInnings?> loadLastInnings(QuickMatch match) async {
-    final innings = await _inningsRepo.loadLast(match.id);
+    final innings = await _matchRepo.loadLastInnings(match);
     return innings;
   }
 
   Future<List<QuickInnings>> loadAllInnings(QuickMatch match) async {
-    final innings = await _inningsRepo.loadAll(match.id);
+    // print(innings.first.posts.length);
+    final innings = await _matchRepo.loadAllInnings(match);
+    print(innings.first.posts.length);
     return innings;
   }
 
   Future<QuickInnings> createFirstInnings(QuickMatch match) async {
     final innings = QuickInnings.of(match, 1);
 
-    await _inningsRepo.create(innings);
+    await _matchRepo.createInnings(innings);
 
     return innings;
   }
@@ -41,19 +41,19 @@ class QuickMatchService {
   Future<QuickInnings> createSecondInnings(
       QuickMatch match, QuickInnings firstInnings) async {
     firstInnings.isDeclared = true;
-    await _inningsRepo.save(firstInnings);
+    await _matchRepo.saveInnings(firstInnings);
 
     final innings = QuickInnings.of(match, 2);
     innings.target = firstInnings.runs + 1;
 
-    await _inningsRepo.create(innings);
+    await _matchRepo.createInnings(innings);
 
     return innings;
   }
 
   Future<void> endMatch(QuickMatch match, QuickInnings secondInnings) async {
     secondInnings.isDeclared = true;
-    await _inningsRepo.save(secondInnings);
+    await _matchRepo.saveInnings(secondInnings);
 
     match.isCompleted = true;
     await _matchRepo.saveMatch(match);
@@ -127,9 +127,11 @@ class QuickMatchService {
     if (innings.bowlerId == null) return;
 
     final post = BowlerRetire(
+      null,
       innings.matchId,
       innings.inningsNumber,
       index: _currentIndex(innings),
+      timestamp: _defaultTimestamp(innings),
       bowlerId: innings.bowlerId!,
       // retired: retired,
     );
@@ -144,8 +146,15 @@ class QuickMatchService {
             ? _currentIndex(innings)
             : _nextIndex(innings);
 
-    final post = NextBowler(innings.matchId, innings.inningsNumber,
-        index: index, previousId: innings.bowlerId, nextId: nextId);
+    final post = NextBowler(
+      null,
+      innings.matchId,
+      innings.inningsNumber,
+      index: index,
+      previousId: innings.bowlerId,
+      timestamp: _defaultTimestamp(innings),
+      nextId: nextId,
+    );
 
     // Add post to Innings
     await _postToInnings(innings, post);
@@ -158,16 +167,21 @@ class QuickMatchService {
   Future<void> retireDeclareBatter(
       QuickInnings innings, String batterId) async {
     final retired = RetiredDeclared(batterId: batterId);
-    final post = BatterRetire(innings.matchId, innings.inningsNumber,
-        index: _currentIndex(innings), retired: retired);
+    final post = BatterRetire(null, innings.matchId, innings.inningsNumber,
+        index: _currentIndex(innings),
+        timestamp: _defaultTimestamp(innings),
+        retired: retired);
     await _postToInnings(innings, post);
   }
 
   /// Adds the given [batter] to the [innings]
   Future<void> nextBatter(QuickInnings innings,
       {required String nextId, required String? previousId}) async {
-    final post = NextBatter(innings.matchId, innings.inningsNumber,
-        index: _currentIndex(innings), nextId: nextId, previousId: previousId);
+    final post = NextBatter(null, innings.matchId, innings.inningsNumber,
+        index: _currentIndex(innings),
+        timestamp: _defaultTimestamp(innings),
+        nextId: nextId,
+        previousId: previousId);
 
     // Add Post to Innings
     await _postToInnings(innings, post);
@@ -183,9 +197,9 @@ class QuickMatchService {
     required Wicket? wicket,
     required BowlingExtraType? bowlingExtraType,
     required BattingExtraType? battingExtraType,
-    DateTime? datetime,
+    // DateTime? datetime,
   }) async {
-    datetime ??= DateTime.now();
+    final datetime = _defaultTimestamp(innings);
 
     final BowlingExtra? bowlingExtra = switch (bowlingExtraType) {
       null => null,
@@ -207,6 +221,7 @@ class QuickMatchService {
         bowlingExtra != null ? _currentIndex(innings) : _nextIndex(innings);
 
     final ball = Ball(
+      null,
       innings.matchId,
       innings.inningsNumber,
       index: index,
@@ -224,9 +239,15 @@ class QuickMatchService {
     await _postToInnings(innings, ball);
   }
 
-  Future<void> _postToInnings(QuickInnings innings, InningsPost post) async {
+  Future<void> _postToInnings(
+      QuickInnings innings, InningsPost postWithoutId) async {
     // Create post in repository
-    await _inningsRepo.createPost(post);
+    final post = await _matchRepo.createPost(postWithoutId);
+
+    if (post.id == null) {
+      throw StateError(
+          "Attempted to insert InningsPost without an ID. (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
+    }
 
     // Add post to innings
     innings.posts.add(post);
@@ -245,6 +266,9 @@ class QuickMatchService {
       case RunoutBeforeDelivery():
         _handleRunoutBeforeDeliveryPost(innings, post);
     }
+
+    // Update the innings in the Database
+    await _matchRepo.saveInnings(innings);
   }
 
   void _handleBallPost(QuickInnings innings, Ball ball) {
@@ -343,7 +367,13 @@ class QuickMatchService {
     if (innings.posts.isEmpty) return;
 
     final post = innings.posts.removeLast();
-    await _inningsRepo.deletePost(post);
+
+    if (post.id == null) {
+      throw StateError(
+          "Attempted to delete InningsPost without an ID. (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
+    }
+
+    await _matchRepo.deletePost(post.id!);
 
     switch (post) {
       case Ball():
@@ -360,6 +390,8 @@ class QuickMatchService {
         _undoRunoutBeforeDeliveryPost(innings, post);
     }
   }
+
+  DateTime _defaultTimestamp(QuickInnings innings) => DateTime.timestamp();
 
   PostIndex _currentIndex(QuickInnings innings) {
     if (innings.posts.isEmpty) {

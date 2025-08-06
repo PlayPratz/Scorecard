@@ -55,6 +55,7 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
                 controller: _nameController,
                 maxLength: 10,
                 decoration: const InputDecoration(hintText: "Name"),
+                textCapitalization: TextCapitalization.words,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter a name";

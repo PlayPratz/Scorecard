@@ -48,6 +48,21 @@ class PlayQuickMatchScreen extends StatelessWidget {
                     onPressed: () => _quitMatch(context),
                     icon: const Icon(Icons.exit_to_app)),
                 title: Text(_title(innings.inningsNumber)),
+                actions: [
+                  FilledButton.tonalIcon(
+                    onPressed: () => showEndInningsWarning(context),
+                    onLongPress: () => controller.endInnings(),
+                    label: const Text("End"),
+                    icon: const Icon(
+                      Icons.cancel,
+                      color: Colors.redAccent,
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                      backgroundColor: Colors.redAccent.withOpacity(0.2),
+                    ),
+                  )
+                ],
               ),
               body: Padding(
                 padding:
@@ -139,10 +154,7 @@ class PlayQuickMatchScreen extends StatelessWidget {
             icon: const Icon(Icons.person),
           ),
         _EndInningsState() => FilledButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text("Long press to end this innings")));
-            },
+            onPressed: () => showEndInningsWarning(context),
             onLongPress: () => controller.endInnings(),
             label: const Text("End Innings"),
             icon: const Icon(Icons.check_circle),
@@ -153,6 +165,11 @@ class PlayQuickMatchScreen extends StatelessWidget {
             icon: const Icon(Icons.sports_baseball),
           ),
       };
+
+  void showEndInningsWarning(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Long press to end this innings")));
+  }
 
   Widget _wUndoButton(
           _PlayQuickMatchScreenController controller, bool canUndo) =>
@@ -640,6 +657,7 @@ class _OnCreasePlayers extends StatelessWidget {
         selectedTileColor: Colors.greenAccent.withOpacity(0.3),
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         tileColor: isOut ? Colors.redAccent.withOpacity(0.2) : null,
       );
     }
@@ -664,6 +682,7 @@ class _OnCreasePlayers extends StatelessWidget {
             !allowInput ? null : () => onRetireBowler(bowler!.bowlerId),
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
       );
     }
   }
@@ -836,7 +855,7 @@ class _BattingExtraSelectorSection extends StatelessWidget {
 
     return ChoiceChip(
       label: Text(stringify(extra)),
-      selected:
+      selected: !isDisabled &&
           extra == (state as _NextBallSelectorEnabledState).nextBattingExtra,
       selectedColor: switch (extra) {
         BattingExtraType.bye => BallColors.bye,

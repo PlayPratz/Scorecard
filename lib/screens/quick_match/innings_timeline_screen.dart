@@ -52,7 +52,20 @@ class InningsTimelineScreen extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: const BottomAppBar(),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(Stringify.score(innings.score),
+                style: Theme.of(context).textTheme.displaySmall),
+            Text(
+                "${Stringify.ballCount(innings.numBalls, innings.rules.ballsPerOver)}/${innings.rules.ballsPerInnings / innings.rules.ballsPerOver}ov",
+                style: Theme.of(context).textTheme.titleLarge)
+          ],
+        ),
+      ),
     );
   }
 }

@@ -196,6 +196,7 @@ class PlayQuickMatchScreen extends StatelessWidget {
       batterName: PlayerCache().get(batterId).name,
       ballsFaced: batterInnings.numBalls,
       runsScored: batterInnings.runs,
+      strikeRate: batterInnings.strikeRate,
     );
   }
 
@@ -211,7 +212,9 @@ class PlayQuickMatchScreen extends StatelessWidget {
       bowlerName: PlayerCache().get(bowlerId).name,
       runsConceded: bowlerInnings.runs,
       ballsBowled: bowlerInnings.numBalls,
+      ballsPerOver: bowlerInnings.ballsPerOver,
       wicketsTaken: bowlerInnings.numWickets,
+      economy: bowlerInnings.economy,
     );
   }
 }
@@ -622,6 +625,10 @@ class _OnCreasePlayers extends StatelessWidget {
       final isOut = outBatter == batterScoreDisplay.batterId;
       return ListTile(
         title: Text(batterScoreDisplay.batterName.toUpperCase()),
+        titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+        subtitle:
+            Text("SR ${batterScoreDisplay.strikeRate.toStringAsFixed(2)}"),
+        subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
         trailing: Text(
             "${batterScoreDisplay.runsScored} (${batterScoreDisplay.ballsFaced})"),
         onTap:
@@ -631,7 +638,6 @@ class _OnCreasePlayers extends StatelessWidget {
             : () => onRetireBatter(batterScoreDisplay.batterId),
         selected: isOut ? false : batterScoreDisplay.batterId == strikerId,
         selectedTileColor: Colors.greenAccent.withOpacity(0.3),
-        titleTextStyle: Theme.of(context).textTheme.bodySmall,
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         tileColor: isOut ? Colors.redAccent.withOpacity(0.2) : null,
@@ -648,13 +654,14 @@ class _OnCreasePlayers extends StatelessWidget {
       );
     } else {
       return ListTile(
-        title: Text(bowler!.bowlerName.toUpperCase(),
-            style: Theme.of(context).textTheme.bodySmall),
-        trailing: Text("${bowler!.wicketsTaken}-${bowler!.runsConceded}",
-            style: Theme.of(context).textTheme.bodyLarge),
+        title: Text(bowler!.bowlerName.toUpperCase()),
+        titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+        subtitle: Text(
+            "${Stringify.ballCount(bowler!.ballsBowled, bowler!.ballsPerOver)}ov, ${bowler!.economy.toStringAsFixed(2)}rpo"),
+        subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
+        trailing: Text("${bowler!.wicketsTaken}-${bowler!.runsConceded}"),
         onLongPress:
             !allowInput ? null : () => onRetireBowler(bowler!.bowlerId),
-        titleTextStyle: Theme.of(context).textTheme.bodySmall,
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       );
@@ -667,12 +674,14 @@ class _BatterScoreDisplay {
   final String batterName;
   final int runsScored;
   final int ballsFaced;
+  final double strikeRate;
 
   _BatterScoreDisplay(
     this.batterId, {
     required this.batterName,
     required this.runsScored,
     required this.ballsFaced,
+    required this.strikeRate,
   });
 }
 
@@ -681,14 +690,18 @@ class _BowlerScoreDisplay {
   final String bowlerName;
   final int runsConceded;
   final int ballsBowled;
+  final int ballsPerOver;
   final int wicketsTaken;
+  final double economy;
 
   _BowlerScoreDisplay(
     this.bowlerId, {
     required this.bowlerName,
     required this.runsConceded,
     required this.ballsBowled,
+    required this.ballsPerOver,
     required this.wicketsTaken,
+    required this.economy,
   });
 }
 
@@ -821,23 +834,24 @@ class _BattingExtraSelectorSection extends StatelessWidget {
         state is _NextBallSelectorEnabledState &&
             state.nextBowlingExtra == BowlingExtraType.wide;
 
-    return switch (isDisabled) {
-      false => ChoiceChip(
-          label: Text(stringify(extra)),
-          selected: extra ==
-              (state as _NextBallSelectorEnabledState).nextBattingExtra,
-          onSelected: (x) {
-            if (x) {
-              setExtra(extra);
-            } else {
-              setExtra(null);
-            }
-          }),
-      true => ChoiceChip(
-          label: Text(stringify(extra)),
-          selected: false,
-        )
-    };
+    return ChoiceChip(
+      label: Text(stringify(extra)),
+      selected:
+          extra == (state as _NextBallSelectorEnabledState).nextBattingExtra,
+      selectedColor: switch (extra) {
+        BattingExtraType.bye => BallColors.bye,
+        BattingExtraType.legBye => BallColors.legBye,
+      },
+      onSelected: isDisabled
+          ? null
+          : (x) {
+              if (x) {
+                setExtra(extra);
+              } else {
+                setExtra(null);
+              }
+            },
+    );
   }
 }
 
@@ -919,6 +933,9 @@ class _NextBallSelectorController {
   // int get nextRuns => _nextRuns;
   set nextRuns(int x) {
     _nextRuns = x;
+    if (x == 0 && _nextBattingExtra != null) {
+      _nextBattingExtra = null;
+    }
     _dispatchState();
   }
 
@@ -926,6 +943,9 @@ class _NextBallSelectorController {
   // BowlingExtra? get nextBowlingExtra => _nextBowlingExtra;
   set nextBowlingExtra(BowlingExtraType? x) {
     _nextBowlingExtra = x;
+    if (x == BowlingExtraType.wide) {
+      _nextBattingExtra = null;
+    }
     _dispatchState();
   }
 
@@ -933,6 +953,9 @@ class _NextBallSelectorController {
   // BattingExtra? get nextBattingExtra => _nextBattingExtra;
   set nextBattingExtra(BattingExtraType? x) {
     _nextBattingExtra = x;
+    if (x != null && _nextRuns == 0) {
+      _nextRuns = 1;
+    }
     _dispatchState();
   }
 
@@ -1012,7 +1035,8 @@ class _RecentBallsSection extends StatelessWidget {
     // final reversedBalls = balls.reversed.toList();
     return Card(
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(left: Radius.circular(32)),
+        borderRadius: BorderRadius.horizontal(
+            left: Radius.circular(32), right: Radius.circular(8)),
       ),
       child: SizedBox(
         height: 64,

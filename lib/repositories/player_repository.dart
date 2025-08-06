@@ -1,5 +1,6 @@
 import 'package:scorecard/handlers/ulid_handler.dart';
 import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/repositories/sql/db/players_table.dart';
 import 'package:scorecard/repositories/sql/entity_mappers.dart';
 
@@ -47,6 +48,13 @@ class PlayerRepository {
 
   Future<List<Player>> loadMultiple(Set<String> ids) async {
     final playerEntities = await _playersTable.selectMultiple(ids);
+    final players = playerEntities.map((p) => EntityMappers.unpackPlayer(p));
+
+    return players.toList();
+  }
+
+  Future<List<Player>> loadPlayersForMatch(QuickMatch match) async {
+    final playerEntities = await _playersTable.selectForMatch(match.id);
     final players = playerEntities.map((p) => EntityMappers.unpackPlayer(p));
 
     return players.toList();

@@ -18,9 +18,14 @@ class BallColors {
   static final Color four = Colors.indigoAccent.shade100;
   static final Color six = Colors.pink.shade400;
   static final Color wicket = Colors.red.shade200;
+
   static const Color noBall = Colors.yellowAccent;
   static const Color wide = Colors.white;
+
   static final Color post = Colors.blueGrey.shade100;
+
+  static const Color bye = Colors.lightGreen;
+  static const Color legBye = Colors.lime;
 
   static const Color newOver = Colors.blueAccent;
 

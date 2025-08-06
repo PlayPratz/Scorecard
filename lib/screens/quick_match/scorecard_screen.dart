@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/cache/player_cache.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
+import 'package:scorecard/screens/quick_match/innings_timeline_screen.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
@@ -41,9 +42,12 @@ class ScorecardScreen extends StatelessWidget {
   }
 
   Future<void> loadInnings(BuildContext context) async {
-    final service = context.read<QuickMatchService>();
-    final allInnings = await service.loadAllInnings(match);
+    final matchService = context.read<QuickMatchService>();
+
+    final allInnings = await matchService.loadAllInnings(match);
+
     await Future.delayed(const Duration(seconds: 1));
+
     _stateStreamController.add(_ScorecardLoadedState(allInnings));
   }
 }
@@ -76,7 +80,12 @@ class _InningsScorecard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // TODO make this efficient
-            wHeader(context),
+            FilledButton.icon(
+                icon: const Icon(Icons.timeline),
+                label: Text(
+                  header(),
+                ),
+                onPressed: () => goInningsTimeline(context)),
             _BattingScorecard(
               service.getBatters(innings),
               score: innings.score,
@@ -97,20 +106,21 @@ class _InningsScorecard extends StatelessWidget {
     );
   }
 
-  Widget wHeader(BuildContext context) {
-    final String header;
-    if (innings.inningsNumber == 1) {
-      header = "First Innings";
-    } else if (innings.inningsNumber == 2) {
-      header = "Second Innings";
-    } else {
-      return const SizedBox();
-    }
+  void goInningsTimeline(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => InningsTimelineScreen(innings)));
+  }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24.0),
-      child: Text(header, style: Theme.of(context).textTheme.titleSmall),
-    );
+  String header() {
+    if (innings.inningsNumber == 1) {
+      return "First Innings";
+    } else if (innings.inningsNumber == 2) {
+      return "Second Innings";
+    } else {
+      return "";
+    }
   }
 }
 
@@ -145,7 +155,7 @@ class _BattingScorecard extends StatelessWidget {
         Table(
           border: const TableBorder(
             // verticalInside: BorderSide(width: 0.1),
-            horizontalInside: BorderSide(width: 0.1),
+            horizontalInside: BorderSide(width: 0, color: Colors.black45),
           ),
           defaultVerticalAlignment: TableCellVerticalAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
@@ -168,9 +178,11 @@ class _BattingScorecard extends StatelessWidget {
             for (final batterInnings in allBatterInnings)
               TableRow(children: [
                 ListTile(
-                  leading: const CircleAvatar(
+                  leading: CircleAvatar(
                     radius: 16,
-                    child: Icon(Icons.sports_motorsports, size: 20),
+                    backgroundColor:
+                        batterInnings.isOut ? BallColors.wicket : null,
+                    child: const Icon(Icons.sports_motorsports, size: 20),
                   ),
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -223,9 +235,9 @@ class _BattingScorecard extends StatelessWidget {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    _wBoundaryCount(context, batterInnings.boundaryCount[4]!, 4,
+                    _wBoundaryCount(context, batterInnings.boundaryCount[4]!,
                         BallColors.four), // TODO .boundaryCount called twice
-                    _wBoundaryCount(context, batterInnings.boundaryCount[6]!, 6,
+                    _wBoundaryCount(context, batterInnings.boundaryCount[6]!,
                         BallColors.six),
                   ],
                 ),
@@ -296,10 +308,9 @@ class _BattingScorecard extends StatelessWidget {
 
   String targetString(int? target) => target == null ? "" : ", Target: $target";
 
-  Widget _wBoundaryCount(
-          BuildContext context, int runs, int count, Color color) =>
+  Widget _wBoundaryCount(BuildContext context, int count, Color color) =>
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 1.0),
+        padding: const EdgeInsets.only(left: 2.0, bottom: 2.0),
         child: CircleAvatar(
           radius: 10,
           backgroundColor: color,

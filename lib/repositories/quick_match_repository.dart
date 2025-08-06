@@ -1,4 +1,5 @@
 import 'package:scorecard/handlers/ulid_handler.dart';
+import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/repositories/sql/db/posts_table.dart';

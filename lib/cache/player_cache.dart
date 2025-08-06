@@ -8,14 +8,19 @@ class PlayerCache {
 
   factory PlayerCache() => instance;
 
-  void put(String id, Player player) {
-    _playerMap[id] = player;
+  void put(Player player) {
+    _playerMap[player.id] = player;
+  }
+
+  void putAll(Iterable<Player> players) {
+    _playerMap.addAll({for (var p in players) p.id: p});
   }
 
   Player get(String id) {
     final player = _playerMap[id];
     if (player == null) {
-      throw StateError("Attempted to retrieve player which was never cached");
+      throw StateError(
+          "Attempted to retrieve player which was never cached (id : $id)");
     }
     return player;
   }

@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
 import 'package:scorecard/repositories/sql/db/players_table.dart';
@@ -94,12 +96,8 @@ class ScorecardApp extends StatelessWidget {
                 ),
               // TODO: Handle this case.
               _StartupSuccessfulState() => MultiProvider(providers: [
-                  Provider(
-                      create: (context) =>
-                          QuickMatchService(state.quickMatchRepository)),
-                  Provider(
-                      create: (context) =>
-                          PlayerService(state.playerRepository)),
+                  Provider(create: (context) => state.playerService),
+                  Provider(create: (context) => state.quickMatchService),
                 ], child: child),
             };
             return const HomeScreen();
@@ -109,20 +107,27 @@ class ScorecardApp extends StatelessWidget {
 }
 
 class _ScorecardAppController {
-  late final PlayerRepository _playerRepository;
-  late final QuickMatchRepository _quickMatchRepository;
+  late final PlayerRepository playerRepository;
+  late final QuickMatchRepository quickMatchRepository;
+
+  late final PlayerService playerService;
+  late final QuickMatchService quickMatchService;
 
   final _stateStreamController = StreamController<_ScorecardAppState>();
 
   Future<void> startup() async {
+    // To display dates and times in local format
+    await initializeDateFormatting();
+
     await _initializeRepositories();
+
+    await _initializeServices();
+
     await Future.delayed(const Duration(seconds: 1));
 
     _stateStreamController.add(
       _StartupSuccessfulState(
-        playerRepository: _playerRepository,
-        quickMatchRepository: _quickMatchRepository,
-      ),
+          playerService: playerService, quickMatchService: quickMatchService),
     );
   }
 
@@ -137,12 +142,17 @@ class _ScorecardAppController {
     final postsTable = PostsTable();
 
     // Instantiate all repositories
-    _playerRepository = PlayerRepository(playersTable);
-    _quickMatchRepository = QuickMatchRepository(
+    playerRepository = PlayerRepository(playersTable);
+    quickMatchRepository = QuickMatchRepository(
       quickMatchesTable,
       quickInningsTable,
       postsTable,
     );
+  }
+
+  Future<void> _initializeServices() async {
+    playerService = PlayerService(playerRepository);
+    quickMatchService = QuickMatchService(quickMatchRepository, playerService);
   }
 }
 
@@ -151,12 +161,12 @@ sealed class _ScorecardAppState {}
 class _AppStartupLoadingState extends _ScorecardAppState {}
 
 class _StartupSuccessfulState extends _ScorecardAppState {
-  final PlayerRepository playerRepository;
-  final QuickMatchRepository quickMatchRepository;
+  final PlayerService playerService;
+  final QuickMatchService quickMatchService;
 
   _StartupSuccessfulState({
-    required this.playerRepository,
-    required this.quickMatchRepository,
+    required this.playerService,
+    required this.quickMatchService,
   });
 }
 

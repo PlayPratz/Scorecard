@@ -29,6 +29,7 @@ class CreateQuickMatchScreen extends StatelessWidget {
                     "These can't be edited once the match is created. Make sure everything is right!",
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
+
                   const SizedBox(height: 16),
                   // Overs
                   const Center(child: Text("Overs")),

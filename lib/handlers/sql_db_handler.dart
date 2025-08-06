@@ -57,6 +57,12 @@ class SQLDBHandler {
     return result;
   }
 
+  Future<List<Map<String, Object?>>> rawQuery(String sql,
+      [List<Object?>? arguments]) async {
+    final result = await _db.rawQuery(sql, arguments);
+    return result;
+  }
+
   Future<int> update({
     required String table,
     required Map<String, Object?> values,

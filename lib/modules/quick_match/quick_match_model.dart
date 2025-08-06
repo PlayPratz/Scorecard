@@ -222,6 +222,8 @@ class BatterInnings {
     return null;
   }
 
+  bool get isOut => wicket != null || retired is RetiredDeclared;
+
   UnmodifiableListView<Ball> get boundaries =>
       UnmodifiableListView(balls.where((b) => b.isBoundary));
 

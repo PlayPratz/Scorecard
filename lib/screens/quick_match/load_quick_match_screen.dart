@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/screens/quick_match/play_quick_match_screen.dart';
@@ -11,6 +12,9 @@ class LoadQuickMatchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = LoadQuickMatchController();
     final quickMatchFuture = controller.loadAllMatches(context);
+
+    final dateFormat =
+        DateFormat.yMMMd(Localizations.localeOf(context).languageCode).add_jm();
     return Scaffold(
         appBar: AppBar(
           title: const Text("Load a quick match"),
@@ -28,9 +32,9 @@ class LoadQuickMatchScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final match = matches[index];
                   return ListTile(
-                    title: Text(match.startsAt.toString()),
+                    title: Text(dateFormat.format(match.startsAt)),
                     subtitle: Text(match.id),
-                    // leading: const CircleAvatar(child: Text('1')),
+                    leading: wMatchIndicator(match),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => controller.loadMatch(context, match),
                   );
@@ -40,6 +44,19 @@ class LoadQuickMatchScreen extends StatelessWidget {
             }
           },
         ));
+  }
+
+  Widget wMatchIndicator(QuickMatch match) {
+    if (match.isCompleted) {
+      return const CircleAvatar(
+        child: Icon(Icons.check),
+      );
+    } else {
+      return const CircleAvatar(
+        backgroundColor: Colors.orangeAccent,
+        child: Icon(Icons.pause),
+      );
+    }
   }
 }
 

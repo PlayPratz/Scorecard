@@ -1,39 +1,53 @@
+import 'package:scorecard/cache/player_cache.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/quick_match/wicket_model.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
+import 'package:scorecard/services/player_service.dart';
 
 class QuickMatchService {
-  final QuickMatchRepository _matchRepo;
+  final QuickMatchRepository _matchRepository;
+  final PlayerService _playerService;
 
-  QuickMatchService(this._matchRepo);
+  QuickMatchService(this._matchRepository, this._playerService);
 
   Future<QuickMatch> createQuickMatch(QuickMatchRules rules) async {
-    final match = await _matchRepo.createMatch(rules);
+    final match = await _matchRepository.createMatch(rules);
     return match;
   }
 
   Future<List<QuickMatch>> loadAllQuickMatches() async {
-    final matches = await _matchRepo.getAllMatches();
+    final matches = await _matchRepository.getAllMatches();
     return matches;
   }
 
   Future<QuickInnings?> loadLastInnings(QuickMatch match) async {
-    final innings = await _matchRepo.loadLastInnings(match);
+    final innings = await _matchRepository.loadLastInnings(match);
+
+    if (innings != null) {
+      // Load players in match
+      final players = await _playerService.loadPlayersForMatch(match);
+    }
+
     return innings;
   }
 
   Future<List<QuickInnings>> loadAllInnings(QuickMatch match) async {
     // print(innings.first.posts.length);
-    final innings = await _matchRepo.loadAllInnings(match);
-    print(innings.first.posts.length);
+    final innings = await _matchRepository.loadAllInnings(match);
+
+    if (innings.isNotEmpty) {
+      // Load players in match
+      final players = await _playerService.loadPlayersForMatch(match);
+    }
+
     return innings;
   }
 
   Future<QuickInnings> createFirstInnings(QuickMatch match) async {
     final innings = QuickInnings.of(match, 1);
 
-    await _matchRepo.createInnings(innings);
+    await _matchRepository.createInnings(innings);
 
     return innings;
   }
@@ -41,22 +55,22 @@ class QuickMatchService {
   Future<QuickInnings> createSecondInnings(
       QuickMatch match, QuickInnings firstInnings) async {
     firstInnings.isDeclared = true;
-    await _matchRepo.saveInnings(firstInnings);
+    await _matchRepository.saveInnings(firstInnings);
 
     final innings = QuickInnings.of(match, 2);
     innings.target = firstInnings.runs + 1;
 
-    await _matchRepo.createInnings(innings);
+    await _matchRepository.createInnings(innings);
 
     return innings;
   }
 
   Future<void> endMatch(QuickMatch match, QuickInnings secondInnings) async {
     secondInnings.isDeclared = true;
-    await _matchRepo.saveInnings(secondInnings);
+    await _matchRepository.saveInnings(secondInnings);
 
     match.isCompleted = true;
-    await _matchRepo.saveMatch(match);
+    await _matchRepository.saveMatch(match);
   }
 
   // Scorecard
@@ -215,7 +229,8 @@ class QuickMatchService {
 
     // This ensures that only the runs awarded to the batter are accounted for
     // in this variable
-    final int batterRuns = battingExtra != null ? 0 : runs;
+    final int batterRuns =
+        battingExtra != null || bowlingExtra is Wide ? 0 : runs;
 
     final index =
         bowlingExtra != null ? _currentIndex(innings) : _nextIndex(innings);
@@ -242,7 +257,7 @@ class QuickMatchService {
   Future<void> _postToInnings(
       QuickInnings innings, InningsPost postWithoutId) async {
     // Create post in repository
-    final post = await _matchRepo.createPost(postWithoutId);
+    final post = await _matchRepository.createPost(postWithoutId);
 
     if (post.id == null) {
       throw StateError(
@@ -268,7 +283,7 @@ class QuickMatchService {
     }
 
     // Update the innings in the Database
-    await _matchRepo.saveInnings(innings);
+    await _matchRepository.saveInnings(innings);
   }
 
   void _handleBallPost(QuickInnings innings, Ball ball) {
@@ -373,7 +388,7 @@ class QuickMatchService {
           "Attempted to delete InningsPost without an ID. (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
     }
 
-    await _matchRepo.deletePost(post.id!);
+    await _matchRepository.deletePost(post.id!);
 
     switch (post) {
       case Ball():

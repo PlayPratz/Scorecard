@@ -22,12 +22,8 @@ class PlayQuickMatchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final playerCache = PlayerCache();
-    final controller = _PlayQuickMatchScreenController(
-        match,
-        context.read<QuickMatchService>(),
-        context.read<PlayerService>(),
-        playerCache);
+    final controller = _PlayQuickMatchScreenController(match,
+        context.read<QuickMatchService>(), context.read<PlayerService>());
     controller.initialize();
 
     return StreamBuilder(
@@ -85,9 +81,8 @@ class PlayQuickMatchScreen extends StatelessWidget {
                       onRetireBatter: (batterId) =>
                           controller.retireBatter(batterId),
                       onRetireBowler: (bowlerId) => controller.retireBowler(),
-                      onSetStrike: (batterId) => state is _PlayBallState
-                          ? controller.setStrike(batterId)
-                          : null,
+                      onSetStrike: (batterId) => controller.setStrike(batterId),
+                      allowInput: state is _PlayBallState,
                     ),
                     const SizedBox(height: 18),
                     _RecentBallsSection(innings.balls,
@@ -228,16 +223,15 @@ class _PlayQuickMatchScreenController {
   final QuickMatch match;
 
   /// The innings which will be played
-  late final QuickInnings innings;
+  late QuickInnings innings;
 
   final QuickMatchService _matchService;
   final PlayerService _playerService;
-  final PlayerCache _playerCache;
 
   final ballController = _NextBallSelectorController();
 
   _PlayQuickMatchScreenController(
-      this.match, this._matchService, this._playerService, this._playerCache);
+      this.match, this._matchService, this._playerService);
 
   final _stateStreamController = StreamController<_PlayQuickMatchScreenState>();
   Stream<_PlayQuickMatchScreenState> get _stateStream =>
@@ -245,24 +239,10 @@ class _PlayQuickMatchScreenController {
 
   Future<void> initialize() async {
     _dispatchLoading();
-    _playerCache.clear();
 
     QuickInnings? loadInnings = await _matchService.loadLastInnings(match);
     if (loadInnings != null) {
       // Loaded from disk
-      final ids = <String>{
-        ...loadInnings.posts.whereType<NextBatter>().map((p) => p.nextId),
-        ...loadInnings.posts.whereType<NextBowler>().map((p) => p.nextId),
-        ...loadInnings.balls
-            .where((b) => b.wicket is FielderWicket)
-            .map((b) => (b.wicket as FielderWicket).fielderId),
-      };
-      if (ids.isNotEmpty) {
-        final players = await _playerService.getPlayersByIds(ids);
-        for (final player in players) {
-          _cachePlayer(player);
-        }
-      }
       innings = loadInnings;
     } else {
       // Create new
@@ -278,6 +258,8 @@ class _PlayQuickMatchScreenController {
   void _dispatchState() => _stateStreamController.add(_deduceState());
 
   _QuickMatchLoadedState _deduceState() {
+    ballController.disable();
+
     if (innings.batter1Id == null ||
         (!innings.rules.onlySingleBatter && innings.batter2Id == null)) {
       return _PickBatterState(innings, toReplaceId: null);
@@ -358,7 +340,7 @@ class _PlayQuickMatchScreenController {
               onPickPlayer: (p) => Navigator.pop(context, p)),
         ));
     if (player is Player) {
-      _cachePlayer(player);
+      PlayerCache().put(player);
       return player;
     } else {
       return null;
@@ -373,7 +355,7 @@ class _PlayQuickMatchScreenController {
             strikerId: innings.strikerId!,
             nonStrikerId: innings.nonStrikerId!,
             bowlerId: innings.bowlerId!,
-            fieldingPlayers: _playerCache.all().keys,
+            fieldingPlayers: PlayerCache().all().keys,
           ),
         ));
 
@@ -383,10 +365,6 @@ class _PlayQuickMatchScreenController {
       // TODO Improve
       await retireBatter(wicket.batterId);
     }
-  }
-
-  void _cachePlayer(Player player) {
-    _playerCache.put(player.id, player);
   }
 
   Future<void> retireBatter(String batterId) async {
@@ -590,6 +568,8 @@ class _OnCreasePlayers extends StatelessWidget {
   final void Function() onPickBatter;
   final void Function() onPickBowler;
 
+  final bool allowInput;
+
   const _OnCreasePlayers({
     required this.batter1,
     required this.batter2,
@@ -603,6 +583,7 @@ class _OnCreasePlayers extends StatelessWidget {
     required this.onRetireBowler,
     required this.onPickBatter,
     required this.onPickBowler,
+    required this.allowInput,
   });
 
   @override
@@ -638,20 +619,22 @@ class _OnCreasePlayers extends StatelessWidget {
         onTap: () => onPickBatter(),
       );
     } else {
+      final isOut = outBatter == batterScoreDisplay.batterId;
       return ListTile(
         title: Text(batterScoreDisplay.batterName.toUpperCase()),
         trailing: Text(
             "${batterScoreDisplay.runsScored} (${batterScoreDisplay.ballsFaced})"),
-        onTap: () => onSetStrike(batterScoreDisplay.batterId),
-        onLongPress: () => onRetireBatter(batterScoreDisplay.batterId),
-        selected: batterScoreDisplay.batterId == strikerId,
+        onTap:
+            !allowInput ? null : () => onSetStrike(batterScoreDisplay.batterId),
+        onLongPress: !allowInput
+            ? null
+            : () => onRetireBatter(batterScoreDisplay.batterId),
+        selected: isOut ? false : batterScoreDisplay.batterId == strikerId,
         selectedTileColor: Colors.greenAccent.withOpacity(0.3),
         titleTextStyle: Theme.of(context).textTheme.bodySmall,
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        tileColor: outBatter == batterScoreDisplay.batterId
-            ? Colors.redAccent.withOpacity(0.2)
-            : null,
+        tileColor: isOut ? Colors.redAccent.withOpacity(0.2) : null,
       );
     }
   }
@@ -669,7 +652,8 @@ class _OnCreasePlayers extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall),
         trailing: Text("${bowler!.wicketsTaken}-${bowler!.runsConceded}",
             style: Theme.of(context).textTheme.bodyLarge),
-        onLongPress: () => onRetireBowler(bowler!.bowlerId),
+        onLongPress:
+            !allowInput ? null : () => onRetireBowler(bowler!.bowlerId),
         titleTextStyle: Theme.of(context).textTheme.bodySmall,
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -913,6 +897,16 @@ class _NextBallSelectorController {
 
   void disable() => stateNotifier.value = _NextBallSelectorDisabledState();
 
+  // void reset() => stateNotifier.value = _NextBallSelectorEnabledState.reset();
+
+  void reset() {
+    nextRuns = 0;
+    nextBowlingExtra = null;
+    nextBattingExtra = null;
+    nextWicket = null;
+    _dispatchState();
+  }
+
   _NextBallSelectorEnabledState _deduceState() => _NextBallSelectorEnabledState(
         nextRuns: _nextRuns,
         nextBowlingExtra: _nextBowlingExtra,
@@ -946,14 +940,6 @@ class _NextBallSelectorController {
   // Wicket? get nextWicket => _nextWicket;
   set nextWicket(Wicket? x) {
     _nextWicket = x;
-    _dispatchState();
-  }
-
-  void reset() {
-    _nextRuns = 0;
-    _nextBattingExtra = null;
-    _nextBowlingExtra = null;
-    _nextWicket = null;
     _dispatchState();
   }
 }
@@ -1026,13 +1012,27 @@ class _RecentBallsSection extends StatelessWidget {
     // final reversedBalls = balls.reversed.toList();
     return Card(
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.horizontal(left: Radius.circular(32))),
+        borderRadius: BorderRadius.horizontal(left: Radius.circular(32)),
+      ),
       child: SizedBox(
-        height: 56, // TODO
+        height: 64,
         child: Row(
           children: [
-            IconButton.filled(
-                onPressed: onOpenTimeline, icon: const Icon(Icons.history)),
+            Card(
+              // elevation: 1,
+              margin: const EdgeInsets.all(0),
+              shape: const RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.horizontal(left: Radius.circular(32)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: IconButton.filled(
+                  onPressed: onOpenTimeline,
+                  icon: const Icon(Icons.history),
+                ),
+              ),
+            ),
             Expanded(
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -1042,7 +1042,7 @@ class _RecentBallsSection extends StatelessWidget {
                 itemCount: reversedBalls.length,
                 itemBuilder: (context, index) => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: _BallMini(
+                  child: BallMini(
                     reversedBalls[index],
                     isFirstBallOfOver: _isFirstBallOfOver(index),
                   ),
@@ -1064,63 +1064,6 @@ class _RecentBallsSection extends StatelessWidget {
 
     return false;
   }
-}
-
-class _BallMini extends StatelessWidget {
-  final Ball ball;
-  final bool isFirstBallOfOver;
-  const _BallMini(this.ball, {required this.isFirstBallOfOver});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          decoration: ShapeDecoration(
-              shape: CircleBorder(
-            side: BorderSide(color: _borderColor, width: 2.5),
-          )),
-          child: CircleAvatar(
-            backgroundColor: _ballColor,
-            radius: 14,
-            child: Center(
-                child: Text(
-              ball.batterRuns.toString(),
-              style: Theme.of(context).textTheme.bodySmall,
-            )),
-          ),
-        ),
-        Text(
-          ball.index.toString(),
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: isFirstBallOfOver ? BallColors.newOver : null),
-        )
-      ],
-    );
-  }
-
-  Color get _ballColor {
-    if (ball.runs == 4) {
-      return BallColors.four;
-    } else if (ball.runs == 6) {
-      return BallColors.six;
-    } else if (ball.isWicket) {
-      return BallColors.wicket;
-    } else {
-      return BallColors.post;
-    }
-  }
-
-  Color get _borderColor => switch (ball.bowlingExtra) {
-        NoBall() => BallColors.noBall,
-        Wide() => BallColors.wide,
-        // No border color if not an extra
-        null => Colors.transparent,
-      };
 }
 
 class _WicketPickerScreen extends StatefulWidget {

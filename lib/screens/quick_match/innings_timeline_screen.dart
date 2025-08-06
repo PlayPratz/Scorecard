@@ -4,6 +4,7 @@ import 'package:scorecard/cache/player_cache.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/services/quick_match_service.dart';
+import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
 
 class InningsTimelineScreen extends StatelessWidget {
@@ -110,21 +111,8 @@ class _InningsPostsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Table(
-      defaultVerticalAlignment: TableCellVerticalAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      columnWidths: const {0: FixedColumnWidth(56), 1: FlexColumnWidth()},
-      children: [
-        for (final post in posts)
-          TableRow(children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0, top: 8.0),
-              child: Text(Stringify.postIndex(post.index),
-                  textAlign: TextAlign.right),
-            ),
-            _InningsPostWidget(post),
-          ])
-      ],
+    return Column(
+      children: [for (final post in posts) _InningsPostWidget(post)],
     );
   }
 }
@@ -140,29 +128,141 @@ class _InningsPostWidget extends StatelessWidget {
     final post = this.post;
     final playerCache = PlayerCache();
 
-    getPlayerName(String id) => playerCache.get(id).name;
+    getPlayerName(String id) => playerCache.get(id).name.toUpperCase();
 
     return switch (post) {
-      BowlerRetire() => Text(
-          "${playerCache.get(post.bowlerId).name.toUpperCase()} has retired"),
-      NextBowler() =>
-        Text("${playerCache.get(post.nextId).name.toUpperCase()} to bowl"),
-      BatterRetire() => Text(
-          "${playerCache.get(post.batterId).name.toUpperCase()} has retired (${Stringify.wicket(null, retired: post.retired, getPlayerName: getPlayerName)})"),
-      NextBatter() => Text(
-          "The next batter in is ${playerCache.get(post.nextId).name.toUpperCase()}"),
-      RunoutBeforeDelivery() => Text(
-          "${playerCache.get(post.batterId).name.toUpperCase()} has been run-out!"),
-      Ball() => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-                "${playerCache.get(post.bowlerId).name.toUpperCase()} to ${playerCache.get(post.batterId).name.toUpperCase()}, ${post.runs} runs"),
-            if (post.isWicket)
+      Ball() => ListTile(
+          leading: wIndex(post.isWicket ? BallColors.wicket : null),
+          title: Text(
+              "${getPlayerName(post.bowlerId)} to ${getPlayerName(post.batterId)}"),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                  "Wicket: ${playerCache.get(post.bowlerId).name.toUpperCase()} (${Stringify.wicket(post.wicket!, getPlayerName: getPlayerName)})")
-          ],
+                  "${post.batterRuns} runs to ${getPlayerName(post.batterId)}"),
+              if (post.isWicket)
+                Text(
+                    "${getPlayerName(post.wicket!.batterId)} (${Stringify.wicket(post.wicket, getPlayerName: getPlayerName)})")
+            ],
+          ),
+          trailing:
+              BallMini(post, isFirstBallOfOver: false, showPostIndex: false),
+        ),
+      BowlerRetire() => ListTile(
+          title: Text(getPlayerName(post.bowlerId)),
+          subtitle: const Text("Bowler has retired"),
+          leading: wIndex(BallColors.wicket),
+        ),
+      NextBowler() => ListTile(
+          title: Text(getPlayerName(post.nextId)),
+          subtitle: const Text("Next bowler"),
+          leading: wIndex(BallColors.post),
+        ),
+      BatterRetire() => ListTile(
+          title: Text(getPlayerName(post.batterId)),
+          subtitle: const Text("Batter has retired"),
+          leading: wIndex(BallColors.wicket),
+        ),
+      NextBatter() => ListTile(
+          title: Text(getPlayerName(post.nextId)),
+          subtitle: const Text("Next batter"),
+          leading: wIndex(BallColors.post),
+        ),
+      RunoutBeforeDelivery() => ListTile(
+          title: Text(getPlayerName(post.batterId)),
+          subtitle: const Text("Next bowler"),
+          leading: wIndex(BallColors.wicket),
         ),
     };
+
+    // return switch (post) {
+    //   BowlerRetire() => Text(
+    //       "${playerCache.get(post.bowlerId).name.toUpperCase()} has retired"),
+    //   NextBowler() =>
+    //     Text("${playerCache.get(post.nextId).name.toUpperCase()} to bowl"),
+    //   BatterRetire() => Text(
+    //       "${playerCache.get(post.batterId).name.toUpperCase()} has retired (${Stringify.wicket(null, retired: post.retired, getPlayerName: getPlayerName)})"),
+    //   NextBatter() => Text(
+    //       "The next batter in is ${playerCache.get(post.nextId).name.toUpperCase()}"),
+    //   RunoutBeforeDelivery() => Text(
+    //       "${playerCache.get(post.batterId).name.toUpperCase()} has been run-out!"),
+    //   Ball() => Column(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       children: [
+    //         Text(
+    //             "${playerCache.get(post.bowlerId).name.toUpperCase()} to ${playerCache.get(post.batterId).name.toUpperCase()}, ${post.runs} runs"),
+    //         if (post.isWicket)
+    //           Text(
+    //               "Wicket: ${playerCache.get(post.bowlerId).name.toUpperCase()} (${Stringify.wicket(post.wicket!, getPlayerName: getPlayerName)})")
+    //       ],
+    //     ),
+    // };
   }
+
+  Widget wIndex(Color? color) => CircleAvatar(
+        backgroundColor: color,
+        child: Text(Stringify.postIndex(post.index)),
+      );
+}
+
+class BallMini extends StatelessWidget {
+  final Ball ball;
+  final bool isFirstBallOfOver;
+  final bool showPostIndex;
+  const BallMini(this.ball,
+      {super.key, required this.isFirstBallOfOver, this.showPostIndex = true});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          decoration: ShapeDecoration(
+              shape: CircleBorder(
+            side: BorderSide(color: _borderColor, width: 2.5),
+          )),
+          child: CircleAvatar(
+            backgroundColor: _ballColor,
+            radius: 18,
+            child: Center(
+                child: Text(
+              ball.runs.toString(),
+              // style: Theme.of(context).textTheme.bodyMedium,
+            )),
+          ),
+        ),
+        if (showPostIndex)
+          Text(
+            ball.index.toString(),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: isFirstBallOfOver ? BallColors.newOver : null),
+          )
+      ],
+    );
+  }
+
+  Color get _ballColor {
+    if (ball.isBoundary && ball.runs == 4) {
+      return BallColors.four;
+    } else if (ball.isBoundary && ball.runs == 6) {
+      return BallColors.six;
+    } else if (ball.isWicket) {
+      return BallColors.wicket;
+    } else if (ball.battingExtra is Bye) {
+      return BallColors.bye;
+    } else if (ball.battingExtra is LegBye) {
+      return BallColors.legBye;
+    } else {
+      return BallColors.post;
+    }
+  }
+
+  Color get _borderColor => switch (ball.bowlingExtra) {
+        NoBall() => BallColors.noBall,
+        Wide() => BallColors.wide,
+        // No border color if not an extra
+        null => Colors.transparent,
+      };
 }

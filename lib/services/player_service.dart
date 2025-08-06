@@ -1,4 +1,6 @@
+import 'package:scorecard/cache/player_cache.dart';
 import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 
 class PlayerService {
@@ -33,6 +35,20 @@ class PlayerService {
   /// Fetches all players
   Future<List<Player>> getAllPlayers() async {
     final players = await _playerRepository.loadAll();
+    return players;
+  }
+
+  Future<List<Player>> loadPlayersForMatch(QuickMatch match) async {
+    final players = await _playerRepository.loadPlayersForMatch(match);
+
+    // Clear the cache of any previous player
+    // This ensures that only one set of players is cached at any single time,
+    // i.e. the players of one match
+    // TODO: Should the cache be moved to this service?
+    PlayerCache().clear();
+
+    PlayerCache().putAll(players);
+
     return players;
   }
 

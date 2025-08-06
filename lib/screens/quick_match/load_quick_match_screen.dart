@@ -28,6 +28,14 @@ class LoadQuickMatchScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             } else {
               final matches = snapshot.data!;
+              if (matches.isEmpty) {
+                return const Center(
+                    child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                      "You don't have any matches! Head back to the main menu to start a new match."),
+                ));
+              }
               return ListView.builder(
                 itemBuilder: (context, index) {
                   final match = matches[index];

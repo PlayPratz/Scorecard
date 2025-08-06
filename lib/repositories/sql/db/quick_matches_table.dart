@@ -60,7 +60,7 @@ class QuickMatchesEntity implements IEntity {
           starts_at: readDateTime(map["starts_at"] as int)!,
           // rules_id: map["rules_id"] as int,
           rules_balls_per_over: map["rules_balls_per_over"] as int,
-          rules_balls_per_innings: map["rules_balls_per_over"] as int,
+          rules_balls_per_innings: map["rules_balls_per_innings"] as int,
           rules_no_ball_penalty: map["rules_no_ball_penalty"] as int,
           rules_wide_penalty: map["rules_wide_penalty"] as int,
           rules_only_single_batter:

@@ -10,7 +10,6 @@ import 'package:scorecard/modules/quick_match/wicket_model.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
 import 'package:scorecard/screens/quick_match/innings_timeline_screen.dart';
 import 'package:scorecard/screens/quick_match/scorecard_screen.dart';
-import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
@@ -22,16 +21,16 @@ class PlayQuickMatchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = _PlayQuickMatchScreenController(match,
-        context.read<QuickMatchService>(), context.read<PlayerService>());
+    final controller = _PlayQuickMatchScreenController(
+        match, context.read<QuickMatchService>());
     controller.initialize();
 
     return StreamBuilder(
         stream: controller._stateStream,
-        initialData: _QuickMatchLoadingState(),
+        initialData: _InitializingState(),
         builder: (context, snapshot) {
           final state = snapshot.data;
-          if (state == null || state is _QuickMatchLoadingState) {
+          if (state == null || state is _InitializingState) {
             return Scaffold(
               appBar: AppBar(
                 title: const Text("Loading..."),
@@ -47,11 +46,11 @@ class PlayQuickMatchScreen extends StatelessWidget {
                 leading: IconButton(
                     onPressed: () => _quitMatch(context),
                     icon: const Icon(Icons.exit_to_app)),
-                title: Text(_title(innings.inningsNumber)),
+                title: Text(Stringify.inningsHeading(innings.inningsNumber)),
                 actions: [
                   FilledButton.tonalIcon(
                     onPressed: () => showEndInningsWarning(context),
-                    onLongPress: () => controller.endInnings(),
+                    onLongPress: () => controller.endInnings(context),
                     label: const Text("End"),
                     icon: const Icon(
                       Icons.cancel,
@@ -66,20 +65,24 @@ class PlayQuickMatchScreen extends StatelessWidget {
               ),
               body: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: ListView(
+                    const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+                child: Column(
                   children: [
                     _ScoreBar(
-                      score: innings.score,
-                      currentRunRate: innings.currentRunRate,
-                      ballsBowled: innings.numBalls,
-                      ballsPerInnings: innings.rules.ballsPerInnings,
-                      ballsPerOver: innings.rules.ballsPerOver,
-                      target: innings.target,
-                      requiredRunRate: innings.requiredRunRate,
-                      runsRequired: innings.runsRequired,
-                      ballsLeft: innings.ballsLeft,
-                      onGoScorecard: () => controller.goScorecard(context),
+                        score: innings.score,
+                        currentRunRate: innings.currentRunRate,
+                        ballsBowled: innings.numBalls,
+                        ballsPerInnings: innings.rules.ballsPerInnings,
+                        ballsPerOver: innings.rules.ballsPerOver,
+                        target: innings.target,
+                        requiredRunRate: innings.requiredRunRate,
+                        runsRequired: innings.runsRequired,
+                        ballsLeft: innings.ballsLeft,
+                        isLoading: state is _ActionLoadingState),
+                    const Spacer(),
+                    _RecentBallsSection(
+                      innings.balls,
+                      onOpenTimeline: () => controller.goTimeline(context),
                     ),
                     const SizedBox(height: 18),
                     _OnCreasePlayers(
@@ -98,30 +101,34 @@ class PlayQuickMatchScreen extends StatelessWidget {
                       onRetireBowler: (bowlerId) => controller.retireBowler(),
                       onSetStrike: (batterId) => controller.setStrike(batterId),
                       allowInput: state is _PlayBallState,
+                      goScorecard: controller.goScorecard,
                     ),
                     const SizedBox(height: 18),
-                    _RecentBallsSection(innings.balls,
-                        onOpenTimeline: () => controller.goTimeline(context))
                   ],
                 ),
               ),
               bottomNavigationBar: BottomAppBar(
-                height: 250,
+                height: 230,
                 child: Column(
                   children: [
                     _NextBallSelectorSection(
                       controller.ballController,
                       onSelectWicket: () => controller.pickWicket(context),
                     ),
-                    const Spacer(),
-                    Row(
-                      // crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _wUndoButton(controller, innings.posts.isNotEmpty),
-                        const SizedBox(width: 4),
-                        Expanded(
-                            child: _wConfirmButton(context, controller, state)),
-                      ],
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _wUndoButton(controller, innings.posts.isNotEmpty),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: SizedBox.expand(
+                              child:
+                                  _wConfirmButton(context, controller, state),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -155,7 +162,7 @@ class PlayQuickMatchScreen extends StatelessWidget {
           ),
         _EndInningsState() => FilledButton.icon(
             onPressed: () => showEndInningsWarning(context),
-            onLongPress: () => controller.endInnings(),
+            onLongPress: () => controller.endInnings(context),
             label: const Text("End Innings"),
             icon: const Icon(Icons.check_circle),
           ),
@@ -163,6 +170,14 @@ class PlayQuickMatchScreen extends StatelessWidget {
             onPressed: () => controller.playBall(),
             label: const Text("Play Ball"),
             icon: const Icon(Icons.sports_baseball),
+          ),
+        _ActionLoadingState() => FilledButton.icon(
+            onPressed: null,
+            label: const Text("Loading..."),
+            icon: const SizedBox.square(
+              dimension: 18,
+              child: LinearProgressIndicator(),
+            ),
           ),
       };
 
@@ -178,12 +193,6 @@ class PlayQuickMatchScreen extends StatelessWidget {
         label: const Text("Undo"),
         icon: const Icon(Icons.undo),
       );
-
-  String _title(int inningsNumber) => switch (inningsNumber) {
-        1 => "First Innings",
-        2 => "Second Innings",
-        _ => "Innings $inningsNumber"
-      };
 
   _BatterScoreDisplay? _batter1Display(
       BuildContext context, QuickInnings innings) {
@@ -246,19 +255,17 @@ class _PlayQuickMatchScreenController {
   late QuickInnings innings;
 
   final QuickMatchService _matchService;
-  final PlayerService _playerService;
 
   final ballController = _NextBallSelectorController();
 
-  _PlayQuickMatchScreenController(
-      this.match, this._matchService, this._playerService);
+  _PlayQuickMatchScreenController(this.match, this._matchService);
 
   final _stateStreamController = StreamController<_PlayQuickMatchScreenState>();
   Stream<_PlayQuickMatchScreenState> get _stateStream =>
       _stateStreamController.stream;
 
   Future<void> initialize() async {
-    _dispatchLoading();
+    _stateStreamController.add(_InitializingState());
 
     QuickInnings? loadInnings = await _matchService.loadLastInnings(match);
     if (loadInnings != null) {
@@ -273,7 +280,7 @@ class _PlayQuickMatchScreenController {
   }
 
   void _dispatchLoading() =>
-      _stateStreamController.add(_QuickMatchLoadingState());
+      _stateStreamController.add(_ActionLoadingState(innings));
 
   void _dispatchState() => _stateStreamController.add(_deduceState());
 
@@ -327,6 +334,7 @@ class _PlayQuickMatchScreenController {
     final bowler = await _pickPlayer(context);
     if (bowler != null) {
       await _matchService.nextBowler(innings, bowler.id);
+      await Future.delayed(const Duration(milliseconds: 100));
     }
     _dispatchState();
   }
@@ -348,6 +356,7 @@ class _PlayQuickMatchScreenController {
         nextId: batter.id,
         previousId: previousId,
       );
+      await Future.delayed(const Duration(milliseconds: 100));
     }
     _dispatchState();
   }
@@ -375,7 +384,8 @@ class _PlayQuickMatchScreenController {
             strikerId: innings.strikerId!,
             nonStrikerId: innings.nonStrikerId!,
             bowlerId: innings.bowlerId!,
-            fieldingPlayers: PlayerCache().all().keys,
+            players: PlayerCache().all().keys,
+            onPickPlayer: _pickPlayer,
           ),
         ));
 
@@ -389,18 +399,21 @@ class _PlayQuickMatchScreenController {
 
   Future<void> retireBatter(String batterId) async {
     _dispatchLoading();
+    await Future.delayed(const Duration(milliseconds: 150));
     await _matchService.retireDeclareBatter(innings, batterId);
     _dispatchState();
   }
 
   Future<void> retireBowler() async {
     _dispatchLoading();
+    await Future.delayed(const Duration(milliseconds: 150));
     await _matchService.retireBowler(innings);
     _dispatchState();
   }
 
   Future<void> playBall() async {
     _dispatchLoading();
+    await Future.delayed(const Duration(milliseconds: 350));
     if (innings.bowlerId == null || innings.strikerId == null) return;
 
     final ballState = ballController.stateNotifier.value;
@@ -424,17 +437,22 @@ class _PlayQuickMatchScreenController {
 
   Future<void> undo() async {
     _dispatchLoading();
+    await Future.delayed(const Duration(milliseconds: 250));
     await _matchService.undoPostFromInnings(innings);
     _dispatchState();
   }
 
-  Future<void> endInnings() async {
+  Future<void> endInnings(BuildContext context) async {
     _dispatchLoading();
     if (innings.inningsNumber == 1) {
       await _matchService.createSecondInnings(match, innings);
       await initialize();
     } else if (innings.inningsNumber == 2) {
       await _matchService.endMatch(match, innings);
+      if (context.mounted) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => ScorecardScreen(match)));
+      }
     }
     // TODO Super overs
   }
@@ -454,12 +472,16 @@ class _PlayQuickMatchScreenController {
 
 sealed class _PlayQuickMatchScreenState {}
 
-class _QuickMatchLoadingState extends _PlayQuickMatchScreenState {}
+class _InitializingState extends _PlayQuickMatchScreenState {}
 
 sealed class _QuickMatchLoadedState extends _PlayQuickMatchScreenState {
   final QuickInnings innings;
 
   _QuickMatchLoadedState(this.innings);
+}
+
+class _ActionLoadingState extends _QuickMatchLoadedState {
+  _ActionLoadingState(super.innings);
 }
 
 class _PickBowlerState extends _QuickMatchLoadedState {
@@ -496,7 +518,7 @@ class _ScoreBar extends StatelessWidget {
   final int ballsPerInnings;
   final int ballsPerOver;
 
-  final void Function() onGoScorecard;
+  final bool isLoading;
 
   const _ScoreBar({
     required this.score,
@@ -508,58 +530,65 @@ class _ScoreBar extends StatelessWidget {
     required this.target,
     required this.runsRequired,
     required this.ballsLeft,
-    required this.onGoScorecard,
+    required this.isLoading,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(0),
-      child: InkWell(
-        onTap: onGoScorecard,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        children: [
+          ListTile(
+            leading: SizedBox.square(
+              dimension: 20,
+              child: isLoading ? const CircularProgressIndicator() : null,
+            ),
+            title: Text(Stringify.score(score)),
+            titleTextStyle: Theme.of(context).textTheme.displaySmall,
+            trailing: Text(
+                "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(ballsPerInnings, ballsPerOver)}ov"),
+            leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Expanded(
-                child: DefaultTextStyle(
-                  style: Theme.of(context).textTheme.bodySmall!,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(Stringify.score(score),
-                          style: Theme.of(context).textTheme.displaySmall),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "CRR: ${currentRunRate.toStringAsFixed(2)}",
-                          ),
-                          if (requiredRunRate != null)
-                            Text("RRR: ${requiredRunRate!.toStringAsFixed(2)}"),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+              // wNumberBox(context, "PROJ", currentRunRate),
+              wNumberBox(context, "CRR", currentRunRate, true, null),
+              if (requiredRunRate != null)
+                wNumberBox(context, "RRR", requiredRunRate!, true, null),
+
+              if (runsRequired != null) ...[
+                wNumberBox(
+                    context, "Runs", runsRequired!, false, BallColors.notOut),
+                wNumberBox(
+                    context, "Balls", ballsLeft, false, BallColors.newOver),
+              ]
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget wNumberBox(BuildContext context, String heading, num value,
+      bool showDecimal, Color? color) {
+    final valueString =
+        showDecimal ? value.toStringAsFixed(2) : value.toString();
+    return Expanded(
+      child: Card(
+        color: color?.withOpacity(0.9),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Text(heading),
+              const SizedBox(height: 4),
+              Text(
+                valueString,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                      "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(ballsPerInnings, ballsPerOver)}ov",
-                      style: Theme.of(context).textTheme.bodyLarge),
-                  if (target != null)
-                    Text(
-                      "Target: $target",
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                ],
-              ),
-              const SizedBox(width: 16),
-              const Icon(Icons.chevron_right),
             ],
           ),
         ),
@@ -588,6 +617,8 @@ class _OnCreasePlayers extends StatelessWidget {
   final void Function() onPickBatter;
   final void Function() onPickBowler;
 
+  final void Function(BuildContext context) goScorecard;
+
   final bool allowInput;
 
   const _OnCreasePlayers({
@@ -604,6 +635,7 @@ class _OnCreasePlayers extends StatelessWidget {
     required this.onPickBatter,
     required this.onPickBowler,
     required this.allowInput,
+    required this.goScorecard,
   });
 
   @override
@@ -619,10 +651,24 @@ class _OnCreasePlayers extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: 2),
         Expanded(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _wBowlerDisplay(context),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 48,
+                width: 156,
+                child: FilledButton.icon(
+                  onPressed: () => goScorecard(context),
+                  icon: const Icon(Icons.list_alt),
+                  label: const Text("Scorecard"),
+                ),
+              ),
             ],
           ),
         ),
@@ -683,6 +729,7 @@ class _OnCreasePlayers extends StatelessWidget {
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+        tileColor: BallColors.newOver.withOpacity(0.3),
       );
     }
   }
@@ -792,8 +839,7 @@ class _RunSelectorSection extends StatelessWidget {
           7,
           (runs) => switch (state) {
             _NextBallSelectorEnabledState() => ChoiceChip(
-                label: Text(runs.toString(),
-                    style: Theme.of(context).textTheme.bodySmall),
+                label: Text(runs.toString()),
                 selected:
                     runs == (state as _NextBallSelectorEnabledState).nextRuns,
                 onSelected: (x) => _onSelect(x, runs),
@@ -1051,48 +1097,39 @@ class _RecentBallsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final reversedBalls = balls.reversed.toList();
     return Card(
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(
-            left: Radius.circular(32), right: Radius.circular(8)),
-      ),
-      child: SizedBox(
-        height: 64,
-        child: Row(
-          children: [
-            Card(
-              // elevation: 1,
-              margin: const EdgeInsets.all(0),
-              shape: const RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.horizontal(left: Radius.circular(32)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: IconButton.filled(
+          borderRadius: BorderRadius.horizontal(right: Radius.circular(32))),
+      child: InkWell(
+        onTap: onOpenTimeline,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const NeverScrollableScrollPhysics(),
+                    reverse: true,
+                    itemCount: reversedBalls.length,
+                    itemBuilder: (context, index) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: BallMini(
+                        reversedBalls[index],
+                        isFirstBallOfOver: _isFirstBallOfOver(index),
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton.filled(
                   onPressed: onOpenTimeline,
                   icon: const Icon(Icons.history),
                 ),
-              ),
+              ],
             ),
-            Expanded(
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics:
-                    const NeverScrollableScrollPhysics(), //TODO change to Row?
-                reverse: true,
-                itemCount: reversedBalls.length,
-                itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: BallMini(
-                    reversedBalls[index],
-                    isFirstBallOfOver: _isFirstBallOfOver(index),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1114,13 +1151,16 @@ class _WicketPickerScreen extends StatefulWidget {
   final String nonStrikerId;
   final String bowlerId;
 
-  final Iterable<String> fieldingPlayers;
+  final Iterable<String> players;
+
+  final Future<Player?> Function(BuildContext context) onPickPlayer;
 
   const _WicketPickerScreen({
     required this.strikerId,
     required this.nonStrikerId,
     required this.bowlerId,
-    required this.fieldingPlayers,
+    required this.players,
+    required this.onPickPlayer,
   });
 
   @override
@@ -1131,6 +1171,14 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
   Dismissal? _wicketDismissal;
   String? _wicketBatterId;
   String? _wicketFielderId;
+
+  final playerIds = <String>[];
+
+  @override
+  void initState() {
+    super.initState();
+    playerIds.addAll(widget.players);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1189,12 +1237,23 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
           wSectionHeader(_wicketDismissal == Dismissal.stumped
               ? "Pick Wicket-Keeper"
               : "Pick Fielder"),
-          for (final fielder in widget.fieldingPlayers)
+          for (final fielderId in playerIds)
             wSelectableOption(
-              getPlayer(fielder).name,
-              isSelected: fielder == _wicketFielderId,
-              onSelect: () => setFielder(fielder),
-            )
+              getPlayer(fielderId).name,
+              isSelected: fielderId == _wicketFielderId,
+              onSelect: () => setFielder(fielderId),
+            ),
+          ListTile(
+            title: const Text("Pick Player"),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final player = await widget.onPickPlayer(context);
+              if (player != null) {
+                playerIds.add(player.id);
+                setFielder(player.id);
+              }
+            },
+          ),
         ],
       );
 

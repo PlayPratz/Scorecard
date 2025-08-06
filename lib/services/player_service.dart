@@ -46,7 +46,6 @@ class PlayerService {
     // i.e. the players of one match
     // TODO: Should the cache be moved to this service?
     PlayerCache().clear();
-
     PlayerCache().putAll(players);
 
     return players;

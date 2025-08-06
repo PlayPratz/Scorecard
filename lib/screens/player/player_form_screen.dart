@@ -77,15 +77,10 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FilledButton.icon(
-              onPressed: _onSubmitPlayer,
-              label: const Text("Save"),
-              icon: const Icon(Icons.save),
-            ),
-          ],
+        child: FilledButton.icon(
+          onPressed: _onSubmitPlayer,
+          label: const Text("Save"),
+          icon: const Icon(Icons.save),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

@@ -22,22 +22,24 @@ class ScorecardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Scorecard")),
       body: StreamBuilder(
-          stream: _stateStreamController.stream,
-          builder: (context, snapshot) {
-            final state = snapshot.data;
-            switch (state) {
-              case null:
-              case _ScorecardLoadingState():
-                return const Scaffold(
-                    body: Center(child: CircularProgressIndicator()));
-              case _ScorecardLoadedState():
-                return ListView.builder(
-                  itemBuilder: (context, index) =>
-                      _InningsScorecard(state.allInnings[index]),
-                  itemCount: state.allInnings.length,
-                );
-            }
-          }),
+        stream: _stateStreamController.stream,
+        builder: (context, snapshot) {
+          final state = snapshot.data;
+          switch (state) {
+            case null:
+            case _ScorecardLoadingState():
+              return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()));
+            case _ScorecardLoadedState():
+              return ListView.builder(
+                itemBuilder: (context, index) =>
+                    _InningsScorecard(state.allInnings[index]),
+                itemCount: state.allInnings.length,
+              );
+          }
+        },
+      ),
+      // bottomNavigationBar: const BottomAppBar(),
     );
   }
 
@@ -77,14 +79,11 @@ class _InningsScorecard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          // crossAxisAlignment: CrossAxisAlignment.c,
           children: [
-            // TODO make this efficient
             FilledButton.icon(
                 icon: const Icon(Icons.timeline),
-                label: Text(
-                  header(),
-                ),
+                label: Text(Stringify.inningsHeading(innings.inningsNumber)),
                 onPressed: () => goInningsTimeline(context)),
             _BattingScorecard(
               service.getBatters(innings),
@@ -111,16 +110,6 @@ class _InningsScorecard extends StatelessWidget {
         context,
         MaterialPageRoute(
             builder: (context) => InningsTimelineScreen(innings)));
-  }
-
-  String header() {
-    if (innings.inningsNumber == 1) {
-      return "First Innings";
-    } else if (innings.inningsNumber == 2) {
-      return "Second Innings";
-    } else {
-      return "";
-    }
   }
 }
 
@@ -180,26 +169,21 @@ class _BattingScorecard extends StatelessWidget {
                 ListTile(
                   leading: CircleAvatar(
                     radius: 16,
-                    backgroundColor:
-                        batterInnings.isOut ? BallColors.wicket : null,
+                    backgroundColor: batterInnings.isOut
+                        ? BallColors.wicket
+                        : BallColors.notOut,
                     child: const Icon(Icons.sports_motorsports, size: 20),
                   ),
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        getPlayerName(batterInnings.batterId).toUpperCase(),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      // const Icon(Icons.chevron_right, size: 18),
-                    ],
-                  ),
+                  title:
+                      Text(getPlayerName(batterInnings.batterId).toUpperCase()),
+
                   subtitle: Text(
                     Stringify.wicket(batterInnings.wicket,
                         retired: batterInnings.retired,
                         getPlayerName: getPlayerName),
-                    style: Theme.of(context).textTheme.bodySmall,
                   ),
+                  titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+                  subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
                   // isThreeLine: true,
                   //
                   // onTap: () =>
@@ -360,14 +344,15 @@ class _BowlingScorecard extends StatelessWidget {
             for (final bowlerInnings in allBowlerInnings)
               TableRow(children: [
                 ListTile(
-                  leading: const CircleAvatar(
-                    radius: 18,
-                    child: Icon(Icons.sports_baseball),
+                  leading: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: BallColors.newOver.withOpacity(0.4),
+                    child: const Icon(Icons.sports_baseball, size: 20),
                   ),
-                  title: Text(
-                    getPlayerName(bowlerInnings.bowlerId).toUpperCase(),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                  title:
+                      Text(getPlayerName(bowlerInnings.bowlerId).toUpperCase()),
+
+                  titleTextStyle: Theme.of(context).textTheme.bodyMedium,
                   // trailing: const Icon(Icons.chevron_right, size: 18),
                   // onTap: () => goBowlingTimeline(context, bowlerInnings),
                   contentPadding: EdgeInsets.zero,

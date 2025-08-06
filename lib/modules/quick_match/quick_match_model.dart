@@ -126,7 +126,7 @@ class QuickInnings {
   double? get requiredRunRate => runsRequired == null
       ? null
       : handleDivideByZero(
-          runsRequired!.toDouble() * rules.ballsPerOver, numBalls.toDouble());
+          runsRequired!.toDouble() * rules.ballsPerOver, ballsLeft.toDouble());
 
   /// Conditions for considering an Innings as ended
   bool get hasEnded => isDeclared || ballsLeft == 0 || runsRequired == 0;
@@ -265,7 +265,7 @@ class BowlerInnings {
   int get numWickets => balls.where((b) => b.wicket is BowlerWicket).length;
 
   double get economy =>
-      handleDivideByZero(runs.toDouble(), numBalls.toDouble());
+      handleDivideByZero(runs.toDouble() * ballsPerOver, numBalls.toDouble());
   double get average => handleDivideByZero(runs * 100, numWickets.toDouble());
   double get strikeRate =>
       handleDivideByZero(numBalls.toDouble(), numWickets.toDouble());

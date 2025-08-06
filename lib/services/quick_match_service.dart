@@ -288,7 +288,9 @@ class QuickMatchService {
 
   void _handleBallPost(QuickInnings innings, Ball ball) {
     // Swap strike for odd number of runs
-    if (ball.batterRuns % 2 == 1) swapStrike(innings);
+    if (ball.batterRuns % 2 == 1 || ball.battingExtraRuns % 2 == 1) {
+      swapStrike(innings);
+    }
 
     // Swap strike whenever an over completes
     if (ball.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
@@ -296,7 +298,9 @@ class QuickMatchService {
 
   void _undoBallPost(QuickInnings innings, Ball ball) {
     // Swap strike for odd number of runs
-    if (ball.batterRuns % 2 == 1) swapStrike(innings);
+    if (ball.batterRuns % 2 == 1 || ball.battingExtraRuns % 2 == 1) {
+      swapStrike(innings);
+    }
 
     // Swap strike whenever an over completes
     if (ball.index.ball == innings.rules.ballsPerOver) swapStrike(innings);

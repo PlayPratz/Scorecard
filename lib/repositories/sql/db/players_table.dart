@@ -41,7 +41,12 @@ class PlayersTable extends ISQL<PlayersEntity> {
   // TODO Find better place
   Future<Iterable<PlayersEntity>> selectForMatch(String matchId) async {
     final raw = await sql.rawQuery(
-        'SELECT * from PLAYERS WHERE id IN(SELECT batter_id FROM POSTS UNION SELECT bowler_id FROM posts UNION SELECT wicket_fielder_id FROM posts WHERE NOT NULL)');
+      'SELECT * from PLAYERS WHERE id IN('
+      'SELECT batter_id FROM posts WHERE match_id = ? UNION '
+      'SELECT bowler_id FROM posts WHERE match_id = ? UNION '
+      'SELECT wicket_fielder_id FROM posts WHERE match_id = ? AND wicket_fielder_id IS NOT NULL)',
+      [matchId, matchId, matchId],
+    );
 
     final result = raw.map((m) => deserialize(m));
     return result;

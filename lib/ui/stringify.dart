@@ -34,4 +34,10 @@ class Stringify {
 
   static String economy(double economy) =>
       economy.isNaN || economy.isInfinite ? '∞' : economy.toStringAsFixed(2);
+
+  static String inningsHeading(int inningsNumber) => switch (inningsNumber) {
+        1 => "First Innings",
+        2 => "Second Innings",
+        _ => "Innings $inningsNumber"
+      };
 }

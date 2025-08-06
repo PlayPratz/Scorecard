@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
 import 'package:scorecard/repositories/sql/db/players_table.dart';
@@ -76,9 +76,9 @@ class ScorecardApp extends StatelessWidget {
     return MaterialApp(
       title: "Scorecard",
       theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.teal,
-      ),
+          useMaterial3: true,
+          colorSchemeSeed: Colors.teal,
+          textTheme: GoogleFonts.ubuntuTextTheme()),
       home: const HomeScreen(),
       builder: (context, child) => StreamBuilder(
           stream: controller._stateStreamController.stream,

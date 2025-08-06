@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/cache/settings_cache.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/screens/player/player_form_screen.dart';
 import 'package:scorecard/services/player_service.dart';
@@ -222,7 +223,7 @@ class _PlayerTile extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.sports_motorsports),
       title: Text(player.name),
-      // subtitle: Text(player.fullName ?? ""),
+      subtitle: SettingsCache().showIds ? Text(player.id) : null,
       trailing: isSelectable ? const Icon(Icons.chevron_right) : null,
       onTap: onSelect != null ? () => onSelect!(player) : null,
     );

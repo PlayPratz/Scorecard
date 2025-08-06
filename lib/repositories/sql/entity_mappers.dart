@@ -36,6 +36,7 @@ class EntityMappers {
   static QuickMatch unpackQuickMatch(QuickMatchesEntity entity) => QuickMatch(
         entity.id,
         startsAt: entity.starts_at,
+        isCompleted: entity.stage == 1,
         rules: QuickMatchRules(
           ballsPerOver: entity.rules_balls_per_over,
           ballsPerInnings: entity.rules_balls_per_innings,

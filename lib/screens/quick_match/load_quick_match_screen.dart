@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/cache/settings_cache.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/screens/quick_match/play_quick_match_screen.dart';
+import 'package:scorecard/screens/quick_match/scorecard_screen.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 
 class LoadQuickMatchScreen extends StatelessWidget {
@@ -41,7 +43,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
                   final match = matches[index];
                   return ListTile(
                     title: Text(dateFormat.format(match.startsAt)),
-                    subtitle: Text(match.id),
+                    subtitle: SettingsCache().showIds ? Text(match.id) : null,
                     leading: wMatchIndicator(match),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => controller.loadMatch(context, match),
@@ -62,7 +64,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
     } else {
       return const CircleAvatar(
         backgroundColor: Colors.orangeAccent,
-        child: Icon(Icons.pause),
+        child: Icon(Icons.pending_actions),
       );
     }
   }
@@ -75,8 +77,13 @@ class LoadQuickMatchController {
   }
 
   void loadMatch(BuildContext context, QuickMatch match) {
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) => PlayQuickMatchScreen(match)));
+    if (match.isCompleted) {
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => ScorecardScreen(match)));
+    } else {
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => PlayQuickMatchScreen(match)));
+    }
   }
 
   QuickMatchService _service(BuildContext context) =>

@@ -17,10 +17,9 @@ class InningsTimelineScreen extends StatelessWidget {
     final overs = context.read<QuickMatchService>().getOvers(innings);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Timeline"),
+        title: Text(Stringify.inningsHeading(innings.inningsNumber)),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
         itemCount: overs.length,
         reverse: true,
         itemBuilder: (context, index) {
@@ -29,12 +28,12 @@ class InningsTimelineScreen extends StatelessWidget {
           // TODO Find a better place for this
           final runs = over.whereType<Ball>().fold(0, (p, e) => p + e.runs);
           return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Over $overIndex",
@@ -43,11 +42,10 @@ class InningsTimelineScreen extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleSmall),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  _InningsPostsView(over),
-                  const SizedBox(height: 8),
-                ],
-              ),
+                ),
+                _InningsPostsView(over),
+                const SizedBox(height: 8),
+              ],
             ),
           );
         },
@@ -142,79 +140,90 @@ class _InningsPostWidget extends StatelessWidget {
     final playerCache = PlayerCache();
 
     getPlayerName(String id) => playerCache.get(id).name.toUpperCase();
+    getPlayerNameLowercase(String id) => playerCache.get(id).name;
+
+    const contentPadding = EdgeInsets.symmetric(horizontal: 8.0);
+    final titleTextStyle = Theme.of(context).textTheme.bodyMedium;
+    final subtitleTextStyle = Theme.of(context).textTheme.bodySmall;
+    const minTileHeight = 64.0;
 
     return switch (post) {
       Ball() => ListTile(
-          leading: wIndex(post.isWicket ? BallColors.wicket : null),
           title: Text(
               "${getPlayerName(post.bowlerId)} to ${getPlayerName(post.batterId)}"),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                  "${post.batterRuns} runs to ${getPlayerName(post.batterId)}"),
+                  "${post.batterRuns} runs to ${getPlayerNameLowercase(post.batterId)}"),
               if (post.isWicket)
                 Text(
-                    "${getPlayerName(post.wicket!.batterId)} (${Stringify.wicket(post.wicket, getPlayerName: getPlayerName)})")
+                    "${getPlayerNameLowercase(post.wicket!.batterId)} (${Stringify.wicket(post.wicket, getPlayerName: getPlayerNameLowercase)})")
             ],
           ),
+          leading: wIndex(context, null),
           trailing:
               BallMini(post, isFirstBallOfOver: false, showPostIndex: false),
+          titleTextStyle: titleTextStyle,
+          subtitleTextStyle: subtitleTextStyle,
+          contentPadding: contentPadding,
+          minTileHeight: minTileHeight,
         ),
       BowlerRetire() => ListTile(
           title: Text(getPlayerName(post.bowlerId)),
           subtitle: const Text("Bowler has retired"),
-          leading: wIndex(BallColors.wicket),
+          leading: wIndex(context, BallColors.wicket),
+          titleTextStyle: titleTextStyle,
+          subtitleTextStyle: subtitleTextStyle,
+          contentPadding: contentPadding,
+          minTileHeight: minTileHeight,
         ),
       NextBowler() => ListTile(
           title: Text(getPlayerName(post.nextId)),
           subtitle: const Text("Next bowler"),
-          leading: wIndex(BallColors.post),
+          leading: wIndex(context, BallColors.post),
+          titleTextStyle: titleTextStyle,
+          subtitleTextStyle: subtitleTextStyle,
+          contentPadding: contentPadding,
+          minTileHeight: minTileHeight,
         ),
       BatterRetire() => ListTile(
           title: Text(getPlayerName(post.batterId)),
           subtitle: const Text("Batter has retired"),
-          leading: wIndex(BallColors.wicket),
+          leading: wIndex(context, BallColors.wicket),
+          titleTextStyle: titleTextStyle,
+          subtitleTextStyle: subtitleTextStyle,
+          contentPadding: contentPadding,
+          minTileHeight: minTileHeight,
         ),
       NextBatter() => ListTile(
           title: Text(getPlayerName(post.nextId)),
           subtitle: const Text("Next batter"),
-          leading: wIndex(BallColors.post),
+          leading: wIndex(context, BallColors.post),
+          titleTextStyle: titleTextStyle,
+          subtitleTextStyle: subtitleTextStyle,
+          contentPadding: contentPadding,
+          minTileHeight: minTileHeight,
         ),
       RunoutBeforeDelivery() => ListTile(
           title: Text(getPlayerName(post.batterId)),
           subtitle: const Text("Next bowler"),
-          leading: wIndex(BallColors.wicket),
+          leading: wIndex(context, BallColors.wicket),
+          titleTextStyle: titleTextStyle,
+          subtitleTextStyle: subtitleTextStyle,
+          contentPadding: contentPadding,
+          minTileHeight: minTileHeight,
         ),
     };
-
-    // return switch (post) {
-    //   BowlerRetire() => Text(
-    //       "${playerCache.get(post.bowlerId).name.toUpperCase()} has retired"),
-    //   NextBowler() =>
-    //     Text("${playerCache.get(post.nextId).name.toUpperCase()} to bowl"),
-    //   BatterRetire() => Text(
-    //       "${playerCache.get(post.batterId).name.toUpperCase()} has retired (${Stringify.wicket(null, retired: post.retired, getPlayerName: getPlayerName)})"),
-    //   NextBatter() => Text(
-    //       "The next batter in is ${playerCache.get(post.nextId).name.toUpperCase()}"),
-    //   RunoutBeforeDelivery() => Text(
-    //       "${playerCache.get(post.batterId).name.toUpperCase()} has been run-out!"),
-    //   Ball() => Column(
-    //       crossAxisAlignment: CrossAxisAlignment.start,
-    //       children: [
-    //         Text(
-    //             "${playerCache.get(post.bowlerId).name.toUpperCase()} to ${playerCache.get(post.batterId).name.toUpperCase()}, ${post.runs} runs"),
-    //         if (post.isWicket)
-    //           Text(
-    //               "Wicket: ${playerCache.get(post.bowlerId).name.toUpperCase()} (${Stringify.wicket(post.wicket!, getPlayerName: getPlayerName)})")
-    //       ],
-    //     ),
-    // };
   }
 
-  Widget wIndex(Color? color) => CircleAvatar(
+  Widget wIndex(BuildContext context, Color? color) => CircleAvatar(
+        radius: 18,
         backgroundColor: color,
-        child: Text(Stringify.postIndex(post.index)),
+        child: Text(
+          Stringify.postIndex(post.index),
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
       );
 }
 
@@ -256,7 +265,7 @@ class BallMini extends StatelessWidget {
     );
   }
 
-  Color get _ballColor {
+  Color? get _ballColor {
     if (ball.isBoundary && ball.runs == 4) {
       return BallColors.four;
     } else if (ball.isBoundary && ball.runs == 6) {
@@ -268,7 +277,7 @@ class BallMini extends StatelessWidget {
     } else if (ball.battingExtra is LegBye) {
       return BallColors.legBye;
     } else {
-      return BallColors.post;
+      return null;
     }
   }
 

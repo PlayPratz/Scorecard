@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/cache/settings_cache.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-const version = "0.90.2beta";
+const version = "0.90.3beta";
 const buildDate = "2025-08-06";
 const repository = "https://github.com/PlayPratz/Scorecard.git";
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,6 +23,15 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          ListTile(
+            title: const Text("Show Player and Match IDs"),
+            subtitle: const Text("Useful for debugging"),
+            leading: const Icon(Icons.bug_report),
+            trailing: Switch(
+                value: SettingsCache().showIds,
+                onChanged: (_) => toggleShowIds()),
+            onTap: () => toggleShowIds(),
+          ),
           ListTile(
             title: const Text("Build Info"),
             titleTextStyle: Theme.of(context).textTheme.titleSmall,
@@ -44,5 +59,11 @@ class SettingsScreen extends StatelessWidget {
 
   void onOpenRepository(BuildContext context) {
     launchUrlString(repository, mode: LaunchMode.externalApplication);
+  }
+
+  void toggleShowIds() {
+    setState(() {
+      SettingsCache().showIds = !SettingsCache().showIds;
+    });
   }
 }

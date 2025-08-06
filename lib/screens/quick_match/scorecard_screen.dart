@@ -92,6 +92,8 @@ class _InningsScorecard extends StatelessWidget {
               extras: innings.extras,
               ballsPerInnings: innings.rules.ballsPerInnings,
               ballsPerOver: innings.rules.ballsPerOver,
+              ballsBowled: innings.numBalls,
+              fallOfWickets: FallOfWickets.of(innings.balls).fallOfWickets,
               getPlayerName: getPlayerName,
             ),
             const SizedBox(height: 24),
@@ -124,6 +126,9 @@ class _BattingScorecard extends StatelessWidget {
 
   final int ballsPerInnings;
   final int ballsPerOver;
+  final int ballsBowled;
+
+  final List<FallOfWicket> fallOfWickets;
 
   const _BattingScorecard(
     this.allBatterInnings, {
@@ -132,6 +137,8 @@ class _BattingScorecard extends StatelessWidget {
     required this.extras,
     required this.ballsPerInnings,
     required this.ballsPerOver,
+    required this.ballsBowled,
+    required this.fallOfWickets,
     required this.getPlayerName,
   });
 
@@ -271,7 +278,7 @@ class _BattingScorecard extends StatelessWidget {
               const SizedBox(height: 32),
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
-                child: Text("Total".toUpperCase(),
+                child: Text("TOTAL",
                     style: Theme.of(context).textTheme.bodyMedium),
               ),
               Padding(
@@ -281,11 +288,38 @@ class _BattingScorecard extends StatelessWidget {
                     textAlign: TextAlign.right),
               ),
               Text(
-                  "(${Stringify.ballCount(ballsPerInnings, ballsPerOver)}${targetString(target)})",
+                  "(${Stringify.ballCount(ballsBowled, ballsPerOver)}${targetString(target)})",
                   style: Theme.of(context).textTheme.bodySmall),
             ]),
           ],
         ),
+        const SizedBox(height: 24),
+        Text("Fall of Wickets", style: Theme.of(context).textTheme.titleMedium),
+        Table(
+          columnWidths: const {
+            0: FlexColumnWidth(),
+            1: FlexColumnWidth(),
+            2: FlexColumnWidth(7),
+            3: FlexColumnWidth(),
+          },
+          defaultVerticalAlignment: TableCellVerticalAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          border: const TableBorder(
+            horizontalInside: BorderSide(width: 0),
+          ),
+          children: [
+            for (final fow in fallOfWickets)
+              TableRow(children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Text(Stringify.score(fow.scoreAt)),
+                ),
+                Text(Stringify.postIndex(fow.postIndex)),
+                Text("${getPlayerName(fow.wicket.batterId)} "
+                    "(${Stringify.wicket(fow.wicket, getPlayerName: getPlayerName)})"),
+              ]),
+          ],
+        )
       ],
     );
   }

@@ -170,14 +170,14 @@ class Score {
       : runs = 0,
         wickets = 0;
 
-// Score plus(Ball ball) {
-//   final runs = this.runs + ball.runs;
-//   if (ball.isWicket) {
-//     return Score(runs, wickets + 1);
-//   } else {
-//     return Score(runs, wickets);
-//   }
-// }
+  Score plus(Ball ball) {
+    final runs = this.runs + ball.runs;
+    if (ball.isWicket) {
+      return Score(runs, wickets + 1);
+    } else {
+      return Score(runs, wickets);
+    }
+  }
 }
 
 class BatterInnings {
@@ -269,4 +269,34 @@ class BowlerInnings {
   double get average => handleDivideByZero(runs * 100, numWickets.toDouble());
   double get strikeRate =>
       handleDivideByZero(numBalls.toDouble(), numWickets.toDouble());
+}
+
+class FallOfWickets {
+  final List<FallOfWicket> fallOfWickets;
+
+  FallOfWickets._(this.fallOfWickets);
+
+  factory FallOfWickets.of(List<Ball> balls) {
+    final fow = <FallOfWicket>[];
+    Score score = Score.zero();
+    for (final ball in balls) {
+      score = score.plus(ball);
+      if (ball.isWicket) {
+        fow.add(FallOfWicket(
+          ball.wicket!,
+          postIndex: ball.index,
+          scoreAt: score,
+        ));
+      }
+    }
+    return FallOfWickets._(fow);
+  }
+}
+
+class FallOfWicket {
+  final Wicket wicket;
+  final PostIndex postIndex;
+  final Score scoreAt;
+
+  FallOfWicket(this.wicket, {required this.postIndex, required this.scoreAt});
 }

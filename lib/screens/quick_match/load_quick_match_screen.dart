@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/cache/settings_cache.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/screens/quick_match/play_quick_match_screen.dart';
 import 'package:scorecard/screens/quick_match/scorecard_screen.dart';
 import 'package:scorecard/services/quick_match_service.dart';
+import 'package:scorecard/services/settings_service.dart';
 
 class LoadQuickMatchScreen extends StatelessWidget {
   const LoadQuickMatchScreen({super.key});
@@ -14,6 +14,8 @@ class LoadQuickMatchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = LoadQuickMatchController();
     final quickMatchFuture = controller.loadAllMatches(context);
+
+    final showIds = context.read<SettingsService>().getShowIds();
 
     final dateFormat =
         DateFormat.yMMMd(Localizations.localeOf(context).languageCode).add_jm();
@@ -43,7 +45,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
                   final match = matches[index];
                   return ListTile(
                     title: Text(dateFormat.format(match.startsAt)),
-                    subtitle: SettingsCache().showIds ? Text(match.id) : null,
+                    subtitle: showIds ? Text(match.id) : null,
                     leading: wMatchIndicator(match),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => controller.loadMatch(context, match),

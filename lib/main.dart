@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/modules/quick_match/quick_match_model.dart';
+import 'package:scorecard/provider/settings_provider.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
 import 'package:scorecard/repositories/sql/db/players_table.dart';
@@ -14,6 +16,7 @@ import 'package:scorecard/handlers/sql_db_handler.dart';
 import 'package:scorecard/screens/home_screen.dart';
 import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/services/quick_match_service.dart';
+import 'package:scorecard/services/settings_service.dart';
 
 /// Welcome to [Scorecard]! You must be new here. The architecture and structure
 /// of this application might be a little overwhelming. To help you out,
@@ -34,6 +37,11 @@ import 'package:scorecard/services/quick_match_service.dart';
 /// [Caches] are used for storing temporary objects. Suppose instantiating a
 /// certain class is a heavy asynchronous operation (like DB, IO or Network),
 /// it makes sense to cache the object for as long as it is needed.
+///
+/// [Providers] are used to propagate changes across the app. The most common
+/// example is the theme of an app. It's a change that must spread across the
+/// app instantly. A provider exposes a listenable interface that can be
+/// listened to for propagating data.
 ///
 /// [Services] are STATELESS classes that perform major Business Logic
 /// operations. They are initialized once and used throughout the app. Services
@@ -74,40 +82,50 @@ class ScorecardApp extends StatelessWidget {
     final controller = _ScorecardAppController();
     controller.startup();
 
-    return MaterialApp(
-      title: "Scorecard",
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.teal,
-        // brightness: Brightness.dark,
-        textTheme: GoogleFonts.ubuntuTextTheme(
-            // ThemeData(brightness: Brightness.dark).textTheme),
-            ),
-      ),
-      home: const HomeScreen(),
-      builder: (context, child) => StreamBuilder(
-          stream: controller._stateStreamController.stream,
-          initialData: _AppStartupLoadingState(),
-          builder: (context, snapshot) {
-            final state = snapshot.data!;
-            return switch (state) {
-              _AppStartupLoadingState() => const Scaffold(
-                  body: Center(child: CircularProgressIndicator())),
-              // TODO: Handle this case.
-              _StartupFailState() => const Scaffold(
-                  body: Center(
-                    child: Text("Error starting app! Try restarting."),
+    return StreamBuilder(
+        stream: controller._stateStreamController.stream,
+        initialData: _AppStartupLoadingState(),
+        builder: (context, snapshot) {
+          final state = snapshot.data!;
+
+          final brightness = state is _StartupSuccessfulState &&
+                  state.theme == ScorecardTheme.dark
+              ? Brightness.dark
+              : Brightness.light;
+          final baseTheme = ThemeData(
+            useMaterial3: true,
+            colorSchemeSeed: Colors.teal,
+            brightness: brightness,
+          );
+          final textTheme = GoogleFonts.ubuntuTextTheme(baseTheme.textTheme);
+          final theme = baseTheme.copyWith(textTheme: textTheme);
+
+          return MaterialApp(
+            title: "Scorecard",
+            theme: theme,
+            home: const HomeScreen(),
+            builder: (context, child) {
+              return switch (state) {
+                _AppStartupLoadingState() => const Scaffold(
+                    body: Center(child: CircularProgressIndicator())),
+                _StartupFailState() => const Scaffold(
+                    body: Center(
+                      child: Text("Error starting app! Try restarting."),
+                    ),
                   ),
-                ),
-              // TODO: Handle this case.
-              _StartupSuccessfulState() => MultiProvider(providers: [
-                  Provider(create: (context) => state.playerService),
-                  Provider(create: (context) => state.quickMatchService),
-                ], child: child),
-            };
-            return const HomeScreen();
-          }),
-    );
+                _StartupSuccessfulState() => MultiProvider(
+                    providers: [
+                      Provider(create: (context) => state.settingsService),
+                      Provider(create: (context) => state.playerService),
+                      Provider(create: (context) => state.quickMatchService),
+                    ],
+                    child: child,
+                  ),
+              };
+              return const HomeScreen();
+            },
+          );
+        });
   }
 }
 
@@ -117,23 +135,29 @@ class _ScorecardAppController {
 
   late final PlayerService playerService;
   late final QuickMatchService quickMatchService;
+  late final SettingsService settingsService;
+
+  late final SettingsProvider settingsProvider;
 
   final _stateStreamController = StreamController<_ScorecardAppState>();
+  void _dispatchState() => _stateStreamController.add(
+        _StartupSuccessfulState(
+          settingsService: settingsService,
+          playerService: playerService,
+          quickMatchService: quickMatchService,
+          theme: settingsProvider.theme,
+        ),
+      );
 
   Future<void> startup() async {
     // To display dates and times in local format
     await initializeDateFormatting();
-
+    // Repositories
     await _initializeRepositories();
-
+    // Services
     await _initializeServices();
 
-    await Future.delayed(const Duration(seconds: 1));
-
-    _stateStreamController.add(
-      _StartupSuccessfulState(
-          playerService: playerService, quickMatchService: quickMatchService),
-    );
+    _dispatchState();
   }
 
   Future<void> _initializeRepositories() async {
@@ -156,8 +180,19 @@ class _ScorecardAppController {
   }
 
   Future<void> _initializeServices() async {
+    // Settings Service
+    settingsProvider = SettingsProvider();
+    settingsProvider.addListener(_dispatchState);
+    settingsService = SettingsService(settingsProvider);
+    await settingsService.initialize();
+
+    // Players Service
     playerService = PlayerService(playerRepository);
+    // await playerService.initialize();
+
+    // Quick Match Service
     quickMatchService = QuickMatchService(quickMatchRepository, playerService);
+    // await quickMatchService.initialize();
   }
 }
 
@@ -166,13 +201,17 @@ sealed class _ScorecardAppState {}
 class _AppStartupLoadingState extends _ScorecardAppState {}
 
 class _StartupSuccessfulState extends _ScorecardAppState {
+  final SettingsService settingsService;
   final PlayerService playerService;
   final QuickMatchService quickMatchService;
 
-  _StartupSuccessfulState({
-    required this.playerService,
-    required this.quickMatchService,
-  });
+  final ScorecardTheme theme;
+
+  _StartupSuccessfulState(
+      {required this.settingsService,
+      required this.playerService,
+      required this.quickMatchService,
+      required this.theme});
 }
 
 class _StartupFailState extends _ScorecardAppState {}

@@ -15,10 +15,10 @@ class BallColors {
   static const border = Colors.white24;
 
   // Balls
-  static final Color four = Colors.indigoAccent.shade100;
-  static final Color six = Colors.pink.shade400;
-  static final Color wicket = Colors.red.shade200;
-  static const Color notOut = Colors.greenAccent;
+  static const Color four = Colors.indigo;
+  static final Color six = Colors.pink.shade800;
+  static final Color wicket = Colors.red.shade300;
+  static final Color notOut = Colors.greenAccent.shade400;
 
   static const Color noBall = Colors.yellowAccent;
   static const Color wide = Colors.white;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/cache/settings_cache.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/screens/player/player_form_screen.dart';
 import 'package:scorecard/services/player_service.dart';
+import 'package:scorecard/services/settings_service.dart';
 
 typedef PlayerCallbackFn = void Function(Player player);
 
@@ -220,10 +220,13 @@ class _PlayerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSelectable = onSelect != null;
+
+    final showIds = context.read<SettingsService>().getShowIds();
+
     return ListTile(
       leading: const Icon(Icons.sports_motorsports),
       title: Text(player.name),
-      subtitle: SettingsCache().showIds ? Text(player.id) : null,
+      subtitle: showIds ? Text(player.id) : null,
       trailing: isSelectable ? const Icon(Icons.chevron_right) : null,
       onTap: onSelect != null ? () => onSelect!(player) : null,
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/cache/settings_cache.dart';
+import 'package:provider/provider.dart';
 import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/services/settings_service.dart';
 
 class PlayerFormScreen extends StatefulWidget {
   final Player? player;
@@ -31,6 +32,8 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final showIds = context.read<SettingsService>().getShowIds();
+
     return Scaffold(
       appBar: AppBar(
         title: widget.player == null
@@ -42,7 +45,7 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           children: [
-            if (widget.player != null && SettingsCache().showIds)
+            if (widget.player != null && showIds)
               Text(
                 "#${widget.player!.id}",
                 style: Theme.of(context)

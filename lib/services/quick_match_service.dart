@@ -1,4 +1,3 @@
-import 'package:scorecard/cache/player_cache.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/quick_match/wicket_model.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:scorecard/cache/settings_cache.dart';
+import 'package:provider/provider.dart';
+import 'package:scorecard/services/settings_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 const version = "0.90.4beta";
@@ -14,6 +15,14 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late final SettingsService settingsService;
+
+  @override
+  void initState() {
+    super.initState();
+    settingsService = context.read<SettingsService>();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,11 +33,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         children: [
           ListTile(
+            title: const Text("Dark Mode"),
+            subtitle: const Text("Easier on the eyes"),
+            leading: const Icon(Icons.dark_mode),
+            trailing: Switch(
+                value: settingsService.getTheme() == ScorecardTheme.dark,
+                onChanged: (_) => toggleTheme()),
+            onTap: () => toggleTheme(),
+          ),
+          ListTile(
             title: const Text("Show Player and Match IDs"),
             subtitle: const Text("Useful for debugging"),
             leading: const Icon(Icons.bug_report),
             trailing: Switch(
-                value: SettingsCache().showIds,
+                value: settingsService.getShowIds(),
                 onChanged: (_) => toggleShowIds()),
             onTap: () => toggleShowIds(),
           ),
@@ -63,7 +81,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void toggleShowIds() {
     setState(() {
-      SettingsCache().showIds = !SettingsCache().showIds;
+      settingsService.toggleShowIds();
+    });
+  }
+
+  Future<void> toggleTheme() async {
+    setState(() {
+      settingsService.toggleTheme();
     });
   }
 }

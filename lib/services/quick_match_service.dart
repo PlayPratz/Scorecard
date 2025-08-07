@@ -204,8 +204,6 @@ class QuickMatchService {
   /// Creates a [Ball] of the given data and adds it to the innings
   Future<void> play(
     QuickInnings innings, {
-    required String bowlerId,
-    required String batterId,
     required int runs,
     required bool isBoundary,
     required Wicket? wicket,
@@ -213,6 +211,16 @@ class QuickMatchService {
     required BattingExtraType? battingExtraType,
     // DateTime? datetime,
   }) async {
+    if (innings.strikerId == null) {
+      throw StateError(
+          "Attempted to play ball without setting striker (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
+    }
+
+    if (innings.bowlerId == null) {
+      throw StateError(
+          "Attempted to play ball without setting bowler (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
+    }
+
     final datetime = _defaultTimestamp(innings);
 
     final BowlingExtra? bowlingExtra = switch (bowlingExtraType) {
@@ -240,8 +248,8 @@ class QuickMatchService {
       innings.matchId,
       innings.inningsNumber,
       index: index,
-      bowlerId: bowlerId,
-      batterId: batterId,
+      bowlerId: innings.bowlerId!,
+      batterId: innings.strikerId!,
       batterRuns: batterRuns,
       isBoundary: isBoundary,
       wicket: wicket,

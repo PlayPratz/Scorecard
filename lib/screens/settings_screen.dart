@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:scorecard/cache/settings_cache.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-const version = "0.90.3beta";
-const buildDate = "2025-08-06";
+const version = "0.90.4beta";
+const buildDate = "2025-08-07";
 const repository = "https://github.com/PlayPratz/Scorecard.git";
 
 class SettingsScreen extends StatefulWidget {

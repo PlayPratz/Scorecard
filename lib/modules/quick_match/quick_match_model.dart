@@ -184,17 +184,22 @@ class BatterInnings {
   /// The ID of this Batter as in the database
   final String batterId;
 
-  /// All balls played by this Batter
+  /// All balls played by this Batter or involve their wicket
   final List<InningsPost> _posts;
-  UnmodifiableListView<Ball> get balls =>
+  UnmodifiableListView<Ball> get allBalls =>
       UnmodifiableListView(_posts.whereType<Ball>());
+
+  /// All balls played by this Batter
+  UnmodifiableListView<Ball> get balls =>
+      UnmodifiableListView(allBalls.where((b) => b.batterId == batterId));
 
   BatterInnings._(this.batterId, this._posts);
 
   BatterInnings.of(this.batterId, QuickInnings innings)
       : _posts = innings.posts
             .where((post) => switch (post) {
-                  Ball() => post.batterId == batterId,
+                  Ball() => post.batterId == batterId ||
+                      post.wicket?.batterId == batterId,
                   BowlerRetire() => false,
                   NextBowler() => false,
                   BatterRetire() => post.batterId == batterId,
@@ -272,11 +277,13 @@ class BowlerInnings {
 }
 
 class FallOfWickets {
-  final List<FallOfWicket> fallOfWickets;
+  final List<FallOfWicket> _all;
+  UnmodifiableListView<FallOfWicket> get all => UnmodifiableListView(_all);
 
-  FallOfWickets._(this.fallOfWickets);
+  FallOfWickets._(this._all);
 
-  factory FallOfWickets.of(List<Ball> balls) {
+  factory FallOfWickets.of(QuickInnings innings) {
+    final balls = innings.balls;
     final fow = <FallOfWicket>[];
     Score score = Score.zero();
     for (final ball in balls) {
@@ -299,4 +306,61 @@ class FallOfWicket {
   final Score scoreAt;
 
   FallOfWicket(this.wicket, {required this.postIndex, required this.scoreAt});
+}
+
+class Partnerships {
+  final List<Partnership> _all;
+  UnmodifiableListView<Partnership> get all => UnmodifiableListView(_all);
+
+  Partnerships._(this._all);
+
+  factory Partnerships.of(QuickInnings innings) {
+    final posts = innings.posts;
+
+    final firstTwo = posts.whereType<NextBatter>().take(2);
+    if (firstTwo.length < 2) return Partnerships._([]);
+
+    final partnerships = <Partnership>[
+      Partnership(
+        [],
+        batter1Id: firstTwo.first.nextId,
+        batter2Id: firstTwo.last.nextId,
+      )
+    ];
+
+    for (final post in posts.sublist(posts.indexOf(firstTwo.last) + 1)) {
+      final current = partnerships.last;
+      switch (post) {
+        case NextBatter():
+          final existing = post.previousId == current.batter1Id
+              ? current.batter2Id
+              : current.batter1Id;
+          partnerships.add(
+              Partnership([], batter1Id: existing, batter2Id: post.nextId));
+        default:
+          current._posts.add(post);
+      }
+    }
+
+    return Partnerships._(partnerships);
+  }
+}
+
+class Partnership {
+  final String batter1Id;
+  final String batter2Id;
+
+  final List<InningsPost> _posts;
+  UnmodifiableListView<Ball> get balls =>
+      UnmodifiableListView(_posts.whereType<Ball>());
+
+  final BatterInnings batter1Innings;
+  final BatterInnings batter2Innings;
+
+  Partnership(this._posts, {required this.batter1Id, required this.batter2Id})
+      : batter1Innings = BatterInnings._(batter1Id, _posts),
+        batter2Innings = BatterInnings._(batter2Id, _posts);
+
+  int get runs => balls.fold(0, (s, b) => s + b.runs);
+  int get numBalls => balls.where((b) => !b.isBowlingExtra).length;
 }

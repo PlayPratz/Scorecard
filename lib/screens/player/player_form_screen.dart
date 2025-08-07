@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scorecard/cache/settings_cache.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 
 class PlayerFormScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           children: [
-            if (widget.player != null)
+            if (widget.player != null && SettingsCache().showIds)
               Text(
                 "#${widget.player!.id}",
                 style: Theme.of(context)

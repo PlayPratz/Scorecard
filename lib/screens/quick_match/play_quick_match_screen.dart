@@ -79,12 +79,11 @@ class PlayQuickMatchScreen extends StatelessWidget {
                         runsRequired: innings.runsRequired,
                         ballsLeft: innings.ballsLeft,
                         isLoading: state is _ActionLoadingState),
-                    const Spacer(),
                     _RecentBallsSection(
                       innings.balls,
                       onOpenTimeline: () => controller.goTimeline(context),
                     ),
-                    const SizedBox(height: 18),
+                    const Spacer(),
                     _OnCreasePlayers(
                       batter1: _batter1Display(context, innings),
                       batter2: _batter2Display(context, innings),
@@ -103,7 +102,7 @@ class PlayQuickMatchScreen extends StatelessWidget {
                       allowInput: state is _PlayBallState,
                       goScorecard: controller.goScorecard,
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 4),
                   ],
                 ),
               ),
@@ -296,6 +295,10 @@ class _PlayQuickMatchScreenController {
       return _PickBowlerState(innings);
     }
 
+    if (innings.posts.isEmpty) {
+      return _PickBowlerState(innings);
+    }
+
     final lastPost = innings.posts.last; // Cannot be empty
 
     switch (lastPost) {
@@ -423,8 +426,6 @@ class _PlayQuickMatchScreenController {
 
     await _matchService.play(
       innings,
-      bowlerId: innings.bowlerId!,
-      batterId: innings.strikerId!,
       runs: ballState.nextRuns,
       isBoundary: ballState.nextRuns == 4 || ballState.nextRuns == 6, //TODO
       wicket: ballState.nextWicket,
@@ -546,8 +547,14 @@ class _ScoreBar extends StatelessWidget {
             ),
             title: Text(Stringify.score(score)),
             titleTextStyle: Theme.of(context).textTheme.displaySmall,
-            trailing: Text(
-                "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(ballsPerInnings, ballsPerOver)}ov"),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                    "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(ballsPerInnings, ballsPerOver)}ov"),
+                Text(target == null ? "" : "Target: $target"),
+              ],
+            ),
             leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 8),
@@ -556,15 +563,24 @@ class _ScoreBar extends StatelessWidget {
             children: [
               // wNumberBox(context, "PROJ", currentRunRate),
               wNumberBox(context, "CRR", currentRunRate, true, null),
+
               if (requiredRunRate != null)
                 wNumberBox(context, "RRR", requiredRunRate!, true, null),
 
-              if (runsRequired != null) ...[
+              if (runsRequired == null)
+                wNumberBox(
+                    context,
+                    "Projected",
+                    currentRunRate * ballsPerInnings / ballsPerOver,
+                    false,
+                    BallColors.notOut),
+
+              if (runsRequired != null)
                 wNumberBox(
                     context, "Runs", runsRequired!, false, BallColors.notOut),
-                wNumberBox(
-                    context, "Balls", ballsLeft, false, BallColors.newOver),
-              ]
+
+              wNumberBox(
+                  context, "Balls Left", ballsLeft, false, BallColors.newOver),
             ],
           ),
         ],
@@ -575,7 +591,7 @@ class _ScoreBar extends StatelessWidget {
   Widget wNumberBox(BuildContext context, String heading, num value,
       bool showDecimal, Color? color) {
     final valueString =
-        showDecimal ? value.toStringAsFixed(2) : value.toString();
+        showDecimal ? value.toStringAsFixed(2) : value.floor().toString();
     return Expanded(
       child: Card(
         color: color?.withOpacity(0.9),
@@ -646,6 +662,15 @@ class _OnCreasePlayers extends StatelessWidget {
         Expanded(
           child: Column(
             children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Batters",
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
               _wBatterDisplay(context, batter1),
               if (allowSecondBatter) _wBatterDisplay(context, batter2),
             ],
@@ -658,6 +683,13 @@ class _OnCreasePlayers extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                alignment: Alignment.centerLeft,
+                child: Text("Bowler",
+                    style: Theme.of(context).textTheme.titleSmall),
+              ),
               _wBowlerDisplay(context),
               const SizedBox(height: 12),
               SizedBox(
@@ -793,7 +825,7 @@ class _NextBallSelectorSection extends StatelessWidget {
               children: [
                 if (state is _NextBallSelectorEnabledState &&
                     state.nextWicket == null)
-                  Text("Record Next Ball",
+                  Text("Record Ball",
                       style: Theme.of(context).textTheme.titleSmall),
                 const Spacer(),
                 _WicketChip(state,
@@ -1125,7 +1157,7 @@ class _RecentBallsSection extends StatelessWidget {
                 ),
                 IconButton.filled(
                   onPressed: onOpenTimeline,
-                  icon: const Icon(Icons.history),
+                  icon: const Icon(Icons.timeline),
                 ),
               ],
             ),

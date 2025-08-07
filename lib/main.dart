@@ -73,12 +73,17 @@ class ScorecardApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = _ScorecardAppController();
     controller.startup();
+
     return MaterialApp(
       title: "Scorecard",
       theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.teal,
-          textTheme: GoogleFonts.ubuntuTextTheme()),
+        useMaterial3: true,
+        colorSchemeSeed: Colors.teal,
+        // brightness: Brightness.dark,
+        textTheme: GoogleFonts.ubuntuTextTheme(
+            // ThemeData(brightness: Brightness.dark).textTheme),
+            ),
+      ),
       home: const HomeScreen(),
       builder: (context, child) => StreamBuilder(
           stream: controller._stateStreamController.stream,

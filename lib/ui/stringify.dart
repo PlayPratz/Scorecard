@@ -5,6 +5,9 @@ import 'package:scorecard/modules/quick_match/wicket_model.dart';
 class Stringify {
   static String score(Score score) => "${score.runs}/${score.wickets}";
 
+  static String batterScore(BatterInnings batterInnings) =>
+      "${batterInnings.runs} (${batterInnings.numBalls})";
+
   static String wicket(Wicket? wicket,
           {Retired? retired,
           String ifNone = "not out",

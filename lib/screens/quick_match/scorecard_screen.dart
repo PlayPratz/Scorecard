@@ -12,45 +12,91 @@ import 'package:scorecard/ui/stringify.dart';
 class ScorecardScreen extends StatelessWidget {
   final QuickMatch match;
 
-  ScorecardScreen(this.match, {super.key});
-
-  final _stateStreamController = StreamController<_ScorecardState>();
+  const ScorecardScreen(this.match, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    loadInnings(context);
-    return Scaffold(
-      appBar: AppBar(title: const Text("Scorecard")),
-      body: StreamBuilder(
-        stream: _stateStreamController.stream,
+    final controller = ScorecardScreenController(match);
+    controller.initialize(context);
+    return StreamBuilder(
+        stream: controller._stateStreamController.stream,
         builder: (context, snapshot) {
           final state = snapshot.data;
-          switch (state) {
-            case null:
-            case _ScorecardLoadingState():
-              return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()));
-            case _ScorecardLoadedState():
-              return ListView.builder(
-                itemBuilder: (context, index) =>
-                    _InningsScorecard(state.allInnings[index]),
-                itemCount: state.allInnings.length,
-              );
-          }
-        },
-      ),
-      // bottomNavigationBar: const BottomAppBar(),
-    );
+          return Scaffold(
+              appBar: AppBar(title: const Text("Scorecard")),
+              body: switch (state) {
+                null ||
+                _ScorecardLoadingState() =>
+                  const Center(child: CircularProgressIndicator()),
+                _ShowScorecardState() => ListView.builder(
+                    itemBuilder: (context, index) =>
+                        _InningsScorecard(state.allInnings[index]),
+                    itemCount: state.allInnings.length,
+                  ),
+                _ShowPartnershipsState() => ListView.builder(
+                    itemBuilder: (context, index) =>
+                        _PartnershipList(index + 1, state.partnerships[index]),
+                    itemCount: state.partnerships.length,
+                  ),
+              },
+              bottomNavigationBar: switch (state) {
+                null || _ScorecardLoadingState() => const BottomAppBar(),
+                _ScorecardLoadedState() => NavigationBar(
+                    // labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+                    onDestinationSelected: (index) {
+                      if (index == 0) {
+                        return controller.showScorecard();
+                      }
+                      if (index == 1) {
+                        return controller.showPartnerships();
+                      }
+                    },
+                    selectedIndex: state.index,
+                    destinations: const [
+                      NavigationDestination(
+                        icon: Icon(Icons.list_alt),
+                        label: "Scorecard",
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.people),
+                        label: "Partnerships",
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.bar_chart),
+                        label: "Graphs",
+                      ),
+                    ],
+                  ),
+              });
+        });
   }
+}
 
-  Future<void> loadInnings(BuildContext context) async {
+class ScorecardScreenController {
+  final QuickMatch match;
+  late final List<QuickInnings> innings;
+
+  ScorecardScreenController(this.match);
+
+  final _stateStreamController = StreamController<_ScorecardState>();
+
+  Future<void> initialize(BuildContext context) async {
     final matchService = context.read<QuickMatchService>();
 
-    final allInnings = await matchService.loadAllInnings(match);
+    innings = await matchService.loadAllInnings(match);
 
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    _stateStreamController.add(_ScorecardLoadedState(allInnings));
+    showScorecard();
+  }
+
+  void showScorecard() {
+    _stateStreamController.add(_ShowScorecardState(innings));
+  }
+
+  void showPartnerships() {
+    _stateStreamController.add(_ShowPartnershipsState(
+        innings.map((i) => Partnerships.of(i)).toList()));
   }
 }
 
@@ -58,10 +104,26 @@ sealed class _ScorecardState {}
 
 class _ScorecardLoadingState extends _ScorecardState {}
 
-class _ScorecardLoadedState extends _ScorecardState {
+sealed class _ScorecardLoadedState extends _ScorecardState {
+  int get index;
+}
+
+class _ShowScorecardState extends _ScorecardLoadedState {
   final List<QuickInnings> allInnings;
 
-  _ScorecardLoadedState(this.allInnings);
+  _ShowScorecardState(this.allInnings);
+
+  @override
+  int get index => 0;
+}
+
+class _ShowPartnershipsState extends _ScorecardLoadedState {
+  final List<Partnerships> partnerships;
+
+  _ShowPartnershipsState(this.partnerships);
+
+  @override
+  int get index => 1;
 }
 
 class _InningsScorecard extends StatelessWidget {
@@ -93,7 +155,7 @@ class _InningsScorecard extends StatelessWidget {
               ballsPerInnings: innings.rules.ballsPerInnings,
               ballsPerOver: innings.rules.ballsPerOver,
               ballsBowled: innings.numBalls,
-              fallOfWickets: FallOfWickets.of(innings.balls).fallOfWickets,
+              fallOfWickets: FallOfWickets.of(innings),
               getPlayerName: getPlayerName,
             ),
             const SizedBox(height: 24),
@@ -128,7 +190,7 @@ class _BattingScorecard extends StatelessWidget {
   final int ballsPerOver;
   final int ballsBowled;
 
-  final List<FallOfWicket> fallOfWickets;
+  final FallOfWickets fallOfWickets;
 
   const _BattingScorecard(
     this.allBatterInnings, {
@@ -294,7 +356,7 @@ class _BattingScorecard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 24),
-        Text("Fall of Wickets", style: Theme.of(context).textTheme.titleMedium),
+        Text("Fall of wickets", style: Theme.of(context).textTheme.titleMedium),
         Table(
           columnWidths: const {
             0: FlexColumnWidth(),
@@ -308,7 +370,7 @@ class _BattingScorecard extends StatelessWidget {
             horizontalInside: BorderSide(width: 0),
           ),
           children: [
-            for (final fow in fallOfWickets)
+            for (final fow in fallOfWickets.all)
               TableRow(children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -413,4 +475,100 @@ class _BowlingScorecard extends StatelessWidget {
   //         builder: (context) => BowlerInningsTimelineScreen(bowlerInnings),
   //       ));
   // }
+}
+
+class _PartnershipList extends StatelessWidget {
+  final Partnerships partnerships;
+  final int inningsNumber;
+
+  const _PartnershipList(this.inningsNumber, this.partnerships);
+
+  @override
+  Widget build(BuildContext context) {
+    getPlayerName(String id) => PlayerCache().get(id).name.toUpperCase();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Text(
+              Stringify.inningsHeading(inningsNumber),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            Table(
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              defaultColumnWidth: const FixedColumnWidth(110),
+              columnWidths: const {
+                1: FlexColumnWidth(1.5),
+              },
+              children: [
+                for (final partnership in partnerships.all)
+                  TableRow(
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(right: 8),
+                            alignment: Alignment.centerRight,
+                            child: Text(getPlayerName(partnership.batter1Id)),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(right: 8),
+                            alignment: Alignment.centerRight,
+                            child: Text(Stringify.batterScore(
+                                partnership.batter1Innings)),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4.0, vertical: 16.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: partnership.batter1Innings.runs,
+                                child: const Divider(
+                                  color: Colors.teal,
+                                  thickness: 10,
+                                ),
+                              ),
+                              Expanded(
+                                flex: partnership.batter2Innings.runs,
+                                child: const Divider(
+                                  color: Colors.tealAccent,
+                                  thickness: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(left: 8),
+                            alignment: Alignment.centerLeft,
+                            child: Text(getPlayerName(partnership.batter2Id)),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(left: 8),
+                            alignment: Alignment.centerLeft,
+                            child: Text(Stringify.batterScore(
+                                partnership.batter2Innings)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

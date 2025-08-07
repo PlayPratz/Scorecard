@@ -704,7 +704,7 @@ class _ManhattanGraph extends StatelessWidget {
                     ),
                   if (overs2.containsKey(i))
                     BarChartRodData(
-                      toY: overs2[i]!.runs.toDouble(),
+                      toY: overs2[i]!.numWickets.toDouble(),
                       color: second,
                     ),
                 ],

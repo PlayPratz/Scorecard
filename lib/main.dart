@@ -7,15 +7,18 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/provider/settings_provider.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
+import 'package:scorecard/repositories/sql/db/player_statistics_queries.dart';
 import 'package:scorecard/repositories/sql/db/players_table.dart';
 import 'package:scorecard/repositories/sql/db/posts_table.dart';
 import 'package:scorecard/repositories/sql/db/quick_innings_table.dart';
 import 'package:scorecard/repositories/sql/db/quick_matches_table.dart';
 import 'package:scorecard/handlers/sql_db_handler.dart';
+import 'package:scorecard/repositories/statistics_repository.dart';
 import 'package:scorecard/screens/home_screen.dart';
 import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/services/settings_service.dart';
+import 'package:scorecard/services/statistics_service.dart';
 
 /// Welcome to [Scorecard]! You must be new here. The architecture and structure
 /// of this application might be a little overwhelming. To help you out,
@@ -127,6 +130,7 @@ class _ScorecardAppState extends State<ScorecardApp> {
                       Provider(create: (context) => state.settingsService),
                       Provider(create: (context) => state.playerService),
                       Provider(create: (context) => state.quickMatchService),
+                      Provider(create: (context) => state.statisticsService),
                     ],
                     child: child,
                   ),
@@ -140,10 +144,12 @@ class _ScorecardAppState extends State<ScorecardApp> {
 class _ScorecardAppController {
   late final PlayerRepository playerRepository;
   late final QuickMatchRepository quickMatchRepository;
+  late final StatisticsRepository statisticsRepository;
 
   late final PlayerService playerService;
   late final QuickMatchService quickMatchService;
   late final SettingsService settingsService;
+  late final StatisticsService statisticsService;
 
   late final SettingsProvider settingsProvider;
 
@@ -153,6 +159,7 @@ class _ScorecardAppController {
           settingsService: settingsService,
           playerService: playerService,
           quickMatchService: quickMatchService,
+          statisticsService: statisticsService,
           theme: settingsProvider.theme,
         ),
       );
@@ -178,6 +185,8 @@ class _ScorecardAppController {
     final quickInningsTable = QuickInningsTable();
     final postsTable = PostsTable();
 
+    final playerStatisticsQueries = PlayerStatisticsQueries();
+
     // Instantiate all repositories
     playerRepository = PlayerRepository(playersTable);
     quickMatchRepository = QuickMatchRepository(
@@ -185,6 +194,7 @@ class _ScorecardAppController {
       quickInningsTable,
       postsTable,
     );
+    statisticsRepository = StatisticsRepository(playerStatisticsQueries);
   }
 
   Future<void> _initializeServices() async {
@@ -201,6 +211,9 @@ class _ScorecardAppController {
     // Quick Match Service
     quickMatchService = QuickMatchService(quickMatchRepository, playerService);
     // await quickMatchService.initialize();
+
+    //Statistics Service
+    statisticsService = StatisticsService(statisticsRepository);
   }
 }
 
@@ -212,14 +225,17 @@ class _StartupSuccessfulState extends _ScorecardState {
   final SettingsService settingsService;
   final PlayerService playerService;
   final QuickMatchService quickMatchService;
+  final StatisticsService statisticsService;
 
   final ScorecardTheme theme;
 
-  _StartupSuccessfulState(
-      {required this.settingsService,
-      required this.playerService,
-      required this.quickMatchService,
-      required this.theme});
+  _StartupSuccessfulState({
+    required this.settingsService,
+    required this.playerService,
+    required this.quickMatchService,
+    required this.statisticsService,
+    required this.theme,
+  });
 }
 
 class _StartupFailState extends _ScorecardState {}

@@ -86,8 +86,6 @@ class QuickMatchRepository {
       innings.posts.addAll(posts);
     }
 
-    print(allInnings.first.posts.length);
-
     return allInnings.toList();
   }
 

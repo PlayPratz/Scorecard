@@ -66,17 +66,15 @@ class HomeScreen extends StatelessWidget {
       );
 
   void onNewQuickMatch(BuildContext context) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const CreateQuickMatchScreen()));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => CreateQuickMatchScreen()));
   }
 
   void onLoadQuickMatch(BuildContext context) {
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const LoadQuickMatchScreen(),
+          builder: (context) => LoadQuickMatchScreen(),
         ));
   }
 

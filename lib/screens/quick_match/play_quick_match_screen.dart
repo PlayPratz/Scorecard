@@ -14,17 +14,28 @@ import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
 
-class PlayQuickMatchScreen extends StatelessWidget {
+class PlayQuickMatchScreen extends StatefulWidget {
   final QuickMatch match;
 
   const PlayQuickMatchScreen(this.match, {super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = _PlayQuickMatchScreenController(
-        match, context.read<QuickMatchService>());
-    controller.initialize();
+  State<PlayQuickMatchScreen> createState() => _PlayQuickMatchScreenState();
+}
 
+class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
+  late final _PlayQuickMatchScreenController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = _PlayQuickMatchScreenController(
+        widget.match, context.read<QuickMatchService>());
+    controller.initialize();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder(
         stream: controller._stateStream,
         initialData: _InitializingState(),
@@ -69,16 +80,17 @@ class PlayQuickMatchScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _ScoreBar(
-                        score: innings.score,
-                        currentRunRate: innings.currentRunRate,
-                        ballsBowled: innings.numBalls,
-                        ballsPerInnings: innings.rules.ballsPerInnings,
-                        ballsPerOver: innings.rules.ballsPerOver,
-                        target: innings.target,
-                        requiredRunRate: innings.requiredRunRate,
-                        runsRequired: innings.runsRequired,
-                        ballsLeft: innings.ballsLeft,
-                        isLoading: state is _ActionLoadingState),
+                      score: innings.score,
+                      currentRunRate: innings.currentRunRate,
+                      ballsBowled: innings.numBalls,
+                      ballsPerInnings: innings.rules.ballsPerInnings,
+                      ballsPerOver: innings.rules.ballsPerOver,
+                      target: innings.target,
+                      requiredRunRate: innings.requiredRunRate,
+                      runsRequired: innings.runsRequired,
+                      ballsLeft: innings.ballsLeft,
+                      isLoading: state is _ActionLoadingState,
+                    ),
                     _RecentBallsSection(
                       innings.balls,
                       onOpenTimeline: () => controller.goTimeline(context),
@@ -259,8 +271,8 @@ class _PlayQuickMatchScreenController {
 
   _PlayQuickMatchScreenController(this.match, this._matchService);
 
-  final _stateStreamController = StreamController<_PlayQuickMatchScreenState>();
-  Stream<_PlayQuickMatchScreenState> get _stateStream =>
+  final _stateStreamController = StreamController<_PlayQuickMatchState>();
+  Stream<_PlayQuickMatchState> get _stateStream =>
       _stateStreamController.stream;
 
   Future<void> initialize() async {
@@ -471,11 +483,11 @@ class _PlayQuickMatchScreenController {
   }
 }
 
-sealed class _PlayQuickMatchScreenState {}
+sealed class _PlayQuickMatchState {}
 
-class _InitializingState extends _PlayQuickMatchScreenState {}
+class _InitializingState extends _PlayQuickMatchState {}
 
-sealed class _QuickMatchLoadedState extends _PlayQuickMatchScreenState {
+sealed class _QuickMatchLoadedState extends _PlayQuickMatchState {
   final QuickInnings innings;
 
   _QuickMatchLoadedState(this.innings);
@@ -594,7 +606,7 @@ class _ScoreBar extends StatelessWidget {
         showDecimal ? value.toStringAsFixed(2) : value.floor().toString();
     return Expanded(
       child: Card(
-        color: color?.withOpacity(0.9),
+        color: color?.withAlpha(100),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(

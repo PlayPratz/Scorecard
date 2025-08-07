@@ -8,11 +8,12 @@ import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/services/settings_service.dart';
 
 class LoadQuickMatchScreen extends StatelessWidget {
-  const LoadQuickMatchScreen({super.key});
+  LoadQuickMatchScreen({super.key});
+
+  final controller = LoadQuickMatchController();
 
   @override
   Widget build(BuildContext context) {
-    final controller = LoadQuickMatchController();
     final quickMatchFuture = controller.loadAllMatches(context);
 
     final showIds = context.read<SettingsService>().getShowIds();

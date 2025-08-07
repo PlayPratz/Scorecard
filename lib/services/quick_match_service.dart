@@ -92,21 +92,6 @@ class QuickMatchService {
     return bowlers;
   }
 
-  Map<int, Iterable<InningsPost>> getOvers(QuickInnings innings) {
-    if (innings.posts.isEmpty) return {};
-
-    final overs = <int, List<InningsPost>>{};
-    for (final post in innings.posts) {
-      final overIndex = post.index.over + 1;
-      if (!overs.containsKey(overIndex)) {
-        overs[overIndex] = [];
-      }
-      overs[overIndex]!.add(post);
-    }
-
-    return overs;
-  }
-
   // Innings and Posts
 
   /// Sets the given [batter] on strike.

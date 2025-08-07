@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/cache/player_cache.dart';
@@ -9,15 +11,27 @@ import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
 
-class ScorecardScreen extends StatelessWidget {
+class ScorecardScreen extends StatefulWidget {
   final QuickMatch match;
 
   const ScorecardScreen(this.match, {super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = ScorecardScreenController(match);
+  State<ScorecardScreen> createState() => _ScorecardScreenState();
+}
+
+class _ScorecardScreenState extends State<ScorecardScreen> {
+  late final ScorecardScreenController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = ScorecardScreenController(widget.match);
     controller.initialize(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder(
         stream: controller._stateStreamController.stream,
         builder: (context, snapshot) {
@@ -38,6 +52,7 @@ class ScorecardScreen extends StatelessWidget {
                         _PartnershipList(index + 1, state.partnerships[index]),
                     itemCount: state.partnerships.length,
                   ),
+                _ShowGraphsState() => _GraphListSection(state.allInnings),
               },
               bottomNavigationBar: switch (state) {
                 null || _ScorecardLoadingState() => const BottomAppBar(),
@@ -49,6 +64,9 @@ class ScorecardScreen extends StatelessWidget {
                       }
                       if (index == 1) {
                         return controller.showPartnerships();
+                      }
+                      if (index == 2) {
+                        return controller.showGraphs();
                       }
                     },
                     selectedIndex: state.index,
@@ -74,7 +92,7 @@ class ScorecardScreen extends StatelessWidget {
 
 class ScorecardScreenController {
   final QuickMatch match;
-  late final List<QuickInnings> innings;
+  late final List<QuickInnings> allInnings;
 
   ScorecardScreenController(this.match);
 
@@ -83,7 +101,7 @@ class ScorecardScreenController {
   Future<void> initialize(BuildContext context) async {
     final matchService = context.read<QuickMatchService>();
 
-    innings = await matchService.loadAllInnings(match);
+    allInnings = await matchService.loadAllInnings(match);
 
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -91,12 +109,16 @@ class ScorecardScreenController {
   }
 
   void showScorecard() {
-    _stateStreamController.add(_ShowScorecardState(innings));
+    _stateStreamController.add(_ShowScorecardState(allInnings));
   }
 
   void showPartnerships() {
     _stateStreamController.add(_ShowPartnershipsState(
-        innings.map((i) => Partnerships.of(i)).toList()));
+        allInnings.map((i) => Partnerships.of(i)).toList()));
+  }
+
+  void showGraphs() {
+    _stateStreamController.add(_ShowGraphsState(allInnings));
   }
 }
 
@@ -124,6 +146,15 @@ class _ShowPartnershipsState extends _ScorecardLoadedState {
 
   @override
   int get index => 1;
+}
+
+class _ShowGraphsState extends _ScorecardLoadedState {
+  final List<QuickInnings> allInnings;
+
+  _ShowGraphsState(this.allInnings);
+
+  @override
+  int get index => 2;
 }
 
 class _InningsScorecard extends StatelessWidget {
@@ -497,75 +528,187 @@ class _PartnershipList extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
-            Table(
-              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-              defaultColumnWidth: const FixedColumnWidth(110),
-              columnWidths: const {
-                1: FlexColumnWidth(1.5),
-              },
-              children: [
-                for (final partnership in partnerships.all)
-                  TableRow(
-                    children: [
-                      Column(
+            for (final partnership in partnerships.all)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text(getPlayerName(partnership.batter1Id)),
+                        const Spacer(),
+                        Text(getPlayerName(partnership.batter2Id)),
+                      ],
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.only(right: 8),
-                            alignment: Alignment.centerRight,
-                            child: Text(getPlayerName(partnership.batter1Id)),
+                          Expanded(
+                            flex: partnership.batter1Innings.runs,
+                            child: const Divider(
+                              color: Colors.teal,
+                              thickness: 10,
+                            ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.only(right: 8),
-                            alignment: Alignment.centerRight,
-                            child: Text(Stringify.batterScore(
+                          Expanded(
+                            flex: partnership.batter2Innings.runs,
+                            child: Divider(
+                              color: BallColors.notOut,
+                              thickness: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(Stringify.batterInningsScore(
                                 partnership.batter1Innings)),
                           ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4.0, vertical: 16.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: partnership.batter1Innings.runs,
-                                child: const Divider(
-                                  color: Colors.teal,
-                                  thickness: 10,
-                                ),
-                              ),
-                              Expanded(
-                                flex: partnership.batter2Innings.runs,
-                                child: const Divider(
-                                  color: Colors.tealAccent,
-                                  thickness: 10,
-                                ),
-                              ),
-                            ],
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Text(Stringify.batterScore(
+                                partnership.runs, partnership.numBalls)),
                           ),
                         ),
-                      ),
-                      Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.only(left: 8),
-                            alignment: Alignment.centerLeft,
-                            child: Text(getPlayerName(partnership.batter2Id)),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.only(left: 8),
-                            alignment: Alignment.centerLeft,
-                            child: Text(Stringify.batterScore(
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(Stringify.batterInningsScore(
                                 partnership.batter2Innings)),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-              ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GraphListSection extends StatelessWidget {
+  final List<QuickInnings> allInnings;
+
+  const _GraphListSection(this.allInnings);
+
+  @override
+  Widget build(BuildContext context) {
+    const first = Colors.teal;
+    final second = BallColors.notOut;
+    return ListView(
+      children: [
+        Center(
+            child:
+                Text("Worm", style: Theme.of(context).textTheme.titleMedium)),
+        const SizedBox(height: 16),
+        _WormGraph(allInnings, first, second),
+        const SizedBox(height: 32),
+        Center(
+            child: Text("Manhattan",
+                style: Theme.of(context).textTheme.titleMedium)),
+        const SizedBox(height: 16),
+        _ManhattanGraph(allInnings, first, second),
+      ],
+    );
+  }
+}
+
+class _WormGraph extends StatelessWidget {
+  final List<QuickInnings> allInnings;
+
+  final Color first;
+  final Color second;
+
+  const _WormGraph(this.allInnings, this.first, this.second);
+
+  @override
+  Widget build(BuildContext context) {
+    double i = 0;
+    double j = 0;
+    return SizedBox(
+      height: 256,
+      child: LineChart(
+        LineChartData(
+          titlesData: const FlTitlesData(
+            topTitles: AxisTitles(),
+          ),
+          lineBarsData: [
+            LineChartBarData(
+              color: first,
+              spots: runsForInnings(allInnings.first)
+                  .map((r) => FlSpot(i++, r))
+                  .toList(),
             ),
+            if (allInnings.length > 1)
+              LineChartBarData(
+                color: second,
+                spots: runsForInnings(allInnings.last)
+                    .map((r) => FlSpot(j++, r))
+                    .toList(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<double> runsForInnings(QuickInnings innings) {
+    final runs = <double>[];
+    double score = 0;
+    for (final ball in innings.balls) {
+      runs.add(score);
+      score = score + ball.runs;
+    }
+    return runs;
+  }
+}
+
+class _ManhattanGraph extends StatelessWidget {
+  final List<QuickInnings> allInnings;
+
+  final Color first;
+  final Color second;
+
+  const _ManhattanGraph(this.allInnings, this.first, this.second);
+
+  @override
+  Widget build(BuildContext context) {
+    final overs1 = Over.of(allInnings.first);
+    final overs2 = allInnings.length > 1 ? Over.of(allInnings.last) : {};
+
+    final count = max(overs1.length, overs2.length);
+
+    return SizedBox(
+      height: 250,
+      child: BarChart(
+        BarChartData(
+          barGroups: [
+            for (int i = 1; i <= count; i++)
+              BarChartGroupData(
+                x: i,
+                barRods: [
+                  if (overs1.containsKey(i))
+                    BarChartRodData(
+                      toY: overs1[i]!.runs.toDouble(),
+                      color: first,
+                    ),
+                  if (overs2.containsKey(i))
+                    BarChartRodData(
+                      toY: overs2[i]!.runs.toDouble(),
+                      color: second,
+                    ),
+                ],
+              ),
           ],
         ),
       ),

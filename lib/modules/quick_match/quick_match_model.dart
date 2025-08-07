@@ -364,3 +364,28 @@ class Partnership {
   int get runs => balls.fold(0, (s, b) => s + b.runs);
   int get numBalls => balls.where((b) => !b.isBowlingExtra).length;
 }
+
+class Over {
+  final List<InningsPost> _posts = [];
+  UnmodifiableListView<InningsPost> get posts => UnmodifiableListView(_posts);
+  UnmodifiableListView<Ball> get balls =>
+      UnmodifiableListView(_posts.whereType<Ball>());
+
+  int get runs => balls.fold(0, (s, b) => s + b.runs);
+
+  static Map<int, Over> of(QuickInnings innings) {
+    if (innings.posts.isEmpty) return {};
+
+    final overs = <int, Over>{};
+
+    for (final post in innings.posts) {
+      final key = post.index.over + 1;
+      if (!overs.containsKey(key)) {
+        overs[key] = Over();
+      }
+      overs[key]!._posts.add(post);
+    }
+
+    return overs;
+  }
+}

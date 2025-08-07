@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/provider/settings_provider.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
@@ -74,14 +73,24 @@ void main() {
   runApp(const ScorecardApp());
 }
 
-class ScorecardApp extends StatelessWidget {
+class ScorecardApp extends StatefulWidget {
   const ScorecardApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = _ScorecardAppController();
-    controller.startup();
+  State<ScorecardApp> createState() => _ScorecardAppState();
+}
 
+class _ScorecardAppState extends State<ScorecardApp> {
+  final controller = _ScorecardAppController();
+
+  @override
+  void initState() {
+    super.initState();
+    controller.startup();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder(
         stream: controller._stateStreamController.stream,
         initialData: _AppStartupLoadingState(),
@@ -122,7 +131,6 @@ class ScorecardApp extends StatelessWidget {
                     child: child,
                   ),
               };
-              return const HomeScreen();
             },
           );
         });
@@ -139,7 +147,7 @@ class _ScorecardAppController {
 
   late final SettingsProvider settingsProvider;
 
-  final _stateStreamController = StreamController<_ScorecardAppState>();
+  final _stateStreamController = StreamController<_ScorecardState>();
   void _dispatchState() => _stateStreamController.add(
         _StartupSuccessfulState(
           settingsService: settingsService,
@@ -182,9 +190,9 @@ class _ScorecardAppController {
   Future<void> _initializeServices() async {
     // Settings Service
     settingsProvider = SettingsProvider();
-    settingsProvider.addListener(_dispatchState);
     settingsService = SettingsService(settingsProvider);
     await settingsService.initialize();
+    settingsProvider.addListener(_dispatchState);
 
     // Players Service
     playerService = PlayerService(playerRepository);
@@ -196,11 +204,11 @@ class _ScorecardAppController {
   }
 }
 
-sealed class _ScorecardAppState {}
+sealed class _ScorecardState {}
 
-class _AppStartupLoadingState extends _ScorecardAppState {}
+class _AppStartupLoadingState extends _ScorecardState {}
 
-class _StartupSuccessfulState extends _ScorecardAppState {
+class _StartupSuccessfulState extends _ScorecardState {
   final SettingsService settingsService;
   final PlayerService playerService;
   final QuickMatchService quickMatchService;
@@ -214,4 +222,4 @@ class _StartupSuccessfulState extends _ScorecardAppState {
       required this.theme});
 }
 
-class _StartupFailState extends _ScorecardAppState {}
+class _StartupFailState extends _ScorecardState {}

@@ -34,7 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           ListTile(
             title: const Text("Dark Mode"),
-            subtitle: const Text("Easier on the eyes"),
+            // subtitle: const Text("Easier on the eyes"),
             leading: const Icon(Icons.dark_mode),
             trailing: Switch(
                 value: settingsService.getTheme() == ScorecardTheme.dark,

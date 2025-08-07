@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:scorecard/cache/player_cache.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
-import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
 
@@ -14,7 +12,7 @@ class InningsTimelineScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final overs = context.read<QuickMatchService>().getOvers(innings);
+    final overs = Over.of(innings);
     return Scaffold(
       appBar: AppBar(
         title: Text(Stringify.inningsHeading(innings.inningsNumber)),
@@ -25,8 +23,6 @@ class InningsTimelineScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final overIndex = overs.length - index;
           final over = overs[overIndex]!;
-          // TODO Find a better place for this
-          final runs = over.whereType<Ball>().fold(0, (p, e) => p + e.runs);
           return Card(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,12 +34,12 @@ class InningsTimelineScreen extends StatelessWidget {
                     children: [
                       Text("Over $overIndex",
                           style: Theme.of(context).textTheme.titleSmall),
-                      Text("$runs Runs",
+                      Text("${over.runs} Runs",
                           style: Theme.of(context).textTheme.titleSmall),
                     ],
                   ),
                 ),
-                _InningsPostsView(over),
+                _OverView(over),
                 const SizedBox(height: 8),
               ],
             ),
@@ -116,14 +112,14 @@ class InningsTimelineScreen extends StatelessWidget {
 //   }
 // }
 
-class _InningsPostsView extends StatelessWidget {
-  final Iterable<InningsPost> posts;
-  const _InningsPostsView(this.posts);
+class _OverView extends StatelessWidget {
+  final Over over;
+  const _OverView(this.over);
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [for (final post in posts) _InningsPostWidget(post)],
+      children: [for (final post in over.posts) _InningsPostWidget(post)],
     );
   }
 }

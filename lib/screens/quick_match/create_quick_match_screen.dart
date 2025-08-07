@@ -5,11 +5,12 @@ import 'package:scorecard/screens/quick_match/play_quick_match_screen.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 
 class CreateQuickMatchScreen extends StatelessWidget {
-  const CreateQuickMatchScreen({super.key});
+  CreateQuickMatchScreen({super.key});
+
+  final controller = QuickMatchRulesController();
 
   @override
   Widget build(BuildContext context) {
-    final controller = QuickMatchRulesController();
     return Scaffold(
       appBar: AppBar(
         title: const Text("Let's create a quick match!"),

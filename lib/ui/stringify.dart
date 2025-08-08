@@ -40,9 +40,22 @@ class Stringify {
   static String economy(double economy) =>
       economy.isNaN || economy.isInfinite ? '∞' : economy.toStringAsFixed(2);
 
-  static String inningsHeading(int inningsNumber) => switch (inningsNumber) {
+  static String quickInningsHeading(int inningsNumber) =>
+      switch (inningsNumber) {
         1 => "First Innings",
         2 => "Second Innings",
-        _ => "Innings $inningsNumber"
+        _ => "Super Over ${_getSuperOverString(inningsNumber)}"
+      };
+
+  static String _getSuperOverString(int inningsNumber) {
+    final identifier = inningsNumber % 2 == 1 ? 'A' : 'B';
+    return "${1 + (inningsNumber - 3) ~/ 2}$identifier";
+  }
+
+  static String quickMatchResult(QuickMatchResult result) => switch (result) {
+        QuickMatchDefendedResult() => "Won by ${result.runs} runs",
+        QuickMatchChasedResult() =>
+          "Won with ${result.ballsToSpare} balls to spare",
+        QuickMatchTieResult() => "Match tied",
       };
 }

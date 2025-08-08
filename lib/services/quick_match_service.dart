@@ -43,33 +43,94 @@ class QuickMatchService {
     return innings;
   }
 
-  Future<QuickInnings> createFirstInnings(QuickMatch match) async {
-    final innings = QuickInnings.of(match, 1);
+  Future<QuickInnings> createInnings(QuickMatch match,
+      {QuickInnings? previous}) async {
+    if (previous != null && !previous.hasEnded) {
+      throw StateError(
+          "Attempted to create new innings without ending previous (matchId: ${match.id} inningsId: ${previous.id}");
+    }
+
+    if (previous != null) {
+      await _matchRepository.saveInnings(previous);
+    }
+
+    final inningsNumber = previous != null ? previous.inningsNumber + 1 : 1;
+
+    final innings = QuickInnings.of(match, inningsNumber);
+
+    if (previous != null && previous.target == null) {
+      innings.target = previous.runs + 1;
+    }
 
     await _matchRepository.createInnings(innings);
 
     return innings;
   }
 
-  Future<QuickInnings> createSecondInnings(
-      QuickMatch match, QuickInnings firstInnings) async {
-    firstInnings.isDeclared = true;
-    await _matchRepository.saveInnings(firstInnings);
+  Future<NextStage> declareInnings(QuickInnings innings) async {
+    innings.isDeclared = true;
+    await _matchRepository.saveInnings(innings);
 
-    final innings = QuickInnings.of(match, 2);
-    innings.target = firstInnings.runs + 1;
+    return getNextState(innings);
+  }
 
+  NextStage getNextState(QuickInnings innings) {
+    if (innings.target == null) {
+      return NextStage.nextInnings;
+    } else if (innings.runs == innings.target! - 1) {
+      return NextStage.superOver;
+    } else {
+      return NextStage.endMatch;
+    }
+  }
+
+  Future<QuickInnings> createSuperOver(QuickMatch match,
+      {required QuickInnings previous}) async {
+    if (!previous.hasEnded) {
+      throw StateError(
+          "Attempted to create new innings without ending previous (matchId: ${match.id} inningsId: ${previous.id})");
+    }
+    final innings = QuickInnings.superOverOf(match, previous.inningsNumber + 1);
+    if (previous.isSuperOver && previous.target == null) {
+      innings.target = previous.runs + 1;
+    }
     await _matchRepository.createInnings(innings);
-
     return innings;
   }
 
-  Future<void> endMatch(QuickMatch match, QuickInnings secondInnings) async {
-    secondInnings.isDeclared = true;
-    await _matchRepository.saveInnings(secondInnings);
+  Future<void> endMatch(QuickMatch match, {required QuickInnings last}) async {
+    if (!last.hasEnded) {
+      throw StateError(
+          "Attempted to end match without ending last innings (matchId: ${match.id} inningsId: ${last.id})");
+    }
+
+    await _matchRepository.saveInnings(last);
 
     match.isCompleted = true;
     await _matchRepository.saveMatch(match);
+  }
+
+  QuickMatchResult generateResult(QuickMatch match,
+      {required QuickInnings last}) {
+    // if (match.isCompleted == false) {
+    //   throw StateError(
+    //       "Attempted to generate result for an incomplete match (matchId: ${match.id} inningsId: ${last.id})");
+    // }
+
+    if (last.target == null) {
+      throw StateError(
+          "Last Innings does not have target (matchId: ${match.id} inningsId: ${last.id})");
+    }
+
+    final firstRuns = last.target! - 1;
+
+    if (firstRuns > last.runs) {
+      return QuickMatchDefendedResult(firstRuns - last.runs);
+    } else if (firstRuns < last.runs) {
+      return QuickMatchChasedResult(last.ballsLeft);
+    } else {
+      return QuickMatchTieResult();
+    }
   }
 
   // Scorecard
@@ -243,7 +304,7 @@ class QuickMatchService {
   /// Does nothing if [innings.rules.onlySingleBatter] is set or if the last man
   /// is batting
   void swapStrike(QuickInnings innings) {
-    if (innings.rules.onlySingleBatter) {
+    if (innings.onlySingleBatter) {
       return;
     }
     if (innings.strikerId == innings.batter1Id) {
@@ -355,8 +416,8 @@ class QuickMatchService {
 
     final BowlingExtra? bowlingExtra = switch (bowlingExtraType) {
       null => null,
-      BowlingExtraType.noBall => NoBall(innings.rules.noBallPenalty),
-      BowlingExtraType.wide => Wide(innings.rules.widePenalty + runs),
+      BowlingExtraType.noBall => NoBall(innings.noBallPenalty),
+      BowlingExtraType.wide => Wide(innings.widePenalty + runs),
     };
 
     final BattingExtra? battingExtra = switch (battingExtraType) {
@@ -431,7 +492,7 @@ class QuickMatchService {
     }
 
     // Swap strike whenever an over completes
-    if (ball.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
+    if (ball.index.ball == innings.ballsPerOver) swapStrike(innings);
   }
 
   void _undoBallPost(QuickInnings innings, Ball ball) {
@@ -441,7 +502,7 @@ class QuickMatchService {
     }
 
     // Swap strike whenever an over completes
-    if (ball.index.ball == innings.rules.ballsPerOver) swapStrike(innings);
+    if (ball.index.ball == innings.ballsPerOver) swapStrike(innings);
   }
 
   void _handleBowlerRetirePost(QuickInnings innings, BowlerRetire post) {
@@ -479,7 +540,7 @@ class QuickMatchService {
     if (innings.batter1Id == null || innings.batter1Id == post.previousId) {
       // If batter1 is not set or batter1 is replaced
       innings.batter1Id = post.nextId;
-    } else if (!innings.rules.onlySingleBatter &&
+    } else if (!innings.onlySingleBatter &&
         (innings.batter2Id == null || innings.batter2Id == post.previousId)) {
       // If batter2 is allowed and (batter2 is not set or batter2 is replaced)
       innings.batter2Id = post.nextId;
@@ -561,7 +622,7 @@ class QuickMatchService {
   PostIndex _nextIndex(QuickInnings innings) {
     final currentIndex = _currentIndex(innings);
 
-    if (currentIndex.ball == innings.rules.ballsPerOver) {
+    if (currentIndex.ball == innings.ballsPerOver) {
       return PostIndex(currentIndex.over + 1, 0);
     } else {
       return PostIndex(currentIndex.over, currentIndex.ball + 1);
@@ -574,3 +635,6 @@ enum BowlingExtraType { noBall, wide }
 
 /// Types of Batting Extras
 enum BattingExtraType { bye, legBye }
+
+/// Next State
+enum NextStage { nextInnings, superOver, endMatch }

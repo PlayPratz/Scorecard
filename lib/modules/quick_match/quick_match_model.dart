@@ -18,11 +18,21 @@ class QuickMatch {
   /// Whether the match is completed
   bool isCompleted;
 
+  // QuickMatchResult? result;
+
   QuickMatch(
     this.id, {
     required this.rules,
     required this.startsAt,
     this.isCompleted = false,
+  });
+
+  QuickMatch.load(
+    this.id, {
+    required this.rules,
+    required this.startsAt,
+    required this.isCompleted,
+    // required this.result,
   });
 }
 
@@ -58,33 +68,44 @@ class QuickInnings {
   final int inningsNumber;
 
   /// The set of rules that define the play of this Innings
-  final QuickMatchRules rules;
+  final QuickMatchRules _rules;
 
   /// Whether the batting team has declared play
   bool isDeclared = false;
+
+  /// Whether this innings is a super over
+  final bool isSuperOver;
 
   /// The target runs of this Innings, if any
   /// This is not 'final' so that we can change targets in the future (DLS)
   int? target;
 
-  QuickInnings(this.matchId, this.inningsNumber,
-      {required this.rules, this.target});
+  // QuickInnings(this.matchId, this.inningsNumber,
+  //     {required this.rules, this.target});
 
   QuickInnings.load(
     this.id, {
     required this.matchId,
     required this.inningsNumber,
-    required this.rules,
+    required QuickMatchRules rules,
     required this.target,
     required this.batter1Id,
     required this.batter2Id,
     required this.strikerId,
     required this.bowlerId,
-  });
+    required this.isDeclared,
+    required this.isSuperOver,
+  }) : _rules = rules;
 
   QuickInnings.of(QuickMatch match, this.inningsNumber)
       : matchId = match.id,
-        rules = match.rules;
+        _rules = match.rules,
+        isSuperOver = false;
+
+  QuickInnings.superOverOf(QuickMatch match, this.inningsNumber)
+      : matchId = match.id,
+        _rules = match.rules,
+        isSuperOver = true;
 
   final List<InningsPost> posts = [];
   UnmodifiableListView<Ball> get balls =>
@@ -101,9 +122,26 @@ class QuickInnings {
   /// The number of balls bowled
   int get numBalls => balls.where((b) => !b.isBowlingExtra).length;
 
+  /// The number of legal balls in an over
+  int get ballsPerOver => _rules.ballsPerOver;
+
+  /// The max number of legal balls that can be bowled in thing innings
+  int get maxBalls => isSuperOver ? ballsPerOver : _rules.ballsPerInnings;
+
+  /// The balls left to win the match
+  int get ballsLeft => maxBalls - numBalls;
+
   /// The average runs scored per over in this innings
-  double get currentRunRate => handleDivideByZero(
-      runs.toDouble() * rules.ballsPerOver, numBalls.toDouble());
+  double get currentRunRate =>
+      handleDivideByZero(runs.toDouble() * ballsPerOver, numBalls.toDouble());
+
+  /// Penalty for a no-ball
+  int get noBallPenalty => _rules.noBallPenalty;
+
+  /// Penalty for a wide
+  int get widePenalty => _rules.widePenalty;
+
+  bool get onlySingleBatter => _rules.onlySingleBatter;
 
   // On Crease
 
@@ -124,13 +162,10 @@ class QuickInnings {
   /// The runs required to win the match
   int? get runsRequired => target == null ? null : max(target! - runs, 0);
 
-  /// The balls left to win the match
-  int get ballsLeft => rules.ballsPerInnings - numBalls;
-
   double? get requiredRunRate => runsRequired == null
       ? null
       : handleDivideByZero(
-          runsRequired!.toDouble() * rules.ballsPerOver, ballsLeft.toDouble());
+          runsRequired!.toDouble() * ballsPerOver, ballsLeft.toDouble());
 
   /// Conditions for considering an Innings as ended
   bool get hasEnded => isDeclared || ballsLeft == 0 || runsRequired == 0;
@@ -163,6 +198,22 @@ class QuickInnings {
     return counts;
   }
 }
+
+sealed class QuickMatchResult {}
+
+class QuickMatchDefendedResult extends QuickMatchResult {
+  final int runs;
+
+  QuickMatchDefendedResult(this.runs);
+}
+
+class QuickMatchChasedResult extends QuickMatchResult {
+  final int ballsToSpare;
+
+  QuickMatchChasedResult(this.ballsToSpare);
+}
+
+class QuickMatchTieResult extends QuickMatchResult {}
 
 class Score {
   final int runs;
@@ -244,11 +295,9 @@ class BowlerInnings {
   final List<Ball> _balls;
   UnmodifiableListView<Ball> get balls => UnmodifiableListView(_balls);
 
-  BowlerInnings._(this.bowlerId, this._balls, this.ballsPerOver);
-
   BowlerInnings.of(this.bowlerId, QuickInnings innings)
       : _balls = innings.balls.where((b) => b.bowlerId == bowlerId).toList(),
-        ballsPerOver = innings.rules.ballsPerOver;
+        ballsPerOver = innings.ballsPerOver;
 
   /// The runs conceded by this Bowler
   int get runs =>

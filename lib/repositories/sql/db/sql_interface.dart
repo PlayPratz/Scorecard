@@ -13,7 +13,7 @@ abstract class IEntity {
 
 bool? readBool(Object? object) {
   if (object == null) return null;
-  return object as int == 1;
+  return object as int != 0;
 }
 
 int? parseBool(bool? value) {

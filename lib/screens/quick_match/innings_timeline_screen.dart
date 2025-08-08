@@ -17,7 +17,7 @@ class InningsTimelineScreen extends StatelessWidget {
     final overs = context.read<QuickMatchService>().getOvers(innings);
     return Scaffold(
       appBar: AppBar(
-        title: Text(Stringify.inningsHeading(innings.inningsNumber)),
+        title: Text(Stringify.quickInningsHeading(innings.inningsNumber)),
       ),
       body: ListView.builder(
         itemCount: overs.length,
@@ -29,18 +29,19 @@ class InningsTimelineScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Over $overIndex",
-                          style: Theme.of(context).textTheme.titleSmall),
-                      Text("${over.runs} Runs",
-                          style: Theme.of(context).textTheme.titleSmall),
-                    ],
+                if (!innings.isSuperOver)
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Over $overIndex",
+                            style: Theme.of(context).textTheme.titleSmall),
+                        Text("${over.runs} Runs",
+                            style: Theme.of(context).textTheme.titleSmall),
+                      ],
+                    ),
                   ),
-                ),
                 _OverView(over),
                 const SizedBox(height: 8),
               ],
@@ -57,7 +58,7 @@ class InningsTimelineScreen extends StatelessWidget {
             Text(Stringify.score(innings.score),
                 style: Theme.of(context).textTheme.displaySmall),
             Text(
-                "${Stringify.ballCount(innings.numBalls, innings.rules.ballsPerOver)}/${innings.rules.ballsPerInnings / innings.rules.ballsPerOver}ov",
+                "${Stringify.ballCount(innings.numBalls, innings.ballsPerOver)}/${innings.maxBalls / innings.ballsPerOver}ov",
                 style: Theme.of(context).textTheme.titleLarge)
           ],
         ),

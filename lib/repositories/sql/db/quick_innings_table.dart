@@ -58,7 +58,7 @@ class QuickInningsEntity implements IEntity {
         // "batting_team_id": batting_team_id,
         // "bowling_team_id": bowling_team_id,
         // "is_forfeited": is_forfeited ? 1 : 0,
-        "is_declared": is_declared ? 1 : 0,
+        "is_declared": parseBool(is_declared),
         "batter1_id": batter1_id,
         "batter2_id": batter2_id,
         "striker_id": striker_id,

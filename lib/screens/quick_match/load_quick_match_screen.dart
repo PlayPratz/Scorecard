@@ -49,7 +49,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
                     subtitle: showIds ? Text(match.id) : null,
                     leading: wMatchIndicator(match),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => controller.loadMatch(context, match),
+                    onTap: () => loadMatch(context, match),
                   );
                 },
                 itemCount: matches.length,
@@ -79,16 +79,16 @@ class LoadQuickMatchController {
     return matches;
   }
 
-  void loadMatch(BuildContext context, QuickMatch match) {
-    if (match.isCompleted) {
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => ScorecardScreen(match)));
-    } else {
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => PlayQuickMatchScreen(match)));
-    }
-  }
-
   QuickMatchService _service(BuildContext context) =>
       context.read<QuickMatchService>();
+}
+
+void loadMatch(BuildContext context, QuickMatch match) {
+  if (match.isCompleted) {
+    Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (context) => ScorecardScreen(match)));
+  } else {
+    Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (context) => PlayQuickMatchScreen(match)));
+  }
 }

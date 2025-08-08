@@ -36,6 +36,7 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
         stream: controller._stateStreamController.stream,
         builder: (context, snapshot) {
           final state = snapshot.data;
+
           return Scaffold(
               appBar: AppBar(title: const Text("Scorecard")),
               body: switch (state) {
@@ -43,8 +44,9 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
                 _ScorecardLoadingState() =>
                   const Center(child: CircularProgressIndicator()),
                 _ShowScorecardState() => ListView.builder(
-                    itemBuilder: (context, index) =>
-                        _InningsScorecard(state.allInnings[index]),
+                    itemBuilder: (context, index) => _InningsScorecard(
+                      state.allInnings[index],
+                    ),
                     itemCount: state.allInnings.length,
                   ),
                 _ShowPartnershipsState() => ListView.builder(
@@ -161,6 +163,7 @@ class _ShowGraphsState extends _ScorecardLoadedState {
 
 class _InningsScorecard extends StatelessWidget {
   final QuickInnings innings;
+  // final int? winnerInningsNumber;
 
   const _InningsScorecard(this.innings);
 
@@ -174,19 +177,20 @@ class _InningsScorecard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
-          // crossAxisAlignment: CrossAxisAlignment.c,
+          // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FilledButton.icon(
-                icon: const Icon(Icons.timeline),
-                label: Text(Stringify.inningsHeading(innings.inningsNumber)),
-                onPressed: () => goInningsTimeline(context)),
+              icon: const Icon(Icons.timeline),
+              label: Text(Stringify.quickInningsHeading(innings.inningsNumber)),
+              onPressed: () => goInningsTimeline(context),
+            ),
             _BattingScorecard(
               service.getBatters(innings),
               score: innings.score,
               target: innings.target,
               extras: innings.extras,
-              ballsPerInnings: innings.rules.ballsPerInnings,
-              ballsPerOver: innings.rules.ballsPerOver,
+              maxBalls: innings.maxBalls,
+              ballsPerOver: innings.ballsPerOver,
               ballsBowled: innings.numBalls,
               fallOfWickets: service.getFallOfWickets(innings),
               getPlayerName: getPlayerName,
@@ -219,7 +223,7 @@ class _BattingScorecard extends StatelessWidget {
   final int? target;
   final Map<String, int> extras;
 
-  final int ballsPerInnings;
+  final int maxBalls;
   final int ballsPerOver;
   final int ballsBowled;
 
@@ -230,7 +234,7 @@ class _BattingScorecard extends StatelessWidget {
     required this.score,
     required this.target,
     required this.extras,
-    required this.ballsPerInnings,
+    required this.maxBalls,
     required this.ballsPerOver,
     required this.ballsBowled,
     required this.fallOfWickets,
@@ -529,7 +533,7 @@ class _PartnershipList extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              Stringify.inningsHeading(inningsNumber),
+              Stringify.quickInningsHeading(inningsNumber),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -608,32 +612,38 @@ class _GraphListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const first = Colors.teal;
-    final second = BallColors.notOut;
+    const firstColor = Colors.teal;
+    final secondColor = BallColors.notOut;
+
+    final firstInnings = allInnings.first;
+    final secondInnings = allInnings.length > 1 ? allInnings[1] : null;
 
     const radius = 6.0;
     return ListView(
       children: [
         Row(
           children: [
-            const Expanded(
-              child: ListTile(
-                leading: CircleAvatar(
-                  radius: radius,
-                  backgroundColor: first,
-                ),
-                title: Text("First Innings"),
-              ),
-            ),
             Expanded(
               child: ListTile(
-                leading: CircleAvatar(
+                leading: const CircleAvatar(
                   radius: radius,
-                  backgroundColor: second,
+                  backgroundColor: firstColor,
                 ),
-                title: const Text("Second Innings"),
+                title: Text(Stringify.quickInningsHeading(
+                    allInnings.first.inningsNumber)),
               ),
             ),
+            if (secondInnings != null)
+              Expanded(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    radius: radius,
+                    backgroundColor: secondColor,
+                  ),
+                  title: Text(Stringify.quickInningsHeading(
+                      secondInnings.inningsNumber)),
+                ),
+              ),
           ],
         ),
         const SizedBox(height: 16),
@@ -641,26 +651,40 @@ class _GraphListSection extends StatelessWidget {
             child:
                 Text("Worm", style: Theme.of(context).textTheme.titleMedium)),
         const SizedBox(height: 16),
-        _WormGraph(allInnings, first, second),
+        _WormGraph(
+          firstInnings: firstInnings,
+          secondInnings: secondInnings,
+          firstColor: firstColor,
+          secondColor: secondColor,
+        ),
         const SizedBox(height: 32),
         Center(
             child: Text("Manhattan",
                 style: Theme.of(context).textTheme.titleMedium)),
         const SizedBox(height: 16),
-        _ManhattanGraph(allInnings, first, second),
+        _ManhattanGraph(
+          firstInnings: firstInnings,
+          secondInnings: secondInnings,
+          firstColor: firstColor,
+          secondColor: secondColor,
+        ),
       ],
     );
   }
 }
 
 class _WormGraph extends StatelessWidget {
-  final List<QuickInnings> allInnings;
+  final QuickInnings firstInnings;
+  final QuickInnings? secondInnings;
 
-  final Color first;
-  final Color second;
+  final Color firstColor;
+  final Color secondColor;
 
-  const _WormGraph(this.allInnings, this.first, this.second);
-
+  const _WormGraph(
+      {required this.firstInnings,
+      required this.secondInnings,
+      required this.firstColor,
+      required this.secondColor});
   @override
   Widget build(BuildContext context) {
     double i = 0;
@@ -674,15 +698,15 @@ class _WormGraph extends StatelessWidget {
           ),
           lineBarsData: [
             LineChartBarData(
-              color: first,
-              spots: runsForInnings(allInnings.first)
+              color: firstColor,
+              spots: runsForInnings(firstInnings)
                   .map((r) => FlSpot(i++, r))
                   .toList(),
             ),
-            if (allInnings.length > 1)
+            if (secondInnings != null)
               LineChartBarData(
-                color: second,
-                spots: runsForInnings(allInnings.last)
+                color: secondColor,
+                spots: runsForInnings(secondInnings!)
                     .map((r) => FlSpot(j++, r))
                     .toList(),
               ),
@@ -704,21 +728,26 @@ class _WormGraph extends StatelessWidget {
 }
 
 class _ManhattanGraph extends StatelessWidget {
-  final List<QuickInnings> allInnings;
+  final QuickInnings firstInnings;
+  final QuickInnings? secondInnings;
 
-  final Color first;
-  final Color second;
+  final Color firstColor;
+  final Color secondColor;
 
-  const _ManhattanGraph(this.allInnings, this.first, this.second);
+  const _ManhattanGraph(
+      {required this.firstInnings,
+      required this.secondInnings,
+      required this.firstColor,
+      required this.secondColor});
 
   @override
   Widget build(BuildContext context) {
     Map<int, Over> getOvers(QuickInnings innings) =>
         context.read<QuickMatchService>().getOvers(innings);
 
-    final overs1 = getOvers(allInnings.first);
+    final overs1 = getOvers(firstInnings);
     final overs2 =
-        allInnings.length > 1 ? getOvers(allInnings.last) : <int, Over>{};
+        secondInnings == null ? <int, Over>{} : getOvers(secondInnings!);
 
     final count = max(overs1.length, overs2.length);
 
@@ -734,12 +763,12 @@ class _ManhattanGraph extends StatelessWidget {
                   if (overs1.containsKey(i))
                     BarChartRodData(
                       toY: overs1[i]!.runs.toDouble(),
-                      color: first,
+                      color: firstColor,
                     ),
                   if (overs2.containsKey(i))
                     BarChartRodData(
                       toY: overs2[i]!.runs.toDouble(),
-                      color: second,
+                      color: secondColor,
                     ),
                 ],
               ),

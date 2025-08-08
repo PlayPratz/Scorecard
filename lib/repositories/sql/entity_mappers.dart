@@ -33,7 +33,8 @@ class EntityMappers {
         rules_only_single_batter: match.rules.onlySingleBatter,
       );
 
-  static QuickMatch unpackQuickMatch(QuickMatchesEntity entity) => QuickMatch(
+  static QuickMatch unpackQuickMatch(QuickMatchesEntity entity) =>
+      QuickMatch.load(
         entity.id,
         startsAt: entity.starts_at,
         isCompleted: entity.stage == 1,
@@ -72,9 +73,15 @@ class EntityMappers {
         batter2Id: entity.batter2_id,
         strikerId: entity.striker_id,
         bowlerId: entity.bowler_id,
+        isDeclared: entity.is_declared,
+        isSuperOver: _decipherInningsType(entity),
       );
 
-  static int _inningsType(QuickInnings innings) => 0;
+  static int _inningsType(QuickInnings innings) =>
+      innings.isSuperOver ? 100 : 0;
+
+  static bool _decipherInningsType(QuickInningsEntity entity) =>
+      entity.type == 100 ? true : false;
 
   static PostsEntity repackInningsPost(InningsPost post) => switch (post) {
         Ball() => PostsEntity.ball(

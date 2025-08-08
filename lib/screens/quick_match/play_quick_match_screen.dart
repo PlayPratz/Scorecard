@@ -9,6 +9,7 @@ import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/quick_match/wicket_model.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
 import 'package:scorecard/screens/quick_match/innings_timeline_screen.dart';
+import 'package:scorecard/screens/quick_match/load_quick_match_screen.dart';
 import 'package:scorecard/screens/quick_match/scorecard_screen.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/ui/ball_colors.dart';
@@ -53,17 +54,23 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
             );
           } else {
             final innings = (state as _QuickMatchLoadedState).innings;
+            final canDeclare = state is! _InningsHasEndedState;
             return Scaffold(
               appBar: AppBar(
                 leading: IconButton(
                     onPressed: () => _quitMatch(context),
                     icon: const Icon(Icons.exit_to_app)),
-                title: Text(Stringify.inningsHeading(innings.inningsNumber)),
+                title:
+                    Text(Stringify.quickInningsHeading(innings.inningsNumber)),
                 actions: [
                   FilledButton.tonalIcon(
-                    onPressed: () => showEndInningsWarning(context),
-                    onLongPress: () => controller.endInnings(context),
-                    label: const Text("End"),
+                    onPressed: canDeclare
+                        ? () => showEndInningsWarning(context)
+                        : null,
+                    onLongPress: canDeclare
+                        ? () => controller.declareInnings(context)
+                        : null,
+                    label: const Text("Declare"),
                     icon: const Icon(
                       Icons.cancel,
                       color: Colors.redAccent,
@@ -84,8 +91,8 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                       score: innings.score,
                       currentRunRate: innings.currentRunRate,
                       ballsBowled: innings.numBalls,
-                      ballsPerInnings: innings.rules.ballsPerInnings,
-                      ballsPerOver: innings.rules.ballsPerOver,
+                      maxBalls: innings.maxBalls,
+                      ballsPerOver: innings.ballsPerOver,
                       target: innings.target,
                       requiredRunRate: innings.requiredRunRate,
                       runsRequired: innings.runsRequired,
@@ -102,10 +109,8 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                       batter2: _batter2Display(innings),
                       bowler: _bowlerDisplay(context, innings),
                       strikerId: innings.strikerId,
-                      allowSecondBatter: !innings.rules.onlySingleBatter,
-                      outBatter:
-                          state is _PickBatterState ? state.toReplaceId : null,
-                      isOutBowler: false,
+                      onlySingleBatter: innings.onlySingleBatter,
+                      isOutBowler: state is _PickBowlerState,
                       onPickBatter: () => controller.pickBatter(context, null),
                       onPickBowler: () => controller.pickBowler(context),
                       onRetireBatter: (batterId) =>
@@ -172,10 +177,10 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
             label: const Text("Pick Batter"),
             icon: const Icon(Icons.person),
           ),
-        _EndInningsState() => FilledButton.icon(
+        _InningsHasEndedState() => FilledButton.icon(
             onPressed: () => showEndInningsWarning(context),
-            onLongPress: () => controller.endInnings(context),
-            label: const Text("End Innings"),
+            onLongPress: () => controller.finishInnings(context, state.next),
+            label: const Text("Finish"),
             icon: const Icon(Icons.check_circle),
           ),
         _PlayBallState() => FilledButton.icon(
@@ -194,8 +199,9 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
       };
 
   void showEndInningsWarning(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Long press to end this innings")));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content:
+            Text("Long press to end this innings (This can't be undone!)")));
   }
 
   Widget _wUndoButton(
@@ -213,7 +219,7 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
   }
 
   _BatterScoreDisplay? _batter2Display(QuickInnings innings) {
-    if (innings.rules.onlySingleBatter || innings.batter2Id == null) {
+    if (innings.onlySingleBatter || innings.batter2Id == null) {
       return null;
     }
 
@@ -226,13 +232,12 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
   ) {
     final batterInnings = service.getBatterInningsOf(innings, batterId);
 
-    return _BatterScoreDisplay(
-      batterId,
-      batterName: PlayerCache().get(batterId).name,
-      ballsFaced: batterInnings.numBalls,
-      runsScored: batterInnings.runs,
-      strikeRate: batterInnings.strikeRate,
-    );
+    return _BatterScoreDisplay(batterId,
+        batterName: PlayerCache().get(batterId).name,
+        ballsFaced: batterInnings.numBalls,
+        runsScored: batterInnings.runs,
+        strikeRate: batterInnings.strikeRate,
+        isOut: batterInnings.isOut);
   }
 
   _BowlerScoreDisplay? _bowlerDisplay(
@@ -282,7 +287,7 @@ class _PlayQuickMatchScreenController {
       innings = loadInnings;
     } else {
       // Create new
-      innings = await _matchService.createFirstInnings(match);
+      innings = await _matchService.createInnings(match);
     }
 
     _dispatchState();
@@ -296,8 +301,13 @@ class _PlayQuickMatchScreenController {
   _QuickMatchLoadedState _deduceState() {
     ballController.disable();
 
+    if (innings.hasEnded) {
+      return _InningsHasEndedState(
+          innings, _matchService.getNextState(innings));
+    }
+
     if (innings.batter1Id == null ||
-        (!innings.rules.onlySingleBatter && innings.batter2Id == null)) {
+        (!innings.onlySingleBatter && innings.batter2Id == null)) {
       return _PickBatterState(innings, toReplaceId: null);
     }
 
@@ -321,19 +331,20 @@ class _PlayQuickMatchScreenController {
       case NextBowler():
         break;
       case NextBatter():
-        if (lastPost.index.ball == innings.rules.ballsPerOver) {
+        if (lastPost.index.ball == innings.ballsPerOver) {
           return _PickBowlerState(innings);
         }
         break;
       case Ball():
         if (innings.hasEnded) {
-          return _EndInningsState(innings);
+          return _InningsHasEndedState(
+              innings, _matchService.getNextState(innings));
         } else if (lastPost.isWicket) {
           return _PickBatterState(
             innings,
             toReplaceId: lastPost.wicket!.batterId,
           );
-        } else if (lastPost.index.ball == innings.rules.ballsPerOver) {
+        } else if (lastPost.index.ball == innings.ballsPerOver) {
           return _PickBowlerState(innings);
         }
         break;
@@ -455,19 +466,87 @@ class _PlayQuickMatchScreenController {
     _dispatchState();
   }
 
-  Future<void> endInnings(BuildContext context) async {
+  Future<void> declareInnings(BuildContext context) async {
     _dispatchLoading();
-    if (innings.inningsNumber == 1) {
-      await _matchService.createSecondInnings(match, innings);
-      await initialize();
-    } else if (innings.inningsNumber == 2) {
-      await _matchService.endMatch(match, innings);
-      if (context.mounted) {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => ScorecardScreen(match)));
-      }
+    final next = await _matchService.declareInnings(innings);
+    if (context.mounted) {
+      finishInnings(context, next);
     }
-    // TODO Super overs
+    // _dispatchEndInnings(next);
+  }
+
+  Future<void> finishInnings(BuildContext context, NextStage next) async {
+    _dispatchLoading();
+    if (next == NextStage.nextInnings) {
+      await _startNextInnings(context);
+    } else if (next == NextStage.endMatch) {
+      await _endMatch(context);
+    } else if (next == NextStage.superOver) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => SizedBox.expand(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 32),
+                Text("This match has ended in a tie",
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 32),
+                SizedBox(
+                    width: 192,
+                    height: 42,
+                    child: FilledButton.icon(
+                      icon: const Icon(Icons.sports),
+                      label: const Text("Start Super Over"),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _startSuperOver(context);
+                      },
+                    )),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: 192,
+                  height: 42,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.handshake),
+                    label: const Text("End Match as Tie"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _endMatch(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _startNextInnings(BuildContext context) async {
+    if (innings.isSuperOver) {
+      return _startSuperOver(context);
+    }
+    await _matchService.createInnings(match, previous: innings);
+    if (context.mounted) {
+      loadMatch(context, match);
+    }
+  }
+
+  Future<void> _startSuperOver(BuildContext context) async {
+    await _matchService.createSuperOver(match, previous: innings);
+    if (context.mounted) {
+      loadMatch(context, match);
+    }
+  }
+
+  Future<void> _endMatch(BuildContext context) async {
+    await _matchService.endMatch(match, last: innings);
+    if (context.mounted) {
+      loadMatch(context, match);
+    }
   }
 
   void goScorecard(BuildContext context) {
@@ -507,8 +586,9 @@ class _PickBatterState extends _QuickMatchLoadedState {
   _PickBatterState(super.innings, {required this.toReplaceId});
 }
 
-class _EndInningsState extends _QuickMatchLoadedState {
-  _EndInningsState(super.innings);
+class _InningsHasEndedState extends _QuickMatchLoadedState {
+  final NextStage next;
+  _InningsHasEndedState(super.innings, this.next);
 }
 
 class _PlayBallState extends _QuickMatchLoadedState {
@@ -528,7 +608,7 @@ class _ScoreBar extends StatelessWidget {
   final int ballsLeft;
 
   final int ballsBowled;
-  final int ballsPerInnings;
+  final int maxBalls;
   final int ballsPerOver;
 
   final bool isLoading;
@@ -538,7 +618,7 @@ class _ScoreBar extends StatelessWidget {
     required this.currentRunRate,
     required this.requiredRunRate,
     required this.ballsBowled,
-    required this.ballsPerInnings,
+    required this.maxBalls,
     required this.ballsPerOver,
     required this.target,
     required this.runsRequired,
@@ -560,14 +640,15 @@ class _ScoreBar extends StatelessWidget {
             title: Text(Stringify.score(score)),
             titleTextStyle: Theme.of(context).textTheme.displaySmall,
             trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                    "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(ballsPerInnings, ballsPerOver)}ov"),
                 Text(target == null ? "" : "Target: $target"),
+                Text(
+                    "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(maxBalls, ballsPerOver)}ov"),
               ],
             ),
-            leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
+            leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 8),
           Row(
@@ -583,7 +664,7 @@ class _ScoreBar extends StatelessWidget {
                 wNumberBox(
                     context,
                     "Projected",
-                    currentRunRate * ballsPerInnings / ballsPerOver,
+                    currentRunRate * maxBalls / ballsPerOver,
                     false,
                     BallColors.notOut),
 
@@ -628,14 +709,13 @@ class _ScoreBar extends StatelessWidget {
 class _OnCreasePlayers extends StatelessWidget {
   final _BatterScoreDisplay? batter1;
 
-  final bool allowSecondBatter;
+  final bool onlySingleBatter;
   final _BatterScoreDisplay? batter2;
 
   final String? strikerId;
 
   final _BowlerScoreDisplay? bowler;
 
-  final String? outBatter;
   final bool isOutBowler;
 
   final void Function(String batterId) onSetStrike;
@@ -654,9 +734,8 @@ class _OnCreasePlayers extends StatelessWidget {
     required this.batter2,
     required this.strikerId,
     required this.bowler,
-    required this.outBatter,
     required this.isOutBowler,
-    required this.allowSecondBatter,
+    required this.onlySingleBatter,
     required this.onSetStrike,
     required this.onRetireBatter,
     required this.onRetireBowler,
@@ -684,7 +763,7 @@ class _OnCreasePlayers extends StatelessWidget {
                 ),
               ),
               _wBatterDisplay(context, batter1),
-              if (allowSecondBatter) _wBatterDisplay(context, batter2),
+              if (!onlySingleBatter) _wBatterDisplay(context, batter2),
             ],
           ),
         ),
@@ -729,7 +808,6 @@ class _OnCreasePlayers extends StatelessWidget {
         onTap: () => onPickBatter(),
       );
     } else {
-      final isOut = outBatter == batterScoreDisplay.batterId;
       return ListTile(
         title: Text(batterScoreDisplay.batterName.toUpperCase()),
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
@@ -743,12 +821,15 @@ class _OnCreasePlayers extends StatelessWidget {
         onLongPress: !allowInput
             ? null
             : () => onRetireBatter(batterScoreDisplay.batterId),
-        selected: isOut ? false : batterScoreDisplay.batterId == strikerId,
+        selected: batterScoreDisplay.isOut
+            ? false
+            : batterScoreDisplay.batterId == strikerId,
         selectedTileColor: Colors.greenAccent.withOpacity(0.3),
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-        tileColor: isOut ? Colors.redAccent.withOpacity(0.2) : null,
+        tileColor:
+            batterScoreDisplay.isOut ? Colors.redAccent.withOpacity(0.2) : null,
       );
     }
   }
@@ -773,7 +854,9 @@ class _OnCreasePlayers extends StatelessWidget {
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-        tileColor: BallColors.newOver.withOpacity(0.3),
+        tileColor: isOutBowler
+            ? Colors.redAccent.withOpacity(0.2)
+            : BallColors.newOver.withOpacity(0.3),
       );
     }
   }
@@ -785,6 +868,7 @@ class _BatterScoreDisplay {
   final int runsScored;
   final int ballsFaced;
   final double strikeRate;
+  final bool isOut;
 
   _BatterScoreDisplay(
     this.batterId, {
@@ -792,6 +876,7 @@ class _BatterScoreDisplay {
     required this.runsScored,
     required this.ballsFaced,
     required this.strikeRate,
+    required this.isOut,
   });
 }
 

@@ -76,11 +76,72 @@ class QuickMatchService {
 
   /// Lists all the batters and their scores
   List<BatterInnings> getBatters(QuickInnings innings) {
-    final batters = innings.posts
-        .whereType<NextBatter>()
-        .map((nb) => BatterInnings.of(nb.nextId, innings))
-        .toList(growable: false);
+    final battersIds =
+        innings.posts.whereType<NextBatter>().map((nb) => nb.nextId);
+
+    final postToBatters = {for (final id in battersIds) id: <InningsPost>[]};
+
+    for (final post in innings.posts) {
+      switch (post) {
+        case Ball():
+          postToBatters[post.batterId]!.add(post);
+          if (post.isWicket && post.batterId != post.wicket!.batterId) {
+            postToBatters[post.wicket!.batterId]!.add(post);
+          }
+        case BatterRetire():
+          postToBatters[post.batterId]!.add(post);
+        case NextBatter():
+          postToBatters[post.nextId]!.add(post);
+          if (post.previousId != null) {
+            postToBatters[post.previousId]!.add(post);
+          }
+        case WicketBeforeDelivery():
+          postToBatters[post.batterId]!.add(post);
+        case BowlerRetire():
+        case NextBowler():
+        // Do nothing
+      }
+    }
+    final batters = <BatterInnings>[
+      for (final entry in postToBatters.entries)
+        BatterInnings(entry.key, entry.value)
+    ];
+
     return batters;
+  }
+
+  BatterInnings getBatterInningsOf(QuickInnings innings, String batterId) {
+    final posts = <InningsPost>[];
+    for (final post in innings.posts) {
+      switch (post) {
+        case Ball():
+          if (post.batterId == batterId) {
+            posts.add(post);
+          }
+          if (post.isWicket && post.batterId != post.wicket!.batterId) {
+            posts.add(post);
+          }
+        case BatterRetire():
+          if (post.batterId == batterId) {
+            posts.add(post);
+          }
+        case NextBatter():
+          if (post.nextId == batterId) {
+            posts.add(post);
+          } else if (post.previousId == batterId) {
+            posts.add(post);
+          }
+        case WicketBeforeDelivery():
+          if (post.batterId == batterId) {
+            posts.add(post);
+          }
+        case BowlerRetire():
+        case NextBowler():
+        // Do nothing
+      }
+    }
+    final batterInnings = BatterInnings(batterId, posts);
+    return batterInnings;
   }
 
   /// Lists all the bowlers and their scores
@@ -90,6 +151,83 @@ class QuickMatchService {
         .map((nb) => BowlerInnings.of(nb.nextId, innings))
         .toList(growable: false);
     return bowlers;
+  }
+
+  /// Creates a map of overs in the innings
+  /// Note: The first over is index 1
+  Map<int, Over> getOvers(QuickInnings innings) {
+    final overs = <int, Over>{};
+    for (final post in innings.posts) {
+      final key = post.index.over + 1;
+      if (!overs.containsKey(key)) {
+        overs[key] = Over();
+      }
+      overs[key]!.posts.add(post);
+    }
+    return overs;
+  }
+
+  /// Lists all fall of wickets in the innings
+  List<FallOfWicket> getFallOfWickets(QuickInnings innings) {
+    final posts = innings.posts;
+    final fallOfWickets = <FallOfWicket>[];
+    Score score = Score.zero();
+    for (final post in posts) {
+      if (post is Ball) {
+        score = score.plus(post);
+        if (post.isWicket) {
+          fallOfWickets.add(FallOfWicket(
+            post.wicket!,
+            postIndex: post.index,
+            scoreAt: score,
+          ));
+        }
+      } else if (post is WicketBeforeDelivery) {
+        fallOfWickets.add(FallOfWicket(
+          post.wicket,
+          postIndex: post.index,
+          scoreAt: score,
+        ));
+      }
+    }
+    return fallOfWickets;
+  }
+
+  // bool _isWicket(InningsPost post) => switch (post) {
+  //       WicketBeforeDelivery() => true,
+  //       Ball() => post.isWicket,
+  //       _ => false
+  //     };
+
+  /// Lists all partnerships in the innings
+  List<Partnership> getPartnerships(QuickInnings innings) {
+    final posts = innings.posts;
+
+    final firstTwo = posts.whereType<NextBatter>().take(2);
+    if (firstTwo.length < 2) return [];
+
+    final partnerships = <Partnership>[
+      Partnership(
+        [],
+        batter1Id: firstTwo.first.nextId,
+        batter2Id: firstTwo.last.nextId,
+      )
+    ];
+
+    for (final post in posts.sublist(posts.indexOf(firstTwo.last) + 1)) {
+      final current = partnerships.last;
+      switch (post) {
+        case NextBatter():
+          final existing = post.previousId == current.batter1Id
+              ? current.batter2Id
+              : current.batter1Id;
+          partnerships.add(
+              Partnership([], batter1Id: existing, batter2Id: post.nextId));
+        default:
+          current.posts.add(post);
+      }
+    }
+    return partnerships;
   }
 
   // Innings and Posts

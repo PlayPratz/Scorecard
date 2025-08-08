@@ -197,20 +197,7 @@ class BatterInnings {
   UnmodifiableListView<Ball> get balls =>
       UnmodifiableListView(allBalls.where((b) => b.batterId == batterId));
 
-  BatterInnings._(this.batterId, this._posts);
-
-  BatterInnings.of(this.batterId, QuickInnings innings)
-      : _posts = innings.posts
-            .where((post) => switch (post) {
-                  Ball() => post.batterId == batterId ||
-                      post.wicket?.batterId == batterId,
-                  BowlerRetire() => false,
-                  NextBowler() => false,
-                  BatterRetire() => post.batterId == batterId,
-                  NextBatter() => post.nextId == batterId,
-                  WicketBeforeDelivery() => post.batterId == batterId,
-                })
-            .toList();
+  BatterInnings(this.batterId, this._posts);
 
   /// The runs scored by this Batter
   int get runs => balls.fold(0, (s, b) => s + b.batterRuns);
@@ -280,30 +267,6 @@ class BowlerInnings {
       handleDivideByZero(numBalls.toDouble(), numWickets.toDouble());
 }
 
-class FallOfWickets {
-  final List<FallOfWicket> _all;
-  UnmodifiableListView<FallOfWicket> get all => UnmodifiableListView(_all);
-
-  FallOfWickets._(this._all);
-
-  factory FallOfWickets.of(QuickInnings innings) {
-    final balls = innings.balls;
-    final fow = <FallOfWicket>[];
-    Score score = Score.zero();
-    for (final ball in balls) {
-      score = score.plus(ball);
-      if (ball.isWicket) {
-        fow.add(FallOfWicket(
-          ball.wicket!,
-          postIndex: ball.index,
-          scoreAt: score,
-        ));
-      }
-    }
-    return FallOfWickets._(fow);
-  }
-}
-
 class FallOfWicket {
   final Wicket wicket;
   final PostIndex postIndex;
@@ -312,84 +275,29 @@ class FallOfWicket {
   FallOfWicket(this.wicket, {required this.postIndex, required this.scoreAt});
 }
 
-class Partnerships {
-  final List<Partnership> _all;
-  UnmodifiableListView<Partnership> get all => UnmodifiableListView(_all);
-
-  Partnerships._(this._all);
-
-  factory Partnerships.of(QuickInnings innings) {
-    final posts = innings.posts;
-
-    final firstTwo = posts.whereType<NextBatter>().take(2);
-    if (firstTwo.length < 2) return Partnerships._([]);
-
-    final partnerships = <Partnership>[
-      Partnership(
-        [],
-        batter1Id: firstTwo.first.nextId,
-        batter2Id: firstTwo.last.nextId,
-      )
-    ];
-
-    for (final post in posts.sublist(posts.indexOf(firstTwo.last) + 1)) {
-      final current = partnerships.last;
-      switch (post) {
-        case NextBatter():
-          final existing = post.previousId == current.batter1Id
-              ? current.batter2Id
-              : current.batter1Id;
-          partnerships.add(
-              Partnership([], batter1Id: existing, batter2Id: post.nextId));
-        default:
-          current._posts.add(post);
-      }
-    }
-
-    return Partnerships._(partnerships);
-  }
-}
-
 class Partnership {
   final String batter1Id;
   final String batter2Id;
 
-  final List<InningsPost> _posts;
+  final List<InningsPost> posts;
   UnmodifiableListView<Ball> get balls =>
-      UnmodifiableListView(_posts.whereType<Ball>());
+      UnmodifiableListView(posts.whereType<Ball>());
 
   final BatterInnings batter1Innings;
   final BatterInnings batter2Innings;
 
-  Partnership(this._posts, {required this.batter1Id, required this.batter2Id})
-      : batter1Innings = BatterInnings._(batter1Id, _posts),
-        batter2Innings = BatterInnings._(batter2Id, _posts);
+  Partnership(this.posts, {required this.batter1Id, required this.batter2Id})
+      : batter1Innings = BatterInnings(batter1Id, posts),
+        batter2Innings = BatterInnings(batter2Id, posts);
 
   int get runs => balls.fold(0, (s, b) => s + b.totalRuns);
   int get numBalls => balls.where((b) => !b.isBowlingExtra).length;
 }
 
 class Over {
-  final List<InningsPost> _posts = [];
-  UnmodifiableListView<InningsPost> get posts => UnmodifiableListView(_posts);
+  final List<InningsPost> posts = [];
   UnmodifiableListView<Ball> get balls =>
-      UnmodifiableListView(_posts.whereType<Ball>());
+      UnmodifiableListView(posts.whereType<Ball>());
 
   int get runs => balls.fold(0, (s, b) => s + b.totalRuns);
-
-  static Map<int, Over> of(QuickInnings innings) {
-    if (innings.posts.isEmpty) return {};
-
-    final overs = <int, Over>{};
-
-    for (final post in innings.posts) {
-      final key = post.index.over + 1;
-      if (!overs.containsKey(key)) {
-        overs[key] = Over();
-      }
-      overs[key]!._posts.add(post);
-    }
-
-    return overs;
-  }
 }

@@ -25,12 +25,13 @@ class PlayQuickMatchScreen extends StatefulWidget {
 
 class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
   late final _PlayQuickMatchScreenController controller;
+  late final QuickMatchService service;
 
   @override
   void initState() {
     super.initState();
-    controller = _PlayQuickMatchScreenController(
-        widget.match, context.read<QuickMatchService>());
+    service = context.read<QuickMatchService>();
+    controller = _PlayQuickMatchScreenController(widget.match, service);
     controller.initialize();
   }
 
@@ -97,8 +98,8 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                     ),
                     const Spacer(),
                     _OnCreasePlayers(
-                      batter1: _batter1Display(context, innings),
-                      batter2: _batter2Display(context, innings),
+                      batter1: _batter1Display(innings),
+                      batter2: _batter2Display(innings),
                       bowler: _bowlerDisplay(context, innings),
                       strikerId: innings.strikerId,
                       allowSecondBatter: !innings.rules.onlySingleBatter,
@@ -205,28 +206,25 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
         icon: const Icon(Icons.undo),
       );
 
-  _BatterScoreDisplay? _batter1Display(
-      BuildContext context, QuickInnings innings) {
+  _BatterScoreDisplay? _batter1Display(QuickInnings innings) {
     if (innings.batter1Id == null) return null;
 
-    return _batterDisplayInner(context, innings, innings.batter1Id!);
+    return _batterDisplayInner(innings, innings.batter1Id!);
   }
 
-  _BatterScoreDisplay? _batter2Display(
-      BuildContext context, QuickInnings innings) {
+  _BatterScoreDisplay? _batter2Display(QuickInnings innings) {
     if (innings.rules.onlySingleBatter || innings.batter2Id == null) {
       return null;
     }
 
-    return _batterDisplayInner(context, innings, innings.batter2Id!);
+    return _batterDisplayInner(innings, innings.batter2Id!);
   }
 
   _BatterScoreDisplay? _batterDisplayInner(
-    BuildContext context,
     QuickInnings innings,
     String batterId,
   ) {
-    final batterInnings = BatterInnings.of(batterId, innings);
+    final batterInnings = service.getBatterInningsOf(innings, batterId);
 
     return _BatterScoreDisplay(
       batterId,

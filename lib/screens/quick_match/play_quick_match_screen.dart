@@ -346,7 +346,7 @@ class _PlayQuickMatchScreenController {
 
   Future<void> pickBowler(BuildContext context) async {
     _dispatchLoading();
-    final bowler = await _pickPlayer(context);
+    final bowler = await _pickPlayer(context, "Pick a Bowler");
     if (bowler != null) {
       await _matchService.nextBowler(innings, bowler.id);
       await Future.delayed(const Duration(milliseconds: 100));
@@ -364,7 +364,7 @@ class _PlayQuickMatchScreenController {
 
     if (innings.batter1Id == null) {}
 
-    final batter = await _pickPlayer(context);
+    final batter = await _pickPlayer(context, "Pick a Batter");
     if (batter != null) {
       await _matchService.nextBatter(
         innings,
@@ -376,12 +376,14 @@ class _PlayQuickMatchScreenController {
     _dispatchState();
   }
 
-  Future<Player?> _pickPlayer(BuildContext context) async {
+  Future<Player?> _pickPlayer(BuildContext context, String title) async {
     final player = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PickFromAllPlayersScreen(
-              onPickPlayer: (p) => Navigator.pop(context, p)),
+            title: title,
+            onPickPlayer: (p) => Navigator.pop(context, p),
+          ),
         ));
     if (player is Player) {
       PlayerCache().put(player);
@@ -400,7 +402,7 @@ class _PlayQuickMatchScreenController {
             nonStrikerId: innings.nonStrikerId!,
             bowlerId: innings.bowlerId!,
             players: PlayerCache().all().keys,
-            onPickPlayer: _pickPlayer,
+            onPickPlayer: (context) => _pickPlayer(context, "Pick a Fielder"),
           ),
         ));
 
@@ -1216,7 +1218,7 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
   String? _wicketBatterId;
   String? _wicketFielderId;
 
-  final playerIds = <String>[];
+  final playerIds = <String>{};
 
   @override
   void initState() {

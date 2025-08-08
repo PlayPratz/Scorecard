@@ -30,7 +30,8 @@ class PlayerStatisticsQueries {
         "SELECT p.id, p.name, SUM(b.batter_runs) as runs, "
         "COUNT(CASE WHEN b.bowling_extra_type = 0 THEN NULL ELSE 1 END) as balls_faced, "
         "COUNT(CASE WHEN b.batter_id = b.wicket_batter_id THEN 1 ELSE NULL END) as wickets "
-        "from players p, balls b WHERE p.id = b.batter_Id GROUP BY batter_id");
+        "from players p, balls b WHERE p.id = b.batter_Id GROUP BY batter_id "
+        "ORDER BY runs DESC, balls_faced ASC, wickets ASC");
 
     final entities = raw.map((e) => PlayerBattingStatistics(
           id: e["id"] as String,

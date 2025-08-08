@@ -25,12 +25,18 @@ class AllPlayersScreen extends StatelessWidget {
 class PickFromAllPlayersScreen extends StatelessWidget {
   final PlayerCallbackFn onPickPlayer;
 
-  const PickFromAllPlayersScreen({super.key, required this.onPickPlayer});
+  final String title;
+
+  const PickFromAllPlayersScreen({
+    super.key,
+    this.title = "Pick a Player",
+    required this.onPickPlayer,
+  });
 
   @override
   Widget build(BuildContext context) {
     return _AllPlayersInner(
-      title: "Pick a Player",
+      title: title,
       onPickPlayer: onPickPlayer,
     );
   }

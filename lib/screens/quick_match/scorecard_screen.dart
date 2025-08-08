@@ -684,7 +684,8 @@ class _ManhattanGraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final overs1 = Over.of(allInnings.first);
-    final overs2 = allInnings.length > 1 ? Over.of(allInnings.last) : {};
+    final overs2 =
+        allInnings.length > 1 ? Over.of(allInnings.last) : <int, Over>{};
 
     final count = max(overs1.length, overs2.length);
 
@@ -704,7 +705,7 @@ class _ManhattanGraph extends StatelessWidget {
                     ),
                   if (overs2.containsKey(i))
                     BarChartRodData(
-                      toY: overs2[i]!.numWickets.toDouble(),
+                      toY: overs2[i]!.runs.toDouble(),
                       color: second,
                     ),
                 ],

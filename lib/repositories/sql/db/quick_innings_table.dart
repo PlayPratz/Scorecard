@@ -2,6 +2,7 @@ import 'package:scorecard/repositories/sql/db/sql_interface.dart';
 import 'package:scorecard/repositories/sql/keys.dart';
 
 class QuickInningsEntity implements IEntity {
+  final int? id;
   final String match_id;
   final int innings_number;
   final int type;
@@ -16,6 +17,7 @@ class QuickInningsEntity implements IEntity {
   final int? target_runs;
 
   QuickInningsEntity({
+    required this.id,
     required this.match_id,
     required this.innings_number,
     required this.type,
@@ -32,6 +34,7 @@ class QuickInningsEntity implements IEntity {
 
   QuickInningsEntity.deserialize(Map<String, Object?> map)
       : this(
+          id: map["id"] as int,
           match_id: map["match_id"] as String,
           innings_number: map["innings_number"] as int,
           type: map["type"] as int,
@@ -48,6 +51,7 @@ class QuickInningsEntity implements IEntity {
 
   @override
   Map<String, Object?> serialize() => {
+        "id": id,
         "match_id": match_id,
         "innings_number": innings_number,
         "type": type,
@@ -63,18 +67,16 @@ class QuickInningsEntity implements IEntity {
       };
 
   @override
-  List get primary_key => [match_id, innings_number];
+  int? get primary_key => id;
 }
 
 class QuickInningsTable extends ISQL<QuickInningsEntity> {
   @override
   QuickInningsEntity deserialize(Map<String, Object?> map) =>
       QuickInningsEntity.deserialize(map);
-  @override
-  String get table => Tables.quickInnings;
 
   @override
-  String get where => "match_id = ? AND innings_number = ?";
+  String get table => Tables.quickInnings;
 
   Future<Iterable<QuickInningsEntity>> selectAllForMatch(matchId) async {
     final raw = await sql.query(

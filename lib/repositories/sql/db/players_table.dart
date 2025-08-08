@@ -27,7 +27,7 @@ class PlayersEntity implements IEntity {
       };
 
   @override
-  List get primary_key => [id];
+  String get primary_key => id;
 }
 
 class PlayersTable extends ISQL<PlayersEntity> {

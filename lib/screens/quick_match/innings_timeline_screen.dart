@@ -246,7 +246,7 @@ class BallMini extends StatelessWidget {
             radius: 18,
             child: Center(
                 child: Text(
-              ball.runs.toString(),
+              ball.totalRuns.toString(),
               // style: Theme.of(context).textTheme.bodyMedium,
             )),
           ),
@@ -262,9 +262,9 @@ class BallMini extends StatelessWidget {
   }
 
   Color? get _ballColor {
-    if (ball.isBoundary && ball.runs == 4) {
+    if (ball.isBoundary && ball.totalRuns == 4) {
       return BallColors.four;
-    } else if (ball.isBoundary && ball.runs == 6) {
+    } else if (ball.isBoundary && ball.totalRuns == 6) {
       return BallColors.six;
     } else if (ball.isWicket) {
       return BallColors.wicket;

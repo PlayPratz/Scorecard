@@ -14,12 +14,13 @@ class PlayerStatisticsScreen extends StatefulWidget {
 class _PlayerStatisticsScreenState extends State<PlayerStatisticsScreen> {
   late final StatisticsService statisticsService;
 
+  int _index = 0;
   late _StatisticsState _state;
 
   @override
   void initState() {
     super.initState();
-    setLoading();
+    setLoading(0);
     statisticsService = context.read<StatisticsService>();
     showRunsScoredByAllPlayers();
   }
@@ -77,7 +78,7 @@ class _PlayerStatisticsScreenState extends State<PlayerStatisticsScreen> {
   }
 
   void showRunsScoredByAllPlayers() async {
-    setLoading();
+    setLoading(0);
     final runList = await statisticsService.getRunsScoredByAllPlayers();
     setState(() {
       _state = _RunsState(0, runList);
@@ -85,16 +86,17 @@ class _PlayerStatisticsScreenState extends State<PlayerStatisticsScreen> {
   }
 
   void showWicketsTakenByAllPlayers() async {
-    setLoading();
+    setLoading(1);
     final wicketList = await statisticsService.getWicketsTakenByAllPlayers();
     setState(() {
       _state = _WicketsState(1, wicketList);
     });
   }
 
-  void setLoading() {
+  void setLoading(int index) {
+    _index = index;
     setState(() {
-      _state = _LoadingState(_state.index);
+      _state = _LoadingState(_index);
     });
   }
 }

@@ -48,6 +48,9 @@ class QuickMatchRules {
 }
 
 class QuickInnings {
+  /// The ID of the Innings as in the database
+  int? id;
+
   /// The ID of the Match as in the database
   final String matchId;
 
@@ -68,8 +71,9 @@ class QuickInnings {
       {required this.rules, this.target});
 
   QuickInnings.load(
-    this.matchId,
-    this.inningsNumber, {
+    this.id, {
+    required this.matchId,
+    required this.inningsNumber,
     required this.rules,
     required this.target,
     required this.batter1Id,
@@ -87,7 +91,7 @@ class QuickInnings {
       UnmodifiableListView(posts.whereType<Ball>());
 
   /// The runs scored by the batters
-  int get runs => balls.fold(0, (s, b) => s + b.runs);
+  int get runs => balls.fold(0, (s, b) => s + b.totalRuns);
 
   /// The wickets taken by the bowlers
   int get wickets => balls.where((b) => b.isWicket).length;
@@ -171,7 +175,7 @@ class Score {
         wickets = 0;
 
   Score plus(Ball ball) {
-    final runs = this.runs + ball.runs;
+    final runs = this.runs + ball.totalRuns;
     if (ball.isWicket) {
       return Score(runs, wickets + 1);
     } else {
@@ -361,7 +365,7 @@ class Partnership {
       : batter1Innings = BatterInnings._(batter1Id, _posts),
         batter2Innings = BatterInnings._(batter2Id, _posts);
 
-  int get runs => balls.fold(0, (s, b) => s + b.runs);
+  int get runs => balls.fold(0, (s, b) => s + b.totalRuns);
   int get numBalls => balls.where((b) => !b.isBowlingExtra).length;
 }
 
@@ -371,7 +375,7 @@ class Over {
   UnmodifiableListView<Ball> get balls =>
       UnmodifiableListView(_posts.whereType<Ball>());
 
-  int get runs => balls.fold(0, (s, b) => s + b.runs);
+  int get runs => balls.fold(0, (s, b) => s + b.totalRuns);
 
   static Map<int, Over> of(QuickInnings innings) {
     if (innings.posts.isEmpty) return {};

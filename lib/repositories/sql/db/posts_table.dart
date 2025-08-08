@@ -5,7 +5,8 @@ class PostsEntity implements IEntity {
   // Common
   final int? id;
   final String match_id;
-  final int innings_number;
+  final int innings_id;
+  // final int innings_number;
   // final int? day_number;
   // final int? session_number;
   final int index_over;
@@ -17,6 +18,8 @@ class PostsEntity implements IEntity {
 
   // Ball specific
   final int? batter_runs;
+  final int? bowler_runs;
+  final int? total_runs;
   final bool? is_boundary;
   final int? bowling_extra_type;
   final int? bowling_extra_penalty;
@@ -33,7 +36,8 @@ class PostsEntity implements IEntity {
   PostsEntity._({
     this.id,
     required this.match_id,
-    required this.innings_number,
+    required this.innings_id,
+    // required this.innings_number,
     // this.day_number,
     // this.session_number,
     required this.index_over,
@@ -43,6 +47,8 @@ class PostsEntity implements IEntity {
     required this.comment,
     required this.bowler_id,
     required this.batter_id,
+    required this.total_runs,
+    required this.bowler_runs,
     required this.batter_runs,
     required this.is_boundary,
     required this.bowling_extra_type,
@@ -57,7 +63,8 @@ class PostsEntity implements IEntity {
   PostsEntity.ball({
     required this.id,
     required this.match_id,
-    required this.innings_number,
+    required this.innings_id,
+    // required this.innings_number,
     required this.index_over,
     required this.index_ball,
     required this.timestamp,
@@ -66,6 +73,8 @@ class PostsEntity implements IEntity {
     // Specific
     required this.bowler_id,
     required this.batter_id,
+    required this.total_runs,
+    required this.bowler_runs,
     required this.batter_runs,
     required this.is_boundary,
     required this.bowling_extra_type,
@@ -80,7 +89,8 @@ class PostsEntity implements IEntity {
   PostsEntity.bowlerRetire({
     required this.id,
     required this.match_id,
-    required this.innings_number,
+    required this.innings_id,
+    // required this.innings_number,
     required this.index_over,
     required this.index_ball,
     required this.timestamp,
@@ -91,6 +101,8 @@ class PostsEntity implements IEntity {
     // null
     this.batter_id,
     this.batter_runs,
+    this.bowler_runs,
+    this.total_runs,
     this.is_boundary,
     this.bowling_extra_type,
     this.bowling_extra_penalty,
@@ -104,7 +116,8 @@ class PostsEntity implements IEntity {
   PostsEntity.nextBowler({
     required this.id,
     required this.match_id,
-    required this.innings_number,
+    required this.innings_id,
+    // required this.innings_number,
     required this.index_over,
     required this.index_ball,
     required this.timestamp,
@@ -116,6 +129,8 @@ class PostsEntity implements IEntity {
     // null
     this.batter_id,
     this.batter_runs,
+    this.bowler_runs,
+    this.total_runs,
     this.is_boundary,
     this.bowling_extra_type,
     this.bowling_extra_penalty,
@@ -128,7 +143,8 @@ class PostsEntity implements IEntity {
   PostsEntity.batterRetire({
     required this.id,
     required this.match_id,
-    required this.innings_number,
+    required this.innings_id,
+    // required this.innings_number,
     required this.index_over,
     required this.index_ball,
     required this.timestamp,
@@ -141,6 +157,8 @@ class PostsEntity implements IEntity {
     this.batter_id,
     this.bowler_id,
     this.batter_runs,
+    this.bowler_runs,
+    this.total_runs,
     this.is_boundary,
     this.bowling_extra_type,
     this.bowling_extra_penalty,
@@ -152,7 +170,8 @@ class PostsEntity implements IEntity {
   PostsEntity.nextBatter({
     required this.id,
     required this.match_id,
-    required this.innings_number,
+    required this.innings_id,
+    // required this.innings_number,
     required this.index_over,
     required this.index_ball,
     required this.timestamp,
@@ -164,6 +183,8 @@ class PostsEntity implements IEntity {
     // null
     this.bowler_id,
     this.batter_runs,
+    this.bowler_runs,
+    this.total_runs,
     this.is_boundary,
     this.bowling_extra_type,
     this.bowling_extra_penalty,
@@ -176,7 +197,8 @@ class PostsEntity implements IEntity {
   PostsEntity.runoutBeforeDelivery({
     required this.id,
     required this.match_id,
-    required this.innings_number,
+    required this.innings_id,
+    // required this.innings_number,
     required this.index_over,
     required this.index_ball,
     required this.timestamp,
@@ -190,6 +212,8 @@ class PostsEntity implements IEntity {
     this.bowler_id,
     this.batter_id,
     this.batter_runs,
+    this.bowler_runs,
+    this.total_runs,
     this.is_boundary,
     this.bowling_extra_type,
     this.bowling_extra_penalty,
@@ -200,8 +224,9 @@ class PostsEntity implements IEntity {
   PostsEntity.deserialize(Map<String, Object?> map)
       : this._(
           id: map["id"] as int,
+          innings_id: map["innings_id"] as int,
           match_id: map["match_id"] as String,
-          innings_number: map["innings_number"] as int,
+          // innings_number: map["innings_number"] as int,
           // day_number: map["day_number"] as int?,
           // session_number: map["session_number"] as int?,
           index_over: map["index_over"] as int,
@@ -211,6 +236,8 @@ class PostsEntity implements IEntity {
           bowler_id: map["bowler_id"] as String?,
           batter_id: map["batter_id"] as String?,
           batter_runs: map["batter_runs"] as int?,
+          bowler_runs: map["bowler_runs"] as int?,
+          total_runs: map["total_runs"] as int?,
           is_boundary: readBool(map["is_boundary"]),
           bowling_extra_type: map["bowling_extra_type"] as int?,
           bowling_extra_penalty: map["bowling_extra_penalty"] as int?,
@@ -225,8 +252,9 @@ class PostsEntity implements IEntity {
   @override
   Map<String, Object?> serialize() => {
         "id": id,
+        "innings_id": innings_id,
         "match_id": match_id,
-        "innings_number": innings_number,
+        // "innings_number": innings_number,
         // "day_number": day_number,
         // "session_number": session_number,
         "index_over": index_over,
@@ -236,6 +264,8 @@ class PostsEntity implements IEntity {
         "bowler_id": bowler_id,
         "batter_id": batter_id,
         "batter_runs": batter_runs,
+        "bowler_runs": bowler_runs,
+        "total_runs": total_runs,
         "is_boundary": parseBool(is_boundary),
         "bowling_extra_type": bowling_extra_type,
         "bowling_extra_penalty": bowling_extra_penalty,
@@ -248,7 +278,7 @@ class PostsEntity implements IEntity {
       };
 
   @override
-  List get primary_key => [id];
+  int? get primary_key => id;
 }
 
 class PostsTable extends ISQL<PostsEntity> {

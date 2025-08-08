@@ -1,7 +1,7 @@
 import 'package:scorecard/handlers/sql_db_handler.dart';
 
 abstract class IEntity {
-  List<dynamic> get primary_key;
+  dynamic get primary_key;
 
   IEntity.deserialize(Map<String, Object?> map);
 
@@ -106,7 +106,7 @@ abstract class ISQL<T extends IEntity> {
       table: table,
       values: object.serialize(),
       where: where,
-      whereArgs: object.primary_key,
+      whereArgs: [object.primary_key],
     );
   }
 

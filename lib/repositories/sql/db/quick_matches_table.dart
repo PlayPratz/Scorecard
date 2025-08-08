@@ -101,7 +101,7 @@ class QuickMatchesEntity implements IEntity {
       };
 
   @override
-  List get primary_key => [id];
+  String get primary_key => id;
 }
 
 class QuickMatchesTable extends ISQL<QuickMatchesEntity> {

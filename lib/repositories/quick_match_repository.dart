@@ -41,6 +41,7 @@ class QuickMatchRepository {
   Future<void> createInnings(QuickInnings innings) async {
     final inningsEntity = EntityMappers.repackQuickInnings(innings);
     final id = await quickInningsTable.insert(inningsEntity);
+    innings.id = id;
   }
 
   Future<void> saveInnings(QuickInnings innings) async {

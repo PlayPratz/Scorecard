@@ -667,7 +667,7 @@ class _WormGraph extends StatelessWidget {
     double score = 0;
     for (final ball in innings.balls) {
       runs.add(score);
-      score = score + ball.runs;
+      score = score + ball.totalRuns;
     }
     return runs;
   }

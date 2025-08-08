@@ -48,6 +48,7 @@ class EntityMappers {
 
   static QuickInningsEntity repackQuickInnings(QuickInnings innings) =>
       QuickInningsEntity(
+        id: innings.id,
         match_id: innings.matchId,
         innings_number: innings.inningsNumber,
         type: _inningsType(innings),
@@ -62,8 +63,9 @@ class EntityMappers {
   static QuickInnings unpackQuickInnings(
           QuickInningsEntity entity, QuickMatchRules rules) =>
       QuickInnings.load(
-        entity.match_id,
-        entity.innings_number,
+        entity.id,
+        matchId: entity.match_id,
+        inningsNumber: entity.innings_number,
         rules: rules,
         target: entity.target_runs,
         batter1Id: entity.batter1_id,
@@ -77,8 +79,9 @@ class EntityMappers {
   static PostsEntity repackInningsPost(InningsPost post) => switch (post) {
         Ball() => PostsEntity.ball(
             id: post.id,
+            innings_id: post.inningsId,
             match_id: post.matchId,
-            innings_number: post.inningsNumber,
+            // innings_number: post.inningsNumber,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
@@ -87,6 +90,8 @@ class EntityMappers {
             bowler_id: post.bowlerId,
             batter_id: post.batterId,
             batter_runs: post.batterRuns,
+            bowler_runs: post.bowlerRuns,
+            total_runs: post.totalRuns,
             is_boundary: post.isBoundary,
             wicket_type: _wicketTypeToInt(post.wicket),
             wicket_batter_id: post.wicket?.batterId,
@@ -100,8 +105,9 @@ class EntityMappers {
           ),
         BowlerRetire() => PostsEntity.bowlerRetire(
             id: post.id,
+            innings_id: post.inningsId,
             match_id: post.matchId,
-            innings_number: post.inningsNumber,
+            // innings_number: post.inningsNumber,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
@@ -111,8 +117,9 @@ class EntityMappers {
           ),
         NextBowler() => PostsEntity.nextBowler(
             id: post.id,
+            innings_id: post.inningsId,
             match_id: post.matchId,
-            innings_number: post.inningsNumber,
+            // innings_number: post.inningsNumber,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
@@ -123,8 +130,9 @@ class EntityMappers {
           ),
         BatterRetire() => PostsEntity.batterRetire(
             id: post.id,
+            innings_id: post.inningsId,
             match_id: post.matchId,
-            innings_number: post.inningsNumber,
+            // innings_number: post.inningsNumber,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
@@ -135,8 +143,9 @@ class EntityMappers {
           ),
         NextBatter() => PostsEntity.nextBatter(
             id: post.id,
+            innings_id: post.inningsId,
             match_id: post.matchId,
-            innings_number: post.inningsNumber,
+            // innings_number: post.inningsNumber,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
@@ -147,8 +156,9 @@ class EntityMappers {
           ),
         RunoutBeforeDelivery() => PostsEntity.runoutBeforeDelivery(
             id: post.id,
+            innings_id: post.inningsId,
             match_id: post.matchId,
-            innings_number: post.inningsNumber,
+            // innings_number: post.inningsNumber,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
@@ -255,8 +265,8 @@ class EntityMappers {
       switch (entity.type) {
         0 => Ball(
             entity.id,
-            entity.match_id,
-            entity.innings_number,
+            matchId: entity.match_id,
+            inningsId: entity.innings_id,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
@@ -272,8 +282,8 @@ class EntityMappers {
           ),
         1 => BowlerRetire(
             entity.id,
-            entity.match_id,
-            entity.innings_number,
+            matchId: entity.match_id,
+            inningsId: entity.innings_id,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
@@ -281,8 +291,8 @@ class EntityMappers {
           ),
         2 => NextBowler(
             entity.id,
-            entity.match_id,
-            entity.innings_number,
+            matchId: entity.match_id,
+            inningsId: entity.innings_id,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
@@ -291,8 +301,8 @@ class EntityMappers {
           ),
         3 => BatterRetire(
             entity.id,
-            entity.match_id,
-            entity.innings_number,
+            matchId: entity.match_id,
+            inningsId: entity.innings_id,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
@@ -300,8 +310,8 @@ class EntityMappers {
           ),
         4 => NextBatter(
             entity.id,
-            entity.match_id,
-            entity.innings_number,
+            matchId: entity.match_id,
+            inningsId: entity.innings_id,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
@@ -310,8 +320,8 @@ class EntityMappers {
           ),
         5 => RunoutBeforeDelivery(
             entity.id,
-            entity.match_id,
-            entity.innings_number,
+            matchId: entity.match_id,
+            inningsId: entity.innings_id,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,

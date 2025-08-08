@@ -126,8 +126,8 @@ class QuickMatchService {
 
     final post = BowlerRetire(
       null,
-      innings.matchId,
-      innings.inningsNumber,
+      matchId: innings.matchId,
+      inningsId: innings.id!,
       index: _currentIndex(innings),
       timestamp: _defaultTimestamp(innings),
       bowlerId: innings.bowlerId!,
@@ -146,8 +146,8 @@ class QuickMatchService {
 
     final post = NextBowler(
       null,
-      innings.matchId,
-      innings.inningsNumber,
+      matchId: innings.matchId,
+      inningsId: innings.id!,
       index: index,
       previousId: innings.bowlerId,
       timestamp: _defaultTimestamp(innings),
@@ -165,21 +165,29 @@ class QuickMatchService {
   Future<void> retireDeclareBatter(
       QuickInnings innings, String batterId) async {
     final retired = RetiredDeclared(batterId: batterId);
-    final post = BatterRetire(null, innings.matchId, innings.inningsNumber,
-        index: _currentIndex(innings),
-        timestamp: _defaultTimestamp(innings),
-        retired: retired);
+    final post = BatterRetire(
+      null,
+      matchId: innings.matchId,
+      inningsId: innings.id!,
+      index: _currentIndex(innings),
+      timestamp: _defaultTimestamp(innings),
+      retired: retired,
+    );
     await _postToInnings(innings, post);
   }
 
   /// Adds the given [batter] to the [innings]
   Future<void> nextBatter(QuickInnings innings,
       {required String nextId, required String? previousId}) async {
-    final post = NextBatter(null, innings.matchId, innings.inningsNumber,
-        index: _currentIndex(innings),
-        timestamp: _defaultTimestamp(innings),
-        nextId: nextId,
-        previousId: previousId);
+    final post = NextBatter(
+      null,
+      matchId: innings.matchId,
+      inningsId: innings.id!,
+      index: _currentIndex(innings),
+      timestamp: _defaultTimestamp(innings),
+      nextId: nextId,
+      previousId: previousId,
+    );
 
     // Add Post to Innings
     await _postToInnings(innings, post);
@@ -229,8 +237,8 @@ class QuickMatchService {
 
     final ball = Ball(
       null,
-      innings.matchId,
-      innings.inningsNumber,
+      matchId: innings.matchId,
+      inningsId: innings.id!,
       index: index,
       bowlerId: innings.bowlerId!,
       batterId: innings.strikerId!,

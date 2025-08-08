@@ -10,11 +10,11 @@ sealed class InningsPost {
   /// The ID of the Post as in the database
   int? id; // TODO Can make this final?
 
+  /// The ID of the Innings as in the database
+  final int inningsId;
+
   /// The ID of the Match as in the database
   final String matchId;
-
-  /// The ordinal number of the Innings
-  final int inningsNumber;
 
   /// The index of this post in the innings
   final PostIndex index;
@@ -26,9 +26,9 @@ sealed class InningsPost {
   final String? comment;
 
   InningsPost(
-    this.id,
-    this.matchId,
-    this.inningsNumber, {
+    this.id, {
+    required this.matchId,
+    required this.inningsId,
     required this.index,
     required this.timestamp,
     this.comment,
@@ -66,13 +66,16 @@ class Ball extends InningsPost {
   bool get isBattingExtra => battingExtra != null;
   int get battingExtraRuns => battingExtra != null ? battingExtra!.runs : 0;
 
+  /// Total runs conceded by the bowler
+  int get bowlerRuns => batterRuns + bowlingExtraRuns;
+
   /// Total runs awarded to the Batting Team
-  int get runs => batterRuns + bowlingExtraRuns + battingExtraRuns;
+  int get totalRuns => batterRuns + bowlingExtraRuns + battingExtraRuns;
 
   Ball(
-    super.id,
-    super.matchId,
-    super.inningsNumber, {
+    super.id, {
+    required super.matchId,
+    required super.inningsId,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -101,9 +104,9 @@ class BowlerRetire extends InningsPost {
   // final RetiredBowler retired;
 
   BowlerRetire(
-    super.id,
-    super.matchId,
-    super.inningsNumber, {
+    super.id, {
+    required super.matchId,
+    required super.inningsId,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -124,9 +127,9 @@ class NextBowler extends InningsPost {
   // final bool isMidOverChange;
 
   NextBowler(
-    super.id,
-    super.matchId,
-    super.inningsNumber, {
+    super.id, {
+    required super.matchId,
+    required super.inningsId,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -149,9 +152,9 @@ class BatterRetire extends InningsPost {
   String get batterId => retired.batterId;
 
   BatterRetire(
-    super.id,
-    super.matchId,
-    super.inningsNumber, {
+    super.id, {
+    required super.matchId,
+    required super.inningsId,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -169,9 +172,9 @@ class NextBatter extends InningsPost {
   final String nextId;
 
   NextBatter(
-    super.id,
-    super.matchId,
-    super.inningsNumber, {
+    super.id, {
+    required super.matchId,
+    required super.inningsId,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -192,9 +195,9 @@ class RunoutBeforeDelivery extends InningsPost {
   String get batterId => wicket.batterId;
 
   RunoutBeforeDelivery(
-    super.id,
-    super.matchId,
-    super.inningsNumber, {
+    super.id, {
+    required super.matchId,
+    required super.inningsId,
     required super.index,
     required super.timestamp,
     super.comment,

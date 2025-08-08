@@ -194,7 +194,7 @@ class PostsEntity implements IEntity {
     this.wicket_fielder_id,
   });
 
-  PostsEntity.runoutBeforeDelivery({
+  PostsEntity.wicketBeforeDelivery({
     required this.id,
     required this.match_id,
     required this.innings_id,
@@ -296,12 +296,11 @@ class PostsTable extends ISQL<PostsEntity> {
     return postsEntities;
   }
 
-  Future<Iterable<PostsEntity>> selectForInnings(
-      String matchId, int inningsNumber) async {
+  Future<Iterable<PostsEntity>> selectForInnings(int id) async {
     final result = await sql.query(
       table: table,
-      where: "match_id = ? AND innings_number = ?",
-      whereArgs: [matchId, inningsNumber],
+      where: "innings_id = ?",
+      whereArgs: [id],
     );
     final postsEntities = result.map((e) => PostsEntity.deserialize(e));
     return postsEntities;

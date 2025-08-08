@@ -68,7 +68,7 @@ class QuickMatchRepository {
     final innings =
         EntityMappers.unpackQuickInnings(inningsEntity.single, match.rules);
 
-    final posts = await _loadAllPostsForInnings(innings);
+    final posts = await _loadAllPostsForInnings(innings.id!);
     innings.posts.addAll(posts);
 
     return innings;
@@ -82,7 +82,7 @@ class QuickMatchRepository {
         .toList(); // For some reason, objects are not updated in an Iterable
 
     for (final innings in allInnings) {
-      final posts = await _loadAllPostsForInnings(innings);
+      final posts = await _loadAllPostsForInnings(innings.id!);
       innings.posts.addAll(posts);
     }
 
@@ -95,10 +95,8 @@ class QuickMatchRepository {
   //   return posts;
   // }
 
-  Future<Iterable<InningsPost>> _loadAllPostsForInnings(
-      QuickInnings innings) async {
-    final postEntities = await postsTable.selectForInnings(
-        innings.matchId, innings.inningsNumber);
+  Future<Iterable<InningsPost>> _loadAllPostsForInnings(int id) async {
+    final postEntities = await postsTable.selectForInnings(id);
     final posts = postEntities.map((p) => EntityMappers.unpackInningsPost(p));
     return posts;
   }

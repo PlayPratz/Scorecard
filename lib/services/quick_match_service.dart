@@ -278,8 +278,8 @@ class QuickMatchService {
         _handleBatterRetirePost(innings, post);
       case NextBatter():
         _handleNextBatterPost(innings, post);
-      case RunoutBeforeDelivery():
-        _handleRunoutBeforeDeliveryPost(innings, post);
+      case WicketBeforeDelivery():
+        _handleWicketBeforeDeliveryPost(innings, post);
     }
 
     // Update the innings in the Database
@@ -372,13 +372,13 @@ class QuickMatchService {
     }
   }
 
-  void _handleRunoutBeforeDeliveryPost(
-      QuickInnings innings, RunoutBeforeDelivery post) {
+  void _handleWicketBeforeDeliveryPost(
+      QuickInnings innings, WicketBeforeDelivery post) {
     // Nothing to be done
   }
 
-  void _undoRunoutBeforeDeliveryPost(
-      QuickInnings innings, RunoutBeforeDelivery post) {
+  void _undoWicketBeforeDeliveryPost(
+      QuickInnings innings, WicketBeforeDelivery post) {
     // Nothing to be done
   }
 
@@ -405,8 +405,8 @@ class QuickMatchService {
         _undoBatterRetirePost(innings, post);
       case NextBatter():
         _undoNextBatterPost(innings, post);
-      case RunoutBeforeDelivery():
-        _undoRunoutBeforeDeliveryPost(innings, post);
+      case WicketBeforeDelivery():
+        _undoWicketBeforeDeliveryPost(innings, post);
     }
   }
 

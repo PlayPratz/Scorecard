@@ -318,7 +318,7 @@ class _PlayQuickMatchScreenController {
         return _PickBowlerState(innings);
       case BatterRetire():
         return _PickBatterState(innings, toReplaceId: lastPost.batterId);
-      case RunoutBeforeDelivery():
+      case WicketBeforeDelivery():
         return _PickBatterState(innings, toReplaceId: lastPost.batterId);
       case NextBowler():
         break;

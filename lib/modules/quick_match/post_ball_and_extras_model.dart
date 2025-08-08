@@ -188,13 +188,13 @@ class NextBatter extends InningsPost {
 ///
 /// This is to be used for run out at the non-striker's end before the ball is
 /// bowled, as sensationalized by Ravichandran Ashwin
-class RunoutBeforeDelivery extends InningsPost {
+class WicketBeforeDelivery extends InningsPost {
   /// The run out that took place before the ball was bowled
   final RunoutWicket wicket;
 
   String get batterId => wicket.batterId;
 
-  RunoutBeforeDelivery(
+  WicketBeforeDelivery(
     super.id, {
     required super.matchId,
     required super.inningsId,

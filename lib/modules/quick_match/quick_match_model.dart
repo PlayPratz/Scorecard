@@ -208,7 +208,7 @@ class BatterInnings {
                   NextBowler() => false,
                   BatterRetire() => post.batterId == batterId,
                   NextBatter() => post.nextId == batterId,
-                  RunoutBeforeDelivery() => post.batterId == batterId,
+                  WicketBeforeDelivery() => post.batterId == batterId,
                 })
             .toList();
 

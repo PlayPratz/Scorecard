@@ -4,14 +4,15 @@ import 'package:scorecard/modules/stats/player_statistics.dart';
 import 'package:scorecard/services/statistics_service.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 
-class PlayerStatisticsScreen extends StatefulWidget {
-  const PlayerStatisticsScreen({super.key});
+class AllPlayerStatisticsScreen extends StatefulWidget {
+  const AllPlayerStatisticsScreen({super.key});
 
   @override
-  State<PlayerStatisticsScreen> createState() => _PlayerStatisticsScreenState();
+  State<AllPlayerStatisticsScreen> createState() =>
+      _AllPlayerStatisticsScreenState();
 }
 
-class _PlayerStatisticsScreenState extends State<PlayerStatisticsScreen> {
+class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
   late final StatisticsService statisticsService;
 
   int _index = 0;
@@ -43,7 +44,10 @@ class _PlayerStatisticsScreenState extends State<PlayerStatisticsScreen> {
               title: Text(state.runsByPlayers[index].name),
               trailing: Text(state.runsByPlayers[index].runs.toString()),
               leadingAndTrailingTextStyle:
-                  Theme.of(context).textTheme.bodyLarge,
+                  Theme.of(context).textTheme.titleLarge,
+              subtitle: Text("${state.runsByPlayers[index].numBalls} balls, "
+                  "${state.runsByPlayers[index].numWickets} outs, "
+                  "SR ${state.runsByPlayers[index].strikeRate.toStringAsFixed(2)}"),
             ),
           ),
         _WicketsState() => ListView.builder(
@@ -57,7 +61,11 @@ class _PlayerStatisticsScreenState extends State<PlayerStatisticsScreen> {
               trailing:
                   Text(state.wicketsByPlayers[index].numWickets.toString()),
               leadingAndTrailingTextStyle:
-                  Theme.of(context).textTheme.bodyLarge,
+                  Theme.of(context).textTheme.titleLarge,
+              subtitle: Text("${state.wicketsByPlayers[index].numBalls} balls, "
+                  "${state.wicketsByPlayers[index].runs} runs, "
+                  "${state.wicketsByPlayers[index].numNoBalls}nb, "
+                  "${state.wicketsByPlayers[index].numNoBalls}wd"),
             ),
           ),
       },
@@ -112,11 +120,11 @@ class _LoadingState extends _StatisticsState {
 }
 
 class _RunsState extends _StatisticsState {
-  final List<RunsByPlayer> runsByPlayers;
+  final List<PlayerBattingStatistics> runsByPlayers;
   _RunsState(super.index, this.runsByPlayers);
 }
 
 class _WicketsState extends _StatisticsState {
-  final List<WicketsByPlayer> wicketsByPlayers;
+  final List<PlayerBowlingStatistics> wicketsByPlayers;
   _WicketsState(super.index, this.wicketsByPlayers);
 }

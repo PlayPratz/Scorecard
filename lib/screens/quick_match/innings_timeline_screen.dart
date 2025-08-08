@@ -201,7 +201,7 @@ class _InningsPostWidget extends StatelessWidget {
           contentPadding: contentPadding,
           minTileHeight: minTileHeight,
         ),
-      RunoutBeforeDelivery() => ListTile(
+      WicketBeforeDelivery() => ListTile(
           title: Text(getPlayerName(post.batterId)),
           subtitle: const Text("Next bowler"),
           leading: wIndex(context, BallColors.wicket),

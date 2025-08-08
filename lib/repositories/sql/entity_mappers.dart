@@ -154,7 +154,7 @@ class EntityMappers {
             batter_id: post.nextId,
             wicket_batter_id: post.previousId,
           ),
-        RunoutBeforeDelivery() => PostsEntity.runoutBeforeDelivery(
+        WicketBeforeDelivery() => PostsEntity.wicketBeforeDelivery(
             id: post.id,
             innings_id: post.inningsId,
             match_id: post.matchId,
@@ -318,7 +318,7 @@ class EntityMappers {
             nextId: entity.batter_id!,
             previousId: entity.wicket_batter_id,
           ),
-        5 => RunoutBeforeDelivery(
+        5 => WicketBeforeDelivery(
             entity.id,
             matchId: entity.match_id,
             inningsId: entity.innings_id,

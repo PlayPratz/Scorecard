@@ -87,7 +87,7 @@ class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
 
   void showRunsScoredByAllPlayers() async {
     setLoading(0);
-    final runList = await statisticsService.getRunsScoredByAllPlayers();
+    final runList = await statisticsService.getAllBattingStats();
     setState(() {
       _state = _RunsState(0, runList);
     });
@@ -95,7 +95,7 @@ class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
 
   void showWicketsTakenByAllPlayers() async {
     setLoading(1);
-    final wicketList = await statisticsService.getWicketsTakenByAllPlayers();
+    final wicketList = await statisticsService.getAllBowlingStats();
     setState(() {
       _state = _WicketsState(1, wicketList);
     });

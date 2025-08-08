@@ -6,12 +6,12 @@ class StatisticsRepository {
 
   StatisticsRepository(this._queries);
 
-  Future<List<PlayerBattingStatistics>> getRunsScoredByAllPlayers() async {
+  Future<List<PlayerBattingStatistics>> loadAllBattingStats() async {
     final result = await _queries.allBattingStats();
     return result.toList();
   }
 
-  Future<List<PlayerBowlingStatistics>> geWicketsTakenByAllPlayers() async {
+  Future<List<PlayerBowlingStatistics>> loadAllBowlingStats() async {
     final result = await _queries.wicketsByAllPlayers();
     return result.toList();
   }

@@ -6,13 +6,13 @@ class StatisticsService {
 
   StatisticsService(this._statisticsRepository);
 
-  Future<List<PlayerBattingStatistics>> getRunsScoredByAllPlayers() async {
-    final result = await _statisticsRepository.getRunsScoredByAllPlayers();
+  Future<List<PlayerBattingStatistics>> getAllBattingStats() async {
+    final result = await _statisticsRepository.loadAllBattingStats();
     return result;
   }
 
-  Future<List<PlayerBowlingStatistics>> getWicketsTakenByAllPlayers() async {
-    final result = await _statisticsRepository.geWicketsTakenByAllPlayers();
+  Future<List<PlayerBowlingStatistics>> getAllBowlingStats() async {
+    final result = await _statisticsRepository.loadAllBowlingStats();
     return result;
   }
 }

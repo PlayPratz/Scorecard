@@ -136,44 +136,90 @@ class QuickMatchService {
   // Scorecard
 
   /// Lists all the batters and their scores
-  List<BatterInnings> getBatters(QuickInnings innings) {
-    final battersIds =
-        innings.posts.whereType<NextBatter>().map((nb) => nb.nextId);
+  List<BatterInnings> getBatters(QuickInnings innings, {combine = true}) {
+    final batters = <BatterInnings>[];
 
-    final postToBatters = {for (final id in battersIds) id: <InningsPost>[]};
+    final batterMap = <String, List<InningsPost>>{};
 
     for (final post in innings.posts) {
       switch (post) {
+        case NextBatter():
+          if (!combine || !batterMap.containsKey(post.nextId)) {
+            batterMap[post.nextId] = <InningsPost>[];
+            batters.add(BatterInnings(post.nextId, batterMap[post.nextId]!));
+          }
+
+          batterMap[post.nextId]!.add(post);
+          if (post.previousId != null) {
+            batterMap[post.previousId]!.add(post);
+          }
         case Ball():
-          postToBatters[post.batterId]!.add(post);
+          batterMap[post.batterId]!.add(post);
           if (post.isWicket && post.batterId != post.wicket!.batterId) {
-            postToBatters[post.wicket!.batterId]!.add(post);
+            batterMap[post.wicket!.batterId]!.add(post);
           }
         case BatterRetire():
-          postToBatters[post.batterId]!.add(post);
-        case NextBatter():
-          postToBatters[post.nextId]!.add(post);
-          if (post.previousId != null) {
-            postToBatters[post.previousId]!.add(post);
-          }
+          batterMap[post.batterId]!.add(post);
+
         case WicketBeforeDelivery():
-          postToBatters[post.batterId]!.add(post);
+          batterMap[post.batterId]!.add(post);
         case BowlerRetire():
         case NextBowler():
         // Do nothing
       }
     }
-    final batters = <BatterInnings>[
-      for (final entry in postToBatters.entries)
+    /*   final batters = <BatterInnings>[
+      for (final entry in batterMap.entries)
         BatterInnings(entry.key, entry.value)
     ];
-
+*/
     return batters;
   }
 
-  BatterInnings getBatterInningsOf(QuickInnings innings, String batterId) {
+  // List<BatterInnings> getBatters(QuickInnings innings) {
+  //   final battersIds =
+  //   innings.posts.whereType<NextBatter>().map((nb) => nb.nextId);
+  //
+  //   final postToBatters = {for (final id in battersIds) id: <InningsPost>[]};
+  //
+  //   for (final post in innings.posts) {
+  //     switch (post) {
+  //       case Ball():
+  //         postToBatters[post.batterId]!.add(post);
+  //         if (post.isWicket && post.batterId != post.wicket!.batterId) {
+  //           postToBatters[post.wicket!.batterId]!.add(post);
+  //         }
+  //       case BatterRetire():
+  //         postToBatters[post.batterId]!.add(post);
+  //       case NextBatter():
+  //         postToBatters[post.nextId]!.add(post);
+  //         if (post.previousId != null) {
+  //           postToBatters[post.previousId]!.add(post);
+  //         }
+  //       case WicketBeforeDelivery():
+  //         postToBatters[post.batterId]!.add(post);
+  //       case BowlerRetire():
+  //       case NextBowler():
+  //       // Do nothing
+  //     }
+  //   }
+  //   final batters = <BatterInnings>[
+  //     for (final entry in postToBatters.entries)
+  //       BatterInnings(entry.key, entry.value)
+  //   ];
+  //
+  //   return batters;
+  // }
+
+  BatterInnings getLastBatterInningsOf(QuickInnings innings, String batterId) {
+    final newBatterPostIndex = innings.posts
+        .lastIndexWhere((b) => b is NextBatter && b.nextId == batterId);
+
+    if (newBatterPostIndex == 1) return BatterInnings(batterId, []);
+
     final posts = <InningsPost>[];
-    for (final post in innings.posts) {
+
+    for (final post in innings.posts.sublist(newBatterPostIndex)) {
       switch (post) {
         case Ball():
           if (post.batterId == batterId) {
@@ -201,16 +247,30 @@ class QuickMatchService {
         // Do nothing
       }
     }
+
     final batterInnings = BatterInnings(batterId, posts);
     return batterInnings;
   }
 
   /// Lists all the bowlers and their scores
   List<BowlerInnings> getBowlers(QuickInnings innings) {
-    final bowlers = innings.posts
-        .whereType<NextBowler>()
-        .map((nb) => BowlerInnings.of(nb.nextId, innings))
-        .toList(growable: false);
+    final bowlerMap = <String, List<Ball>>{};
+    for (final ball in innings.balls) {
+      final bowlerId = ball.bowlerId;
+      if (!bowlerMap.containsKey(bowlerId)) {
+        bowlerMap[bowlerId] = <Ball>[];
+      }
+      bowlerMap[bowlerId]!.add(ball);
+    }
+
+    final bowlers = <BowlerInnings>[];
+    for (final bowlerId in bowlerMap.keys) {
+      bowlers.add(BowlerInnings(
+        bowlerId,
+        bowlerMap[bowlerId]!,
+        ballsPerOver: innings.ballsPerOver,
+      ));
+    }
     return bowlers;
   }
 
@@ -301,7 +361,7 @@ class QuickMatchService {
   }
 
   /// Swaps strike between the two batters.
-  /// Does nothing if [innings.rules.onlySingleBatter] is set or if the last man
+  /// Does nothing if [innings.rules.isSolo] is set or if the last man
   /// is batting
   void swapStrike(QuickInnings innings) {
     if (innings.onlySingleBatter) {
@@ -400,6 +460,7 @@ class QuickMatchService {
     required Wicket? wicket,
     required BowlingExtraType? bowlingExtraType,
     required BattingExtraType? battingExtraType,
+    required bool autoRotateStrike,
     // DateTime? datetime,
   }) async {
     if (innings.strikerId == null) {

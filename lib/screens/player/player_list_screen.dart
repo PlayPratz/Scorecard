@@ -16,7 +16,7 @@ class AllPlayersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const _AllPlayersInner(
-      title: "All Players",
+      title: "Manage players",
       onPickPlayer: null,
     );
   }

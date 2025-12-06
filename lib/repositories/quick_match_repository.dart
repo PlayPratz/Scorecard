@@ -68,7 +68,8 @@ class QuickMatchRepository {
     final innings =
         EntityMappers.unpackQuickInnings(inningsEntity.single, match.rules);
 
-    final posts = await _loadAllPostsForInnings(innings.id!);
+    final postEntities = await postsTable.selectForInnings(innings.id!);
+    final posts = postEntities.map((p) => EntityMappers.unpackInningsPost(p));
     innings.posts.addAll(posts);
 
     return innings;
@@ -76,28 +77,23 @@ class QuickMatchRepository {
 
   Future<List<QuickInnings>> loadAllInnings(QuickMatch match) async {
     final inningsEntities = await quickInningsTable.selectAllForMatch(match.id);
-
     final allInnings = inningsEntities
         .map((i) => EntityMappers.unpackQuickInnings(i, match.rules))
         .toList(); // For some reason, objects are not updated in an Iterable
 
-    for (final innings in allInnings) {
-      final posts = await _loadAllPostsForInnings(innings.id!);
-      innings.posts.addAll(posts);
+    final postEntities = await postsTable.selectForMatch(match.id);
+    final posts = postEntities.map((p) => EntityMappers.unpackInningsPost(p));
+    final postMap = <int, List<InningsPost>>{};
+
+    for (final p in posts) {
+      postMap.putIfAbsent(p.inningsId, () => []);
+      postMap[p.inningsId]!.add(p);
     }
 
-    return allInnings.toList();
-  }
+    for (final i in allInnings) {
+      if (postMap[i.id] != null) i.posts.addAll(postMap[i.id!]!);
+    }
 
-  // Future<Iterable<InningsPost>> _loadAllPostsForMatch(QuickMatch match) async {
-  //   final postEntities = await postsTable.selectForMatch(match.id);
-  //   final posts = postEntities.map((p) => EntityMappers.unpackInningsPost(p));
-  //   return posts;
-  // }
-
-  Future<Iterable<InningsPost>> _loadAllPostsForInnings(int id) async {
-    final postEntities = await postsTable.selectForInnings(id);
-    final posts = postEntities.map((p) => EntityMappers.unpackInningsPost(p));
-    return posts;
+    return allInnings;
   }
 }

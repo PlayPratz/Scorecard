@@ -275,12 +275,14 @@ class BatterInnings {
       UnmodifiableListView(balls.where((b) => b.isBoundary));
 
   Map<int, int> get boundaryCount {
-    final boundaries = this.boundaries;
-    final counts = <int, int>{};
+    final counts = <int, int>{for (int i = 1; i <= 6; i++) i: 0};
 
-    for (int i = 1; i <= 6; i++) {
-      counts[i] = boundaries.where((b) => b.batterRuns == i).length;
+    for (final b in balls) {
+      if (b.isBoundary) {
+        counts[b.batterRuns] = counts[b.batterRuns]! + 1;
+      }
     }
+
     return counts;
   }
 }
@@ -295,9 +297,15 @@ class BowlerInnings {
   final List<Ball> _balls;
   UnmodifiableListView<Ball> get balls => UnmodifiableListView(_balls);
 
-  BowlerInnings.of(this.bowlerId, QuickInnings innings)
-      : _balls = innings.balls.where((b) => b.bowlerId == bowlerId).toList(),
-        ballsPerOver = innings.ballsPerOver;
+  BowlerInnings(
+    this.bowlerId,
+    this._balls, {
+    required this.ballsPerOver,
+  });
+
+  // BowlerInnings.of(this.bowlerId, QuickInnings innings)
+  //     : _balls = innings.balls.where((b) => b.bowlerId == bowlerId).toList(),
+  //       ballsPerOver = innings.ballsPerOver;
 
   /// The runs conceded by this Bowler
   int get runs =>

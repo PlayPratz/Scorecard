@@ -34,13 +34,12 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
   Widget build(BuildContext context) {
     return StreamBuilder(
         stream: controller._stateStreamController.stream,
+        initialData: _ScorecardLoadingState(),
         builder: (context, snapshot) {
-          final state = snapshot.data;
-
+          final state = snapshot.data!;
           return Scaffold(
               appBar: AppBar(title: const Text("Scorecard")),
               body: switch (state) {
-                null ||
                 _ScorecardLoadingState() =>
                   const Center(child: CircularProgressIndicator()),
                 _ShowScorecardState() => ListView.builder(
@@ -57,7 +56,7 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
                 _ShowGraphsState() => _GraphListSection(state.allInnings),
               },
               bottomNavigationBar: switch (state) {
-                null || _ScorecardLoadingState() => const BottomAppBar(),
+                _ScorecardLoadingState() => const BottomAppBar(),
                 _ScorecardLoadedState() => NavigationBar(
                     // labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
                     onDestinationSelected: (index) {
@@ -271,67 +270,7 @@ class _BattingScorecard extends StatelessWidget {
               const SizedBox(),
             ]),
             for (final batterInnings in allBatterInnings)
-              TableRow(children: [
-                ListTile(
-                  leading: CircleAvatar(
-                    radius: 16,
-                    backgroundColor: batterInnings.isOut
-                        ? BallColors.wicket
-                        : BallColors.notOut,
-                    child: const Icon(Icons.sports_motorsports, size: 20),
-                  ),
-                  title:
-                      Text(getPlayerName(batterInnings.batterId).toUpperCase()),
-
-                  subtitle: Text(
-                    Stringify.wicket(batterInnings.wicket,
-                        retired: batterInnings.retired,
-                        getPlayerName: getPlayerName),
-                  ),
-                  titleTextStyle: Theme.of(context).textTheme.bodyMedium,
-                  subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
-                  // isThreeLine: true,
-                  //
-                  // onTap: () =>
-                  //     _goBattingInningsTimeline(context, batterInnings),
-                  contentPadding: EdgeInsets.zero,
-                  horizontalTitleGap: 10,
-                  minTileHeight: 0,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0),
-                  child: Text(
-                    batterInnings.runs.toString(),
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0),
-                  child: Text(
-                    batterInnings.numBalls.toString(),
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0),
-                  child: Text(
-                    batterInnings.strikeRate.toStringAsFixed(1),
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    _wBoundaryCount(context, batterInnings.boundaryCount[4]!,
-                        BallColors.four), // TODO .boundaryCount called twice
-                    _wBoundaryCount(context, batterInnings.boundaryCount[6]!,
-                        BallColors.six),
-                  ],
-                ),
-              ])
+              wBatterTile(batterInnings, context)
           ],
         ),
         const SizedBox(height: 12),
@@ -399,10 +338,9 @@ class _BattingScorecard extends StatelessWidget {
         if (fallOfWickets.isNotEmpty)
           Table(
             columnWidths: const {
-              0: FlexColumnWidth(),
-              1: FlexColumnWidth(),
+              0: FlexColumnWidth(2),
+              1: FlexColumnWidth(1.5),
               2: FlexColumnWidth(7),
-              3: FlexColumnWidth(),
             },
             defaultVerticalAlignment: TableCellVerticalAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -424,6 +362,66 @@ class _BattingScorecard extends StatelessWidget {
           )
       ],
     );
+  }
+
+  TableRow wBatterTile(BatterInnings batterInnings, BuildContext context) {
+    final boundaryCount = batterInnings.boundaryCount;
+    return TableRow(children: [
+      ListTile(
+        leading: CircleAvatar(
+          radius: 16,
+          backgroundColor:
+              batterInnings.isOut ? BallColors.wicket : BallColors.notOut,
+          child: const Icon(Icons.sports_motorsports, size: 20),
+        ),
+        title: Text(getPlayerName(batterInnings.batterId).toUpperCase()),
+
+        subtitle: Text(
+          Stringify.wicket(batterInnings.wicket,
+              retired: batterInnings.retired, getPlayerName: getPlayerName),
+        ),
+        titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+        subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
+        // isThreeLine: true,
+        //
+        // onTap: () =>
+        //     _goBattingInningsTimeline(context, batterInnings),
+        contentPadding: EdgeInsets.zero,
+        horizontalTitleGap: 10,
+        minTileHeight: 0,
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Text(
+          batterInnings.runs.toString(),
+          style: Theme.of(context).textTheme.bodyLarge,
+          textAlign: TextAlign.center,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Text(
+          batterInnings.numBalls.toString(),
+          style: Theme.of(context).textTheme.bodyLarge,
+          textAlign: TextAlign.center,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Text(
+          batterInnings.strikeRate.toStringAsFixed(1),
+          style: Theme.of(context).textTheme.bodySmall,
+          textAlign: TextAlign.center,
+        ),
+      ),
+      Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          _wBoundaryCount(context, boundaryCount[4]!, BallColors.four),
+          _wBoundaryCount(context, boundaryCount[6]!, BallColors.six),
+        ],
+      ),
+    ]);
   }
 
   String targetString(int? target) => target == null ? "" : ", Target: $target";

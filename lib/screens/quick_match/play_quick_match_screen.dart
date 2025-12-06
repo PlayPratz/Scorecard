@@ -104,12 +104,38 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                       onOpenTimeline: () => controller.goTimeline(context),
                     ),
                     const Spacer(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ListTile(
+                            title: const Text("Solo"),
+                            // titleTextStyle:
+                            //     Theme.of(context).textTheme.bodySmall,
+                            trailing: Switch(
+                              value: controller.isSolo,
+                              onChanged: (_) => controller.toggleIsSolo(),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: ListTile(
+                            title: const Text("Rotate Strike"),
+                            titleTextStyle:
+                                Theme.of(context).textTheme.bodySmall,
+                            trailing: Switch(
+                                value: controller.autoRotateStrike,
+                                onChanged: (_) =>
+                                    controller.toggleAutoRotateStrike()),
+                          ),
+                        ),
+                      ],
+                    ),
                     _OnCreasePlayers(
                       batter1: _batter1Display(innings),
                       batter2: _batter2Display(innings),
                       bowler: _bowlerDisplay(context, innings),
                       strikerId: innings.strikerId,
-                      onlySingleBatter: innings.onlySingleBatter,
+                      isSolo: controller.isSolo,
                       isOutBowler: state is _PickBowlerState,
                       onPickBatter: () => controller.pickBatter(context, null),
                       onPickBowler: () => controller.pickBowler(context),
@@ -230,7 +256,7 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
     QuickInnings innings,
     String batterId,
   ) {
-    final batterInnings = service.getBatterInningsOf(innings, batterId);
+    final batterInnings = service.getLastBatterInningsOf(innings, batterId);
 
     return _BatterScoreDisplay(batterId,
         batterName: PlayerCache().get(batterId).name,
@@ -245,7 +271,11 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
     final bowlerId = innings.bowlerId;
     if (bowlerId == null) return null;
 
-    final bowlerInnings = BowlerInnings.of(bowlerId, innings);
+    final bowlerInnings = BowlerInnings(
+      bowlerId,
+      innings.balls.where((b) => b.bowlerId == bowlerId).toList(),
+      ballsPerOver: innings.ballsPerOver,
+    );
 
     return _BowlerScoreDisplay(
       bowlerId,
@@ -269,6 +299,9 @@ class _PlayQuickMatchScreenController {
   late QuickInnings innings;
 
   final QuickMatchService _matchService;
+
+  bool isSolo = false;
+  bool autoRotateStrike = true;
 
   final ballController = _NextBallSelectorController();
 
@@ -353,6 +386,16 @@ class _PlayQuickMatchScreenController {
     return _PlayBallState(innings);
   }
 
+  void toggleAutoRotateStrike() {
+    autoRotateStrike = !autoRotateStrike;
+    _dispatchState();
+  }
+
+  void toggleIsSolo() {
+    isSolo = !isSolo;
+    _dispatchState();
+  }
+
   Future<void> pickBowler(BuildContext context) async {
     _dispatchLoading();
     final bowler = await _pickPlayer(context, "Pick a Bowler");
@@ -367,6 +410,8 @@ class _PlayQuickMatchScreenController {
     _matchService.setStrike(innings, batterId);
     _dispatchState();
   }
+
+  void setSolo(bool solo) {}
 
   Future<void> pickBatter(BuildContext context, String? previousId) async {
     _dispatchLoading();
@@ -454,6 +499,7 @@ class _PlayQuickMatchScreenController {
       wicket: ballState.nextWicket,
       bowlingExtraType: ballState.nextBowlingExtra,
       battingExtraType: ballState.nextBattingExtra,
+      autoRotateStrike: autoRotateStrike,
     );
 
     _dispatchState();
@@ -709,7 +755,7 @@ class _ScoreBar extends StatelessWidget {
 class _OnCreasePlayers extends StatelessWidget {
   final _BatterScoreDisplay? batter1;
 
-  final bool onlySingleBatter;
+  final bool isSolo;
   final _BatterScoreDisplay? batter2;
 
   final String? strikerId;
@@ -735,7 +781,7 @@ class _OnCreasePlayers extends StatelessWidget {
     required this.strikerId,
     required this.bowler,
     required this.isOutBowler,
-    required this.onlySingleBatter,
+    required this.isSolo,
     required this.onSetStrike,
     required this.onRetireBatter,
     required this.onRetireBowler,
@@ -763,7 +809,7 @@ class _OnCreasePlayers extends StatelessWidget {
                 ),
               ),
               _wBatterDisplay(context, batter1),
-              if (!onlySingleBatter) _wBatterDisplay(context, batter2),
+              if (!isSolo) _wBatterDisplay(context, batter2),
             ],
           ),
         ),
@@ -804,7 +850,11 @@ class _OnCreasePlayers extends StatelessWidget {
     if (batterScoreDisplay == null) {
       return ListTile(
         title: const Text("Pick a Batter"),
-        trailing: const Icon(Icons.chevron_right),
+        subtitle: const SizedBox(),
+        trailing: const Padding(
+          padding: EdgeInsets.only(bottom: 18.0),
+          child: Icon(Icons.chevron_right),
+        ),
         onTap: () => onPickBatter(),
       );
     } else {
@@ -838,7 +888,11 @@ class _OnCreasePlayers extends StatelessWidget {
     if (bowler == null) {
       return ListTile(
         title: const Text("Pick a Bowler"),
-        trailing: const Icon(Icons.chevron_right),
+        subtitle: const SizedBox(),
+        trailing: const Padding(
+          padding: EdgeInsets.only(bottom: 18.0),
+          child: Icon(Icons.chevron_right),
+        ),
         onTap: () => onPickBowler(),
       );
     } else {

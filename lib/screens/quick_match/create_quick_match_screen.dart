@@ -156,7 +156,7 @@ class _NumberChooser extends StatelessWidget {
 
 class QuickMatchRulesController with ChangeNotifier {
   int _ballsPerOver = 6;
-  int _oversPerInnings = 4;
+  int _oversPerInnings = 5;
   int _noBallPenalty = 1;
   int _widePenalty = 1;
   // bool _lastWicketBatter = false;

@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/services/settings_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-const version = "0.91.1beta";
-const buildDate = "2025-08-08";
+const version = "0.92.1beta";
+const buildDate = "2025-08-11";
 const repository = "https://github.com/PlayPratz/Scorecard.git";
 
 class SettingsScreen extends StatefulWidget {

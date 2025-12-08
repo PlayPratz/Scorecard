@@ -1,6 +1,8 @@
 import 'package:scorecard/modules/player/player_model.dart';
 
 sealed class Wicket {
+  int? id;
+
   final String batterId;
 
   Dismissal get dismissal;
@@ -92,6 +94,8 @@ class TimedOutWicket extends Wicket {
 // Retirements
 
 sealed class Retired {
+  int? id;
+
   final String batterId;
 
   Retired({required this.batterId});

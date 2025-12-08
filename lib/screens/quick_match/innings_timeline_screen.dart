@@ -206,13 +206,22 @@ class _InningsPostWidget extends StatelessWidget {
         ),
       WicketBeforeDelivery() => ListTile(
           title: Text(getPlayerName(post.batterId)),
-          subtitle: const Text("Next bowler"),
+          subtitle: const Text("Run out before Delivery"),
           leading: wIndex(context, BallColors.wicket),
           titleTextStyle: titleTextStyle,
           subtitleTextStyle: subtitleTextStyle,
           contentPadding: contentPadding,
           minTileHeight: minTileHeight,
         ),
+      Penalty() => ListTile(
+          title: Text("${post.penalties} runs"),
+          subtitle: const Text("Penalty"),
+          leading: wIndex(context, BallColors.noBall),
+          titleTextStyle: titleTextStyle,
+          subtitleTextStyle: subtitleTextStyle,
+          contentPadding: contentPadding,
+          minTileHeight: minTileHeight,
+        )
     };
   }
 

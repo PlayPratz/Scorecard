@@ -37,23 +37,17 @@ class QuickMatch {
 }
 
 class QuickMatchRules {
+  final int oversPerInnings;
   final int ballsPerOver;
-  // final int oversPerBowler;
-  final int ballsPerInnings;
 
   final int noBallPenalty;
   final int widePenalty;
 
-  final bool onlySingleBatter;
-  // final bool lastWicketBatter;
-
   QuickMatchRules({
+    required this.oversPerInnings,
     required this.ballsPerOver,
-    required this.ballsPerInnings,
     required this.noBallPenalty,
     required this.widePenalty,
-    required this.onlySingleBatter,
-    // required this.lastWicketBatter,
   });
 }
 
@@ -126,7 +120,8 @@ class QuickInnings {
   int get ballsPerOver => _rules.ballsPerOver;
 
   /// The max number of legal balls that can be bowled in thing innings
-  int get maxBalls => isSuperOver ? ballsPerOver : _rules.ballsPerInnings;
+  int get maxBalls =>
+      isSuperOver ? ballsPerOver : _rules.oversPerInnings * _rules.ballsPerOver;
 
   /// The balls left to win the match
   int get ballsLeft => maxBalls - numBalls;
@@ -141,7 +136,7 @@ class QuickInnings {
   /// Penalty for a wide
   int get widePenalty => _rules.widePenalty;
 
-  bool get onlySingleBatter => _rules.onlySingleBatter;
+  // bool get onlySingleBatter => _rules.onlySingleBatter;
 
   // On Crease
 
@@ -170,33 +165,82 @@ class QuickInnings {
   /// Conditions for considering an Innings as ended
   bool get hasEnded => isDeclared || ballsLeft == 0 || runsRequired == 0;
 
-  Map<String, int> get extras {
-    final extras = balls.where((b) => b.isBowlingExtra || b.isBattingExtra);
-    final counts = <String, int>{
-      "wd": 0,
-      "nb": 0,
-      "b": 0,
-      "lb": 0,
-    };
+  Extras get extras {
+    final extras = balls.where((b) => b.isExtra);
+
+    int noBalls = 0;
+    int wides = 0;
+    int byes = 0;
+    int legByes = 0;
+    int penalties = 0; // TODO Handle
 
     for (final extra in extras) {
-      if (extra.bowlingExtra is Wide) {
-        counts["wd"] = counts["wd"]! + extra.bowlingExtraRuns;
-      }
       if (extra.bowlingExtra is NoBall) {
-        counts["nb"] = counts["nb"]! + extra.bowlingExtraRuns;
+        noBalls += extra.bowlingExtraRuns;
+      } else if (extra.bowlingExtra is Wide) {
+        wides += extra.bowlingExtraRuns;
       }
 
       if (extra.battingExtra is Bye) {
-        counts["b"] = counts["b"]! + extra.battingExtraRuns;
-      }
-      if (extra.bowlingExtra is LegBye) {
-        counts["lb"] = counts["lb"]! + extra.battingExtraRuns;
+        byes += extra.battingExtraRuns;
+      } else if (extra.battingExtra is LegBye) {
+        legByes += extra.battingExtraRuns;
       }
     }
 
-    return counts;
+    return Extras(
+        noBalls: noBalls,
+        wides: wides,
+        byes: byes,
+        legByes: legByes,
+        penalties: penalties);
   }
+
+  // Map<String, int> get extras {
+  //   final extras = balls.where((b) => b.isBowlingExtra || b.isBattingExtra);
+  //   final counts = <String, int>{
+  //     "wd": 0,
+  //     "nb": 0,
+  //     "b": 0,
+  //     "lb": 0,
+  //     "p": 0,
+  //   };
+  //
+  //   for (final extra in extras) {
+  //     if (extra.bowlingExtra is Wide) {
+  //       counts["wd"] = counts["wd"]! + extra.bowlingExtraRuns;
+  //     }
+  //     if (extra.bowlingExtra is NoBall) {
+  //       counts["nb"] = counts["nb"]! + extra.bowlingExtraRuns;
+  //     }
+  //
+  //     if (extra.battingExtra is Bye) {
+  //       counts["b"] = counts["b"]! + extra.battingExtraRuns;
+  //     }
+  //     if (extra.bowlingExtra is LegBye) {
+  //       counts["lb"] = counts["lb"]! + extra.battingExtraRuns;
+  //     }
+  //   }
+  //
+  //   return counts;
+  // }
+}
+
+class Extras {
+  final int noBalls;
+  final int wides;
+  final int byes;
+  final int legByes;
+  final int penalties;
+
+  int get total => noBalls + wides + byes + legByes + penalties;
+
+  Extras(
+      {required this.noBalls,
+      required this.wides,
+      required this.byes,
+      required this.legByes,
+      required this.penalties});
 }
 
 sealed class QuickMatchResult {}

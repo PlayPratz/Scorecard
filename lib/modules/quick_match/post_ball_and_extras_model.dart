@@ -10,11 +10,14 @@ sealed class InningsPost {
   /// The ID of the Post as in the database
   int? id; // TODO Can make this final?
 
+  /// The ID of the Match as in the database
+  final String matchId;
+
   /// The ID of the Innings as in the database
   final int inningsId;
 
-  /// The ID of the Match as in the database
-  final String matchId;
+  /// The cardinal number of the Innings
+  final int inningsNumber;
 
   /// The index of this post in the innings
   final PostIndex index;
@@ -25,10 +28,20 @@ sealed class InningsPost {
   /// Any comment that the user would like to add about this post
   final String? comment;
 
+  /// Whether this post counts towards the balls bowled by a bowler
+  get isCountedForBowler;
+
+  /// Whether this post counts towards the balls faced by a batter
+  get isCountedForBatter;
+
+  /// Whether this post is a wicket
+  get isWicket;
+
   InningsPost(
     this.id, {
     required this.matchId,
     required this.inningsId,
+    required this.inningsNumber,
     required this.index,
     required this.timestamp,
     this.comment,
@@ -54,17 +67,26 @@ class Ball extends InningsPost {
 
   /// A wicket, if any, that fell on this ball
   final Wicket? wicket;
+
+  @override
   bool get isWicket => wicket != null;
 
   /// An extra due to the bowler or fielding team's fault
   final BowlingExtra? bowlingExtra;
   bool get isBowlingExtra => bowlingExtra != null;
   int get bowlingExtraRuns => bowlingExtra != null ? bowlingExtra!.penalty : 0;
+  int get noBalls => bowlingExtra is NoBall ? bowlingExtra!.penalty : 0;
+  int get wides => bowlingExtra is Wide ? bowlingExtra!.penalty : 0;
 
   /// An extra when the batters score runs without the bat touching the ball
-  final BattingExtra? battingExtra; // TODO Make this like BowlingExtra
+  final BattingExtra? battingExtra;
   bool get isBattingExtra => battingExtra != null;
   int get battingExtraRuns => battingExtra != null ? battingExtra!.runs : 0;
+  int get byes => bowlingExtra is Bye ? battingExtra!.runs : 0;
+  int get legByes => bowlingExtra is LegBye ? battingExtra!.runs : 0;
+
+  /// TODO handle Penalties
+  bool get isExtra => isBowlingExtra || isBattingExtra;
 
   /// Total runs conceded by the bowler
   int get bowlerRuns => batterRuns + bowlingExtraRuns;
@@ -72,10 +94,17 @@ class Ball extends InningsPost {
   /// Total runs awarded to the Batting Team
   int get totalRuns => batterRuns + bowlingExtraRuns + battingExtraRuns;
 
+  @override
+  get isCountedForBatter => battingExtra is! NoBall;
+
+  @override
+  get isCountedForBowler => !isBowlingExtra;
+
   Ball(
     super.id, {
     required super.matchId,
     required super.inningsId,
+    required super.inningsNumber,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -103,10 +132,20 @@ class BowlerRetire extends InningsPost {
   /// The bowler's retirement
   // final RetiredBowler retired;
 
+  @override
+  get isCountedForBatter => false;
+
+  @override
+  get isCountedForBowler => false;
+
+  @override
+  get isWicket => false;
+
   BowlerRetire(
     super.id, {
     required super.matchId,
     required super.inningsId,
+    required super.inningsNumber,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -126,10 +165,20 @@ class NextBowler extends InningsPost {
 
   // final bool isMidOverChange;
 
+  @override
+  get isCountedForBatter => false;
+
+  @override
+  get isCountedForBowler => false;
+
+  @override
+  get isWicket => false;
+
   NextBowler(
     super.id, {
     required super.matchId,
     required super.inningsId,
+    required super.inningsNumber,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -151,10 +200,20 @@ class BatterRetire extends InningsPost {
   /// The batter who has retired
   String get batterId => retired.batterId;
 
+  @override
+  get isCountedForBatter => false;
+
+  @override
+  get isCountedForBowler => false;
+
+  @override
+  get isWicket => false; // TODO
+
   BatterRetire(
     super.id, {
     required super.matchId,
     required super.inningsId,
+    required super.inningsNumber,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -171,10 +230,20 @@ class NextBatter extends InningsPost {
   /// The batter that has walked out to bat
   final String nextId;
 
+  @override
+  get isCountedForBatter => false;
+
+  @override
+  get isCountedForBowler => false;
+
+  @override
+  get isWicket => false;
+
   NextBatter(
     super.id, {
     required super.matchId,
     required super.inningsId,
+    required super.inningsNumber,
     required super.index,
     required super.timestamp,
     super.comment,
@@ -194,14 +263,49 @@ class WicketBeforeDelivery extends InningsPost {
 
   String get batterId => wicket.batterId;
 
+  @override
+  get isCountedForBatter => false;
+
+  @override
+  get isCountedForBowler => false;
+
+  @override
+  get isWicket => true;
+
   WicketBeforeDelivery(
     super.id, {
     required super.matchId,
     required super.inningsId,
+    required super.inningsNumber,
     required super.index,
     required super.timestamp,
     super.comment,
     required this.wicket,
+  });
+}
+
+/// Posted whenever penalty runs are awarded to the batting team
+class Penalty extends InningsPost {
+  final int penalties;
+
+  @override
+  get isCountedForBowler => false;
+
+  @override
+  get isCountedForBatter => false;
+
+  @override
+  get isWicket => false;
+
+  Penalty(
+    super.id, {
+    required super.matchId,
+    required super.inningsId,
+    required super.inningsNumber,
+    required super.index,
+    required super.timestamp,
+    super.comment,
+    required this.penalties,
   });
 }
 

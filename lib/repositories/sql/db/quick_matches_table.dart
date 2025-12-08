@@ -19,11 +19,10 @@ class QuickMatchesEntity implements IEntity {
   // final int? result_margin_1;
   // final int? result_margin_2;
   // final String? potm_id;
+  final int rules_overs_per_innings;
   final int rules_balls_per_over;
-  final int rules_balls_per_innings;
   final int rules_no_ball_penalty;
   final int rules_wide_penalty;
-  final bool rules_only_single_batter;
 
   QuickMatchesEntity({
     required this.id,
@@ -34,11 +33,10 @@ class QuickMatchesEntity implements IEntity {
     // required this.venue_id,
     required this.starts_at,
     // required this.rules_id,
+    required this.rules_overs_per_innings,
     required this.rules_balls_per_over,
-    required this.rules_balls_per_innings,
     required this.rules_no_ball_penalty,
     required this.rules_wide_penalty,
-    required this.rules_only_single_batter,
     // this.toss_winner_id,
     // this.toss_choice,
     // this.result_type,
@@ -59,12 +57,10 @@ class QuickMatchesEntity implements IEntity {
           // venue_id: map["venue_id"] as String,
           starts_at: readDateTime(map["starts_at"] as int)!,
           // rules_id: map["rules_id"] as int,
+          rules_overs_per_innings: map["rules_overs_per_innings"] as int,
           rules_balls_per_over: map["rules_balls_per_over"] as int,
-          rules_balls_per_innings: map["rules_balls_per_innings"] as int,
           rules_no_ball_penalty: map["rules_no_ball_penalty"] as int,
           rules_wide_penalty: map["rules_wide_penalty"] as int,
-          rules_only_single_batter:
-              readBool(map["rules_only_single_batter"] as int)!,
           // toss_winner_id: map["toss_winner_id"] as String?,
           // toss_choice: map["toss_choice"] as int?,
           // result_type: map["result_type"] as int?,
@@ -85,11 +81,10 @@ class QuickMatchesEntity implements IEntity {
         // "venue_id": venue_id,
         "starts_at": starts_at.microsecondsSinceEpoch,
         // "rules_id": rules_id,
+        "rules_overs_per_innings": rules_overs_per_innings,
         "rules_balls_per_over": rules_balls_per_over,
-        "rules_balls_per_innings": rules_balls_per_innings,
         "rules_no_ball_penalty": rules_no_ball_penalty,
         "rules_wide_penalty": rules_wide_penalty,
-        "rules_only_single_batter": rules_only_single_batter ? 1 : 0,
         // "toss_winner_id": toss_winner_id,
         // "toss_choice": toss_choice,
         // "result_type": result_type,

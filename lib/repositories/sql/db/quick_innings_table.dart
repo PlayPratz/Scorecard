@@ -8,28 +8,54 @@ class QuickInningsEntity implements IEntity {
   final int type;
   // final String batting_team_id;
   // final String bowling_team_id;
-  // final bool is_forfeited;
+  final bool is_ended;
   final bool is_declared;
+  final bool is_forfeited;
+
+  final int overs_limit;
+  final int balls_per_over;
+  final int? target_runs;
+
+  final int runs;
+  final int wickets;
+  final int balls;
+
+  final int extras_no_balls;
+  final int extras_wides;
+  final int extras_byes;
+  final int extras_leg_byes;
+  final int extras_penalties;
+
   final String? batter1_id;
   final String? batter2_id;
-  final String? striker_id; // TODO is this needed?
+  final String? striker_id;
   final String? bowler_id;
-  final int? target_runs;
 
   QuickInningsEntity({
     required this.id,
     required this.match_id,
     required this.innings_number,
     required this.type,
+    required this.is_ended,
+    required this.is_declared,
+    required this.is_forfeited,
     // required this.batting_team_id,
     // required this.bowling_team_id,
-    // required this.is_forfeited,
-    required this.is_declared,
+    required this.overs_limit,
+    required this.balls_per_over,
+    required this.target_runs,
+    required this.runs,
+    required this.wickets,
+    required this.balls,
+    required this.extras_no_balls,
+    required this.extras_wides,
+    required this.extras_byes,
+    required this.extras_leg_byes,
+    required this.extras_penalties,
     required this.batter1_id,
     required this.batter2_id,
     required this.striker_id,
     required this.bowler_id,
-    required this.target_runs,
   });
 
   QuickInningsEntity.deserialize(Map<String, Object?> map)
@@ -40,13 +66,24 @@ class QuickInningsEntity implements IEntity {
           type: map["type"] as int,
           // batting_team_id: map["batting_team_id"] as String,
           // bowling_team_id: map["bowling_team_id"] as String,
-          // is_forfeited: readBool(map["is_forfeited"] as int)!,
+          is_ended: readBool(map["is_ended"] as int)!,
           is_declared: readBool(map["is_declared"] as int)!,
+          is_forfeited: readBool(map["is_forfeited"] as int)!,
+          overs_limit: map["overs_limit"] as int,
+          balls_per_over: map["balls_per_over"] as int,
+          target_runs: map["target_runs"] as int?,
+          runs: map["runs"] as int,
+          wickets: map["wickets"] as int,
+          balls: map["balls"] as int,
+          extras_no_balls: map["extras_no_balls"] as int,
+          extras_wides: map["extras_wides"] as int,
+          extras_byes: map["extras_byes"] as int,
+          extras_leg_byes: map["extras_leg_byes"] as int,
+          extras_penalties: map["extras_penalties"] as int,
           batter1_id: map["batter1_id"] as String?,
           batter2_id: map["batter2_id"] as String?,
           striker_id: map["striker_id"] as String?,
           bowler_id: map["bowler_id"] as String?,
-          target_runs: map["target_runs"] as int?,
         );
 
   @override
@@ -57,13 +94,24 @@ class QuickInningsEntity implements IEntity {
         "type": type,
         // "batting_team_id": batting_team_id,
         // "bowling_team_id": bowling_team_id,
-        // "is_forfeited": is_forfeited ? 1 : 0,
+        "is_ended": parseBool(is_ended),
         "is_declared": parseBool(is_declared),
+        "is_forfeited": parseBool(is_forfeited),
+        "overs_limit": overs_limit,
+        "balls_per_over": balls_per_over,
+        "target_runs": target_runs,
+        "runs": runs,
+        "wickets": wickets,
+        "balls": balls,
+        "extras_no_balls": extras_no_balls,
+        "extras_wides": extras_wides,
+        "extras_byes": extras_byes,
+        "extras_leg_byes": extras_leg_byes,
+        "extras_penalties": extras_penalties,
         "batter1_id": batter1_id,
         "batter2_id": batter2_id,
         "striker_id": striker_id,
         "bowler_id": bowler_id,
-        "target_runs": target_runs,
       };
 
   @override

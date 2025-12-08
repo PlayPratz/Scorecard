@@ -165,6 +165,7 @@ class QuickMatchService {
           batterMap[post.batterId]!.add(post);
         case BowlerRetire():
         case NextBowler():
+        case Penalty():
         // Do nothing
       }
     }
@@ -244,6 +245,7 @@ class QuickMatchService {
           }
         case BowlerRetire():
         case NextBowler():
+        case Penalty():
         // Do nothing
       }
     }
@@ -364,15 +366,24 @@ class QuickMatchService {
   /// Does nothing if [innings.rules.isSolo] is set or if the last man
   /// is batting
   void swapStrike(QuickInnings innings) {
-    if (innings.onlySingleBatter) {
+    if (innings.batter1Id == null && innings.batter2Id == null) {
       return;
     }
-    if (innings.strikerId == innings.batter1Id) {
+
+    if (innings.batter2Id == null) {
       innings.strikerId = innings.batter2Id;
-    } else {
-      // Defaults to batter1 just in case none of the two batters
-      // are set on strike
+    } else if (innings.batter1Id == null) {
       innings.strikerId = innings.batter1Id;
+    } else {
+      // Both batters have been set
+
+      if (innings.strikerId == innings.batter1Id) {
+        innings.strikerId = innings.batter2Id;
+      } else {
+        // Defaults to batter1 just in case none of the two batters
+        // are set on strike
+        innings.strikerId = innings.batter1Id;
+      }
     }
   }
 
@@ -387,6 +398,7 @@ class QuickMatchService {
       null,
       matchId: innings.matchId,
       inningsId: innings.id!,
+      inningsNumber: innings.inningsNumber,
       index: _currentIndex(innings),
       timestamp: _defaultTimestamp(innings),
       bowlerId: innings.bowlerId!,
@@ -407,6 +419,7 @@ class QuickMatchService {
       null,
       matchId: innings.matchId,
       inningsId: innings.id!,
+      inningsNumber: innings.inningsNumber,
       index: index,
       previousId: innings.bowlerId,
       timestamp: _defaultTimestamp(innings),
@@ -429,6 +442,7 @@ class QuickMatchService {
       matchId: innings.matchId,
       inningsId: innings.id!,
       index: _currentIndex(innings),
+      inningsNumber: innings.inningsNumber,
       timestamp: _defaultTimestamp(innings),
       retired: retired,
     );
@@ -442,6 +456,7 @@ class QuickMatchService {
       null,
       matchId: innings.matchId,
       inningsId: innings.id!,
+      inningsNumber: innings.inningsNumber,
       index: _currentIndex(innings),
       timestamp: _defaultTimestamp(innings),
       nextId: nextId,
@@ -499,6 +514,7 @@ class QuickMatchService {
       null,
       matchId: innings.matchId,
       inningsId: innings.id!,
+      inningsNumber: innings.inningsNumber,
       index: index,
       bowlerId: innings.bowlerId!,
       batterId: innings.strikerId!,
@@ -540,6 +556,8 @@ class QuickMatchService {
         _handleNextBatterPost(innings, post);
       case WicketBeforeDelivery():
         _handleWicketBeforeDeliveryPost(innings, post);
+      case Penalty():
+        _handlePenaltyPost(innings, post);
     }
 
     // Update the innings in the Database
@@ -601,13 +619,13 @@ class QuickMatchService {
     if (innings.batter1Id == null || innings.batter1Id == post.previousId) {
       // If batter1 is not set or batter1 is replaced
       innings.batter1Id = post.nextId;
-    } else if (!innings.onlySingleBatter &&
-        (innings.batter2Id == null || innings.batter2Id == post.previousId)) {
-      // If batter2 is allowed and (batter2 is not set or batter2 is replaced)
+    } else if (innings.batter2Id == null ||
+        innings.batter2Id == post.previousId) {
+      // If batter2 is not set or batter2 is replaced
       innings.batter2Id = post.nextId;
     } else {
       throw StateError(
-          "Attempted to add a new batter without replacing existing");
+          "Attempted to add a new batter without replacing existing!");
     }
 
     // Set strike
@@ -642,6 +660,14 @@ class QuickMatchService {
     // Nothing to be done
   }
 
+  void _handlePenaltyPost(QuickInnings innings, Penalty post) {
+    // Nothing to be done
+  }
+
+  void _undoPenaltyPost(QuickInnings innings, Penalty post) {
+    // Nothing to be done
+  }
+
   Future<void> undoPostFromInnings(QuickInnings innings) async {
     if (innings.posts.isEmpty) return;
 
@@ -667,6 +693,8 @@ class QuickMatchService {
         _undoNextBatterPost(innings, post);
       case WicketBeforeDelivery():
         _undoWicketBeforeDeliveryPost(innings, post);
+      case Penalty():
+        _undoPenaltyPost(innings, post);
     }
   }
 

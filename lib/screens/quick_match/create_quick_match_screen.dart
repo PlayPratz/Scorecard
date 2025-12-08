@@ -41,7 +41,7 @@ class CreateQuickMatchScreen extends StatelessWidget {
                       onChange: (x) => controller.oversPerInnings = x),
                   Center(
                       child: Text(
-                    "${controller._ballsPerInnings} balls",
+                    "${controller._oversPerInnings} overs",
                     style: Theme.of(context).textTheme.bodySmall,
                   )),
                   const SizedBox(height: 32),
@@ -159,18 +159,12 @@ class QuickMatchRulesController with ChangeNotifier {
   int _oversPerInnings = 5;
   int _noBallPenalty = 1;
   int _widePenalty = 1;
-  // bool _lastWicketBatter = false;
-  bool _onlySingleBatter = false;
-
-  int get _ballsPerInnings => _ballsPerOver * _oversPerInnings;
 
   QuickMatchRules _deduceState() => QuickMatchRules(
+        oversPerInnings: _oversPerInnings,
         ballsPerOver: _ballsPerOver,
-        ballsPerInnings: _ballsPerInnings,
         noBallPenalty: _noBallPenalty,
         widePenalty: _widePenalty,
-        onlySingleBatter: _onlySingleBatter,
-        // lastWicketBatter: _lastWicketBatter,
       );
 
   void _dispatchState() {
@@ -194,17 +188,6 @@ class QuickMatchRulesController with ChangeNotifier {
 
   set widePenalty(int x) {
     _widePenalty = x;
-    _dispatchState();
-  }
-
-  set lastWicketBatter(bool x) {
-    // _lastWicketBatter = x;
-    _dispatchState();
-  }
-
-  set onlySingleBatter(bool x) {
-    _onlySingleBatter = x;
-    // _lastWicketBatter = _lastWicketBatter || _onlySingleBatter;
     _dispatchState();
   }
 }

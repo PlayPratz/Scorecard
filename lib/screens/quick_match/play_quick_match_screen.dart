@@ -245,7 +245,7 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
   }
 
   _BatterScoreDisplay? _batter2Display(QuickInnings innings) {
-    if (innings.onlySingleBatter || innings.batter2Id == null) {
+    if (innings.batter2Id == null) {
       return null;
     }
 
@@ -339,8 +339,7 @@ class _PlayQuickMatchScreenController {
           innings, _matchService.getNextState(innings));
     }
 
-    if (innings.batter1Id == null ||
-        (!innings.onlySingleBatter && innings.batter2Id == null)) {
+    if (innings.batter1Id == null) {
       return _PickBatterState(innings, toReplaceId: null);
     }
 
@@ -367,6 +366,8 @@ class _PlayQuickMatchScreenController {
         if (lastPost.index.ball == innings.ballsPerOver) {
           return _PickBowlerState(innings);
         }
+        break;
+      case Penalty():
         break;
       case Ball():
         if (innings.hasEnded) {

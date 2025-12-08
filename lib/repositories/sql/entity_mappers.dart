@@ -26,11 +26,10 @@ class EntityMappers {
         type: 0,
         stage: match.isCompleted ? 1 : 0,
         starts_at: match.startsAt,
+        rules_overs_per_innings: match.rules.oversPerInnings,
         rules_balls_per_over: match.rules.ballsPerOver,
-        rules_balls_per_innings: match.rules.ballsPerInnings,
         rules_no_ball_penalty: match.rules.noBallPenalty,
         rules_wide_penalty: match.rules.widePenalty,
-        rules_only_single_batter: match.rules.onlySingleBatter,
       );
 
   static QuickMatch unpackQuickMatch(QuickMatchesEntity entity) =>
@@ -39,27 +38,40 @@ class EntityMappers {
         startsAt: entity.starts_at,
         isCompleted: entity.stage == 1,
         rules: QuickMatchRules(
+          oversPerInnings: entity.rules_overs_per_innings,
           ballsPerOver: entity.rules_balls_per_over,
-          ballsPerInnings: entity.rules_balls_per_innings,
           noBallPenalty: entity.rules_no_ball_penalty,
           widePenalty: entity.rules_wide_penalty,
-          onlySingleBatter: entity.rules_only_single_batter,
         ),
       );
 
-  static QuickInningsEntity repackQuickInnings(QuickInnings innings) =>
-      QuickInningsEntity(
-        id: innings.id,
-        match_id: innings.matchId,
-        innings_number: innings.inningsNumber,
-        type: _inningsType(innings),
-        is_declared: innings.isDeclared,
-        batter1_id: innings.batter1Id,
-        batter2_id: innings.batter2Id,
-        striker_id: innings.strikerId,
-        bowler_id: innings.bowlerId,
-        target_runs: innings.target,
-      );
+  static QuickInningsEntity repackQuickInnings(QuickInnings innings) {
+    final extras = innings.extras;
+    return QuickInningsEntity(
+      id: innings.id,
+      match_id: innings.matchId,
+      innings_number: innings.inningsNumber,
+      type: _inningsType(innings),
+      is_ended: innings.hasEnded,
+      is_declared: innings.isDeclared,
+      is_forfeited: false,
+      overs_limit: innings.maxBalls,
+      balls_per_over: innings.ballsPerOver,
+      target_runs: innings.target,
+      runs: innings.runs,
+      wickets: innings.wickets,
+      balls: innings.numBalls,
+      extras_no_balls: extras.noBalls,
+      extras_wides: extras.wides,
+      extras_byes: extras.byes,
+      extras_leg_byes: extras.legByes,
+      extras_penalties: extras.penalties,
+      batter1_id: innings.batter1Id,
+      batter2_id: innings.batter2Id,
+      striker_id: innings.strikerId,
+      bowler_id: innings.bowlerId,
+    );
+  }
 
   static QuickInnings unpackQuickInnings(
           QuickInningsEntity entity, QuickMatchRules rules) =>
@@ -88,11 +100,15 @@ class EntityMappers {
             id: post.id,
             innings_id: post.inningsId,
             match_id: post.matchId,
-            // innings_number: post.inningsNumber,
+            innings_number: post.inningsNumber,
+            day_number: null,
+            session_number: null,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
             type: 0,
+            is_counted_for_bowler: post.isCountedForBowler,
+            is_counted_for_batter: post.isCountedForBatter,
             comment: post.comment,
             bowler_id: post.bowlerId,
             batter_id: post.batterId,
@@ -100,25 +116,30 @@ class EntityMappers {
             bowler_runs: post.bowlerRuns,
             total_runs: post.totalRuns,
             is_boundary: post.isBoundary,
+            extras_no_balls: post.noBalls,
+            extras_wides: post.wides,
+            extras_byes: post.byes,
+            extras_leg_byes: post.legByes,
+            extras_penalties: 0, // TODO
             wicket_type: _wicketTypeToInt(post.wicket),
             wicket_batter_id: post.wicket?.batterId,
             wicket_fielder_id: post.wicket is FielderWicket
                 ? (post.wicket as FielderWicket).fielderId
                 : null,
-            bowling_extra_type: _bowlingExtraTypeToInt(post.bowlingExtra),
-            bowling_extra_penalty: post.bowlingExtraRuns,
-            batting_extra_type: _battingExtraType(post.battingExtra),
-            batting_extra_runs: post.battingExtraRuns,
           ),
         BowlerRetire() => PostsEntity.bowlerRetire(
             id: post.id,
             innings_id: post.inningsId,
             match_id: post.matchId,
-            // innings_number: post.inningsNumber,
+            innings_number: post.inningsNumber,
+            day_number: null,
+            session_number: null,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
             type: 1,
+            is_counted_for_bowler: post.isCountedForBowler,
+            is_counted_for_batter: post.isCountedForBatter,
             comment: post.comment,
             bowler_id: post.bowlerId,
           ),
@@ -126,86 +147,102 @@ class EntityMappers {
             id: post.id,
             innings_id: post.inningsId,
             match_id: post.matchId,
-            // innings_number: post.inningsNumber,
+            innings_number: post.inningsNumber,
+            day_number: null,
+            session_number: null,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
             type: 2,
+            is_counted_for_bowler: post.isCountedForBowler,
+            is_counted_for_batter: post.isCountedForBatter,
             comment: post.comment,
             bowler_id: post.nextId,
-            wicket_fielder_id: post.previousId,
+            previous_id: post.previousId,
           ),
         BatterRetire() => PostsEntity.batterRetire(
             id: post.id,
             innings_id: post.inningsId,
             match_id: post.matchId,
-            // innings_number: post.inningsNumber,
+            innings_number: post.inningsNumber,
+            day_number: null,
+            session_number: null,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
             type: 3,
+            is_counted_for_bowler: post.isCountedForBowler,
+            is_counted_for_batter: post.isCountedForBatter,
             comment: post.comment,
-            wicket_batter_id: post.retired.batterId,
+            batter_id: post.retired.batterId,
             wicket_type: _retiredTypeToInt(post.retired),
+            wicket_batter_id: post.retired.batterId,
           ),
         NextBatter() => PostsEntity.nextBatter(
             id: post.id,
             innings_id: post.inningsId,
             match_id: post.matchId,
-            // innings_number: post.inningsNumber,
+            innings_number: post.inningsNumber,
+            day_number: null,
+            session_number: null,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
             type: 4,
+            is_counted_for_bowler: post.isCountedForBowler,
+            is_counted_for_batter: post.isCountedForBatter,
             comment: post.comment,
             batter_id: post.nextId,
-            wicket_batter_id: post.previousId,
+            previous_id: post.previousId,
           ),
         WicketBeforeDelivery() => PostsEntity.wicketBeforeDelivery(
             id: post.id,
             innings_id: post.inningsId,
             match_id: post.matchId,
-            // innings_number: post.inningsNumber,
+            innings_number: post.inningsNumber,
+            day_number: null,
+            session_number: null,
             index_over: post.index.over,
             index_ball: post.index.ball,
             timestamp: post.timestamp,
             type: 5,
+            is_counted_for_bowler: post.isCountedForBowler,
+            is_counted_for_batter: post.isCountedForBatter,
             comment: post.comment,
             wicket_type: _wicketTypeToInt(post.wicket),
             wicket_batter_id: post.wicket.batterId,
             wicket_fielder_id: post.wicket.fielderId,
           ),
+        Penalty() => PostsEntity.penalty(
+            id: post.id,
+            innings_id: post.inningsId,
+            match_id: post.matchId,
+            innings_number: post.inningsNumber,
+            day_number: null,
+            session_number: null,
+            index_over: post.index.over,
+            index_ball: post.index.ball,
+            timestamp: post.timestamp,
+            type: 6,
+            is_counted_for_bowler: post.isCountedForBowler,
+            is_counted_for_batter: post.isCountedForBatter,
+            comment: post.comment,
+            extras_penalties: post.penalties,
+          ),
       };
 
-  static int? _bowlingExtraTypeToInt(BowlingExtra? bowlingExtra) =>
-      switch (bowlingExtra) {
-        null => null,
-        Wide() => 0,
-        NoBall() => 1,
-      };
+  static BowlingExtra? _decipherBowlingExtra(int noBalls, int wides) =>
+      noBalls > 0
+          ? NoBall(noBalls)
+          : wides > 0
+              ? Wide(wides)
+              : null;
 
-  static BowlingExtra? _decipherBowlingExtra(int? extra, int? penalty) =>
-      switch (extra) {
-        0 => Wide(penalty!),
-        1 => NoBall(penalty!),
-        null => null,
-        _ => throw UnsupportedError("bowling_extra_type out of bounds!"),
-      };
-
-  static int? _battingExtraType(BattingExtra? battingExtra) =>
-      switch (battingExtra) {
-        null => null,
-        Bye() => 0,
-        LegBye() => 1,
-      };
-
-  static BattingExtra? _decipherBattingExtra(int? extra, int? runs) =>
-      switch (extra) {
-        0 => Bye(runs!),
-        1 => LegBye(runs!),
-        null => null,
-        _ => throw UnsupportedError("batting_extra_type out of bounds!"),
-      };
+  static BattingExtra? _decipherBattingExtra(int byes, int legByes) => byes > 0
+      ? Bye(byes)
+      : legByes > 0
+          ? LegBye(legByes)
+          : null;
 
   static int? _retiredTypeToInt(Retired retired) => switch (retired) {
         RetiredDeclared() => 0,
@@ -275,6 +312,7 @@ class EntityMappers {
             matchId: entity.match_id,
             inningsId: entity.innings_id,
             index: PostIndex(entity.index_over, entity.index_ball),
+            inningsNumber: entity.innings_number,
             timestamp: entity.timestamp,
             comment: entity.comment,
             bowlerId: entity.bowler_id!,
@@ -283,14 +321,15 @@ class EntityMappers {
             isBoundary: entity.is_boundary!,
             wicket: _decipherWicket(entity),
             bowlingExtra: _decipherBowlingExtra(
-                entity.bowling_extra_type, entity.bowling_extra_penalty),
+                entity.extras_no_balls ?? 0, entity.extras_wides ?? 0),
             battingExtra: _decipherBattingExtra(
-                entity.batting_extra_type, entity.batting_extra_runs),
+                entity.extras_byes ?? 0, entity.extras_leg_byes ?? 0),
           ),
         1 => BowlerRetire(
             entity.id,
             matchId: entity.match_id,
             inningsId: entity.innings_id,
+            inningsNumber: entity.innings_number,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
@@ -300,16 +339,18 @@ class EntityMappers {
             entity.id,
             matchId: entity.match_id,
             inningsId: entity.innings_id,
+            inningsNumber: entity.innings_number,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
             nextId: entity.bowler_id!,
-            previousId: entity.wicket_fielder_id,
+            previousId: entity.previous_id,
           ),
         3 => BatterRetire(
             entity.id,
             matchId: entity.match_id,
             inningsId: entity.innings_id,
+            inningsNumber: entity.innings_number,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
@@ -319,20 +360,32 @@ class EntityMappers {
             entity.id,
             matchId: entity.match_id,
             inningsId: entity.innings_id,
+            inningsNumber: entity.innings_number,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
             nextId: entity.batter_id!,
-            previousId: entity.wicket_batter_id,
+            previousId: entity.previous_id,
           ),
         5 => WicketBeforeDelivery(
             entity.id,
             matchId: entity.match_id,
             inningsId: entity.innings_id,
+            inningsNumber: entity.innings_number,
             index: PostIndex(entity.index_over, entity.index_ball),
             timestamp: entity.timestamp,
             comment: entity.comment,
             wicket: _decipherWicket(entity) as RunoutWicket,
+          ),
+        6 => Penalty(
+            entity.id,
+            matchId: entity.match_id,
+            inningsId: entity.innings_id,
+            inningsNumber: entity.innings_number,
+            index: PostIndex(entity.index_over, entity.index_ball),
+            timestamp: entity.timestamp,
+            comment: entity.comment,
+            penalties: entity.extras_penalties!,
           ),
         _ =>
           throw UnsupportedError("posts.type out of bounds! (id:${entity.id})"),

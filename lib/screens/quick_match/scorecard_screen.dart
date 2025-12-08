@@ -220,7 +220,7 @@ class _BattingScorecard extends StatelessWidget {
 
   final Score score;
   final int? target;
-  final Map<String, int> extras;
+  final Extras extras;
 
   final int maxBalls;
   final int ballsPerOver;
@@ -301,14 +301,14 @@ class _BattingScorecard extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(right: 6.0),
                     child: Text(
-                      "${extras.values.fold(0, (s, e) => s + e)}",
+                      "${extras.total}",
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ),
                 ),
                 // Extras
                 Text(
-                    "(${extras["nb"]}nb ${extras["wd"]}wd ${extras["b"]}b ${extras["lb"]}lb)",
+                    "(${extras.noBalls}nb ${extras.wides}wd ${extras.byes}b ${extras.legByes}lb ${extras.penalties}p)",
                     style: Theme.of(context).textTheme.bodySmall),
               ],
             ),

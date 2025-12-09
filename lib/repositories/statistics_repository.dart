@@ -1,8 +1,8 @@
 import 'package:scorecard/modules/stats/player_statistics.dart';
-import 'package:scorecard/repositories/sql/db/player_statistics_queries.dart';
+import 'package:scorecard/repositories/sql/db/structured_queries.dart';
 
 class StatisticsRepository {
-  final PlayerStatisticsQueries _queries;
+  final StructuredQueries _queries;
 
   StatisticsRepository(this._queries);
 

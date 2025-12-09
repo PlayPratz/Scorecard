@@ -8,9 +8,10 @@ class QuickInningsEntity implements IEntity {
   final int type;
   // final String batting_team_id;
   // final String bowling_team_id;
-  final bool is_ended;
+  final bool is_completed;
   final bool is_declared;
   final bool is_forfeited;
+  final bool is_ended;
 
   final int overs_limit;
   final int balls_per_over;
@@ -36,9 +37,10 @@ class QuickInningsEntity implements IEntity {
     required this.match_id,
     required this.innings_number,
     required this.type,
-    required this.is_ended,
+    required this.is_completed,
     required this.is_declared,
     required this.is_forfeited,
+    required this.is_ended,
     // required this.batting_team_id,
     // required this.bowling_team_id,
     required this.overs_limit,
@@ -66,9 +68,10 @@ class QuickInningsEntity implements IEntity {
           type: map["type"] as int,
           // batting_team_id: map["batting_team_id"] as String,
           // bowling_team_id: map["bowling_team_id"] as String,
-          is_ended: readBool(map["is_ended"] as int)!,
+          is_completed: readBool(map["is_completed"] as int)!,
           is_declared: readBool(map["is_declared"] as int)!,
           is_forfeited: readBool(map["is_forfeited"] as int)!,
+          is_ended: readBool(map["is_ended"] as int)!,
           overs_limit: map["overs_limit"] as int,
           balls_per_over: map["balls_per_over"] as int,
           target_runs: map["target_runs"] as int?,
@@ -94,9 +97,10 @@ class QuickInningsEntity implements IEntity {
         "type": type,
         // "batting_team_id": batting_team_id,
         // "bowling_team_id": bowling_team_id,
-        "is_ended": parseBool(is_ended),
+        "is_completed": parseBool(is_completed),
         "is_declared": parseBool(is_declared),
         "is_forfeited": parseBool(is_forfeited),
+        "is_ended": parseBool(is_ended),
         "overs_limit": overs_limit,
         "balls_per_over": balls_per_over,
         "target_runs": target_runs,

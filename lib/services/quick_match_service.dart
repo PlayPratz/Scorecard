@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/quick_match/wicket_model.dart';
@@ -43,9 +45,14 @@ class QuickMatchService {
     return innings;
   }
 
+  Future<UnmodifiableListView<InningsPost>> loadAllPostsForInnings(
+      QuickInnings innings) async {
+    final posts = await _matchRepository.loadAllPostsForInnings(innings);
+  }
+
   Future<QuickInnings> createInnings(QuickMatch match,
       {QuickInnings? previous}) async {
-    if (previous != null && !previous.hasEnded) {
+    if (previous != null && !previous.isEnded) {
       throw StateError(
           "Attempted to create new innings without ending previous (matchId: ${match.id} inningsId: ${previous.id}");
     }
@@ -86,7 +93,7 @@ class QuickMatchService {
 
   Future<QuickInnings> createSuperOver(QuickMatch match,
       {required QuickInnings previous}) async {
-    if (!previous.hasEnded) {
+    if (!previous.isEnded) {
       throw StateError(
           "Attempted to create new innings without ending previous (matchId: ${match.id} inningsId: ${previous.id})");
     }
@@ -99,7 +106,7 @@ class QuickMatchService {
   }
 
   Future<void> endMatch(QuickMatch match, {required QuickInnings last}) async {
-    if (!last.hasEnded) {
+    if (!last.isEnded) {
       throw StateError(
           "Attempted to end match without ending last innings (matchId: ${match.id} inningsId: ${last.id})");
     }
@@ -136,81 +143,7 @@ class QuickMatchService {
   // Scorecard
 
   /// Lists all the batters and their scores
-  List<BatterInnings> getBatters(QuickInnings innings, {combine = true}) {
-    final batters = <BatterInnings>[];
-
-    final batterMap = <String, List<InningsPost>>{};
-
-    for (final post in innings.posts) {
-      switch (post) {
-        case NextBatter():
-          if (!combine || !batterMap.containsKey(post.nextId)) {
-            batterMap[post.nextId] = <InningsPost>[];
-            batters.add(BatterInnings(post.nextId, batterMap[post.nextId]!));
-          }
-
-          batterMap[post.nextId]!.add(post);
-          if (post.previousId != null) {
-            batterMap[post.previousId]!.add(post);
-          }
-        case Ball():
-          batterMap[post.batterId]!.add(post);
-          if (post.isWicket && post.batterId != post.wicket!.batterId) {
-            batterMap[post.wicket!.batterId]!.add(post);
-          }
-        case BatterRetire():
-          batterMap[post.batterId]!.add(post);
-
-        case WicketBeforeDelivery():
-          batterMap[post.batterId]!.add(post);
-        case BowlerRetire():
-        case NextBowler():
-        case Penalty():
-        // Do nothing
-      }
-    }
-    /*   final batters = <BatterInnings>[
-      for (final entry in batterMap.entries)
-        BatterInnings(entry.key, entry.value)
-    ];
-*/
-    return batters;
-  }
-
-  // List<BatterInnings> getBatters(QuickInnings innings) {
-  //   final battersIds =
-  //   innings.posts.whereType<NextBatter>().map((nb) => nb.nextId);
-  //
-  //   final postToBatters = {for (final id in battersIds) id: <InningsPost>[]};
-  //
-  //   for (final post in innings.posts) {
-  //     switch (post) {
-  //       case Ball():
-  //         postToBatters[post.batterId]!.add(post);
-  //         if (post.isWicket && post.batterId != post.wicket!.batterId) {
-  //           postToBatters[post.wicket!.batterId]!.add(post);
-  //         }
-  //       case BatterRetire():
-  //         postToBatters[post.batterId]!.add(post);
-  //       case NextBatter():
-  //         postToBatters[post.nextId]!.add(post);
-  //         if (post.previousId != null) {
-  //           postToBatters[post.previousId]!.add(post);
-  //         }
-  //       case WicketBeforeDelivery():
-  //         postToBatters[post.batterId]!.add(post);
-  //       case BowlerRetire():
-  //       case NextBowler():
-  //       // Do nothing
-  //     }
-  //   }
-  //   final batters = <BatterInnings>[
-  //     for (final entry in postToBatters.entries)
-  //       BatterInnings(entry.key, entry.value)
-  //   ];
-  //
-  //   return batters;
-  // }
+  UnmodifiableListView<BatterInnings> getBatters(QuickInnings innings) {}
 
   BatterInnings getLastBatterInningsOf(QuickInnings innings, String batterId) {
     final newBatterPostIndex = innings.posts

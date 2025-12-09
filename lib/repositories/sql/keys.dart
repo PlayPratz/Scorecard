@@ -11,15 +11,24 @@ class Tables {
   // Cricket Matches
   // static const gameRules = "game_rules";
   static const quickMatches = "quick_matches";
-  // static const playersInMatch = "players_in_match";
   static const quickInnings = "quick_innings";
   static const posts = "posts";
-  static const wickets = "wickets";
+
+  static const battingScores = "batting_scores";
+  static const bowlingScores = "bowling_scores";
 }
 
-// class Views {
-//   // Matches
-//   static const matchesExpanded = "matches_expanded";
-//   static const lineups = "lineups";
-//   // static const lineupsExpanded = "lineups_expanded";
-// }
+class Views {
+  // Matches
+  // static const matchesExpanded = "matches_expanded";
+  // static const lineups = "lineups";
+  // static const lineupsExpanded = "lineups_expanded";
+  static const playersInMatch = "players_in_match";
+
+  static const balls = "balls";
+
+  static const wickets = "wickets";
+
+  static const battingStats = "batting_stats";
+  static const bowlingStats = "bowling_stats";
+}

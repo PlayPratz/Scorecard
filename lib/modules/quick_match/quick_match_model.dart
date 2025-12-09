@@ -70,6 +70,13 @@ class QuickInnings {
   /// Whether this innings is a super over
   final bool isSuperOver;
 
+  /// Whether the Innings has ended
+  bool get isEnded => isCompleted; // || isForfeited || isDeclared TODO;
+
+  /// Whether the Innings has achieved completion either by losing all wickets,
+  /// reaching the over limit or chasing down the target.
+  bool isCompleted;
+
   /// The target runs of this Innings, if any
   /// This is not 'final' so that we can change targets in the future (DLS)
   int? target;
@@ -82,7 +89,12 @@ class QuickInnings {
     required this.matchId,
     required this.inningsNumber,
     required QuickMatchRules rules,
+    required this.isCompleted,
     required this.target,
+    required this.runs,
+    required this.wickets,
+    required this.balls,
+    required this.extras,
     required this.batter1Id,
     required this.batter2Id,
     required this.strikerId,
@@ -94,41 +106,48 @@ class QuickInnings {
   QuickInnings.of(QuickMatch match, this.inningsNumber)
       : matchId = match.id,
         _rules = match.rules,
-        isSuperOver = false;
+        isSuperOver = false,
+        isCompleted = false,
+        runs = 0,
+        wickets = 0,
+        balls = 0,
+        extras = Extras.zero();
 
   QuickInnings.superOverOf(QuickMatch match, this.inningsNumber)
       : matchId = match.id,
         _rules = match.rules,
-        isSuperOver = true;
-
-  final List<InningsPost> posts = [];
-  UnmodifiableListView<Ball> get balls =>
-      UnmodifiableListView(posts.whereType<Ball>());
+        isSuperOver = true,
+        isCompleted = false,
+        runs = 0,
+        wickets = 0,
+        balls = 0,
+        extras = Extras.zero();
 
   /// The runs scored by the batters
-  int get runs => balls.fold(0, (s, b) => s + b.totalRuns);
+  final int runs;
 
   /// The wickets taken by the bowlers
-  int get wickets => balls.where((b) => b.isWicket).length;
+  final int wickets;
 
   Score get score => Score(runs, wickets);
 
   /// The number of balls bowled
-  int get numBalls => balls.where((b) => !b.isBowlingExtra).length;
+  final int balls;
 
   /// The number of legal balls in an over
   int get ballsPerOver => _rules.ballsPerOver;
 
-  /// The max number of legal balls that can be bowled in thing innings
-  int get maxBalls =>
+  /// The number of overs that are to be bowled in this innings
+  int get overLimit => _rules.oversPerInnings;
+  int get ballLimit =>
       isSuperOver ? ballsPerOver : _rules.oversPerInnings * _rules.ballsPerOver;
 
   /// The balls left to win the match
-  int get ballsLeft => maxBalls - numBalls;
+  int get ballsLeft => ballLimit - balls;
 
   /// The average runs scored per over in this innings
   double get currentRunRate =>
-      handleDivideByZero(runs.toDouble() * ballsPerOver, numBalls.toDouble());
+      handleDivideByZero(runs.toDouble() * ballsPerOver, balls.toDouble());
 
   /// Penalty for a no-ball
   int get noBallPenalty => _rules.noBallPenalty;
@@ -136,93 +155,55 @@ class QuickInnings {
   /// Penalty for a wide
   int get widePenalty => _rules.widePenalty;
 
-  // bool get onlySingleBatter => _rules.onlySingleBatter;
-
   // On Crease
-
   String? batter1Id;
   String? batter2Id;
-
   String? strikerId;
   String? get nonStrikerId => batter2Id == strikerId
       ? batter1Id
       : batter1Id == strikerId
           ? batter2Id
           : null;
-
   String? bowlerId;
 
   // Target
-
-  /// The runs required to win the match
   int? get runsRequired => target == null ? null : max(target! - runs, 0);
-
   double? get requiredRunRate => runsRequired == null
       ? null
       : handleDivideByZero(
           runsRequired!.toDouble() * ballsPerOver, ballsLeft.toDouble());
 
-  /// Conditions for considering an Innings as ended
-  bool get hasEnded => isDeclared || ballsLeft == 0 || runsRequired == 0;
+  final Extras extras;
 
-  Extras get extras {
-    final extras = balls.where((b) => b.isExtra);
-
-    int noBalls = 0;
-    int wides = 0;
-    int byes = 0;
-    int legByes = 0;
-    int penalties = 0; // TODO Handle
-
-    for (final extra in extras) {
-      if (extra.bowlingExtra is NoBall) {
-        noBalls += extra.bowlingExtraRuns;
-      } else if (extra.bowlingExtra is Wide) {
-        wides += extra.bowlingExtraRuns;
-      }
-
-      if (extra.battingExtra is Bye) {
-        byes += extra.battingExtraRuns;
-      } else if (extra.battingExtra is LegBye) {
-        legByes += extra.battingExtraRuns;
-      }
-    }
-
-    return Extras(
-        noBalls: noBalls,
-        wides: wides,
-        byes: byes,
-        legByes: legByes,
-        penalties: penalties);
-  }
-
-  // Map<String, int> get extras {
-  //   final extras = balls.where((b) => b.isBowlingExtra || b.isBattingExtra);
-  //   final counts = <String, int>{
-  //     "wd": 0,
-  //     "nb": 0,
-  //     "b": 0,
-  //     "lb": 0,
-  //     "p": 0,
-  //   };
+  // Extras get extras {
+  //   final extras = balls.where((b) => b.isExtra);
+  //
+  //   int noBalls = 0;
+  //   int wides = 0;
+  //   int byes = 0;
+  //   int legByes = 0;
+  //   int penalties = 0; // TODO Handle
   //
   //   for (final extra in extras) {
-  //     if (extra.bowlingExtra is Wide) {
-  //       counts["wd"] = counts["wd"]! + extra.bowlingExtraRuns;
-  //     }
   //     if (extra.bowlingExtra is NoBall) {
-  //       counts["nb"] = counts["nb"]! + extra.bowlingExtraRuns;
+  //       noBalls += extra.bowlingExtraRuns;
+  //     } else if (extra.bowlingExtra is Wide) {
+  //       wides += extra.bowlingExtraRuns;
   //     }
   //
   //     if (extra.battingExtra is Bye) {
-  //       counts["b"] = counts["b"]! + extra.battingExtraRuns;
-  //     }
-  //     if (extra.bowlingExtra is LegBye) {
-  //       counts["lb"] = counts["lb"]! + extra.battingExtraRuns;
+  //       byes += extra.battingExtraRuns;
+  //     } else if (extra.battingExtra is LegBye) {
+  //       legByes += extra.battingExtraRuns;
   //     }
   //   }
   //
-  //   return counts;
+  //   return Extras(
+  //       noBalls: noBalls,
+  //       wides: wides,
+  //       byes: byes,
+  //       legByes: legByes,
+  //       penalties: penalties);
   // }
 }
 
@@ -241,6 +222,13 @@ class Extras {
       required this.byes,
       required this.legByes,
       required this.penalties});
+
+  Extras.zero()
+      : noBalls = 0,
+        wides = 0,
+        byes = 0,
+        legByes = 0,
+        penalties = 0;
 }
 
 sealed class QuickMatchResult {}
@@ -277,6 +265,43 @@ class Score {
       return Score(runs, wickets);
     }
   }
+}
+
+class BattingScore {
+  final int id;
+  final String matchId;
+  final int inningsId;
+  final int inningsNumber;
+  final String batterId;
+
+  final int runsScored;
+  final int ballsFaced;
+
+  final bool isNotOut;
+
+  final Wicket? wicket;
+
+  final int fours;
+  final int sixes;
+  final int boundaries;
+
+  final double strikeRate;
+
+  BattingScore({
+    required this.id,
+    required this.matchId,
+    required this.inningsId,
+    required this.inningsNumber,
+    required this.batterId,
+    required this.runsScored,
+    required this.ballsFaced,
+    required this.isNotOut,
+    required this.wicket,
+    required this.fours,
+    required this.sixes,
+    required this.boundaries,
+    required this.strikeRate,
+  });
 }
 
 class BatterInnings {

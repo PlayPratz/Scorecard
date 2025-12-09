@@ -58,7 +58,7 @@ class InningsTimelineScreen extends StatelessWidget {
             Text(Stringify.score(innings.score),
                 style: Theme.of(context).textTheme.displaySmall),
             Text(
-                "${Stringify.ballCount(innings.numBalls, innings.ballsPerOver)}/${innings.maxBalls / innings.ballsPerOver}ov",
+                "${Stringify.ballCount(innings.balls, innings.ballsPerOver)}/${innings.ballLimit / innings.ballsPerOver}ov",
                 style: Theme.of(context).textTheme.titleLarge)
           ],
         ),

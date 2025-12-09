@@ -715,11 +715,11 @@ class _WormGraph extends StatelessWidget {
   }
 
   List<double> runsForInnings(QuickInnings innings) {
-    final runs = <double>[];
+    final runs = <double>[0];
     double score = 0;
     for (final ball in innings.balls) {
-      runs.add(score);
       score = score + ball.totalRuns;
+      runs.add(score);
     }
     return runs;
   }

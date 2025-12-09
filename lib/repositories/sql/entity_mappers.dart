@@ -52,15 +52,16 @@ class EntityMappers {
       match_id: innings.matchId,
       innings_number: innings.inningsNumber,
       type: _inningsType(innings),
-      is_ended: innings.hasEnded,
+      is_completed: innings.isCompleted,
       is_declared: innings.isDeclared,
       is_forfeited: false,
-      overs_limit: innings.maxBalls,
+      is_ended: innings.isEnded,
+      overs_limit: innings.overLimit,
       balls_per_over: innings.ballsPerOver,
       target_runs: innings.target,
       runs: innings.runs,
       wickets: innings.wickets,
-      balls: innings.numBalls,
+      balls: innings.balls,
       extras_no_balls: extras.noBalls,
       extras_wides: extras.wides,
       extras_byes: extras.byes,
@@ -80,7 +81,18 @@ class EntityMappers {
         matchId: entity.match_id,
         inningsNumber: entity.innings_number,
         rules: rules,
+        isCompleted: entity.is_completed,
         target: entity.target_runs,
+        runs: entity.runs,
+        wickets: entity.wickets,
+        balls: entity.balls,
+        extras: Extras(
+          noBalls: entity.extras_no_balls,
+          wides: entity.extras_wides,
+          byes: entity.extras_byes,
+          legByes: entity.extras_leg_byes,
+          penalties: entity.extras_penalties,
+        ),
         batter1Id: entity.batter1_id,
         batter2Id: entity.batter2_id,
         strikerId: entity.striker_id,
@@ -228,6 +240,7 @@ class EntityMappers {
             is_counted_for_batter: post.isCountedForBatter,
             comment: post.comment,
             extras_penalties: post.penalties,
+            total_runs: post.penalties,
           ),
       };
 
@@ -245,14 +258,14 @@ class EntityMappers {
           : null;
 
   static int? _retiredTypeToInt(Retired retired) => switch (retired) {
-        RetiredDeclared() => 0,
-        RetiredHurt() => 1,
+        RetiredDeclared() => -1,
+        RetiredHurt() => -2,
       };
 
   static Retired? _decipherRetired(PostsEntity entity) =>
       switch (entity.wicket_type) {
-        0 => RetiredDeclared(batterId: entity.wicket_batter_id!),
-        1 => RetiredHurt(batterId: entity.wicket_batter_id!),
+        -1 => RetiredDeclared(batterId: entity.wicket_batter_id!),
+        -2 => RetiredHurt(batterId: entity.wicket_batter_id!),
         null => null,
         _ => throw UnsupportedError(
             "retired_type (stored in wicket_type) out of bounds! (id: ${entity.id}, wicket_type: ${entity.wicket_type})")

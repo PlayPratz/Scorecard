@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -90,8 +91,8 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                     _ScoreBar(
                       score: innings.score,
                       currentRunRate: innings.currentRunRate,
-                      ballsBowled: innings.numBalls,
-                      maxBalls: innings.maxBalls,
+                      ballsBowled: innings.balls,
+                      maxBalls: innings.ballLimit,
                       ballsPerOver: innings.ballsPerOver,
                       target: innings.target,
                       requiredRunRate: innings.requiredRunRate,
@@ -100,7 +101,7 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                       isLoading: state is _ActionLoadingState,
                     ),
                     _RecentBallsSection(
-                      innings.balls,
+                      state.posts.whereType<Ball>().toList(),
                       onOpenTimeline: () => controller.goTimeline(context),
                     ),
                     const Spacer(),
@@ -162,7 +163,7 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                     Expanded(
                       child: Row(
                         children: [
-                          _wUndoButton(controller, innings.posts.isNotEmpty),
+                          _wUndoButton(controller, state.posts.isNotEmpty),
                           const SizedBox(width: 4),
                           Expanded(
                             child: SizedBox.expand(
@@ -298,6 +299,9 @@ class _PlayQuickMatchScreenController {
   /// The innings which will be played
   late QuickInnings innings;
 
+  /// The posts that form the Innings
+  final List<InningsPost> _posts = [];
+
   final QuickMatchService _matchService;
 
   bool isSolo = false;
@@ -334,7 +338,7 @@ class _PlayQuickMatchScreenController {
   _QuickMatchLoadedState _deduceState() {
     ballController.disable();
 
-    if (innings.hasEnded) {
+    if (innings.isEnded) {
       return _InningsHasEndedState(
           innings, _matchService.getNextState(innings));
     }
@@ -370,7 +374,7 @@ class _PlayQuickMatchScreenController {
       case Penalty():
         break;
       case Ball():
-        if (innings.hasEnded) {
+        if (innings.isEnded) {
           return _InningsHasEndedState(
               innings, _matchService.getNextState(innings));
         } else if (lastPost.isWicket) {
@@ -615,31 +619,32 @@ class _InitializingState extends _PlayQuickMatchState {}
 
 sealed class _QuickMatchLoadedState extends _PlayQuickMatchState {
   final QuickInnings innings;
+  final UnmodifiableListView<InningsPost> posts;
 
-  _QuickMatchLoadedState(this.innings);
+  _QuickMatchLoadedState(this.innings, this.posts);
 }
 
 class _ActionLoadingState extends _QuickMatchLoadedState {
-  _ActionLoadingState(super.innings);
+  _ActionLoadingState(super.innings, super.posts);
 }
 
 class _PickBowlerState extends _QuickMatchLoadedState {
-  _PickBowlerState(super.innings);
+  _PickBowlerState(super.innings, super.posts);
 }
 
 class _PickBatterState extends _QuickMatchLoadedState {
   final String? toReplaceId;
 
-  _PickBatterState(super.innings, {required this.toReplaceId});
+  _PickBatterState(super.innings, super.posts, {required this.toReplaceId});
 }
 
 class _InningsHasEndedState extends _QuickMatchLoadedState {
   final NextStage next;
-  _InningsHasEndedState(super.innings, this.next);
+  _InningsHasEndedState(super.innings, super.posts, this.next);
 }
 
 class _PlayBallState extends _QuickMatchLoadedState {
-  _PlayBallState(super.innings);
+  _PlayBallState(super.innings, super.posts);
 }
 
 // COMPONENTS

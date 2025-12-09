@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:scorecard/handlers/ulid_handler.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
@@ -61,39 +63,36 @@ class QuickMatchRepository {
   }
 
   Future<QuickInnings?> loadLastInnings(QuickMatch match) async {
-    final inningsEntity = await quickInningsTable.selectLastForMatch(match.id);
+    final entities = await quickInningsTable.selectLastForMatch(match.id);
 
-    if (inningsEntity.isEmpty) return null;
+    if (entities.isEmpty) return null;
 
     final innings =
-        EntityMappers.unpackQuickInnings(inningsEntity.single, match.rules);
-
-    final postEntities = await postsTable.selectForInnings(innings.id!);
-    final posts = postEntities.map((p) => EntityMappers.unpackInningsPost(p));
-    innings.posts.addAll(posts);
+        EntityMappers.unpackQuickInnings(entities.single, match.rules);
 
     return innings;
   }
 
   Future<List<QuickInnings>> loadAllInnings(QuickMatch match) async {
-    final inningsEntities = await quickInningsTable.selectAllForMatch(match.id);
-    final allInnings = inningsEntities
+    final entities = await quickInningsTable.selectAllForMatch(match.id);
+    final allInnings = entities
         .map((i) => EntityMappers.unpackQuickInnings(i, match.rules))
         .toList(); // For some reason, objects are not updated in an Iterable
 
-    final postEntities = await postsTable.selectForMatch(match.id);
-    final posts = postEntities.map((p) => EntityMappers.unpackInningsPost(p));
-    final postMap = <int, List<InningsPost>>{};
-
-    for (final p in posts) {
-      postMap.putIfAbsent(p.inningsId, () => []);
-      postMap[p.inningsId]!.add(p);
-    }
-
-    for (final i in allInnings) {
-      if (postMap[i.id] != null) i.posts.addAll(postMap[i.id!]!);
-    }
-
     return allInnings;
   }
+
+  Future<UnmodifiableListView<InningsPost>> loadAllPostsForInnings(
+      QuickInnings innings) async {
+    if (innings.id == null) {
+      throw StateError("Attempted to load posts for innings without ID");
+    }
+
+    final entities = await postsTable.selectForInnings(innings.id!);
+    final posts = entities.map((p) => EntityMappers.unpackInningsPost(p));
+
+    return UnmodifiableListView(posts);
+  }
+
+  // SQLDBHandler get sql => SQLDBHandler.instance;
 }

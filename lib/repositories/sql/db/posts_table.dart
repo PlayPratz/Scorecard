@@ -284,12 +284,12 @@ class PostsEntity implements IEntity {
     required this.comment,
     // Specific
     required this.extras_penalties,
+    required this.total_runs,
     // null
     this.bowler_id,
     this.batter_id,
     this.batter_runs,
     this.bowler_runs,
-    this.total_runs,
     this.is_boundary,
     this.extras_no_balls,
     this.extras_wides,

@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/provider/settings_provider.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
-import 'package:scorecard/repositories/sql/db/player_statistics_queries.dart';
+import 'package:scorecard/repositories/sql/db/structured_queries.dart';
 import 'package:scorecard/repositories/sql/db/players_table.dart';
 import 'package:scorecard/repositories/sql/db/posts_table.dart';
 import 'package:scorecard/repositories/sql/db/quick_innings_table.dart';
@@ -185,7 +185,7 @@ class _ScorecardAppController {
     final quickInningsTable = QuickInningsTable();
     final postsTable = PostsTable();
 
-    final playerStatisticsQueries = PlayerStatisticsQueries();
+    final playerStatisticsQueries = StructuredQueries();
 
     // Instantiate all repositories
     playerRepository = PlayerRepository(playersTable);

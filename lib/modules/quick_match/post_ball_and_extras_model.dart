@@ -1,3 +1,4 @@
+import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/quick_match/wicket_model.dart';
 
 /// Represents an event that occurs during the progression of an innings.
@@ -19,11 +20,14 @@ sealed class InningsPost {
   /// The cardinal number of the Innings
   final int inningsNumber;
 
+  /// The timestamp of this post
+  final DateTime timestamp;
+
   /// The index of this post in the innings
   final PostIndex index;
 
-  /// The timestamp of this post
-  final DateTime timestamp;
+  /// The score of the innings after this post was posted
+  final Score scoreAt;
 
   /// Any comment that the user would like to add about this post
   final String? comment;
@@ -42,8 +46,9 @@ sealed class InningsPost {
     required this.matchId,
     required this.inningsId,
     required this.inningsNumber,
-    required this.index,
     required this.timestamp,
+    required this.index,
+    required this.scoreAt,
     this.comment,
   });
 }
@@ -54,10 +59,10 @@ sealed class InningsPost {
 /// and score runs.
 class Ball extends InningsPost {
   /// The bowler who delivered this ball
-  final String bowlerId;
+  final int bowlerId;
 
   /// The batter who faced this ball
-  final String batterId;
+  final int batterId;
 
   /// Runs off the bat/ran by the batter(s)
   final int batterRuns;
@@ -105,8 +110,9 @@ class Ball extends InningsPost {
     required super.matchId,
     required super.inningsId,
     required super.inningsNumber,
-    required super.index,
     required super.timestamp,
+    required super.index,
+    required super.scoreAt,
     super.comment,
     required this.bowlerId,
     required this.batterId,
@@ -127,7 +133,7 @@ class Ball extends InningsPost {
 /// Note: Not to be posted when an over is completed.
 class BowlerRetire extends InningsPost {
   /// The bowler who retires
-  final String bowlerId;
+  final int bowlerId;
 
   /// The bowler's retirement
   // final RetiredBowler retired;
@@ -146,8 +152,9 @@ class BowlerRetire extends InningsPost {
     required super.matchId,
     required super.inningsId,
     required super.inningsNumber,
-    required super.index,
     required super.timestamp,
+    required super.index,
+    required super.scoreAt,
     super.comment,
     required this.bowlerId,
     // required this.retired,
@@ -158,10 +165,10 @@ class BowlerRetire extends InningsPost {
 /// started by another bowler.
 class NextBowler extends InningsPost {
   /// The bowler who bowled the previous delivery
-  final String? previousId;
+  final int? previousId;
 
   /// The bowler who will bowl the next delivery
-  final String nextId;
+  final int nextId;
 
   // final bool isMidOverChange;
 
@@ -179,8 +186,9 @@ class NextBowler extends InningsPost {
     required super.matchId,
     required super.inningsId,
     required super.inningsNumber,
-    required super.index,
     required super.timestamp,
+    required super.index,
+    required super.scoreAt,
     super.comment,
     required this.previousId,
     required this.nextId,
@@ -198,7 +206,7 @@ class BatterRetire extends InningsPost {
   final Retired retired;
 
   /// The batter who has retired
-  String get batterId => retired.batterId;
+  int get batterId => retired.batterId;
 
   @override
   get isCountedForBatter => false;
@@ -214,8 +222,9 @@ class BatterRetire extends InningsPost {
     required super.matchId,
     required super.inningsId,
     required super.inningsNumber,
-    required super.index,
     required super.timestamp,
+    required super.index,
+    required super.scoreAt,
     super.comment,
     // required this.batter,
     required this.retired,
@@ -225,10 +234,10 @@ class BatterRetire extends InningsPost {
 /// Posted whenever a New Batter walks out to bat.
 class NextBatter extends InningsPost {
   /// The batter that was batting previously
-  final String? previousId;
+  final int? previousId;
 
   /// The batter that has walked out to bat
-  final String nextId;
+  final int nextId;
 
   @override
   get isCountedForBatter => false;
@@ -244,8 +253,9 @@ class NextBatter extends InningsPost {
     required super.matchId,
     required super.inningsId,
     required super.inningsNumber,
-    required super.index,
     required super.timestamp,
+    required super.index,
+    required super.scoreAt,
     super.comment,
     required this.previousId,
     required this.nextId,
@@ -261,7 +271,7 @@ class WicketBeforeDelivery extends InningsPost {
   /// The run out that took place before the ball was bowled
   final RunoutWicket wicket;
 
-  String get batterId => wicket.batterId;
+  int get batterId => wicket.batterId;
 
   @override
   get isCountedForBatter => false;
@@ -277,8 +287,9 @@ class WicketBeforeDelivery extends InningsPost {
     required super.matchId,
     required super.inningsId,
     required super.inningsNumber,
-    required super.index,
     required super.timestamp,
+    required super.index,
+    required super.scoreAt,
     super.comment,
     required this.wicket,
   });
@@ -302,8 +313,9 @@ class Penalty extends InningsPost {
     required super.matchId,
     required super.inningsId,
     required super.inningsNumber,
-    required super.index,
     required super.timestamp,
+    required super.index,
+    required super.scoreAt,
     super.comment,
     required this.penalties,
   });

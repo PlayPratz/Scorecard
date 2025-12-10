@@ -3,7 +3,9 @@ import 'package:scorecard/handlers/sql_db_handler.dart';
 import 'package:scorecard/repositories/sql/keys.dart';
 
 class QuickMatchesEntity implements IEntity {
-  final String id;
+  final int? id;
+  final String handle;
+
   final int type;
   final int stage;
   // final String team1_id;
@@ -26,6 +28,7 @@ class QuickMatchesEntity implements IEntity {
 
   QuickMatchesEntity({
     required this.id,
+    required this.handle,
     required this.type,
     required this.stage,
     // required this.team1_id,
@@ -49,7 +52,8 @@ class QuickMatchesEntity implements IEntity {
 
   QuickMatchesEntity.deserialize(Map<String, Object?> map)
       : this(
-          id: map["id"] as String,
+          id: map["id"] as int,
+          handle: map["handle"] as String,
           type: map["type"] as int,
           stage: map["stage"] as int,
           // team1_id: map["team1_id"] as String,
@@ -96,7 +100,7 @@ class QuickMatchesEntity implements IEntity {
       };
 
   @override
-  String get primary_key => id;
+  int? get primary_key => id;
 }
 
 class QuickMatchesTable extends ISQL<QuickMatchesEntity> {

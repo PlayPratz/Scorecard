@@ -299,12 +299,12 @@ class _PlayQuickMatchScreenController {
   /// The innings which will be played
   late QuickInnings innings;
 
-  /// The posts that form the Innings
-  final List<InningsPost> _posts = [];
+  /// All the posts in this innings
+  late UnmodifiableListView<InningsPost> posts;
 
   final QuickMatchService _matchService;
 
-  bool isSolo = false;
+  // bool isSolo = false;
   bool autoRotateStrike = true;
 
   final ballController = _NextBallSelectorController();
@@ -344,31 +344,31 @@ class _PlayQuickMatchScreenController {
     }
 
     if (innings.batter1Id == null) {
-      return _PickBatterState(innings, toReplaceId: null);
+      return _PickBatterState(innings, posts, toReplaceId: null);
     }
 
     if (innings.bowlerId == null) {
-      return _PickBowlerState(innings);
+      return _PickBowlerState(innings, posts);
     }
 
-    if (innings.posts.isEmpty) {
-      return _PickBowlerState(innings);
+    if (posts.isEmpty) {
+      return _PickBowlerState(innings, posts);
     }
 
-    final lastPost = innings.posts.last; // Cannot be empty
+    final lastPost = posts.last; // Cannot be empty
 
     switch (lastPost) {
       case BowlerRetire():
-        return _PickBowlerState(innings);
+        return _PickBowlerState(innings, posts);
       case BatterRetire():
-        return _PickBatterState(innings, toReplaceId: lastPost.batterId);
+        return _PickBatterState(innings, posts, toReplaceId: lastPost.batterId);
       case WicketBeforeDelivery():
-        return _PickBatterState(innings, toReplaceId: lastPost.batterId);
+        return _PickBatterState(innings, posts, toReplaceId: lastPost.batterId);
       case NextBowler():
         break;
       case NextBatter():
         if (lastPost.index.ball == innings.ballsPerOver) {
-          return _PickBowlerState(innings);
+          return _PickBowlerState(innings, posts);
         }
         break;
       case Penalty():
@@ -376,19 +376,23 @@ class _PlayQuickMatchScreenController {
       case Ball():
         if (innings.isEnded) {
           return _InningsHasEndedState(
-              innings, _matchService.getNextState(innings));
+              innings, posts, _matchService.getNextState(innings));
         } else if (lastPost.isWicket) {
           return _PickBatterState(
-            innings,
+            innings, posts,
             toReplaceId: lastPost.wicket!.batterId,
           );
         } else if (lastPost.index.ball == innings.ballsPerOver) {
-          return _PickBowlerState(innings);
+          return _PickBowlerState(innings, posts);
         }
         break;
     }
     ballController.reset();
-    return _PlayBallState(innings);
+    return _PlayBallState(innings, posts);
+  }
+
+  Future<void> _loadPosts() async {
+    posts = await _matchService.loadAllPostsForInnings(innings);
   }
 
   void toggleAutoRotateStrike() {
@@ -396,24 +400,23 @@ class _PlayQuickMatchScreenController {
     _dispatchState();
   }
 
-  void toggleIsSolo() {
-    isSolo = !isSolo;
-    _dispatchState();
-  }
+  // void toggleIsSolo() {
+  //   isSolo = !isSolo;
+  //   _dispatchState();
+  // }
 
   Future<void> pickBowler(BuildContext context) async {
     _dispatchLoading();
     final bowler = await _pickPlayer(context, "Pick a Bowler");
     if (bowler != null) {
       await _matchService.nextBowler(innings, bowler.id);
-      await Future.delayed(const Duration(milliseconds: 100));
     }
-    _dispatchState();
+    await _dispatchState();
   }
 
   void setStrike(String batterId) {
     _matchService.setStrike(innings, batterId);
-    _dispatchState();
+    _dispatchState();i
   }
 
   void setSolo(bool solo) {}
@@ -430,7 +433,6 @@ class _PlayQuickMatchScreenController {
         nextId: batter.id,
         previousId: previousId,
       );
-      await Future.delayed(const Duration(milliseconds: 100));
     }
     _dispatchState();
   }

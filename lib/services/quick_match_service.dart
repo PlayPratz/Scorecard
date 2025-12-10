@@ -143,7 +143,9 @@ class QuickMatchService {
   // Scorecard
 
   /// Lists all the batters and their scores
-  UnmodifiableListView<BatterInnings> getBatters(QuickInnings innings) {}
+  UnmodifiableListView<BatterInnings> getBatters(QuickInnings innings) {
+    final batters = _matchRepository.
+  }
 
   BatterInnings getLastBatterInningsOf(QuickInnings innings, String batterId) {
     final newBatterPostIndex = innings.posts

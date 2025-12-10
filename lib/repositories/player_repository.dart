@@ -18,8 +18,8 @@ class PlayerRepository {
   }
 
   Future<Player> create({required String name}) async {
-    final id = UlidHandler.generate();
-    final player = Player(id, name: name);
+    final handle = UlidHandler.generate();
+    final player = Player(handle: handle, name: name);
 
     final playerEntity = EntityMappers.repackPlayer(player);
 
@@ -54,7 +54,11 @@ class PlayerRepository {
   }
 
   Future<List<Player>> loadPlayersForMatch(QuickMatch match) async {
-    final playerEntities = await _playersTable.selectForMatch(match.id);
+    if (match.id == null) {
+      throw StateError("Attempted to load players for match with no ID");
+    }
+
+    final playerEntities = await _playersTable.selectForMatch(match.id!);
     final players = playerEntities.map((p) => EntityMappers.unpackPlayer(p));
 
     return players.toList();

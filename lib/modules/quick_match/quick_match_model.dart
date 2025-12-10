@@ -7,7 +7,11 @@ import 'package:scorecard/util/number_utils.dart';
 
 class QuickMatch {
   /// The ID of this Match as in the database
-  final String id;
+  final int? id;
+
+  /// The globally unique key of a player
+  /// ex: #01KC1WJYQSY11J51V7DGGDJKPF ('#' is not a part of the handle)
+  final String handle;
 
   /// The set of rules that define the play of this Match
   final QuickMatchRules rules;
@@ -20,19 +24,12 @@ class QuickMatch {
 
   // QuickMatchResult? result;
 
-  QuickMatch(
-    this.id, {
+  QuickMatch({
+    this.id,
+    required this.handle,
     required this.rules,
     required this.startsAt,
     this.isCompleted = false,
-  });
-
-  QuickMatch.load(
-    this.id, {
-    required this.rules,
-    required this.startsAt,
-    required this.isCompleted,
-    // required this.result,
   });
 }
 
@@ -56,7 +53,7 @@ class QuickInnings {
   int? id;
 
   /// The ID of the Match as in the database
-  final String matchId;
+  final int matchId;
 
   /// The ordinal number of this Innings in the Match
   final int inningsNumber;
@@ -104,7 +101,7 @@ class QuickInnings {
   }) : _rules = rules;
 
   QuickInnings.of(QuickMatch match, this.inningsNumber)
-      : matchId = match.id,
+      : matchId = match.id!,
         _rules = match.rules,
         isSuperOver = false,
         isCompleted = false,
@@ -114,7 +111,7 @@ class QuickInnings {
         extras = Extras.zero();
 
   QuickInnings.superOverOf(QuickMatch match, this.inningsNumber)
-      : matchId = match.id,
+      : matchId = match.id!,
         _rules = match.rules,
         isSuperOver = true,
         isCompleted = false,
@@ -156,15 +153,15 @@ class QuickInnings {
   int get widePenalty => _rules.widePenalty;
 
   // On Crease
-  String? batter1Id;
-  String? batter2Id;
-  String? strikerId;
-  String? get nonStrikerId => batter2Id == strikerId
+  int? batter1Id;
+  int? batter2Id;
+  int? strikerId;
+  int? get nonStrikerId => batter2Id == strikerId
       ? batter1Id
       : batter1Id == strikerId
           ? batter2Id
           : null;
-  String? bowlerId;
+  int? bowlerId;
 
   // Target
   int? get runsRequired => target == null ? null : max(target! - runs, 0);
@@ -267,24 +264,45 @@ class Score {
   }
 }
 
+/// Represents the score of a batter within an innings
 class BattingScore {
+  /// The ID of this BattingScore as in the DB
   final int id;
-  final String matchId;
-  final int inningsId;
-  final int inningsNumber;
-  final String batterId;
 
+  /// The ID of the match
+  final String matchId;
+
+  /// The ID of the innings
+  final int inningsId;
+
+  /// The cardinal number of the Innings
+  final int inningsNumber;
+
+  /// The ID of the batter who scored the runs
+  final int batterId;
+
+  /// The runs scored by this batter
   final int runsScored;
+
+  /// The balls faced by this batter
   final int ballsFaced;
 
+  /// Whether the batter is not out (*)
   final bool isNotOut;
 
+  /// The wicket of this batter if any
   final Wicket? wicket;
 
+  /// The number of fours scored by this batter
   final int fours;
+
+  /// The number of sizes scored by this batter
   final int sixes;
+
+  /// The total number of boundaries scored by this batter
   final int boundaries;
 
+  /// The strike rate of this batter
   final double strikeRate;
 
   BattingScore({
@@ -302,95 +320,6 @@ class BattingScore {
     required this.boundaries,
     required this.strikeRate,
   });
-}
-
-class BatterInnings {
-  /// The ID of this Batter as in the database
-  final String batterId;
-
-  /// All balls played by this Batter or involve their wicket
-  final List<InningsPost> _posts;
-  UnmodifiableListView<Ball> get allBalls =>
-      UnmodifiableListView(_posts.whereType<Ball>());
-
-  /// All balls played by this Batter
-  UnmodifiableListView<Ball> get balls =>
-      UnmodifiableListView(allBalls.where((b) => b.batterId == batterId));
-
-  BatterInnings(this.batterId, this._posts);
-
-  /// The runs scored by this Batter
-  int get runs => balls.fold(0, (s, b) => s + b.batterRuns);
-
-  /// The number of balls played by this Batter
-  int get numBalls => balls.where((b) => b.bowlingExtra is! Wide).length;
-
-  double get strikeRate => handleDivideByZero(runs * 100, numBalls.toDouble());
-
-  Wicket? get wicket {
-    if (balls.isNotEmpty) return balls.last.wicket;
-    return null;
-  }
-
-  Retired? get retired {
-    final last = _posts.lastOrNull;
-    if (last is BatterRetire) return last.retired;
-    return null;
-  }
-
-  bool get isOut => wicket != null || retired is RetiredDeclared;
-
-  UnmodifiableListView<Ball> get boundaries =>
-      UnmodifiableListView(balls.where((b) => b.isBoundary));
-
-  Map<int, int> get boundaryCount {
-    final counts = <int, int>{for (int i = 1; i <= 6; i++) i: 0};
-
-    for (final b in balls) {
-      if (b.isBoundary) {
-        counts[b.batterRuns] = counts[b.batterRuns]! + 1;
-      }
-    }
-
-    return counts;
-  }
-}
-
-class BowlerInnings {
-  /// The ID of this Bowler as in the database
-  final String bowlerId;
-
-  final int ballsPerOver;
-
-  /// All balls bowled by this Bowler
-  final List<Ball> _balls;
-  UnmodifiableListView<Ball> get balls => UnmodifiableListView(_balls);
-
-  BowlerInnings(
-    this.bowlerId,
-    this._balls, {
-    required this.ballsPerOver,
-  });
-
-  // BowlerInnings.of(this.bowlerId, QuickInnings innings)
-  //     : _balls = innings.balls.where((b) => b.bowlerId == bowlerId).toList(),
-  //       ballsPerOver = innings.ballsPerOver;
-
-  /// The runs conceded by this Bowler
-  int get runs =>
-      balls.fold(0, (s, b) => s + b.batterRuns + b.bowlingExtraRuns);
-
-  /// The number of balls bowler by this Bowler
-  int get numBalls => balls.where((b) => !b.isBowlingExtra).length;
-
-  /// The number of wickets
-  int get numWickets => balls.where((b) => b.wicket is BowlerWicket).length;
-
-  double get economy =>
-      handleDivideByZero(runs.toDouble() * ballsPerOver, numBalls.toDouble());
-  double get average => handleDivideByZero(runs * 100, numWickets.toDouble());
-  double get strikeRate =>
-      handleDivideByZero(numBalls.toDouble(), numWickets.toDouble());
 }
 
 class FallOfWicket {

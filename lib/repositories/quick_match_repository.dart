@@ -1,8 +1,11 @@
 import 'dart:collection';
 
+import 'package:scorecard/handlers/sql_db_handler.dart';
 import 'package:scorecard/handlers/ulid_handler.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
+import 'package:scorecard/repositories/sql/db/batting_scores_table.dart';
+import 'package:scorecard/repositories/sql/db/bowling_scores_table.dart';
 import 'package:scorecard/repositories/sql/db/posts_table.dart';
 import 'package:scorecard/repositories/sql/db/quick_innings_table.dart';
 import 'package:scorecard/repositories/sql/db/quick_matches_table.dart';
@@ -12,9 +15,16 @@ class QuickMatchRepository {
   final QuickMatchesTable quickMatchesTable;
   final QuickInningsTable quickInningsTable;
   final PostsTable postsTable;
+  final BattingScoresTable battingScoresTable;
+  final BowlingScoresTable bowlingScoresTable;
 
   QuickMatchRepository(
-      this.quickMatchesTable, this.quickInningsTable, this.postsTable);
+    this.quickMatchesTable,
+    this.quickInningsTable,
+    this.postsTable,
+    this.battingScoresTable,
+    this.bowlingScoresTable,
+  );
 
   Future<List<QuickMatch>> getAllMatches() async {
     final matchEntities = await quickMatchesTable.selectAll();
@@ -25,7 +35,7 @@ class QuickMatchRepository {
 
   Future<QuickMatch> createMatch(QuickMatchRules rules) async {
     final match = QuickMatch(
-      UlidHandler.generate(),
+      handle: UlidHandler.generate(),
       startsAt: DateTime.timestamp(),
       rules: rules,
     );
@@ -94,5 +104,18 @@ class QuickMatchRepository {
     return UnmodifiableListView(posts);
   }
 
-  // SQLDBHandler get sql => SQLDBHandler.instance;
+  Future<UnmodifiableListView<BattingScore>> loadBattersForInnings(
+      QuickInnings innings) async {
+    if (innings.id == null) {
+      throw StateError("Attempted to load posts for innings without ID");
+    }
+
+    final entities = await battingScoresTable.selectForInnings(innings.id!);
+    final battingScores =
+        entities.map((e) => EntityMappers.unpackBattingScore(e));
+
+    return UnmodifiableListView(battingScores);
+  }
+
+  SQLDBHandler get _sql => SQLDBHandler.instance;
 }

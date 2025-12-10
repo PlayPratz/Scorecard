@@ -1,7 +1,10 @@
-CREATE TABLE players (id TEXT PRIMARY KEY,
-                    name TEXT NOT NULL);
+CREATE TABLE players (id INTEGER PRIMARY KEY,
+                    handle TEXT UNIQUE NOT NULL,
+                    name TEXT NOT NULL,
+                    full_name TEXT);
 
-CREATE TABLE quick_matches (id TEXT PRIMARY KEY,
+CREATE TABLE quick_matches (id INTEGER PRIMARY KEY,
+                    handle TEXT UNIQUE NOT NULL,
                     type INTEGER NOT NULL,
                     stage INTEGER NOT NULL,
                     starts_at DATETIME NOT NULL,
@@ -11,7 +14,7 @@ CREATE TABLE quick_matches (id TEXT PRIMARY KEY,
                     rules_wide_penalty INTEGER NOT NULL);
 
 CREATE TABLE quick_innings (id INTEGER PRIMARY KEY,
-                    match_id TEXT NOT NULL REFERENCES quick_matches (id),
+                    match_id INTEGER NOT NULL REFERENCES quick_matches (id),
                     innings_number INTEGER NOT NULL,
                     type INTEGER NOT NULL,
                     is_completed INTEGER DEFAULT 0,
@@ -32,13 +35,13 @@ CREATE TABLE quick_innings (id INTEGER PRIMARY KEY,
                     extras_leg_byes INTEGER DEFAULT 0,
                     extras_penalties INTEGER DEFAULT 0,
                     extras_total INTEGER AS (extras_no_balls + extras_wides + extras_byes + extras_leg_byes + extras_penalties) STORED,
-                    batter1_id TEXT REFERENCES players (id),
-                    batter2_id TEXT REFERENCES players (id),
-                    striker_id TEXT REFERENCES players (id),
-                    bowler_id TEXT REFERENCES players (id));
+                    batter1_id INTEGER REFERENCES players (id),
+                    batter2_id INTEGER REFERENCES players (id),
+                    striker_id INTEGER REFERENCES players (id),
+                    bowler_id INTEGER REFERENCES players (id));
 
 CREATE TABLE posts (id INTEGER PRIMARY KEY,
-                    match_id TEXT NOT NULL REFERENCES quick_matches (id),
+                    match_id INTEGER NOT NULL REFERENCES quick_matches (id),
                     innings_id INTEGER NOT NULL REFERENCES quick_innings (id),
                     innings_number INTEGER NOT NULL,
                     day_number INTEGER,
@@ -46,12 +49,14 @@ CREATE TABLE posts (id INTEGER PRIMARY KEY,
                		timestamp DATETIME NOT NULL,
                     index_over INTEGER NOT NULL,
                     index_ball INTEGER NOT NULL,
+                    runs_at INTEGER NOT NULL,
+                    wickets_at INTEGER NOT NULL,
                     type INTEGER NOT NULL,
-                    bowler_id TEXT REFERENCES players (id),
+                    bowler_id INTEGER REFERENCES players (id),
                     bowling_score_id INTEGER REFERENCES bowling_scores (id),
-                    batter_id TEXT REFERENCES players (id),
+                    batter_id INTEGER REFERENCES players (id),
                     batting_score_id INTEGER REFERENCES batting_scores (id),
-                    previous_id TEXT REFERENCES players (id),
+                    previous_id INTEGER REFERENCES players (id),
                     total_runs INTEGER,
                     bowler_runs INTEGER,
                     batter_runs INTEGER,
@@ -62,8 +67,8 @@ CREATE TABLE posts (id INTEGER PRIMARY KEY,
                     extras_leg_byes INTEGER,
                     extras_penalties INTEGER,
                     wicket_type INTEGER,
-                    wicket_batter_id TEXT REFERENCES players (id),
-                    wicket_fielder_id TEXT REFERENCES players (id),
+                    wicket_batter_id INTEGER REFERENCES players (id),
+                    wicket_fielder_id INTEGER REFERENCES players (id),
                     is_counted_for_bowler INTEGER NOT NULL,
                     is_counted_for_batter INTEGER NOT NULL,
                     comment TEXT);
@@ -81,12 +86,20 @@ CREATE VIEW balls AS SELECT id, match_id, innings_id, innings_number, day_number
 
 CREATE VIEW wickets AS SELECT id, match_id, innings_id, innings_number, day_number, session_number,
                               timestamp, index_over, index_ball,
-                              wicket_type, wicket_batter_id, bowler_id, wicket_fielder_id
+                              wicket_type, wicket_batter_id as batter_id,
+                              bowler_id, wicket_fielder_id as fielder_id
                               FROM balls WHERE wicket_type IS NOT NULL;
 
 CREATE VIEW players_in_match AS SELECT match_id, batter_id AS player_id FROM posts WHERE batter_id IS NOT NULL
                                 UNION SELECT match_id, bowler_id FROM posts WHERE bowler_id IS NOT NULL
                                 UNION SELECT match_id, wicket_fielder_id FROM posts WHERE wicket_fielder_id IS NOT NULL;
+
+
+CREATE TRIGGER prevent_updates_on_post
+BEFORE UPDATE ON posts
+BEGIN
+    SELECT RAISE (ABORT, 'Cannot update records in posts. Try deleting and re-inserting instead.');
+END;
 
 CREATE TRIGGER update_innings_score
 AFTER INSERT ON posts
@@ -101,6 +114,11 @@ BEGIN
     extras_leg_byes = extras_leg_byes + new.extras_leg_byes,
     extras_penalties = extras_penalties + new.extras_penalties
     WHERE id = new.innings_id;
+
+    UPDATE posts SET
+    runs_at = (SELECT runs FROM quick_innings WHERE id = new.innings_id),
+    wickets_at = (SELECT wickets FROM quick_innings WHERE id = new.innings_id)
+    WHERE id = new.id;
 END;
 
 CREATE TRIGGER revert_innings_score
@@ -126,7 +144,7 @@ BEGIN
     WHERE id = new.innings_id;
 END;
 
-CREATE TRIGGER update_innings_wicket
+CREATE TRIGGER revert_innings_wicket
 AFTER DELETE ON posts
 WHEN old.wicket_type >= -1
 BEGIN
@@ -135,17 +153,17 @@ BEGIN
 END;
 
 CREATE TABLE batting_scores (id INTEGER PRIMARY KEY,
-                    match_id TEXT NOT NULL REFERENCES quick_matches (id),
+                    match_id INTEGER NOT NULL REFERENCES quick_matches (id),
                     innings_id INTEGER NOT NULL REFERENCES quick_innings (id),
                     innings_number INTEGER NOT NULL,
-                    player_id TEXT NOT NULL REFERENCES players (id),
+                    player_id INTEGER NOT NULL REFERENCES players (id),
                     batting_at INTEGER DEFAULT 0,
                     runs_scored INTEGER DEFAULT 0,
                     balls_faced INTEGER DEFAULT 0,
                     not_out INTEGER AS (IIF(wicket_type IS NULL, 1, 0)) STORED,
                     wicket_type INTEGER,
-                    wicket_bowler_id TEXT REFERENCES players (id),
-                    wicket_fielder_id TEXT REFERENCES players (id),
+                    wicket_bowler_id INTEGER REFERENCES players (id),
+                    wicket_fielder_id INTEGER REFERENCES players (id),
                     fours_scored INTEGER DEFAULT 0,
                     sixes_scored INTEGER DEFAULT 0,
                     boundaries_scored INTEGER AS (fours_scored+sixes_scored) STORED,
@@ -205,10 +223,10 @@ BEGIN
 END;
 
 CREATE TABLE bowling_scores (id INTEGER PRIMARY KEY,
-                    match_id TEXT NOT NULL REFERENCES quick_matches(id),
+                    match_id INTEGER NOT NULL REFERENCES quick_matches(id),
                     innings_id INTEGER NOT NULL REFERENCES quick_innings(id),
                     innings_number INTEGER NOT NULL,
-                    player_id TEXT NOT NULL REFERENCES players(id),
+                    player_id INTEGER NOT NULL REFERENCES players(id),
                     balls_bowled INTEGER DEFAULT 0,
                     overs_bowled INTEGER AS (balls_bowled/6) STORED,
                     overs_balls_bowled INTEGER AS (balls_bowled%6) STORED,
@@ -217,12 +235,11 @@ CREATE TABLE bowling_scores (id INTEGER PRIMARY KEY,
                     extras_no_balls INTEGER DEFAULT 0,
                     extras_wides INTEGER DEFAULT 0,
                     extras_total INTEGER AS (extras_no_balls + extras_wides) STORED,
-                    bowling_economy REAL AS ((runs_conceded/balls_bowled)*6) STORED,
-                    catches_taken INTEGER DEFAULT 0);
+                    economy REAL AS ((runs_conceded/balls_bowled)*6) STORED);
 
 CREATE VIEW bowling_stats AS
                     WITH bowling_stats AS
-                    (SELECT bs.player_idASas id, p.name,
+                    (SELECT bs.player_id AS id, p.name,
                     COUNT(DISTINCT bs.match_id) AS matches, COUNT(bs.player_id) AS innings,
                     SUM(bs.balls_bowled) AS balls_bowled, SUM(bs.runs_conceded) AS runs_conceded,
                     SUM(bs.wickets_taken) AS wickets_taken

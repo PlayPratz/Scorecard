@@ -9,18 +9,20 @@ class PostsEntity implements IEntity {
   final int innings_number;
   final int? day_number;
   final int? session_number;
+  final DateTime timestamp;
   final int index_over;
   final int index_ball;
-  final DateTime timestamp;
+  final int runs_at;
+  final int wickets_at;
   final int type;
-  final String? bowler_id;
-  final String? batter_id;
+  final int? bowler_id;
+  final int? batter_id;
   final bool is_counted_for_bowler;
   final bool is_counted_for_batter;
   final String? comment;
 
   // NextBatter/NextBowler
-  final String? previous_id;
+  final int? previous_id;
 
   // Ball specific
   final int? total_runs;
@@ -36,8 +38,8 @@ class PostsEntity implements IEntity {
 
   // Wicket
   final int? wicket_type;
-  final String? wicket_batter_id;
-  final String? wicket_fielder_id;
+  final int? wicket_batter_id;
+  final int? wicket_fielder_id;
 
   PostsEntity._({
     this.id,
@@ -46,9 +48,11 @@ class PostsEntity implements IEntity {
     required this.innings_number,
     required this.day_number,
     required this.session_number,
+    required this.timestamp,
     required this.index_over,
     required this.index_ball,
-    required this.timestamp,
+    required this.runs_at,
+    required this.wickets_at,
     required this.type,
     required this.comment,
     required this.bowler_id,
@@ -77,9 +81,11 @@ class PostsEntity implements IEntity {
     required this.innings_number,
     required this.day_number,
     required this.session_number,
+    required this.timestamp,
     required this.index_over,
     required this.index_ball,
-    required this.timestamp,
+    required this.runs_at,
+    required this.wickets_at,
     required this.type,
     required this.comment,
     // Specific
@@ -110,9 +116,11 @@ class PostsEntity implements IEntity {
     required this.innings_number,
     required this.day_number,
     required this.session_number,
+    required this.timestamp,
     required this.index_over,
     required this.index_ball,
-    required this.timestamp,
+    required this.runs_at,
+    required this.wickets_at,
     required this.type,
     required this.is_counted_for_bowler,
     required this.is_counted_for_batter,
@@ -143,9 +151,11 @@ class PostsEntity implements IEntity {
     required this.innings_number,
     required this.day_number,
     required this.session_number,
+    required this.timestamp,
     required this.index_over,
     required this.index_ball,
-    required this.timestamp,
+    required this.runs_at,
+    required this.wickets_at,
     required this.type,
     required this.is_counted_for_bowler,
     required this.is_counted_for_batter,
@@ -176,9 +186,11 @@ class PostsEntity implements IEntity {
     required this.innings_number,
     required this.day_number,
     required this.session_number,
+    required this.timestamp,
     required this.index_over,
     required this.index_ball,
-    required this.timestamp,
+    required this.runs_at,
+    required this.wickets_at,
     required this.type,
     required this.is_counted_for_bowler,
     required this.is_counted_for_batter,
@@ -209,9 +221,11 @@ class PostsEntity implements IEntity {
     required this.innings_number,
     required this.day_number,
     required this.session_number,
+    required this.timestamp,
     required this.index_over,
     required this.index_ball,
-    required this.timestamp,
+    required this.runs_at,
+    required this.wickets_at,
     required this.type,
     required this.is_counted_for_bowler,
     required this.is_counted_for_batter,
@@ -242,9 +256,11 @@ class PostsEntity implements IEntity {
     required this.innings_number,
     required this.day_number,
     required this.session_number,
+    required this.timestamp,
     required this.index_over,
     required this.index_ball,
-    required this.timestamp,
+    required this.runs_at,
+    required this.wickets_at,
     required this.type,
     required this.is_counted_for_bowler,
     required this.is_counted_for_batter,
@@ -275,9 +291,11 @@ class PostsEntity implements IEntity {
     required this.innings_number,
     required this.day_number,
     required this.session_number,
+    required this.timestamp,
     required this.index_over,
     required this.index_ball,
-    required this.timestamp,
+    required this.runs_at,
+    required this.wickets_at,
     required this.type,
     required this.is_counted_for_bowler,
     required this.is_counted_for_batter,
@@ -309,13 +327,15 @@ class PostsEntity implements IEntity {
           innings_number: map["innings_number"] as int,
           day_number: map["day_number"] as int?,
           session_number: map["session_number"] as int?,
+          timestamp: readDateTime(map["timestamp"] as int)!,
           index_over: map["index_over"] as int,
           index_ball: map["index_ball"] as int,
-          timestamp: readDateTime(map["timestamp"] as int)!,
+          runs_at: map["runs_at"] as int,
+          wickets_at: map["wickets_at"] as int,
           type: map["type"] as int,
-          bowler_id: map["bowler_id"] as String?,
-          batter_id: map["batter_id"] as String?,
-          previous_id: map["previous_id"] as String?,
+          bowler_id: map["bowler_id"] as int?,
+          batter_id: map["batter_id"] as int?,
+          previous_id: map["previous_id"] as int?,
           batter_runs: map["batter_runs"] as int?,
           bowler_runs: map["bowler_runs"] as int?,
           total_runs: map["total_runs"] as int?,
@@ -326,8 +346,8 @@ class PostsEntity implements IEntity {
           extras_leg_byes: map["extras_leg_byes"] as int,
           extras_penalties: map["extras_penalties"] as int,
           wicket_type: map["wicket_type"] as int?,
-          wicket_batter_id: map["wicket_batter_id"] as String?,
-          wicket_fielder_id: map["wicket_fielder_id"] as String?,
+          wicket_batter_id: map["wicket_batter_id"] as int?,
+          wicket_fielder_id: map["wicket_fielder_id"] as int?,
           is_counted_for_bowler: readBool(map["is_counted_for_bowler"] as int)!,
           is_counted_for_batter: readBool(map["is_counted_for_batter"] as int)!,
           comment: map["comment"] as String?,
@@ -380,8 +400,8 @@ class PostsTable extends ISQL<PostsEntity> {
   Future<Iterable<PostsEntity>> selectForMatch(String matchId) async {
     final result = await sql
         .query(table: table, where: "match_id = ?", whereArgs: [matchId]);
-    final postsEntities = result.map((e) => PostsEntity.deserialize(e));
-    return postsEntities;
+    final entities = result.map((e) => PostsEntity.deserialize(e));
+    return entities;
   }
 
   Future<Iterable<PostsEntity>> selectForInnings(int id) async {
@@ -390,8 +410,8 @@ class PostsTable extends ISQL<PostsEntity> {
       where: "innings_id = ?",
       whereArgs: [id],
     );
-    final postsEntities = result.map((e) => PostsEntity.deserialize(e));
-    return postsEntities;
+    final entities = result.map((e) => PostsEntity.deserialize(e));
+    return entities;
   }
 
   Future<void> deleteById(int id) async {

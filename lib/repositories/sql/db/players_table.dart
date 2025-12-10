@@ -2,32 +2,36 @@ import 'package:scorecard/repositories/sql/db/sql_interface.dart';
 import 'package:scorecard/repositories/sql/keys.dart';
 
 class PlayersEntity implements IEntity {
-  final String id;
+  final int? id;
+  final String handle;
   final String name;
-  // final String? full_name;
+  final String? full_name;
 
   PlayersEntity({
     required this.id,
     required this.name,
-    // required this.full_name,
+    required this.handle,
+    this.full_name,
   });
 
   PlayersEntity.deserialize(Map<String, Object?> map)
       : this(
-          id: map["id"] as String,
+          id: map["id"] as int,
+          handle: map["handle"] as String,
           name: map["name"] as String,
-          // full_name: map["full_name"] as String?,
+          full_name: map["full_name"] as String?,
         );
 
   @override
   Map<String, Object?> serialize() => {
         "id": id,
+        "handle": handle,
         "name": name,
-        // "full_name": full_name,
+        "full_name": full_name,
       };
 
   @override
-  String get primary_key => id;
+  int? get primary_key => id;
 }
 
 class PlayersTable extends ISQL<PlayersEntity> {
@@ -39,7 +43,7 @@ class PlayersTable extends ISQL<PlayersEntity> {
       PlayersEntity.deserialize(map);
 
   // TODO Find better place
-  Future<Iterable<PlayersEntity>> selectForMatch(String matchId) async {
+  Future<Iterable<PlayersEntity>> selectForMatch(int matchId) async {
     final raw = await sql.rawQuery(
       'SELECT * from PLAYERS WHERE id IN('
       'SELECT batter_id FROM posts WHERE match_id = ? UNION '

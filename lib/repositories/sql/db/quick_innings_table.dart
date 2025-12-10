@@ -3,7 +3,7 @@ import 'package:scorecard/repositories/sql/keys.dart';
 
 class QuickInningsEntity implements IEntity {
   final int? id;
-  final String match_id;
+  final int match_id;
   final int innings_number;
   final int type;
   // final String batting_team_id;
@@ -27,10 +27,10 @@ class QuickInningsEntity implements IEntity {
   final int extras_leg_byes;
   final int extras_penalties;
 
-  final String? batter1_id;
-  final String? batter2_id;
-  final String? striker_id;
-  final String? bowler_id;
+  final int? batter1_id;
+  final int? batter2_id;
+  final int? striker_id;
+  final int? bowler_id;
 
   QuickInningsEntity({
     required this.id,
@@ -63,7 +63,7 @@ class QuickInningsEntity implements IEntity {
   QuickInningsEntity.deserialize(Map<String, Object?> map)
       : this(
           id: map["id"] as int,
-          match_id: map["match_id"] as String,
+          match_id: map["match_id"] as int,
           innings_number: map["innings_number"] as int,
           type: map["type"] as int,
           // batting_team_id: map["batting_team_id"] as String,
@@ -83,10 +83,10 @@ class QuickInningsEntity implements IEntity {
           extras_byes: map["extras_byes"] as int,
           extras_leg_byes: map["extras_leg_byes"] as int,
           extras_penalties: map["extras_penalties"] as int,
-          batter1_id: map["batter1_id"] as String?,
-          batter2_id: map["batter2_id"] as String?,
-          striker_id: map["striker_id"] as String?,
-          bowler_id: map["bowler_id"] as String?,
+          batter1_id: map["batter1_id"] as int?,
+          batter2_id: map["batter2_id"] as int?,
+          striker_id: map["striker_id"] as int?,
+          bowler_id: map["bowler_id"] as int?,
         );
 
   @override

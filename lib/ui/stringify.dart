@@ -5,31 +5,31 @@ import 'package:scorecard/modules/quick_match/wicket_model.dart';
 class Stringify {
   static String score(Score score) => "${score.runs}/${score.wickets}";
 
-  static String batterInningsScore(BatterInnings batterInnings) =>
-      batterScore(batterInnings.runs, batterInnings.numBalls);
+  static String battingScore(BattingScore battingScore) => batterScore(
+      battingScore.runsScored, battingScore.ballsFaced, battingScore.isNotOut);
 
-  static String batterScore(int runs, int numBalls) => "$runs ($numBalls)";
+  static String batterScore(int runs, int numBalls, bool isNotOut) =>
+      "$runs ($numBalls)";
 
   static String wicket(Wicket? wicket,
-          {Retired? retired,
-          String ifNone = "not out",
-          required String Function(String) getPlayerName}) =>
+          {String ifNone = "not out",
+          required String Function(int) getPlayerName}) =>
       switch (wicket) {
-        null => switch (retired) {
-            null => ifNone,
-            RetiredDeclared() => "retired",
-            RetiredHurt() => "retired hurt",
-          },
-        BowledWicket() => "b ${getPlayerName(wicket.bowlerId)}",
-        HitWicket() => "hit-wicket b ${getPlayerName(wicket.bowlerId)}",
-        LbwWicket() => "lbw b ${getPlayerName(wicket.bowlerId)}",
-        CaughtWicket() => wicket.fielderId == wicket.bowlerId
-            ? "c&b ${getPlayerName(wicket.bowlerId)}"
-            : "c ${getPlayerName(wicket.fielderId)} b ${getPlayerName(wicket.bowlerId)}",
-        StumpedWicket() =>
+        Bowled() => "b ${getPlayerName(wicket.bowlerId)}",
+        HitWicket() => "hit wicket b ${getPlayerName(wicket.bowlerId)}",
+        Lbw() => "lbw b ${getPlayerName(wicket.bowlerId)}",
+        Caught() =>
+          "c ${getPlayerName(wicket.fielderId)} b ${getPlayerName(wicket.bowlerId)}",
+        CaughtAndBowled() => "c&b ${getPlayerName(wicket.bowlerId)}",
+        Stumped() =>
           "st ${getPlayerName(wicket.wicketkeeperId)} b ${getPlayerName(wicket.bowlerId)}",
-        RunoutWicket() => "run out (${getPlayerName(wicket.fielderId)})",
-        TimedOutWicket() => "timed-out",
+        RunOut() => "run out (${getPlayerName(wicket.fielderId)})",
+        TimedOut() => "timed out",
+        RetiredOut() => "retired - out",
+        RetiredNotOut() => "retired - not out",
+        ObstructingTheField() => "obstructing the field",
+        HitTheBallTwice() => "hit the ball twice",
+        null => ifNone,
       };
 
   static String ballCount(int ballCount, int ballsPerOver) =>

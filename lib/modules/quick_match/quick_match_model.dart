@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
@@ -7,7 +6,7 @@ import 'package:scorecard/util/number_utils.dart';
 
 class QuickMatch {
   /// The ID of this Match as in the database
-  final int? id;
+  final int id;
 
   /// The globally unique key of a player
   /// ex: #01KC1WJYQSY11J51V7DGGDJKPF ('#' is not a part of the handle)
@@ -25,7 +24,7 @@ class QuickMatch {
   // QuickMatchResult? result;
 
   QuickMatch({
-    this.id,
+    required this.id,
     required this.handle,
     required this.rules,
     required this.startsAt,
@@ -50,7 +49,7 @@ class QuickMatchRules {
 
 class QuickInnings {
   /// The ID of the Innings as in the database
-  int? id;
+  final int id;
 
   /// The ID of the Match as in the database
   final int matchId;
@@ -58,21 +57,11 @@ class QuickInnings {
   /// The ordinal number of this Innings in the Match
   final int inningsNumber;
 
-  /// The set of rules that define the play of this Innings
-  final QuickMatchRules _rules;
+  /// The type of innings, such as super over
+  final int type;
 
-  /// Whether the batting team has declared play
-  bool isDeclared = false;
-
-  /// Whether this innings is a super over
-  final bool isSuperOver;
-
-  /// Whether the Innings has ended
-  bool get isEnded => isCompleted; // || isForfeited || isDeclared TODO;
-
-  /// Whether the Innings has achieved completion either by losing all wickets,
-  /// reaching the over limit or chasing down the target.
-  bool isCompleted;
+  /// The state of the innings: not-started, in-progress, completed, forfeited, declared, etc.
+  final InningsState state;
 
   /// The target runs of this Innings, if any
   /// This is not 'final' so that we can change targets in the future (DLS)
@@ -85,8 +74,10 @@ class QuickInnings {
     this.id, {
     required this.matchId,
     required this.inningsNumber,
-    required QuickMatchRules rules,
-    required this.isCompleted,
+    required this.type,
+    required this.state,
+    required this.overLimit,
+    required this.ballsPerOver,
     required this.target,
     required this.runs,
     required this.wickets,
@@ -96,25 +87,21 @@ class QuickInnings {
     required this.batter2Id,
     required this.strikerId,
     required this.bowlerId,
-    required this.isDeclared,
-    required this.isSuperOver,
-  }) : _rules = rules;
+  });
 
   QuickInnings.of(QuickMatch match, this.inningsNumber)
-      : matchId = match.id!,
-        _rules = match.rules,
-        isSuperOver = false,
-        isCompleted = false,
+      : matchId = match.id,
+        type = -1, // TODO
+        state = -1, // TODO
         runs = 0,
         wickets = 0,
         balls = 0,
         extras = Extras.zero();
 
   QuickInnings.superOverOf(QuickMatch match, this.inningsNumber)
-      : matchId = match.id!,
-        _rules = match.rules,
-        isSuperOver = true,
-        isCompleted = false,
+      : matchId = match.id,
+        type = -1, // TODO
+        state = -1, // TODO
         runs = 0,
         wickets = 0,
         balls = 0,
@@ -132,12 +119,13 @@ class QuickInnings {
   final int balls;
 
   /// The number of legal balls in an over
-  int get ballsPerOver => _rules.ballsPerOver;
+  final int ballsPerOver;
 
   /// The number of overs that are to be bowled in this innings
-  int get overLimit => _rules.oversPerInnings;
-  int get ballLimit =>
-      isSuperOver ? ballsPerOver : _rules.oversPerInnings * _rules.ballsPerOver;
+  final int overLimit;
+  int get ballLimit => overLimit * ballsPerOver;
+
+  bool get isSuperOver => false; //TODO
 
   /// The balls left to win the match
   int get ballsLeft => ballLimit - balls;
@@ -172,36 +160,39 @@ class QuickInnings {
 
   final Extras extras;
 
-  // Extras get extras {
-  //   final extras = balls.where((b) => b.isExtra);
-  //
-  //   int noBalls = 0;
-  //   int wides = 0;
-  //   int byes = 0;
-  //   int legByes = 0;
-  //   int penalties = 0; // TODO Handle
-  //
-  //   for (final extra in extras) {
-  //     if (extra.bowlingExtra is NoBall) {
-  //       noBalls += extra.bowlingExtraRuns;
-  //     } else if (extra.bowlingExtra is Wide) {
-  //       wides += extra.bowlingExtraRuns;
-  //     }
-  //
-  //     if (extra.battingExtra is Bye) {
-  //       byes += extra.battingExtraRuns;
-  //     } else if (extra.battingExtra is LegBye) {
-  //       legByes += extra.battingExtraRuns;
-  //     }
-  //   }
-  //
-  //   return Extras(
-  //       noBalls: noBalls,
-  //       wides: wides,
-  //       byes: byes,
-  //       legByes: legByes,
-  //       penalties: penalties);
-  // }
+  bool get isEnded => [
+        InningsState.calledOff,
+        InningsState.allOut,
+        InningsState.batterUnavailable,
+        InningsState.declared,
+        InningsState.forfeited,
+        InningsState.mutualAgreement,
+        InningsState.outOfOvers,
+        InningsState.outOfTime,
+      ].contains(state);
+}
+
+enum InningsState {
+  scheduled("scheduled"),
+  inProgress("in progress"),
+  inningsBreak("innings break"),
+  drinksBreak("drinks break"),
+  mealBreak("meal break"),
+  lunchBreak("lunch break"),
+  teaBreak("tea break"),
+  suspended("suspended"),
+  calledOff("called off"),
+  allOut("all out"),
+  batterUnavailable("batter unavailable"),
+  declared("declared"),
+  forfeited("forfeited"),
+  mutualAgreement("mutual agreement"),
+  outOfOvers("out of overs"),
+  outOfTime("out of time"),
+  targetAchieved("target achieved");
+
+  final String code;
+  const InningsState(this.code);
 }
 
 class Extras {
@@ -253,15 +244,56 @@ class Score {
   Score.zero()
       : runs = 0,
         wickets = 0;
+}
 
-  Score plus(Ball ball) {
-    final runs = this.runs + ball.totalRuns;
-    if (ball.isWicket) {
-      return Score(runs, wickets + 1);
-    } else {
-      return Score(runs, wickets);
-    }
-  }
+/// Represents the score of a bowler within an innings
+class BowlingScore {
+  /// The ID of this BowlingScore as in the DB
+  final int id;
+
+  /// The ID of the match
+  final int matchId;
+
+  /// The ID of the innings
+  final int inningsId;
+
+  /// The cardinal number of the Innings
+  final int inningsNumber;
+
+  /// The ID of the batter who scored the runs
+  final int bowlerId;
+
+  /// The balls bowled by this bowler
+  final int ballsBowled;
+
+  /// The runs conceded by this bowler
+  final int runsConceded;
+
+  /// The wickets taken by this bowler
+  final int wicketsTaken;
+
+  /// The extras bowled by this bowler
+  final int extrasBowled;
+  final int noBallsBowled;
+  final int widesBowled;
+
+  /// The economy of this bowler
+  final double economy;
+
+  BowlingScore({
+    required this.id,
+    required this.matchId,
+    required this.inningsId,
+    required this.inningsNumber,
+    required this.bowlerId,
+    required this.ballsBowled,
+    required this.runsConceded,
+    required this.wicketsTaken,
+    required this.noBallsBowled,
+    required this.widesBowled,
+    required this.extrasBowled,
+    required this.economy,
+  });
 }
 
 /// Represents the score of a batter within an innings
@@ -270,7 +302,7 @@ class BattingScore {
   final int id;
 
   /// The ID of the match
-  final String matchId;
+  final int matchId;
 
   /// The ID of the innings
   final int inningsId;
@@ -331,28 +363,38 @@ class FallOfWicket {
 }
 
 class Partnership {
-  final String batter1Id;
-  final String batter2Id;
+  final int runs;
+  final int balls;
+  final int wicketNumber;
 
-  final List<InningsPost> posts;
-  UnmodifiableListView<Ball> get balls =>
-      UnmodifiableListView(posts.whereType<Ball>());
+  final int batter1Id;
+  final String batter1Name;
+  final int batter1Runs;
+  final int batter1Balls;
 
-  final BatterInnings batter1Innings;
-  final BatterInnings batter2Innings;
+  final int batter2Id;
+  final String batter2Name;
+  final int batter2Runs;
+  final int batter2Balls;
 
-  Partnership(this.posts, {required this.batter1Id, required this.batter2Id})
-      : batter1Innings = BatterInnings(batter1Id, posts),
-        batter2Innings = BatterInnings(batter2Id, posts);
-
-  int get runs => balls.fold(0, (s, b) => s + b.totalRuns);
-  int get numBalls => balls.where((b) => !b.isBowlingExtra).length;
+  Partnership({
+    required this.runs,
+    required this.balls,
+    required this.wicketNumber,
+    required this.batter1Id,
+    required this.batter1Name,
+    required this.batter1Runs,
+    required this.batter1Balls,
+    required this.batter2Id,
+    required this.batter2Name,
+    required this.batter2Runs,
+    required this.batter2Balls,
+  });
 }
 
 class Over {
-  final List<InningsPost> posts = [];
-  UnmodifiableListView<Ball> get balls =>
-      UnmodifiableListView(posts.whereType<Ball>());
+  final int overNumber;
+  final Score scoreIn;
 
-  int get runs => balls.fold(0, (s, b) => s + b.totalRuns);
+  Over({required this.overNumber, required this.scoreIn});
 }

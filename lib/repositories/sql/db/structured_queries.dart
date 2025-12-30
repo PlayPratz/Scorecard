@@ -1,5 +1,4 @@
 import 'package:scorecard/handlers/sql_db_handler.dart';
-import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/stats/player_statistics.dart';
 
 class StructuredQueries {

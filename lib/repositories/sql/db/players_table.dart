@@ -2,7 +2,7 @@ import 'package:scorecard/repositories/sql/db/sql_interface.dart';
 import 'package:scorecard/repositories/sql/keys.dart';
 
 class PlayersEntity implements IEntity {
-  final int? id;
+  final int id;
   final String handle;
   final String name;
   final String? full_name;
@@ -29,9 +29,6 @@ class PlayersEntity implements IEntity {
         "name": name,
         "full_name": full_name,
       };
-
-  @override
-  int? get primary_key => id;
 }
 
 class PlayersTable extends ISQL<PlayersEntity> {

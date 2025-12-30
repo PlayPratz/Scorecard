@@ -1,4 +1,5 @@
 import 'package:scorecard/cache/player_cache.dart';
+import 'package:scorecard/handlers/ulid_handler.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/repositories/player_repository.dart';
@@ -9,9 +10,20 @@ class PlayerService {
   PlayerService(this._playerRepository);
 
   /// Creates a player
-  Future<Player> createPlayer(String name) async {
-    final player = await _playerRepository.create(name: name);
-    return player;
+  Future<Player> createPlayer(
+    String name, {
+    String? fullName,
+    DateTime? dob,
+  }) async {
+    final player = Player(
+      id: -1,
+      handle: UlidHandler.generate(),
+      name: name,
+      dateOfBirth: dob,
+      fullName: fullName,
+    );
+    final newPlayer = await _playerRepository.create(player);
+    return newPlayer;
   }
 
   /// Updates a player
@@ -21,13 +33,13 @@ class PlayerService {
   }
 
   /// Fetches a player of the given [id]
-  Future<Player?> getPlayerById(String id) async {
+  Future<Player?> getPlayerById(int id) async {
     final player = await _playerRepository.load(id);
     return player;
   }
 
   /// Fetches a player of the given [id]
-  Future<List<Player>> getPlayersByIds(Set<String> ids) async {
+  Future<List<Player>> getPlayersByIds(Set<int> ids) async {
     final players = await _playerRepository.loadMultiple(ids);
     return players;
   }
@@ -40,13 +52,6 @@ class PlayerService {
 
   Future<List<Player>> loadPlayersForMatch(QuickMatch match) async {
     final players = await _playerRepository.loadPlayersForMatch(match);
-
-    // Clear the cache of any previous player
-    // This ensures that only one set of players is cached at any single time,
-    // i.e. the players of one match
-    // TODO: Should the cache be moved to this service?
-    PlayerCache().clear();
-    PlayerCache().putAll(players);
 
     return players;
   }

@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/provider/settings_provider.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
+import 'package:scorecard/repositories/sql/db/batting_scores_table.dart';
+import 'package:scorecard/repositories/sql/db/bowling_scores_table.dart';
 import 'package:scorecard/repositories/sql/db/structured_queries.dart';
 import 'package:scorecard/repositories/sql/db/players_table.dart';
 import 'package:scorecard/repositories/sql/db/posts_table.dart';
@@ -130,7 +132,7 @@ class _ScorecardAppState extends State<ScorecardApp> {
                       Provider(create: (context) => state.settingsService),
                       Provider(create: (context) => state.playerService),
                       Provider(create: (context) => state.quickMatchService),
-                      Provider(create: (context) => state.statisticsService),
+                      // Provider(create: (context) => state.statisticsService),
                     ],
                     child: child,
                   ),
@@ -149,7 +151,7 @@ class _ScorecardAppController {
   late final PlayerService playerService;
   late final QuickMatchService quickMatchService;
   late final SettingsService settingsService;
-  late final StatisticsService statisticsService;
+  // late final StatisticsService statisticsService;
 
   late final SettingsProvider settingsProvider;
 
@@ -159,7 +161,7 @@ class _ScorecardAppController {
           settingsService: settingsService,
           playerService: playerService,
           quickMatchService: quickMatchService,
-          statisticsService: statisticsService,
+          // statisticsService: statisticsService,
           theme: settingsProvider.theme,
         ),
       );
@@ -184,8 +186,12 @@ class _ScorecardAppController {
     final quickMatchesTable = QuickMatchesTable();
     final quickInningsTable = QuickInningsTable();
     final postsTable = PostsTable();
+    final battingScoresTable = BattingScoresTable();
+    final bowlingScoresTable = BowlingScoresTable();
 
-    final playerStatisticsQueries = StructuredQueries();
+    final wicketsView = WicketsView();
+
+    // final playerStatisticsQueries = StructuredQueries();
 
     // Instantiate all repositories
     playerRepository = PlayerRepository(playersTable);
@@ -193,8 +199,11 @@ class _ScorecardAppController {
       quickMatchesTable,
       quickInningsTable,
       postsTable,
+      battingScoresTable,
+      bowlingScoresTable,
+      wicketsView,
     );
-    statisticsRepository = StatisticsRepository(playerStatisticsQueries);
+    // statisticsRepository = StatisticsRepository(playerStatisticsQueries);
   }
 
   Future<void> _initializeServices() async {
@@ -213,7 +222,7 @@ class _ScorecardAppController {
     // await quickMatchService.initialize();
 
     //Statistics Service
-    statisticsService = StatisticsService(statisticsRepository);
+    // statisticsService = StatisticsService(statisticsRepository);
   }
 }
 
@@ -225,7 +234,7 @@ class _StartupSuccessfulState extends _ScorecardState {
   final SettingsService settingsService;
   final PlayerService playerService;
   final QuickMatchService quickMatchService;
-  final StatisticsService statisticsService;
+  // final StatisticsService statisticsService;
 
   final ScorecardTheme theme;
 
@@ -233,7 +242,7 @@ class _StartupSuccessfulState extends _ScorecardState {
     required this.settingsService,
     required this.playerService,
     required this.quickMatchService,
-    required this.statisticsService,
+    // required this.statisticsService,
     required this.theme,
   });
 }

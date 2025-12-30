@@ -109,17 +109,6 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                       children: [
                         Expanded(
                           child: ListTile(
-                            title: const Text("Solo"),
-                            // titleTextStyle:
-                            //     Theme.of(context).textTheme.bodySmall,
-                            trailing: Switch(
-                              value: controller.isSolo,
-                              onChanged: (_) => controller.toggleIsSolo(),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: ListTile(
                             title: const Text("Rotate Strike"),
                             titleTextStyle:
                                 Theme.of(context).textTheme.bodySmall,
@@ -136,7 +125,6 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
                       batter2: _batter2Display(innings),
                       bowler: _bowlerDisplay(context, innings),
                       strikerId: innings.strikerId,
-                      isSolo: controller.isSolo,
                       isOutBowler: state is _PickBowlerState,
                       onPickBatter: () => controller.pickBatter(context, null),
                       onPickBowler: () => controller.pickBowler(context),
@@ -255,9 +243,9 @@ class _PlayQuickMatchScreenState extends State<PlayQuickMatchScreen> {
 
   _BatterScoreDisplay? _batterDisplayInner(
     QuickInnings innings,
-    String batterId,
+    int batterId,
   ) {
-    final batterInnings = service.getLastBatterInningsOf(innings, batterId);
+    final batterInnings = service.getBatters(innings, batterId);
 
     return _BatterScoreDisplay(batterId,
         batterName: PlayerCache().get(batterId).name,
@@ -475,7 +463,7 @@ class _PlayQuickMatchScreenController {
     }
   }
 
-  Future<void> retireBatter(String batterId) async {
+  Future<void> retireBatter(int batterId) async {
     _dispatchLoading();
     await Future.delayed(const Duration(milliseconds: 150));
     await _matchService.retireDeclareBatter(innings, batterId);
@@ -763,18 +751,17 @@ class _ScoreBar extends StatelessWidget {
 class _OnCreasePlayers extends StatelessWidget {
   final _BatterScoreDisplay? batter1;
 
-  final bool isSolo;
   final _BatterScoreDisplay? batter2;
 
-  final String? strikerId;
+  final int? strikerId;
 
   final _BowlerScoreDisplay? bowler;
 
   final bool isOutBowler;
 
-  final void Function(String batterId) onSetStrike;
-  final void Function(String batterId) onRetireBatter;
-  final void Function(String? bowlerId) onRetireBowler;
+  final void Function(int batterId) onSetStrike;
+  final void Function(int batterId) onRetireBatter;
+  final void Function(int bowlerId) onRetireBowler;
 
   final void Function() onPickBatter;
   final void Function() onPickBowler;
@@ -789,7 +776,6 @@ class _OnCreasePlayers extends StatelessWidget {
     required this.strikerId,
     required this.bowler,
     required this.isOutBowler,
-    required this.isSolo,
     required this.onSetStrike,
     required this.onRetireBatter,
     required this.onRetireBowler,
@@ -817,7 +803,7 @@ class _OnCreasePlayers extends StatelessWidget {
                 ),
               ),
               _wBatterDisplay(context, batter1),
-              if (!isSolo) _wBatterDisplay(context, batter2),
+              _wBatterDisplay(context, batter2),
             ],
           ),
         ),
@@ -1551,22 +1537,22 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
 
     final result = switch (_wicketDismissal!) {
       Dismissal.bowled =>
-        BowledWicket(batterId: widget.strikerId, bowlerId: widget.bowlerId),
+        Bowled(batterId: widget.strikerId, bowlerId: widget.bowlerId),
       Dismissal.hitWicket =>
         HitWicket(batterId: widget.strikerId, bowlerId: widget.bowlerId),
       Dismissal.lbw =>
-        LbwWicket(batterId: widget.strikerId, bowlerId: widget.bowlerId),
-      Dismissal.caught => CaughtWicket(
+        Lbw(batterId: widget.strikerId, bowlerId: widget.bowlerId),
+      Dismissal.caught => Caught(
           batterId: widget.strikerId,
           bowlerId: widget.bowlerId,
           fielderId: _wicketFielderId!),
-      Dismissal.stumped => StumpedWicket(
+      Dismissal.stumped => Stumped(
           batterId: widget.strikerId,
           bowlerId: widget.bowlerId,
           wicketkeeperId: _wicketFielderId!),
       Dismissal.runOut =>
-        RunoutWicket(batterId: _wicketBatterId!, fielderId: _wicketFielderId!),
-      Dismissal.timedOut => TimedOutWicket(batterId: _wicketBatterId!),
+        RunOut(batterId: _wicketBatterId!, fielderId: _wicketFielderId!),
+      Dismissal.timedOut => TimedOut(batterId: _wicketBatterId!),
       Dismissal.retired => RetiredDeclared(batterId: _wicketBatterId!),
       Dismissal.retiredHurt => RetiredHurt(batterId: _wicketBatterId!),
     };

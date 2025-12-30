@@ -87,7 +87,6 @@ CREATE TABLE posts (id INTEGER PRIMARY KEY,
                     wicket_fielder_id INTEGER REFERENCES players (id),
                     runs_at INTEGER DEFAULT -1,
                     wickets_at INTEGER DEFAULT -1,
-                    partnership_number INTEGER DEFAULT -1,
                     is_counted_for_bowler INTEGER AS(IIF(type=0 AND (extras_no_balls+extras_wides)<=0,1,0)) STORED,
                     is_counted_for_batter INTEGER AS(IIF(type=0 AND extras_wides <= 0,1,0)) STORED,
                     comment TEXT);
@@ -104,7 +103,7 @@ CREATE VIEW balls AS SELECT id, match_id, innings_id, innings_type, innings_numb
                             total_runs, bowler_runs, batter_runs, is_boundary,
                             extras_no_balls, extras_wides, extras_byes, extras_leg_byes, extras_penalties, extras_total,
                             wicket_type, wicket_batter_id, wicket_fielder_id,
-                            runs_at, wickets_at, partnerships_number,
+                            runs_at, wickets_at,
                             is_counted_for_bowler, is_counted_for_batter
                             FROM posts WHERE type = 0;
 
@@ -113,13 +112,8 @@ CREATE VIEW wickets AS SELECT id, match_id, innings_id, innings_type, innings_nu
                               timestamp, over_index, ball_index,
                               wicket_type, wicket_batter_id AS batter_id,
                               bowler_id, wicket_fielder_id AS fielder_id,
-                              runs_at, wickets_at, partnerships_number
+                              runs_at, wickets_at
                               FROM balls WHERE wicket_type IS NOT NULL;
-
-DROP VIEW IF EXISTS players_in_match;
-CREATE VIEW players_in_match AS SELECT match_id, batter_id AS player_id FROM posts WHERE batter_id IS NOT NULL
-                                UNION SELECT match_id, bowler_id FROM posts WHERE bowler_id IS NOT NULL
-                                UNION SELECT match_id, wicket_fielder_id FROM posts WHERE wicket_fielder_id IS NOT NULL;
 
 DROP TABLE IF EXISTS batting_scores;
 CREATE TABLE batting_scores (id INTEGER PRIMARY KEY,
@@ -192,6 +186,16 @@ CREATE VIEW bowling_stats AS
                     1.0*runs_conceded/wickets_taken AS average,
                     1.0*balls_bowled/wickets_taken AS strike_rate
                     FROM bowling_stats ORDER BY wickets_taken DESC, runs_conceded ASC, balls_bowled DESC;
+
+DROP TABLE IF EXISTS players_in_match;
+CREATE TABLE players_in_match (id INTEGER PRIMARY KEY,
+                    match_id INTEGER NOT NULL REFERENCES quick_matches(id),
+                    player_id INTEGER NOT NULL REFERENCES players(id),
+                    UNIQUE(match_id, player_id));
+
+DROP VIEW IF EXISTS players_in_match_expanded;
+CREATE VIEW players_in_match_expanded AS
+                    SELECT players.* from players_in_match INNER JOIN players ON players.id = players_in_match.player_id;
 
 DROP TABLE IF EXISTS lookup_wicket;
 CREATE TABLE lookup_wicket (type INTEGER PRIMARY KEY,

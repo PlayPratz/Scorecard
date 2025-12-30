@@ -9,7 +9,7 @@ class SettingsService {
 
   Future<void> initialize() async {
     provider.theme = await _getThemeFromPref();
-    provider.showIds = await _getShowIdsFromPref();
+    provider.showHandles = await _getShowIdsFromPref();
   }
 
   Future<void> toggleTheme() async {
@@ -37,16 +37,16 @@ class SettingsService {
   }
 
   Future<void> toggleShowIds() async {
-    provider.showIds = !provider.showIds;
-    await _preferences.setBool("showIds", provider.showIds);
+    provider.showHandles = !provider.showHandles;
+    await _preferences.setBool("showHandles", provider.showHandles);
   }
 
-  bool getShowIds() {
-    return provider.showIds;
+  bool getShowHandles() {
+    return provider.showHandles;
   }
 
   Future<bool> _getShowIdsFromPref() async {
-    final showIds = await _preferences.getBool("showIds");
+    final showIds = await _preferences.getBool("showHandles");
     return showIds ?? false;
   }
 }

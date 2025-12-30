@@ -32,7 +32,7 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final showIds = context.read<SettingsService>().getShowIds();
+    final showIds = context.read<SettingsService>().getShowHandles();
 
     return Scaffold(
       appBar: AppBar(

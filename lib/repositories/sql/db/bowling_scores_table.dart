@@ -3,10 +3,11 @@ import 'package:scorecard/repositories/sql/keys.dart';
 
 class BowlingScoresEntity implements IEntity {
   final int id;
-  final String match_id;
+  final int match_id;
   final int innings_id;
+  final int innings_type;
   final int innings_number;
-  final String player_id;
+  final int player_id;
 
   final int balls_bowled;
   final int overs_bowled;
@@ -24,6 +25,7 @@ class BowlingScoresEntity implements IEntity {
     required this.id,
     required this.match_id,
     required this.innings_id,
+    required this.innings_type,
     required this.innings_number,
     required this.player_id,
     required this.balls_bowled,
@@ -37,16 +39,14 @@ class BowlingScoresEntity implements IEntity {
     required this.economy,
   });
 
-  @override
-  get primary_key => id;
-
   BowlingScoresEntity.deserialize(Map<String, Object?> map)
       : this._(
           id: map["id"] as int,
-          match_id: map["match_id"] as String,
+          match_id: map["match_id"] as int,
           innings_id: map["innings_id"] as int,
+          innings_type: map["innings_type"] as int,
           innings_number: map["innings_number"] as int,
-          player_id: map["player_id"] as String,
+          player_id: map["player_id"] as int,
           balls_bowled: map["balls_bowled"] as int,
           overs_bowled: map["overs_bowled"] as int,
           overs_balls_bowled: map["overs_balls_bowled"] as int,
@@ -71,4 +71,21 @@ class BowlingScoresTable extends ISQL<BowlingScoresEntity> {
 
   @override
   String get table => Tables.battingScores;
+
+  Future<Iterable<BowlingScoresEntity>> selectForInnings(int inningsId) async {
+    final result = await sql
+        .query(table: table, where: "innings_id = ?", whereArgs: [inningsId]);
+    final entities = result.map((e) => BowlingScoresEntity.deserialize(e));
+    return entities;
+  }
+
+  Future<BowlingScoresEntity> selectForInningsAndBowler(
+      int inningsId, int bowlerId) async {
+    final result = await sql.query(
+        table: table,
+        where: "innings_id = ? AND player_id = bowler_id",
+        whereArgs: [inningsId]);
+    final entities = result.map((e) => BowlingScoresEntity.deserialize(e));
+    return entities.single;
+  }
 }

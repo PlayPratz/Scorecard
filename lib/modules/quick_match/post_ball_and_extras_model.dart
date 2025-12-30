@@ -9,7 +9,7 @@ import 'package:scorecard/modules/quick_match/wicket_model.dart';
 /// not want to name this InningsEvent because that sounds like a UI Event.
 sealed class InningsPost {
   /// The ID of the Post as in the database
-  int? id; // TODO Can make this final?
+  final int id;
 
   /// The ID of the Match as in the database
   final String matchId;
@@ -32,14 +32,7 @@ sealed class InningsPost {
   /// Any comment that the user would like to add about this post
   final String? comment;
 
-  /// Whether this post counts towards the balls bowled by a bowler
-  get isCountedForBowler;
-
-  /// Whether this post counts towards the balls faced by a batter
-  get isCountedForBatter;
-
-  /// Whether this post is a wicket
-  get isWicket;
+  String get code;
 
   InningsPost(
     this.id, {
@@ -72,8 +65,6 @@ class Ball extends InningsPost {
 
   /// A wicket, if any, that fell on this ball
   final Wicket? wicket;
-
-  @override
   bool get isWicket => wicket != null;
 
   /// An extra due to the bowler or fielding team's fault
@@ -99,12 +90,6 @@ class Ball extends InningsPost {
   /// Total runs awarded to the Batting Team
   int get totalRuns => batterRuns + bowlingExtraRuns + battingExtraRuns;
 
-  @override
-  get isCountedForBatter => battingExtra is! NoBall;
-
-  @override
-  get isCountedForBowler => !isBowlingExtra;
-
   Ball(
     super.id, {
     required super.matchId,
@@ -122,6 +107,9 @@ class Ball extends InningsPost {
     required this.bowlingExtra,
     required this.battingExtra,
   });
+
+  @override
+  String get code => "ball";
 }
 
 /// Posted when a Bowler Retires mid-over due to an injury, being sent off, or
@@ -138,15 +126,6 @@ class BowlerRetire extends InningsPost {
   /// The bowler's retirement
   // final RetiredBowler retired;
 
-  @override
-  get isCountedForBatter => false;
-
-  @override
-  get isCountedForBowler => false;
-
-  @override
-  get isWicket => false;
-
   BowlerRetire(
     super.id, {
     required super.matchId,
@@ -159,6 +138,9 @@ class BowlerRetire extends InningsPost {
     required this.bowlerId,
     // required this.retired,
   });
+
+  @override
+  String get code => "bowler retire";
 }
 
 /// Posted whenever a Bowler starts a new over or completes an over that was
@@ -171,15 +153,6 @@ class NextBowler extends InningsPost {
   final int nextId;
 
   // final bool isMidOverChange;
-
-  @override
-  get isCountedForBatter => false;
-
-  @override
-  get isCountedForBowler => false;
-
-  @override
-  get isWicket => false;
 
   NextBowler(
     super.id, {
@@ -194,6 +167,9 @@ class NextBowler extends InningsPost {
     required this.nextId,
     // required this.isMidOverChange
   });
+
+  @override
+  String get code => "next bowler";
 }
 
 /// Posted whenever a Batter Retires due to an injury, being sent off, or any
@@ -208,15 +184,6 @@ class BatterRetire extends InningsPost {
   /// The batter who has retired
   int get batterId => retired.batterId;
 
-  @override
-  get isCountedForBatter => false;
-
-  @override
-  get isCountedForBowler => false;
-
-  @override
-  get isWicket => false; // TODO
-
   BatterRetire(
     super.id, {
     required super.matchId,
@@ -229,6 +196,9 @@ class BatterRetire extends InningsPost {
     // required this.batter,
     required this.retired,
   });
+
+  @override
+  String get code => "batter retire";
 }
 
 /// Posted whenever a New Batter walks out to bat.
@@ -238,15 +208,6 @@ class NextBatter extends InningsPost {
 
   /// The batter that has walked out to bat
   final int nextId;
-
-  @override
-  get isCountedForBatter => false;
-
-  @override
-  get isCountedForBowler => false;
-
-  @override
-  get isWicket => false;
 
   NextBatter(
     super.id, {
@@ -260,6 +221,9 @@ class NextBatter extends InningsPost {
     required this.previousId,
     required this.nextId,
   });
+
+  @override
+  String get code => "next batter";
 }
 
 /// Posted whenever a batter is run out before a delivery is bowled by the
@@ -269,18 +233,9 @@ class NextBatter extends InningsPost {
 /// bowled, as sensationalized by Ravichandran Ashwin
 class WicketBeforeDelivery extends InningsPost {
   /// The run out that took place before the ball was bowled
-  final RunoutWicket wicket;
+  final RunOut wicket;
 
   int get batterId => wicket.batterId;
-
-  @override
-  get isCountedForBatter => false;
-
-  @override
-  get isCountedForBowler => false;
-
-  @override
-  get isWicket => true;
 
   WicketBeforeDelivery(
     super.id, {
@@ -293,20 +248,14 @@ class WicketBeforeDelivery extends InningsPost {
     super.comment,
     required this.wicket,
   });
+
+  @override
+  String get code => "wicket before delivery";
 }
 
 /// Posted whenever penalty runs are awarded to the batting team
 class Penalty extends InningsPost {
   final int penalties;
-
-  @override
-  get isCountedForBowler => false;
-
-  @override
-  get isCountedForBatter => false;
-
-  @override
-  get isWicket => false;
 
   Penalty(
     super.id, {
@@ -319,6 +268,26 @@ class Penalty extends InningsPost {
     super.comment,
     required this.penalties,
   });
+
+  @override
+  String get code => "penalty";
+}
+
+/// Posted whenever there is a break in play in the Innings
+class Break extends InningsPost {
+  final int breakType;
+
+  Break(super.id,
+      {required super.matchId,
+      required super.inningsId,
+      required super.inningsNumber,
+      required super.timestamp,
+      required super.index,
+      required super.scoreAt,
+      required this.breakType});
+
+  @override
+  String get code => "break";
 }
 
 // An index which locates events on a timeline of an innings.

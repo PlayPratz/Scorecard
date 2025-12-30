@@ -3,7 +3,7 @@ import 'package:scorecard/handlers/sql_db_handler.dart';
 import 'package:scorecard/repositories/sql/keys.dart';
 
 class QuickMatchesEntity implements IEntity {
-  final int? id;
+  final int id;
   final String handle;
 
   final int type;
@@ -98,14 +98,11 @@ class QuickMatchesEntity implements IEntity {
         // "result_margin_2": result_margin_2,
         // "potm_id": potm_id,
       };
-
-  @override
-  int? get primary_key => id;
 }
 
 class QuickMatchesTable extends ISQL<QuickMatchesEntity> {
   @override
-  Future<QuickMatchesEntity?> select(String id) async {
+  Future<QuickMatchesEntity?> select(int id) async {
     final raw = await _sql
         .query(table: Tables.quickMatches, where: "id = ?", whereArgs: [id]);
     final map = raw.singleOrNull;

@@ -3,19 +3,19 @@ sealed class Wicket {
 
   final int batterId;
 
-  Dismissal get dismissal;
+  String get code;
 
   Wicket({required this.batterId});
 }
 
-class BowledWicket extends Wicket with BowlerWicket {
+class Bowled extends Wicket with BowlerWicket {
   @override
   final int bowlerId;
 
-  BowledWicket({required super.batterId, required this.bowlerId});
+  Bowled({required super.batterId, required this.bowlerId});
 
   @override
-  Dismissal get dismissal => Dismissal.bowled;
+  String get code => "bowled";
 }
 
 class HitWicket extends Wicket with BowlerWicket {
@@ -25,35 +25,48 @@ class HitWicket extends Wicket with BowlerWicket {
   HitWicket({required super.batterId, required this.bowlerId});
 
   @override
-  Dismissal get dismissal => Dismissal.hitWicket;
+  String get code => "hit wicket";
 }
 
-class LbwWicket extends Wicket with BowlerWicket {
+class Lbw extends Wicket with BowlerWicket {
   @override
   final int bowlerId;
 
-  LbwWicket({required super.batterId, required this.bowlerId});
+  Lbw({required super.batterId, required this.bowlerId});
 
   @override
-  Dismissal get dismissal => Dismissal.lbw;
+  String get code => "lbw";
 }
 
-class CaughtWicket extends Wicket with BowlerWicket, FielderWicket {
+class Caught extends Wicket with BowlerWicket, FielderWicket {
   @override
   final int bowlerId;
   @override
   final int fielderId;
 
-  CaughtWicket(
+  Caught(
       {required super.batterId,
       required this.bowlerId,
       required this.fielderId});
 
   @override
-  Dismissal get dismissal => Dismissal.caught;
+  String get code => "caught";
 }
 
-class StumpedWicket extends Wicket with BowlerWicket, FielderWicket {
+class CaughtAndBowled extends Wicket with BowlerWicket, FielderWicket {
+  @override
+  final int bowlerId;
+
+  @override
+  int get fielderId => bowlerId;
+
+  CaughtAndBowled({required super.batterId, required this.bowlerId});
+
+  @override
+  String get code => "caught and bowled";
+}
+
+class Stumped extends Wicket with BowlerWicket, FielderWicket {
   @override
   final int bowlerId;
 
@@ -63,56 +76,62 @@ class StumpedWicket extends Wicket with BowlerWicket, FielderWicket {
   @override
   int get fielderId => wicketkeeperId;
 
-  StumpedWicket(
+  Stumped(
       {required super.batterId,
       required this.bowlerId,
       required this.wicketkeeperId});
 
   @override
-  Dismissal get dismissal => Dismissal.stumped;
+  String get code => "stumped";
 }
 
-class RunoutWicket extends Wicket with FielderWicket {
+class RunOut extends Wicket with FielderWicket {
   @override
   final int fielderId;
 
-  RunoutWicket({required super.batterId, required this.fielderId});
+  RunOut({required super.batterId, required this.fielderId});
 
   @override
-  Dismissal get dismissal => Dismissal.runOut;
+  String get code => "run out";
 }
 
-class TimedOutWicket extends Wicket {
-  TimedOutWicket({required super.batterId});
+class TimedOut extends Wicket {
+  TimedOut({required super.batterId});
 
   @override
-  Dismissal get dismissal => Dismissal.timedOut;
+  String get code => "timed out";
 }
 
-// Retirements
+class ObstructingTheField extends Wicket {
+  ObstructingTheField({required super.batterId});
 
-sealed class Retired {
-  int? id;
+  @override
+  String get code => "obstructing the field";
+}
 
-  final int batterId;
+class HitTheBallTwice extends Wicket {
+  HitTheBallTwice({required super.batterId});
 
-  Retired({required this.batterId});
+  @override
+  String get code => "hit the ball twice";
+}
 
-  Dismissal get dismissal;
+sealed class Retired extends Wicket {
+  Retired({required super.batterId});
 }
 
 class RetiredOut extends Retired {
   RetiredOut({required super.batterId});
 
   @override
-  Dismissal get dismissal => Dismissal.retiredOut;
+  String get code => "retired - out";
 }
 
 class RetiredNotOut extends Retired {
   RetiredNotOut({required super.batterId});
 
   @override
-  Dismissal get dismissal => Dismissal.retiredNotOut;
+  String get code => "retired - not out";
 }
 
 mixin BowlerWicket {
@@ -129,14 +148,20 @@ mixin FielderWicket {
 //   RetiredBowler({required this.bowler});
 // }
 
-enum Dismissal {
-  bowled,
-  hitWicket,
-  lbw,
-  caught,
-  stumped,
-  runOut,
-  timedOut,
-  retiredOut,
-  retiredNotOut,
-}
+// enum Dismissal {
+//   bowled("bowled"),
+//   lbw("lbw"),
+//   hitWicket("hit wicket"),
+//   caught("caught"),
+//   caughtAndBowled("caught and bowled"),
+//   stumped("stumped"),
+//   runOut("run out"),
+//   obstructing("obstructing the field"),
+//   hitTwice("hit the ball twice"),
+//   timedOut("timed out"),
+//   retiredOut("retired - out"),
+//   retiredNotOut("retired - not out");
+//
+//   final String description;
+//   const Dismissal(this.description);
+// }

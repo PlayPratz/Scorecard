@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/cache/player_cache.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/services/quick_match_service.dart';
@@ -37,7 +36,7 @@ class InningsTimelineScreen extends StatelessWidget {
                       children: [
                         Text("Over $overIndex",
                             style: Theme.of(context).textTheme.titleSmall),
-                        Text("${over.runs} Runs",
+                        Text(Stringify.score(over.scoreIn),
                             style: Theme.of(context).textTheme.titleSmall),
                       ],
                     ),
@@ -138,8 +137,8 @@ class _InningsPostWidget extends StatelessWidget {
     final post = this.post;
     final playerCache = PlayerCache();
 
-    getPlayerName(String id) => playerCache.get(id).name.toUpperCase();
-    getPlayerNameLowercase(String id) => playerCache.get(id).name;
+    getPlayerName(int id) => playerCache.get(id).name.toUpperCase();
+    getPlayerNameLowercase(int id) => playerCache.get(id).name;
 
     const contentPadding = EdgeInsets.symmetric(horizontal: 8.0);
     final titleTextStyle = Theme.of(context).textTheme.bodyMedium;

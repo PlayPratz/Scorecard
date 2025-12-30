@@ -3,8 +3,9 @@ import 'package:scorecard/repositories/sql/keys.dart';
 
 class BattingScoresEntity implements IEntity {
   final int id;
-  final String match_id;
+  final int match_id;
   final int innings_id;
+  final int innings_type;
   final int innings_number;
   final int player_id;
 
@@ -27,6 +28,7 @@ class BattingScoresEntity implements IEntity {
     required this.id,
     required this.match_id,
     required this.innings_id,
+    required this.innings_type,
     required this.innings_number,
     required this.player_id,
     required this.batting_at,
@@ -42,14 +44,12 @@ class BattingScoresEntity implements IEntity {
     required this.strike_rate,
   });
 
-  @override
-  get primary_key => id;
-
   BattingScoresEntity.deserialize(Map<String, Object?> map)
       : this._(
           id: map["id"] as int,
-          match_id: map["match_id"] as String,
+          match_id: map["match_id"] as int,
           innings_id: map["innings_id"] as int,
+          innings_type: map["innings_type"] as int,
           innings_number: map["innings_number"] as int,
           player_id: map["player_id"] as int,
           batting_at: map["batting_at"] as int,
@@ -103,5 +103,22 @@ class BattingScoresTable extends ISQL<BattingScoresEntity> {
         .query(table: table, where: "innings_id = ?", whereArgs: [inningsId]);
     final entities = result.map((e) => BattingScoresEntity.deserialize(e));
     return entities;
+  }
+
+  Future<Iterable<BattingScoresEntity>> selectLastForInningsAndBatter(
+      int inningsId, int batterId,
+      {int top = 1}) async {
+    if (top < 1) throw UnsupportedError("Attempted to select less than 1 row");
+
+    final raw = await sql.query(
+      table: table,
+      where: "innings_id = ? AND player_id = ?",
+      whereArgs: [inningsId, batterId],
+      limit: top,
+      orderBy: "innings_number DESC",
+    );
+
+    final result = raw.map((e) => deserialize(e));
+    return result;
   }
 }

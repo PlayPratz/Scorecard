@@ -16,7 +16,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final quickMatchFuture = controller.loadAllMatches(context);
 
-    final showIds = context.read<SettingsService>().getShowIds();
+    final showHandles = context.read<SettingsService>().getShowHandles();
 
     final dateFormat =
         DateFormat.yMMMd(Localizations.localeOf(context).languageCode).add_jm();
@@ -46,7 +46,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
                   final match = matches[index];
                   return ListTile(
                     title: Text(dateFormat.format(match.startsAt)),
-                    subtitle: showIds ? Text(match.id) : null,
+                    subtitle: showHandles ? Text(match.handle) : null,
                     leading: wMatchIndicator(match),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => loadMatch(context, match),

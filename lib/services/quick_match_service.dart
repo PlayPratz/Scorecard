@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:scorecard/handlers/ulid_handler.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/quick_match/wicket_model.dart';
@@ -13,20 +14,28 @@ class QuickMatchService {
   QuickMatchService(this._matchRepository, this._playerService);
 
   Future<QuickMatch> createQuickMatch(QuickMatchRules rules) async {
-    final match = await _matchRepository.createMatch(rules);
-    return match;
+    final match = QuickMatch(
+      id: -1,
+      handle: UlidHandler.generate(),
+      startsAt: DateTime.now(),
+      rules: rules,
+    );
+
+    final newMatch = await _matchRepository.createMatch(match);
+    return newMatch;
   }
 
   Future<List<QuickMatch>> loadAllQuickMatches() async {
-    final matches = await _matchRepository.getAllMatches();
+    final matches = await _matchRepository.loadAllMatches();
     return matches;
   }
 
   Future<QuickInnings?> loadLastInnings(QuickMatch match) async {
-    final innings = await _matchRepository.loadLastInnings(match);
+    final innings = await _matchRepository.loadLastInningsOf(match);
 
     if (innings != null) {
       // Load players in match
+      // TODO Find a better way
       final players = await _playerService.loadPlayersForMatch(match);
     }
 
@@ -35,7 +44,7 @@ class QuickMatchService {
 
   Future<List<QuickInnings>> loadAllInnings(QuickMatch match) async {
     // print(innings.first.posts.length);
-    final innings = await _matchRepository.loadAllInnings(match);
+    final innings = await _matchRepository.loadAllInningsOf(match);
 
     if (innings.isNotEmpty) {
       // Load players in match
@@ -47,7 +56,8 @@ class QuickMatchService {
 
   Future<UnmodifiableListView<InningsPost>> loadAllPostsForInnings(
       QuickInnings innings) async {
-    final posts = await _matchRepository.loadAllPostsForInnings(innings);
+    final posts = await _matchRepository.loadAllPostsOf(innings);
+    return posts;
   }
 
   Future<QuickInnings> createInnings(QuickMatch match,
@@ -75,7 +85,7 @@ class QuickMatchService {
   }
 
   Future<NextStage> declareInnings(QuickInnings innings) async {
-    innings.isDeclared = true;
+    innings.state = InningsState.declared;
     await _matchRepository.saveInnings(innings);
 
     return getNextState(innings);
@@ -143,112 +153,44 @@ class QuickMatchService {
   // Scorecard
 
   /// Lists all the batters and their scores
-  UnmodifiableListView<BatterInnings> getBatters(QuickInnings innings) {
-    final batters = _matchRepository.
+  Future<UnmodifiableListView<BattingScore>> getBatters(
+      QuickInnings innings) async {
+    final battingScores = await _matchRepository.loadBattersOf(innings);
+    return battingScores;
   }
 
-  BatterInnings getLastBatterInningsOf(QuickInnings innings, String batterId) {
-    final newBatterPostIndex = innings.posts
-        .lastIndexWhere((b) => b is NextBatter && b.nextId == batterId);
+  Future<BattingScore?> getLastBattingScoreOf(
+      QuickInnings innings, int playerId) async {
+    final battingScore =
+        await _matchRepository.loadLastBattingScoreOf(innings, playerId);
 
-    if (newBatterPostIndex == 1) return BatterInnings(batterId, []);
-
-    final posts = <InningsPost>[];
-
-    for (final post in innings.posts.sublist(newBatterPostIndex)) {
-      switch (post) {
-        case Ball():
-          if (post.batterId == batterId) {
-            posts.add(post);
-          }
-          if (post.isWicket && post.batterId != post.wicket!.batterId) {
-            posts.add(post);
-          }
-        case BatterRetire():
-          if (post.batterId == batterId) {
-            posts.add(post);
-          }
-        case NextBatter():
-          if (post.nextId == batterId) {
-            posts.add(post);
-          } else if (post.previousId == batterId) {
-            posts.add(post);
-          }
-        case WicketBeforeDelivery():
-          if (post.batterId == batterId) {
-            posts.add(post);
-          }
-        case BowlerRetire():
-        case NextBowler():
-        case Penalty():
-        // Do nothing
-      }
-    }
-
-    final batterInnings = BatterInnings(batterId, posts);
-    return batterInnings;
+    return battingScore;
   }
 
   /// Lists all the bowlers and their scores
-  List<BowlerInnings> getBowlers(QuickInnings innings) {
-    final bowlerMap = <String, List<Ball>>{};
-    for (final ball in innings.balls) {
-      final bowlerId = ball.bowlerId;
-      if (!bowlerMap.containsKey(bowlerId)) {
-        bowlerMap[bowlerId] = <Ball>[];
-      }
-      bowlerMap[bowlerId]!.add(ball);
-    }
-
-    final bowlers = <BowlerInnings>[];
-    for (final bowlerId in bowlerMap.keys) {
-      bowlers.add(BowlerInnings(
-        bowlerId,
-        bowlerMap[bowlerId]!,
-        ballsPerOver: innings.ballsPerOver,
-      ));
-    }
-    return bowlers;
+  Future<UnmodifiableListView<BowlingScore>> getBowlers(
+      QuickInnings innings) async {
+    final bowlingScores = await _matchRepository.loadBowlersOf(innings);
+    return bowlingScores;
   }
 
   /// Creates a map of overs in the innings
   /// Note: The first over is index 1
-  Map<int, Over> getOvers(QuickInnings innings) {
-    final overs = <int, Over>{};
-    for (final post in innings.posts) {
-      final key = post.index.over + 1;
-      if (!overs.containsKey(key)) {
-        overs[key] = Over();
-      }
-      overs[key]!.posts.add(post);
-    }
-    return overs;
-  }
+  // Map<int, Over> getOvers(QuickInnings innings) {
+  //   final overs = <int, Over>{};
+  //   for (final post in innings.posts) {
+  //     final key = post.index.over + 1;
+  //     if (!overs.containsKey(key)) {
+  //       overs[key] = Over();
+  //     }
+  //     overs[key]!.posts.add(post);
+  //   }
+  //   return overs;
+  // }
 
   /// Lists all fall of wickets in the innings
-  List<FallOfWicket> getFallOfWickets(QuickInnings innings) {
-    final posts = innings.posts;
-    final fallOfWickets = <FallOfWicket>[];
-    Score score = Score.zero();
-    for (final post in posts) {
-      if (post is Ball) {
-        score = score.plus(post);
-        if (post.isWicket) {
-          fallOfWickets.add(FallOfWicket(
-            post.wicket!,
-            postIndex: post.index,
-            scoreAt: score,
-          ));
-        }
-      } else if (post is WicketBeforeDelivery) {
-        fallOfWickets.add(FallOfWicket(
-          post.wicket,
-          postIndex: post.index,
-          scoreAt: score,
-        ));
-      }
-    }
-    return fallOfWickets;
+  List<FallOfWicket> getWicketsOf(QuickInnings innings) {
+    final wickets = _matchRepository.ge
   }
 
   // bool _isWicket(InningsPost post) => switch (post) {
@@ -604,15 +546,6 @@ class QuickMatchService {
   }
 
   Future<void> undoPostFromInnings(QuickInnings innings) async {
-    if (innings.posts.isEmpty) return;
-
-    final post = innings.posts.removeLast();
-
-    if (post.id == null) {
-      throw StateError(
-          "Attempted to delete InningsPost without an ID. (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
-    }
-
     await _matchRepository.deletePost(post.id!);
 
     switch (post) {

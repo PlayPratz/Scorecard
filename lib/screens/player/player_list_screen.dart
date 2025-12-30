@@ -227,7 +227,7 @@ class _PlayerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isSelectable = onSelect != null;
 
-    final showIds = context.read<SettingsService>().getShowIds();
+    final showIds = context.read<SettingsService>().getShowHandles();
 
     return ListTile(
       leading: const Icon(Icons.sports_motorsports),

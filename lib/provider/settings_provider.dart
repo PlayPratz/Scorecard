@@ -10,5 +10,5 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool showIds = false;
+  bool showHandles = false;
 }

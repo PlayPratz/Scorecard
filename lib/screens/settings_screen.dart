@@ -42,11 +42,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => toggleTheme(),
           ),
           ListTile(
-            title: const Text("Show Player and Match IDs"),
+            title: const Text("Show Player and Match Handles"),
             subtitle: const Text("Useful for debugging"),
             leading: const Icon(Icons.bug_report),
             trailing: Switch(
-                value: settingsService.getShowIds(),
+                value: settingsService.getShowHandles(),
                 onChanged: (_) => toggleShowIds()),
             onTap: () => toggleShowIds(),
           ),

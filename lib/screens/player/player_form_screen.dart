@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/screens/player/player_list_screen.dart';
+import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/services/settings_service.dart';
 
 class PlayerFormScreen extends StatefulWidget {
   final Player? player;
-  final void Function(String name, {String? id}) onSavePlayer;
-  // final void Function(String name, String fullName, {String? id}) onSavePlayer;
+  final PlayerCallbackFn onSavePlayer;
 
   const PlayerFormScreen({super.key, this.player, required this.onSavePlayer});
 
@@ -19,6 +20,8 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
   // final _fullNameController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -84,7 +87,9 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
         child: FilledButton.icon(
           onPressed: _onSubmitPlayer,
           label: const Text("Save"),
-          icon: const Icon(Icons.save),
+          icon: _isLoading
+              ? const CircularProgressIndicator()
+              : const Icon(Icons.save),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -95,7 +100,21 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    widget.onSavePlayer(_nameController.text, id: widget.player?.id);
-    Navigator.pop(context);
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final player = await context.read<PlayerService>().savePlayer(
+          id: widget.player?.id,
+          handle: widget.player?.handle,
+          name: _nameController.text,
+        );
+
+    widget.onSavePlayer(player);
+
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 }

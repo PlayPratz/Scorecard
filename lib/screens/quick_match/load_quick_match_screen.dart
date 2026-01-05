@@ -49,7 +49,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
                     subtitle: showHandles ? Text(match.handle) : null,
                     leading: wMatchIndicator(match),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => loadMatch(context, match),
+                    onTap: () => loadMatch(context, match.id!),
                   );
                 },
                 itemCount: matches.length,
@@ -60,7 +60,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
   }
 
   Widget wMatchIndicator(QuickMatch match) {
-    if (match.isCompleted) {
+    if (match.stage == 9) {
       return const CircleAvatar(
         child: Icon(Icons.check),
       );
@@ -75,7 +75,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
 
 class LoadQuickMatchController {
   Future<List<QuickMatch>> loadAllMatches(BuildContext context) async {
-    final matches = await _service(context).loadAllQuickMatches();
+    final matches = await _service(context).getAllQuickMatches();
     return matches;
   }
 
@@ -83,12 +83,22 @@ class LoadQuickMatchController {
       context.read<QuickMatchService>();
 }
 
-void loadMatch(BuildContext context, QuickMatch match) {
-  if (match.isCompleted) {
+Future<void> loadMatch(BuildContext context, int matchId) async {
+  final service = context.read<QuickMatchService>();
+  final match = await service.getMatch(matchId);
+  if (!context.mounted) {
+    return;
+  }
+  if (match.stage == 9) {
     Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) => ScorecardScreen(match)));
+        MaterialPageRoute(builder: (context) => ScorecardScreen(match.id!)));
   } else {
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) => PlayQuickMatchScreen(match)));
+    final innings = await service.getAllInningsOf(match.id!);
+    if (context.mounted) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => PlayQuickInningsScreen(innings.last.id!)));
+    }
   }
 }

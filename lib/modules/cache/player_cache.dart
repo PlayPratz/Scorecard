@@ -1,13 +1,15 @@
 import 'package:scorecard/modules/player/player_model.dart';
 
 class PlayerCache {
-  final Map<int, Player> _cache = {};
+  static final Map<int, Player> _cache = {};
 
-  void add(Player player) {
-    _cache[player.id] = player;
+  static void add(Player player) {
+    _cache[player.id!] = player;
   }
 
-  Player get(int id) {
+  static Player get(int id) {
     return _cache[id]!;
   }
+
+  static Iterable<Player> get all => _cache.values;
 }

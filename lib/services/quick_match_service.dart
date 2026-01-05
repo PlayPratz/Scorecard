@@ -5,88 +5,74 @@ import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/modules/quick_match/wicket_model.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
-import 'package:scorecard/services/player_service.dart';
 
 class QuickMatchService {
-  final QuickMatchRepository _matchRepository;
-  final PlayerService _playerService;
+  final IQuickMatchRepository _matchRepository;
 
-  QuickMatchService(this._matchRepository, this._playerService);
+  QuickMatchService(this._matchRepository);
 
   Future<QuickMatch> createQuickMatch(QuickMatchRules rules) async {
     final match = QuickMatch(
-      id: -1,
+      id: null,
       handle: UlidHandler.generate(),
       startsAt: DateTime.now(),
       rules: rules,
+      stage: 0, // TODO
     );
 
     final newMatch = await _matchRepository.createMatch(match);
     return newMatch;
   }
 
-  Future<List<QuickMatch>> loadAllQuickMatches() async {
+  Future<List<QuickMatch>> getAllQuickMatches() async {
     final matches = await _matchRepository.loadAllMatches();
     return matches;
   }
 
-  Future<QuickInnings?> loadLastInnings(QuickMatch match) async {
-    final innings = await _matchRepository.loadLastInningsOf(match);
+  Future<QuickMatch> getMatch(int matchId) async {
+    final match = await _matchRepository.loadMatch(matchId);
+    return match;
+  }
 
-    if (innings != null) {
-      // Load players in match
-      // TODO Find a better way
-      final players = await _playerService.loadPlayersForMatch(match);
-    }
-
+  Future<List<QuickInnings>> getAllInningsOf(int matchId) async {
+    final innings = await _matchRepository.loadAllInningsOf(matchId);
     return innings;
   }
 
-  Future<List<QuickInnings>> loadAllInnings(QuickMatch match) async {
-    // print(innings.first.posts.length);
-    final innings = await _matchRepository.loadAllInningsOf(match);
-
-    if (innings.isNotEmpty) {
-      // Load players in match
-      final players = await _playerService.loadPlayersForMatch(match);
-    }
-
+  Future<QuickInnings> getInnings(int id) async {
+    final innings = await _matchRepository.loadInnings(id);
     return innings;
   }
 
-  Future<UnmodifiableListView<InningsPost>> loadAllPostsForInnings(
+  Future<UnmodifiableListView<InningsPost>> getAllPostsOf(
       QuickInnings innings) async {
     final posts = await _matchRepository.loadAllPostsOf(innings);
     return posts;
   }
 
-  Future<QuickInnings> createInnings(QuickMatch match,
-      {QuickInnings? previous}) async {
-    if (previous != null && !previous.isEnded) {
-      throw StateError(
-          "Attempted to create new innings without ending previous (matchId: ${match.id} inningsId: ${previous.id}");
-    }
+  Future<UnmodifiableListView<Ball>> getRecentBallsOf(
+      QuickInnings innings) async {
+    final posts = await _matchRepository.loadRecentBallsOf(innings, 10);
+    return posts;
+  }
 
-    if (previous != null) {
-      await _matchRepository.saveInnings(previous);
-    }
+  Future<QuickInnings> createFirstInnings(QuickMatch match) async {
+    final innings =
+        await _matchRepository.createInnings(QuickInnings.first(match));
+    return innings;
+  }
 
-    final inningsNumber = previous != null ? previous.inningsNumber + 1 : 1;
-
-    final innings = QuickInnings.of(match, inningsNumber);
-
-    if (previous != null && previous.target == null) {
-      innings.target = previous.runs + 1;
-    }
-
-    await _matchRepository.createInnings(innings);
-
+  Future<QuickInnings> createNextInnings(QuickInnings previous) async {
+    await _matchRepository.updateInnings(previous);
+    final innings =
+        await _matchRepository.createInnings(QuickInnings.next(previous));
     return innings;
   }
 
   Future<NextStage> declareInnings(QuickInnings innings) async {
-    innings.state = InningsState.declared;
-    await _matchRepository.saveInnings(innings);
+    innings.status = 9;
+
+    await _matchRepository.updateInnings(innings);
 
     return getNextState(innings);
   }
@@ -101,13 +87,8 @@ class QuickMatchService {
     }
   }
 
-  Future<QuickInnings> createSuperOver(QuickMatch match,
-      {required QuickInnings previous}) async {
-    if (!previous.isEnded) {
-      throw StateError(
-          "Attempted to create new innings without ending previous (matchId: ${match.id} inningsId: ${previous.id})");
-    }
-    final innings = QuickInnings.superOverOf(match, previous.inningsNumber + 1);
+  Future<QuickInnings> createSuperOver(QuickInnings previous) async {
+    final innings = QuickInnings.nextSuperOver(previous);
     if (previous.isSuperOver && previous.target == null) {
       innings.target = previous.runs + 1;
     }
@@ -115,16 +96,11 @@ class QuickMatchService {
     return innings;
   }
 
-  Future<void> endMatch(QuickMatch match, {required QuickInnings last}) async {
-    if (!last.isEnded) {
-      throw StateError(
-          "Attempted to end match without ending last innings (matchId: ${match.id} inningsId: ${last.id})");
-    }
-
-    await _matchRepository.saveInnings(last);
-
-    match.isCompleted = true;
-    await _matchRepository.saveMatch(match);
+  Future<void> endMatch(QuickInnings last) async {
+    await _matchRepository.updateInnings(last);
+    final match = await _matchRepository.loadMatch(last.matchId);
+    match.stage = 9; //TODO define
+    await _matchRepository.updateMatch(match);
   }
 
   QuickMatchResult generateResult(QuickMatch match,
@@ -159,7 +135,7 @@ class QuickMatchService {
     return battingScores;
   }
 
-  Future<BattingScore?> getLastBattingScoreOf(
+  Future<BattingScore> getLastBattingScoreOf(
       QuickInnings innings, int playerId) async {
     final battingScore =
         await _matchRepository.loadLastBattingScoreOf(innings, playerId);
@@ -174,94 +150,88 @@ class QuickMatchService {
     return bowlingScores;
   }
 
+  Future<BowlingScore> getBowlingScoreOf(
+      QuickInnings innings, int playerId) async {
+    final bowlingScore =
+        await _matchRepository.loadBowlingScoreOf(innings, playerId);
+    return bowlingScore;
+  }
+
   /// Creates a map of overs in the innings
   /// Note: The first over is index 1
-  // Map<int, Over> getOvers(QuickInnings innings) {
-  //   final overs = <int, Over>{};
-  //   for (final post in innings.posts) {
-  //     final key = post.index.over + 1;
-  //     if (!overs.containsKey(key)) {
-  //       overs[key] = Over();
-  //     }
-  //     overs[key]!.posts.add(post);
-  //   }
-  //   return overs;
-  // }
+  Future<Map<int, Over>> getOvers(QuickInnings innings) async {
+    final overs = <int, Over>{};
+
+    final posts = await _matchRepository.loadAllPostsOf(innings);
+
+    for (final post in posts) {
+      final key = post.index.over + 1;
+      if (!overs.containsKey(key)) {
+        overs[key] = Over(key);
+      }
+      overs[key]!.posts.add(post);
+    }
+    return overs;
+  }
 
   /// Lists all fall of wickets in the innings
-  List<FallOfWicket> getWicketsOf(QuickInnings innings) {
-    final wickets = _matchRepository.ge
+  Future<UnmodifiableListView<FallOfWicket>> getWicketsOf(
+      QuickInnings innings) async {
+    final wickets = _matchRepository.loadWicketsOf(innings);
+    return wickets;
   }
-
-  // bool _isWicket(InningsPost post) => switch (post) {
-  //       WicketBeforeDelivery() => true,
-  //       Ball() => post.isWicket,
-  //       _ => false
-  //     };
 
   /// Lists all partnerships in the innings
-  List<Partnership> getPartnerships(QuickInnings innings) {
-    final posts = innings.posts;
-
-    final firstTwo = posts.whereType<NextBatter>().take(2);
-    if (firstTwo.length < 2) return [];
-
-    final partnerships = <Partnership>[
-      Partnership(
-        [],
-        batter1Id: firstTwo.first.nextId,
-        batter2Id: firstTwo.last.nextId,
-      )
-    ];
-
-    for (final post in posts.sublist(posts.indexOf(firstTwo.last) + 1)) {
-      final current = partnerships.last;
-      switch (post) {
-        case NextBatter():
-          final existing = post.previousId == current.batter1Id
-              ? current.batter2Id
-              : current.batter1Id;
-          partnerships.add(
-              Partnership([], batter1Id: existing, batter2Id: post.nextId));
-        default:
-          current.posts.add(post);
-      }
-    }
-    return partnerships;
-  }
+  // List<Partnership> getPartnerships(QuickInnings innings) {
+  //   final posts = innings.posts;
+  //
+  //   final firstTwo = posts.whereType<NextBatter>().take(2);
+  //   if (firstTwo.length < 2) return [];
+  //
+  //   final partnerships = <Partnership>[
+  //     Partnership(
+  //       [],
+  //       batter1Id: firstTwo.first.nextId,
+  //       batter2Id: firstTwo.last.nextId,
+  //     )
+  //   ];
+  //
+  //   for (final post in posts.sublist(posts.indexOf(firstTwo.last) + 1)) {
+  //     final current = partnerships.last;
+  //     switch (post) {
+  //       case NextBatter():
+  //         final existing = post.previousId == current.batter1Id
+  //             ? current.batter2Id
+  //             : current.batter1Id;
+  //         partnerships.add(
+  //             Partnership([], batter1Id: existing, batter2Id: post.nextId));
+  //       default:
+  //         current.posts.add(post);
+  //     }
+  //   }
+  //   return partnerships;
+  // }
 
   // Innings and Posts
 
+  Future<bool> canUndo(QuickInnings innings) async {
+    final count = await _matchRepository.loadPostCount(innings);
+    return count > 0;
+  }
+
   /// Sets the given [batter] on strike.
-  void setStrike(QuickInnings innings, String batterId) {
-    if (innings.batter1Id == batterId || innings.batter2Id == batterId) {
-      innings.strikerId = batterId;
-    }
+  Future<void> setStrike(QuickInnings innings, int slot) async {
+    innings.striker = slot;
+    await _matchRepository.updateInnings(innings);
   }
 
   /// Swaps strike between the two batters.
-  /// Does nothing if [innings.rules.isSolo] is set or if the last man
-  /// is batting
-  void swapStrike(QuickInnings innings) {
-    if (innings.batter1Id == null && innings.batter2Id == null) {
+  Future<void> swapStrike(QuickInnings innings) async {
+    if (innings.striker == null || innings.batter2Id == null) {
       return;
     }
-
-    if (innings.batter2Id == null) {
-      innings.strikerId = innings.batter2Id;
-    } else if (innings.batter1Id == null) {
-      innings.strikerId = innings.batter1Id;
-    } else {
-      // Both batters have been set
-
-      if (innings.strikerId == innings.batter1Id) {
-        innings.strikerId = innings.batter2Id;
-      } else {
-        // Defaults to batter1 just in case none of the two batters
-        // are set on strike
-        innings.strikerId = innings.batter1Id;
-      }
-    }
+    innings.striker = innings.striker! % 2 + 1;
+    await _matchRepository.updateInnings(innings);
   }
 
   /// Retires the bowler.
@@ -278,29 +248,28 @@ class QuickMatchService {
       inningsNumber: innings.inningsNumber,
       index: _currentIndex(innings),
       timestamp: _defaultTimestamp(innings),
-      bowlerId: innings.bowlerId!,
-      // retired: retired,
+      bowlerId: innings.bowlerId,
+      batterId: innings.strikerId,
+      nonStrikerId: innings.nonStrikerId,
+      scoreAt: Score.zero(),
     );
     await _postToInnings(innings, post);
   }
 
   /// Adds the given [bowlerId] to the [innings]
-  Future<void> nextBowler(QuickInnings innings, String nextId) async {
-    // Index according to mid-over change
-    final index =
-        innings.balls.isEmpty || innings.posts.lastOrNull is BowlerRetire
-            ? _currentIndex(innings)
-            : _nextIndex(innings);
-
+  Future<void> nextBowler(QuickInnings innings, int nextId) async {
     final post = NextBowler(
       null,
       matchId: innings.matchId,
       inningsId: innings.id!,
       inningsNumber: innings.inningsNumber,
-      index: index,
-      previousId: innings.bowlerId,
+      index: _currentIndex(innings),
       timestamp: _defaultTimestamp(innings),
+      bowlerId: innings.bowlerId,
+      batterId: innings.strikerId,
+      nonStrikerId: innings.nonStrikerId,
       nextId: nextId,
+      scoreAt: Score.zero(),
     );
 
     // Add post to Innings
@@ -311,16 +280,19 @@ class QuickMatchService {
   ///
   /// Call this function when a batter retires their innings and walks back
   /// to the pavilion.
-  Future<void> retireDeclareBatter(
-      QuickInnings innings, String batterId) async {
-    final retired = RetiredDeclared(batterId: batterId);
+  Future<void> retireBatter(QuickInnings innings, int batterId) async {
+    final retired = RetiredNotOut(batterId: batterId);
     final post = BatterRetire(
       null,
       matchId: innings.matchId,
       inningsId: innings.id!,
-      index: _currentIndex(innings),
       inningsNumber: innings.inningsNumber,
+      index: _currentIndex(innings),
       timestamp: _defaultTimestamp(innings),
+      bowlerId: innings.bowlerId!,
+      batterId: innings.strikerId,
+      nonStrikerId: innings.nonStrikerId,
+      scoreAt: Score.zero(),
       retired: retired,
     );
     await _postToInnings(innings, post);
@@ -328,17 +300,19 @@ class QuickMatchService {
 
   /// Adds the given [batter] to the [innings]
   Future<void> nextBatter(QuickInnings innings,
-      {required String nextId, required String? previousId}) async {
-    final post = NextBatter(
-      null,
-      matchId: innings.matchId,
-      inningsId: innings.id!,
-      inningsNumber: innings.inningsNumber,
-      index: _currentIndex(innings),
-      timestamp: _defaultTimestamp(innings),
-      nextId: nextId,
-      previousId: previousId,
-    );
+      {required int nextId, required int? previousId}) async {
+    final post = NextBatter(null,
+        matchId: innings.matchId,
+        inningsId: innings.id!,
+        inningsNumber: innings.inningsNumber,
+        index: _currentIndex(innings),
+        timestamp: _defaultTimestamp(innings),
+        bowlerId: innings.bowlerId,
+        batterId: innings.strikerId,
+        nonStrikerId: innings.nonStrikerId,
+        scoreAt: Score.zero(),
+        nextId: nextId,
+        previousId: previousId);
 
     // Add Post to Innings
     await _postToInnings(innings, post);
@@ -353,11 +327,23 @@ class QuickMatchService {
     required BowlingExtraType? bowlingExtraType,
     required BattingExtraType? battingExtraType,
     required bool autoRotateStrike,
+    int noBallPenalty = 1,
     // DateTime? datetime,
   }) async {
-    if (innings.strikerId == null) {
+    final strikerId = switch (innings.striker) {
+      1 => innings.batter1Id,
+      2 => innings.batter2Id,
+      _ => null,
+    };
+
+    if (strikerId == null) {
       throw StateError(
           "Attempted to play ball without setting striker (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
+    }
+
+    if (innings.batter1Id == null && innings.batter2Id == null) {
+      throw StateError(
+          "Attempted to play ball without setting batter(s) (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
     }
 
     if (innings.bowlerId == null) {
@@ -365,12 +351,10 @@ class QuickMatchService {
           "Attempted to play ball without setting bowler (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
     }
 
-    final datetime = _defaultTimestamp(innings);
-
     final BowlingExtra? bowlingExtra = switch (bowlingExtraType) {
       null => null,
-      BowlingExtraType.noBall => NoBall(innings.noBallPenalty),
-      BowlingExtraType.wide => Wide(innings.widePenalty + runs),
+      BowlingExtraType.noBall => NoBall(noBallPenalty),
+      BowlingExtraType.wide => Wide(1 + runs),
     };
 
     final BattingExtra? battingExtra = switch (battingExtraType) {
@@ -393,14 +377,16 @@ class QuickMatchService {
       inningsId: innings.id!,
       inningsNumber: innings.inningsNumber,
       index: index,
+      timestamp: _defaultTimestamp(innings),
       bowlerId: innings.bowlerId!,
-      batterId: innings.strikerId!,
+      batterId: innings.strikerId,
+      nonStrikerId: innings.nonStrikerId,
+      scoreAt: Score.zero(),
       batterRuns: batterRuns,
       isBoundary: isBoundary,
-      wicket: wicket,
-      bowlingExtra: bowlingExtra,
       battingExtra: battingExtra,
-      timestamp: datetime,
+      bowlingExtra: bowlingExtra,
+      wicket: wicket,
     );
 
     // Add Post to Innings
@@ -417,82 +403,84 @@ class QuickMatchService {
           "Attempted to insert InningsPost without an ID. (matchId: ${innings.matchId}, inningsNumber: ${innings.inningsNumber})");
     }
 
-    // Add post to innings
-    innings.posts.add(post);
-
     switch (post) {
       case Ball():
-        _handleBallPost(innings, post);
+        await _handleBallPost(innings, post);
       case BowlerRetire():
-        _handleBowlerRetirePost(innings, post);
+        await _handleBowlerRetirePost(innings, post);
       case NextBowler():
-        _handleNextBowlerPost(innings, post);
+        await _handleNextBowlerPost(innings, post);
       case BatterRetire():
-        _handleBatterRetirePost(innings, post);
+        await _handleBatterRetirePost(innings, post);
       case NextBatter():
-        _handleNextBatterPost(innings, post);
+        await _handleNextBatterPost(innings, post);
       case WicketBeforeDelivery():
-        _handleWicketBeforeDeliveryPost(innings, post);
+        await _handleWicketBeforeDeliveryPost(innings, post);
       case Penalty():
-        _handlePenaltyPost(innings, post);
+        await _handlePenaltyPost(innings, post);
+      case Break():
     }
 
-    // Update the innings in the Database
-    await _matchRepository.saveInnings(innings);
+    await _matchRepository.updateInnings(innings);
   }
 
-  void _handleBallPost(QuickInnings innings, Ball ball) {
+  Future<void> _handleBallPost(QuickInnings innings, Ball ball) async {
     // Swap strike for odd number of runs
     if (ball.batterRuns % 2 == 1 || ball.battingExtraRuns % 2 == 1) {
-      swapStrike(innings);
+      await swapStrike(innings);
     }
 
     // Swap strike whenever an over completes
-    if (ball.index.ball == innings.ballsPerOver) swapStrike(innings);
+    if (ball.index.ball == innings.ballsPerOver) await swapStrike(innings);
   }
 
-  void _undoBallPost(QuickInnings innings, Ball ball) {
+  Future<void> _undoBallPost(QuickInnings innings, Ball ball) async {
     // Swap strike for odd number of runs
     if (ball.batterRuns % 2 == 1 || ball.battingExtraRuns % 2 == 1) {
-      swapStrike(innings);
+      await swapStrike(innings);
     }
 
     // Swap strike whenever an over completes
-    if (ball.index.ball == innings.ballsPerOver) swapStrike(innings);
+    if (ball.index.ball == innings.ballsPerOver) await swapStrike(innings);
   }
 
-  void _handleBowlerRetirePost(QuickInnings innings, BowlerRetire post) {
+  Future<void> _handleBowlerRetirePost(
+      QuickInnings innings, BowlerRetire post) async {
     // Nothing to be done
   }
 
-  void _undoBowlerRetirePost(QuickInnings innings, BowlerRetire post) {
+  Future<void> _undoBowlerRetirePost(
+      QuickInnings innings, BowlerRetire post) async {
     // Nothing to be done
   }
 
-  void _handleNextBowlerPost(QuickInnings innings, NextBowler post) {
+  Future<void> _handleNextBowlerPost(
+      QuickInnings innings, NextBowler post) async {
     // Change the current bowler
     innings.bowlerId = post.nextId;
   }
 
-  void _undoNextBowlerPost(QuickInnings innings, NextBowler post) {
+  Future<void> _undoNextBowlerPost(
+      QuickInnings innings, NextBowler post) async {
     // Set the correct bowler in the innings
     //
     // If a previous bowler exists, they will be set
     // If not, null is set, which means the user will pick a bowler
-    innings.bowlerId = post.previousId;
+    innings.bowlerId = post.bowlerId;
   }
 
-  void _handleBatterRetirePost(QuickInnings innings, BatterRetire post) {
-    if (innings.strikerId == post.batterId) {
-      innings.strikerId = null;
-    }
+  Future<void> _handleBatterRetirePost(
+      QuickInnings innings, BatterRetire post) async {
+    // Nothing to be done
   }
 
-  void _undoBatterRetirePost(QuickInnings innings, BatterRetire post) {
-    innings.strikerId ??= post.batterId;
+  Future<void> _undoBatterRetirePost(
+      QuickInnings innings, BatterRetire post) async {
+    // Nothing to be done
   }
 
-  void _handleNextBatterPost(QuickInnings innings, NextBatter post) {
+  Future<void> _handleNextBatterPost(
+      QuickInnings innings, NextBatter post) async {
     if (innings.batter1Id == null || innings.batter1Id == post.previousId) {
       // If batter1 is not set or batter1 is replaced
       innings.batter1Id = post.nextId;
@@ -504,21 +492,10 @@ class QuickMatchService {
       throw StateError(
           "Attempted to add a new batter without replacing existing!");
     }
-
-    // Set strike
-
-    // if(post.previousId == innings.strikerId) {
-    //   innings.strikerId = post.nextId;
-    // }
-
-    if (innings.strikerId == null ||
-        innings.strikerId != innings.batter1Id &&
-            innings.strikerId != innings.batter2Id) {
-      setStrike(innings, post.nextId);
-    }
   }
 
-  void _undoNextBatterPost(QuickInnings innings, NextBatter post) {
+  Future<void> _undoNextBatterPost(
+      QuickInnings innings, NextBatter post) async {
     // Set the correct batter in the innings
     if (post.nextId == innings.batter1Id) {
       innings.batter1Id = post.previousId;
@@ -527,26 +504,28 @@ class QuickMatchService {
     }
   }
 
-  void _handleWicketBeforeDeliveryPost(
-      QuickInnings innings, WicketBeforeDelivery post) {
+  Future<void> _handleWicketBeforeDeliveryPost(
+      QuickInnings innings, WicketBeforeDelivery post) async {
     // Nothing to be done
   }
 
-  void _undoWicketBeforeDeliveryPost(
-      QuickInnings innings, WicketBeforeDelivery post) {
+  Future<void> _undoWicketBeforeDeliveryPost(
+      QuickInnings innings, WicketBeforeDelivery post) async {
     // Nothing to be done
   }
 
-  void _handlePenaltyPost(QuickInnings innings, Penalty post) {
+  Future<void> _handlePenaltyPost(QuickInnings innings, Penalty post) async {
     // Nothing to be done
   }
 
-  void _undoPenaltyPost(QuickInnings innings, Penalty post) {
+  Future<void> _undoPenaltyPost(QuickInnings innings, Penalty post) async {
     // Nothing to be done
   }
 
   Future<void> undoPostFromInnings(QuickInnings innings) async {
-    await _matchRepository.deletePost(post.id!);
+    final post = await _matchRepository.loadLastPost(innings);
+
+    await _matchRepository.deletePost(post);
 
     switch (post) {
       case Ball():
@@ -563,28 +542,16 @@ class QuickMatchService {
         _undoWicketBeforeDeliveryPost(innings, post);
       case Penalty():
         _undoPenaltyPost(innings, post);
+      case Break():
     }
   }
 
   DateTime _defaultTimestamp(QuickInnings innings) => DateTime.timestamp();
 
-  PostIndex _currentIndex(QuickInnings innings) {
-    if (innings.posts.isEmpty) {
-      // First post
-      return const PostIndex.zero();
-    }
-    return innings.posts.last.index;
-  }
-
-  PostIndex _nextIndex(QuickInnings innings) {
-    final currentIndex = _currentIndex(innings);
-
-    if (currentIndex.ball == innings.ballsPerOver) {
-      return PostIndex(currentIndex.over + 1, 0);
-    } else {
-      return PostIndex(currentIndex.over, currentIndex.ball + 1);
-    }
-  }
+  PostIndex _currentIndex(QuickInnings innings) =>
+      PostIndex.of(innings.balls, innings.ballsPerOver);
+  PostIndex _nextIndex(QuickInnings innings) =>
+      PostIndex.of(innings.balls + 1, innings.ballsPerOver);
 }
 
 /// Types of Bowling Extras

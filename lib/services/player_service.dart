@@ -1,35 +1,30 @@
-import 'package:scorecard/cache/player_cache.dart';
 import 'package:scorecard/handlers/ulid_handler.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 
 class PlayerService {
-  final PlayerRepository _playerRepository;
+  final IPlayerRepository _playerRepository;
 
   PlayerService(this._playerRepository);
 
   /// Creates a player
-  Future<Player> createPlayer(
-    String name, {
+  Future<Player> savePlayer({
+    int? id,
+    String? handle,
+    required String name,
     String? fullName,
     DateTime? dob,
   }) async {
     final player = Player(
-      id: -1,
-      handle: UlidHandler.generate(),
+      id: id,
+      handle: handle ?? UlidHandler.generate(),
       name: name,
       dateOfBirth: dob,
       fullName: fullName,
     );
-    final newPlayer = await _playerRepository.create(player);
-    return newPlayer;
-  }
 
-  /// Updates a player
-  Future<Player> savePlayer(Player player) async {
-    final updatedPlayer = await _playerRepository.save(player);
-    return updatedPlayer;
+    final newPlayer = await _playerRepository.save(player);
+    return newPlayer;
   }
 
   /// Fetches a player of the given [id]
@@ -39,10 +34,10 @@ class PlayerService {
   }
 
   /// Fetches a player of the given [id]
-  Future<List<Player>> getPlayersByIds(Set<int> ids) async {
-    final players = await _playerRepository.loadMultiple(ids);
-    return players;
-  }
+  // Future<List<Player>> getPlayersByIds(Set<int> ids) async {
+  //   final players = await _playerRepository.loadMultiple(ids);
+  //   return players;
+  // }
 
   /// Fetches all players
   Future<List<Player>> getAllPlayers() async {
@@ -50,11 +45,11 @@ class PlayerService {
     return players;
   }
 
-  Future<List<Player>> loadPlayersForMatch(QuickMatch match) async {
-    final players = await _playerRepository.loadPlayersForMatch(match);
-
-    return players;
-  }
+  // Future<List<Player>> loadPlayersForMatch(QuickMatch match) async {
+  //   final players = await _playerRepository.loadPlayersForMatch(match);
+  //
+  //   return players;
+  // }
 
   /// Deletes the player of the given [id]
   // Future<void> deletePlayerById(String id) async {

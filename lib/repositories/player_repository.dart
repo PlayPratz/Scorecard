@@ -1,59 +1,75 @@
+import 'dart:collection';
+
+import 'package:scorecard/handlers/sql_db_handler.dart';
 import 'package:scorecard/modules/player/player_model.dart';
-import 'package:scorecard/modules/quick_match/quick_match_model.dart';
-import 'package:scorecard/repositories/sql/db/players_table.dart';
-import 'package:scorecard/repositories/sql/entity_mappers.dart';
+import 'package:scorecard/repositories/sql/keys.dart';
 
-class PlayerRepository {
-  final PlayersTable _playersTable;
+abstract class IPlayerRepository {
+  Future<UnmodifiableListView<Player>> loadAll();
 
-  PlayerRepository(this._playersTable);
+  /// Save the given player
+  Future<Player> save(Player player);
 
-  Future<List<Player>> loadAll() async {
-    final playerEntities = await _playersTable.selectAll();
-    final players = playerEntities
-        .map((p) => EntityMappers.unpackPlayer(p))
-        .toList(growable: false);
-    return players;
-  }
+  /// Load the player of the given ID
+  Future<Player> load(int id);
+}
 
-  Future<Player> create(Player player) async {
-    final playerEntity = EntityMappers.repackPlayer(player);
-    final id = await _playersTable.insert(playerEntity);
-    return load(id);
-  }
+class SQLPlayerRepository implements IPlayerRepository {
+  final SQLDBHandler _sql;
 
-  Future<Player> save(Player player) async {
-    final playerEntity = EntityMappers.repackPlayer(player);
-    await _playersTable.update(playerEntity);
-    return load(player.id);
-  }
+  SQLPlayerRepository(this._sql);
 
+  @override
   Future<Player> load(int id) async {
-    final playerEntity = await _playersTable.select(id);
-
-    if (playerEntity == null) {
-      throw StateError("Unable to load Player from the DB! (id: $id)");
-    }
-
-    final player = EntityMappers.unpackPlayer(playerEntity);
+    final entity = await _sql
+        .query(table: Tables.players, where: "id = ?", whereArgs: [id]);
+    final player = _unpackPlayer(entity.single);
     return player;
   }
 
-  Future<List<Player>> loadMultiple(Set<int> ids) async {
-    final playerEntities = await _playersTable.selectMultiple(ids);
-    final players = playerEntities.map((p) => EntityMappers.unpackPlayer(p));
-
-    return players.toList();
+  @override
+  Future<UnmodifiableListView<Player>> loadAll() async {
+    final entities = await _sql.query(table: Tables.players);
+    return UnmodifiableListView(entities.map(_unpackPlayer));
   }
 
-  Future<List<Player>> loadPlayersForMatch(QuickMatch match) async {
-    if (match.id == -1) {
-      throw StateError("Attempted to load players for match with no ID");
+  @override
+  Future<Player> save(Player player) async {
+    if (player.id == null) {
+      return _create(player);
     }
 
-    final playerEntities = await _playersTable.selectForMatch(match.id);
-    final players = playerEntities.map((p) => EntityMappers.unpackPlayer(p));
+    await _sql.update(
+      table: Tables.players,
+      values: _repackPlayer(player),
+      where: "id = ?",
+      whereArgs: [player.id],
+    );
 
-    return players.toList();
+    return load(player.id!);
   }
+
+  Future<Player> _create(Player player) async {
+    final map = _repackPlayer(player);
+    final id = await _sql.insert(table: Tables.players, values: map);
+    return load(id);
+  }
+
+  Map<String, Object?> _repackPlayer(Player player) => {
+        "id": player.id,
+        "handle": player.handle,
+        "name": player.name,
+        "full_name": player.fullName,
+        "date_of_birth": player.dateOfBirth?.millisecondsSinceEpoch,
+      };
+
+  Player _unpackPlayer(Map<String, Object?> map) => Player(
+        id: map["id"] as int,
+        handle: map["handle"] as String,
+        name: map["name"] as String,
+        fullName: map["full_name"] as String?,
+        dateOfBirth: map["date_of_birth"] != null
+            ? DateTime.fromMillisecondsSinceEpoch(map["date_of_birth"] as int)
+            : null,
+      );
 }

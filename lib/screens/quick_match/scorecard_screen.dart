@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scorecard/cache/player_cache.dart';
+import 'package:scorecard/modules/cache/player_cache.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
 import 'package:scorecard/screens/quick_match/innings_timeline_screen.dart';
 import 'package:scorecard/services/quick_match_service.dart';
@@ -12,9 +12,9 @@ import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
 
 class ScorecardScreen extends StatefulWidget {
-  final QuickMatch match;
+  final int matchId;
 
-  const ScorecardScreen(this.match, {super.key});
+  const ScorecardScreen(this.matchId, {super.key});
 
   @override
   State<ScorecardScreen> createState() => _ScorecardScreenState();
@@ -26,7 +26,7 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
   @override
   void initState() {
     super.initState();
-    controller = ScorecardScreenController(widget.match);
+    controller = ScorecardScreenController(widget.matchId);
     controller.initialize(context);
   }
 
@@ -48,12 +48,12 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
                     ),
                     itemCount: state.allInnings.length,
                   ),
-                _ShowPartnershipsState() => ListView.builder(
-                    itemBuilder: (context, index) => _PartnershipList(
-                        index + 1, state.partnerships[index + 1]!),
-                    itemCount: state.partnerships.length,
-                  ),
-                _ShowGraphsState() => _GraphListSection(state.allInnings),
+                // _ShowPartnershipsState() => ListView.builder(
+                //     itemBuilder: (context, index) => _PartnershipList(
+                //         index + 1, state.partnerships[index + 1]!),
+                //     itemCount: state.partnerships.length,
+                //   ),
+                // _ShowGraphsState() => _GraphListSection(state.allInnings),
               },
               bottomNavigationBar: switch (state) {
                 _ScorecardLoadingState() => const BottomAppBar(),
@@ -63,12 +63,12 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
                       if (index == 0) {
                         return controller.showScorecard();
                       }
-                      if (index == 1) {
-                        return controller.showPartnerships();
-                      }
-                      if (index == 2) {
-                        return controller.showGraphs();
-                      }
+                      // if (index == 1) {
+                      //   return controller.showPartnerships();
+                      // }
+                      // if (index == 2) {
+                      //   return controller.showGraphs();
+                      // }
                     },
                     selectedIndex: state.index,
                     destinations: const [
@@ -92,18 +92,19 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
 }
 
 class ScorecardScreenController {
-  final QuickMatch match;
+  final int matchId;
+
   late final QuickMatchService service;
   late final List<QuickInnings> allInnings;
 
-  ScorecardScreenController(this.match);
+  ScorecardScreenController(this.matchId);
 
   final _stateStreamController = StreamController<_ScorecardState>();
 
   Future<void> initialize(BuildContext context) async {
     service = context.read<QuickMatchService>();
 
-    allInnings = await service.loadAllInnings(match);
+    allInnings = await service.getAllInningsOf(matchId);
 
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -114,15 +115,15 @@ class ScorecardScreenController {
     _stateStreamController.add(_ShowScorecardState(allInnings));
   }
 
-  void showPartnerships() {
-    _stateStreamController.add(_ShowPartnershipsState({
-      for (final i in allInnings) i.inningsNumber: service.getPartnerships(i),
-    }));
-  }
-
-  void showGraphs() {
-    _stateStreamController.add(_ShowGraphsState(allInnings));
-  }
+  // void showPartnerships() {
+  //   _stateStreamController.add(_ShowPartnershipsState({
+  //     for (final i in allInnings) i.inningsNumber: service.getPartnerships(i),
+  //   }));
+  // }
+  //
+  // void showGraphs() {
+  //   _stateStreamController.add(_ShowGraphsState(allInnings));
+  // }
 }
 
 sealed class _ScorecardState {}
@@ -142,23 +143,23 @@ class _ShowScorecardState extends _ScorecardLoadedState {
   int get index => 0;
 }
 
-class _ShowPartnershipsState extends _ScorecardLoadedState {
-  final Map<int, List<Partnership>> partnerships;
-
-  _ShowPartnershipsState(this.partnerships);
-
-  @override
-  int get index => 1;
-}
-
-class _ShowGraphsState extends _ScorecardLoadedState {
-  final List<QuickInnings> allInnings;
-
-  _ShowGraphsState(this.allInnings);
-
-  @override
-  int get index => 2;
-}
+// class _ShowPartnershipsState extends _ScorecardLoadedState {
+//   final Map<int, List<Partnership>> partnerships;
+//
+//   _ShowPartnershipsState(this.partnerships);
+//
+//   @override
+//   int get index => 1;
+// }
+//
+// class _ShowGraphsState extends _ScorecardLoadedState {
+//   final List<QuickInnings> allInnings;
+//
+//   _ShowGraphsState(this.allInnings);
+//
+//   @override
+//   int get index => 2;
+// }
 
 class _InningsScorecard extends StatelessWidget {
   final QuickInnings innings;
@@ -169,40 +170,59 @@ class _InningsScorecard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final service = context.read<QuickMatchService>();
-    getPlayerName(id) => PlayerCache().get(id).name;
-
+    final future = _loadBattersAndBowlers(context);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Column(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FilledButton.icon(
-              icon: const Icon(Icons.timeline),
-              label: Text(Stringify.quickInningsHeading(innings.inningsNumber)),
-              onPressed: () => goInningsTimeline(context),
-            ),
-            _BattingScorecard(
-              service.getBatters(innings),
-              score: innings.score,
-              target: innings.target,
-              extras: innings.extras,
-              maxBalls: innings.maxBalls,
-              ballsPerOver: innings.ballsPerOver,
-              ballsBowled: innings.numBalls,
-              fallOfWickets: service.getFallOfWickets(innings),
-              getPlayerName: getPlayerName,
-            ),
-            const SizedBox(height: 24),
-            _BowlingScorecard(
-              service.getBowlers(innings),
-              getPlayerName: getPlayerName,
-            )
-          ],
-        ),
+        child: FutureBuilder(
+            future: future,
+            builder: (context, asyncSnapshot) {
+              if (asyncSnapshot.connectionState == ConnectionState.done) {
+                final data = asyncSnapshot.data!;
+                return Column(
+                  // crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FilledButton.icon(
+                      icon: const Icon(Icons.timeline),
+                      label: Text(
+                          Stringify.quickInningsHeading(innings.inningsNumber)),
+                      onPressed: () => goInningsTimeline(context),
+                    ),
+                    _BattingScorecard(
+                      data.batters,
+                      score: innings.score,
+                      target: innings.target,
+                      extras: innings.extras,
+                      overLimit: innings.ballLimit,
+                      ballsPerOver: innings.ballsPerOver,
+                      ballsBowled: innings.balls,
+                      fallOfWickets: data.fallOfWickets,
+                    ),
+                    const SizedBox(height: 24),
+                    _BowlingScorecard(
+                      data.bowlers,
+                      ballsPerOver: innings.ballsPerOver,
+                    )
+                  ],
+                );
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            }),
       ),
     );
+  }
+
+  Future<_InningsScorecardData> _loadBattersAndBowlers(
+      BuildContext context) async {
+    final service = context.read<QuickMatchService>();
+
+    final batters = await service.getBatters(innings);
+    final bowlers = await service.getBowlers(innings);
+    final fallOfWickets = await service.getWicketsOf(innings);
+
+    return _InningsScorecardData(batters, bowlers, fallOfWickets);
   }
 
   void goInningsTimeline(BuildContext context) {
@@ -213,31 +233,36 @@ class _InningsScorecard extends StatelessWidget {
   }
 }
 
-class _BattingScorecard extends StatelessWidget {
-  final Iterable<BatterInnings> allBatterInnings;
+class _InningsScorecardData {
+  final Iterable<BattingScore> batters;
+  final Iterable<BowlingScore> bowlers;
+  final Iterable<FallOfWicket> fallOfWickets;
 
-  final String Function(String id) getPlayerName;
+  const _InningsScorecardData(this.batters, this.bowlers, this.fallOfWickets);
+}
+
+class _BattingScorecard extends StatelessWidget {
+  final Iterable<BattingScore> allBattingScores;
 
   final Score score;
   final int? target;
   final Extras extras;
 
-  final int maxBalls;
+  final int overLimit;
   final int ballsPerOver;
   final int ballsBowled;
 
-  final List<FallOfWicket> fallOfWickets;
+  final Iterable<FallOfWicket> fallOfWickets;
 
   const _BattingScorecard(
-    this.allBatterInnings, {
+    this.allBattingScores, {
     required this.score,
     required this.target,
     required this.extras,
-    required this.maxBalls,
+    required this.overLimit,
     required this.ballsPerOver,
     required this.ballsBowled,
     required this.fallOfWickets,
-    required this.getPlayerName,
   });
 
   @override
@@ -269,8 +294,8 @@ class _BattingScorecard extends StatelessWidget {
               const Text("SR", textAlign: TextAlign.center),
               const SizedBox(),
             ]),
-            for (final batterInnings in allBatterInnings)
-              wBatterTile(batterInnings, context)
+            for (final battingScore in allBattingScores)
+              wBatterTile(battingScore, context)
           ],
         ),
         const SizedBox(height: 12),
@@ -333,7 +358,7 @@ class _BattingScorecard extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         if (fallOfWickets.isNotEmpty)
-          Text("Fall of wickets",
+          Text("Fall of Wickets",
               style: Theme.of(context).textTheme.titleMedium),
         if (fallOfWickets.isNotEmpty)
           Table(
@@ -364,21 +389,19 @@ class _BattingScorecard extends StatelessWidget {
     );
   }
 
-  TableRow wBatterTile(BatterInnings batterInnings, BuildContext context) {
-    final boundaryCount = batterInnings.boundaryCount;
+  TableRow wBatterTile(BattingScore battingScore, BuildContext context) {
     return TableRow(children: [
       ListTile(
         leading: CircleAvatar(
           radius: 16,
           backgroundColor:
-              batterInnings.isOut ? BallColors.wicket : BallColors.notOut,
+              battingScore.isNotOut ? BallColors.notOut : BallColors.wicket,
           child: const Icon(Icons.sports_motorsports, size: 20),
         ),
-        title: Text(getPlayerName(batterInnings.batterId).toUpperCase()),
+        title: Text(getPlayerName(battingScore.batterId).toUpperCase()),
 
         subtitle: Text(
-          Stringify.wicket(batterInnings.wicket,
-              retired: batterInnings.retired, getPlayerName: getPlayerName),
+          Stringify.wicket(battingScore.wicket, getPlayerName: getPlayerName),
         ),
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
         subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
@@ -393,7 +416,7 @@ class _BattingScorecard extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 6.0),
         child: Text(
-          batterInnings.runs.toString(),
+          battingScore.runsScored.toString(),
           style: Theme.of(context).textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
@@ -401,7 +424,7 @@ class _BattingScorecard extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 6.0),
         child: Text(
-          batterInnings.numBalls.toString(),
+          battingScore.ballsFaced.toString(),
           style: Theme.of(context).textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
@@ -409,7 +432,7 @@ class _BattingScorecard extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 6.0),
         child: Text(
-          batterInnings.strikeRate.toStringAsFixed(1),
+          battingScore.strikeRate.toStringAsFixed(1),
           style: Theme.of(context).textTheme.bodySmall,
           textAlign: TextAlign.center,
         ),
@@ -417,8 +440,8 @@ class _BattingScorecard extends StatelessWidget {
       Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          _wBoundaryCount(context, boundaryCount[4]!, BallColors.four),
-          _wBoundaryCount(context, boundaryCount[6]!, BallColors.six),
+          _wBoundaryCount(context, battingScore.fours, BallColors.four),
+          _wBoundaryCount(context, battingScore.sixes, BallColors.six),
         ],
       ),
     ]);
@@ -441,12 +464,12 @@ class _BattingScorecard extends StatelessWidget {
 }
 
 class _BowlingScorecard extends StatelessWidget {
-  final Iterable<BowlerInnings> allBowlerInnings;
-  final String Function(String id) getPlayerName;
+  final Iterable<BowlingScore> allBowlingScores;
+  final int ballsPerOver;
 
   const _BowlingScorecard(
-    this.allBowlerInnings, {
-    required this.getPlayerName,
+    this.allBowlingScores, {
+    required this.ballsPerOver,
   });
 
   @override
@@ -475,7 +498,7 @@ class _BowlingScorecard extends StatelessWidget {
               const Center(child: Text('R')),
               const Center(child: Text('Econ')),
             ]),
-            for (final bowlerInnings in allBowlerInnings)
+            for (final bowlingScore in allBowlingScores)
               TableRow(children: [
                 ListTile(
                   leading: CircleAvatar(
@@ -484,7 +507,7 @@ class _BowlingScorecard extends StatelessWidget {
                     child: const Icon(Icons.sports_baseball, size: 20),
                   ),
                   title:
-                      Text(getPlayerName(bowlerInnings.bowlerId).toUpperCase()),
+                      Text(getPlayerName(bowlingScore.bowlerId).toUpperCase()),
 
                   titleTextStyle: Theme.of(context).textTheme.bodyMedium,
                   // trailing: const Icon(Icons.chevron_right, size: 18),
@@ -495,10 +518,10 @@ class _BowlingScorecard extends StatelessWidget {
                 ),
                 Center(
                     child: Text(Stringify.ballCount(
-                        bowlerInnings.numBalls, bowlerInnings.ballsPerOver))),
-                Center(child: Text(bowlerInnings.numWickets.toString())),
-                Center(child: Text(bowlerInnings.runs.toString())),
-                Center(child: Text(Stringify.economy(bowlerInnings.economy)))
+                        bowlingScore.ballsBowled, ballsPerOver))),
+                Center(child: Text(bowlingScore.wicketsTaken.toString())),
+                Center(child: Text(bowlingScore.runsConceded.toString())),
+                Center(child: Text(Stringify.economy(bowlingScore.economy)))
               ])
           ],
         ),
@@ -515,264 +538,264 @@ class _BowlingScorecard extends StatelessWidget {
   // }
 }
 
-class _PartnershipList extends StatelessWidget {
-  final List<Partnership> partnerships;
-  final int inningsNumber;
+// class _PartnershipList extends StatelessWidget {
+//   final List<Partnership> partnerships;
+//   final int inningsNumber;
+//
+//   const _PartnershipList(this.inningsNumber, this.partnerships);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Card(
+//       child: Padding(
+//         padding: const EdgeInsets.all(8.0),
+//         child: Column(
+//           children: [
+//             Text(
+//               Stringify.quickInningsHeading(inningsNumber),
+//               style: Theme.of(context).textTheme.titleMedium,
+//             ),
+//             const SizedBox(height: 16),
+//             for (final partnership in partnerships)
+//               Padding(
+//                 padding:
+//                     const EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
+//                 child: Column(
+//                   children: [
+//                     Row(
+//                       children: [
+//                         Text(getPlayerName(partnership.batter1Id)),
+//                         const Spacer(),
+//                         Text(getPlayerName(partnership.batter2Id)),
+//                       ],
+//                     ),
+//                     ClipRRect(
+//                       borderRadius: BorderRadius.circular(8),
+//                       child: Row(
+//                         children: [
+//                           Expanded(
+//                             flex: partnership.batter1Innings.runs,
+//                             child: const Divider(
+//                               color: Colors.teal,
+//                               thickness: 10,
+//                             ),
+//                           ),
+//                           Expanded(
+//                             flex: partnership.batter2Innings.runs,
+//                             child: Divider(
+//                               color: BallColors.notOut,
+//                               thickness: 10,
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                     Row(
+//                       children: [
+//                         Expanded(
+//                           child: Align(
+//                             alignment: Alignment.centerLeft,
+//                             child: Text(Stringify.battingScore(
+//                                 partnership.batter1Innings)),
+//                           ),
+//                         ),
+//                         Expanded(
+//                           child: Center(
+//                             child: Text(Stringify.batterScore(
+//                                 partnership.runs, partnership.numBalls)),
+//                           ),
+//                         ),
+//                         Expanded(
+//                           child: Align(
+//                             alignment: Alignment.centerRight,
+//                             child: Text(Stringify.batterInningsScore(
+//                                 partnership.batter2Innings)),
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
-  const _PartnershipList(this.inningsNumber, this.partnerships);
+// class _GraphListSection extends StatelessWidget {
+//   final List<QuickInnings> allInnings;
+//
+//   const _GraphListSection(this.allInnings);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     const firstColor = Colors.teal;
+//     final secondColor = BallColors.notOut;
+//
+//     final firstInnings = allInnings.first;
+//     final secondInnings = allInnings.length > 1 ? allInnings[1] : null;
+//
+//     const radius = 6.0;
+//     return ListView(
+//       children: [
+//         Row(
+//           children: [
+//             Expanded(
+//               child: ListTile(
+//                 leading: const CircleAvatar(
+//                   radius: radius,
+//                   backgroundColor: firstColor,
+//                 ),
+//                 title: Text(Stringify.quickInningsHeading(
+//                     allInnings.first.inningsNumber)),
+//               ),
+//             ),
+//             if (secondInnings != null)
+//               Expanded(
+//                 child: ListTile(
+//                   leading: CircleAvatar(
+//                     radius: radius,
+//                     backgroundColor: secondColor,
+//                   ),
+//                   title: Text(Stringify.quickInningsHeading(
+//                       secondInnings.inningsNumber)),
+//                 ),
+//               ),
+//           ],
+//         ),
+//         const SizedBox(height: 16),
+//         Center(
+//             child:
+//                 Text("Worm", style: Theme.of(context).textTheme.titleMedium)),
+//         const SizedBox(height: 16),
+//         _WormGraph(
+//           firstInnings: firstInnings,
+//           secondInnings: secondInnings,
+//           firstColor: firstColor,
+//           secondColor: secondColor,
+//         ),
+//         const SizedBox(height: 32),
+//         // Center(
+//         //     child: Text("Manhattan",
+//         //         style: Theme.of(context).textTheme.titleMedium)),
+//         // const SizedBox(height: 16),
+//         // _ManhattanGraph(
+//         //   firstInnings: firstInnings,
+//         //   secondInnings: secondInnings,
+//         //   firstColor: firstColor,
+//         //   secondColor: secondColor,
+//         // ),
+//       ],
+//     );
+//   }
+// }
 
-  @override
-  Widget build(BuildContext context) {
-    getPlayerName(String id) => PlayerCache().get(id).name.toUpperCase();
+// class _WormGraph extends StatelessWidget {
+//   final QuickInnings firstInnings;
+//   final QuickInnings? secondInnings;
+//
+//   final Color firstColor;
+//   final Color secondColor;
+//
+//   const _WormGraph(
+//       {required this.firstInnings,
+//       required this.secondInnings,
+//       required this.firstColor,
+//       required this.secondColor});
+//   @override
+//   Widget build(BuildContext context) {
+//     double i = 0;
+//     double j = 0;
+//     return SizedBox(
+//       height: 256,
+//       child: LineChart(
+//         LineChartData(
+//           titlesData: const FlTitlesData(
+//             topTitles: AxisTitles(),
+//           ),
+//           lineBarsData: [
+//             LineChartBarData(
+//               color: firstColor,
+//               spots: runsForInnings(firstInnings)
+//                   .map((r) => FlSpot(i++, r))
+//                   .toList(),
+//             ),
+//             if (secondInnings != null)
+//               LineChartBarData(
+//                 color: secondColor,
+//                 spots: runsForInnings(secondInnings!)
+//                     .map((r) => FlSpot(j++, r))
+//                     .toList(),
+//               ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+//
+//   List<double> runsForInnings(QuickInnings innings) {
+//     final runs = <double>[0];
+//     double score = 0;
+//     for (final ball in innings.balls) {
+//       score = score + ball.totalRuns;
+//       runs.add(score);
+//     }
+//     return runs;
+//   }
+// }
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Text(
-              Stringify.quickInningsHeading(inningsNumber),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            for (final partnership in partnerships)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Text(getPlayerName(partnership.batter1Id)),
-                        const Spacer(),
-                        Text(getPlayerName(partnership.batter2Id)),
-                      ],
-                    ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: partnership.batter1Innings.runs,
-                            child: const Divider(
-                              color: Colors.teal,
-                              thickness: 10,
-                            ),
-                          ),
-                          Expanded(
-                            flex: partnership.batter2Innings.runs,
-                            child: Divider(
-                              color: BallColors.notOut,
-                              thickness: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(Stringify.batterInningsScore(
-                                partnership.batter1Innings)),
-                          ),
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: Text(Stringify.batterScore(
-                                partnership.runs, partnership.numBalls)),
-                          ),
-                        ),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(Stringify.batterInningsScore(
-                                partnership.batter2Innings)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// class _ManhattanGraph extends StatelessWidget {
+//   final QuickInnings firstInnings;
+//   final QuickInnings? secondInnings;
+//
+//   final Color firstColor;
+//   final Color secondColor;
+//
+//   const _ManhattanGraph(
+//       {required this.firstInnings,
+//       required this.secondInnings,
+//       required this.firstColor,
+//       required this.secondColor});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     Map<int, Over> getOvers(QuickInnings innings) =>
+//         context.read<QuickMatchService>().getOvers(innings);
+//
+//     final overs1 = getOvers(firstInnings);
+//     final overs2 =
+//         secondInnings == null ? <int, Over>{} : getOvers(secondInnings!);
+//
+//     final count = max(overs1.length, overs2.length);
+//
+//     return SizedBox(
+//       height: 250,
+//       child: BarChart(
+//         BarChartData(
+//           barGroups: [
+//             for (int i = 1; i <= count; i++)
+//               BarChartGroupData(
+//                 x: i,
+//                 barRods: [
+//                   if (overs1.containsKey(i))
+//                     BarChartRodData(
+//                       toY: overs1[i]!.runs.toDouble(),
+//                       color: firstColor,
+//                     ),
+//                   if (overs2.containsKey(i))
+//                     BarChartRodData(
+//                       toY: overs2[i]!.runs.toDouble(),
+//                       color: secondColor,
+//                     ),
+//                 ],
+//               ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
-class _GraphListSection extends StatelessWidget {
-  final List<QuickInnings> allInnings;
-
-  const _GraphListSection(this.allInnings);
-
-  @override
-  Widget build(BuildContext context) {
-    const firstColor = Colors.teal;
-    final secondColor = BallColors.notOut;
-
-    final firstInnings = allInnings.first;
-    final secondInnings = allInnings.length > 1 ? allInnings[1] : null;
-
-    const radius = 6.0;
-    return ListView(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: ListTile(
-                leading: const CircleAvatar(
-                  radius: radius,
-                  backgroundColor: firstColor,
-                ),
-                title: Text(Stringify.quickInningsHeading(
-                    allInnings.first.inningsNumber)),
-              ),
-            ),
-            if (secondInnings != null)
-              Expanded(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    radius: radius,
-                    backgroundColor: secondColor,
-                  ),
-                  title: Text(Stringify.quickInningsHeading(
-                      secondInnings.inningsNumber)),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Center(
-            child:
-                Text("Worm", style: Theme.of(context).textTheme.titleMedium)),
-        const SizedBox(height: 16),
-        _WormGraph(
-          firstInnings: firstInnings,
-          secondInnings: secondInnings,
-          firstColor: firstColor,
-          secondColor: secondColor,
-        ),
-        const SizedBox(height: 32),
-        Center(
-            child: Text("Manhattan",
-                style: Theme.of(context).textTheme.titleMedium)),
-        const SizedBox(height: 16),
-        _ManhattanGraph(
-          firstInnings: firstInnings,
-          secondInnings: secondInnings,
-          firstColor: firstColor,
-          secondColor: secondColor,
-        ),
-      ],
-    );
-  }
-}
-
-class _WormGraph extends StatelessWidget {
-  final QuickInnings firstInnings;
-  final QuickInnings? secondInnings;
-
-  final Color firstColor;
-  final Color secondColor;
-
-  const _WormGraph(
-      {required this.firstInnings,
-      required this.secondInnings,
-      required this.firstColor,
-      required this.secondColor});
-  @override
-  Widget build(BuildContext context) {
-    double i = 0;
-    double j = 0;
-    return SizedBox(
-      height: 256,
-      child: LineChart(
-        LineChartData(
-          titlesData: const FlTitlesData(
-            topTitles: AxisTitles(),
-          ),
-          lineBarsData: [
-            LineChartBarData(
-              color: firstColor,
-              spots: runsForInnings(firstInnings)
-                  .map((r) => FlSpot(i++, r))
-                  .toList(),
-            ),
-            if (secondInnings != null)
-              LineChartBarData(
-                color: secondColor,
-                spots: runsForInnings(secondInnings!)
-                    .map((r) => FlSpot(j++, r))
-                    .toList(),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<double> runsForInnings(QuickInnings innings) {
-    final runs = <double>[0];
-    double score = 0;
-    for (final ball in innings.balls) {
-      score = score + ball.totalRuns;
-      runs.add(score);
-    }
-    return runs;
-  }
-}
-
-class _ManhattanGraph extends StatelessWidget {
-  final QuickInnings firstInnings;
-  final QuickInnings? secondInnings;
-
-  final Color firstColor;
-  final Color secondColor;
-
-  const _ManhattanGraph(
-      {required this.firstInnings,
-      required this.secondInnings,
-      required this.firstColor,
-      required this.secondColor});
-
-  @override
-  Widget build(BuildContext context) {
-    Map<int, Over> getOvers(QuickInnings innings) =>
-        context.read<QuickMatchService>().getOvers(innings);
-
-    final overs1 = getOvers(firstInnings);
-    final overs2 =
-        secondInnings == null ? <int, Over>{} : getOvers(secondInnings!);
-
-    final count = max(overs1.length, overs2.length);
-
-    return SizedBox(
-      height: 250,
-      child: BarChart(
-        BarChartData(
-          barGroups: [
-            for (int i = 1; i <= count; i++)
-              BarChartGroupData(
-                x: i,
-                barRods: [
-                  if (overs1.containsKey(i))
-                    BarChartRodData(
-                      toY: overs1[i]!.runs.toDouble(),
-                      color: firstColor,
-                    ),
-                  if (overs2.containsKey(i))
-                    BarChartRodData(
-                      toY: overs2[i]!.runs.toDouble(),
-                      color: secondColor,
-                    ),
-                ],
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+String getPlayerName(int id) => PlayerCache.get(id).name;

@@ -9,10 +9,10 @@ import 'package:scorecard/modules/quick_match/wicket_model.dart';
 /// not want to name this InningsEvent because that sounds like a UI Event.
 sealed class InningsPost {
   /// The ID of the Post as in the database
-  final int id;
+  final int? id;
 
   /// The ID of the Match as in the database
-  final String matchId;
+  final int matchId;
 
   /// The ID of the Innings as in the database
   final int inningsId;
@@ -32,6 +32,15 @@ sealed class InningsPost {
   /// Any comment that the user would like to add about this post
   final String? comment;
 
+  /// The batter at the striker's end
+  final int? batterId;
+
+  /// The batter at the non-striker's end
+  final int? nonStrikerId;
+
+  /// The bowler who is to bowl the bal
+  final int? bowlerId;
+
   String get code;
 
   InningsPost(
@@ -42,6 +51,9 @@ sealed class InningsPost {
     required this.timestamp,
     required this.index,
     required this.scoreAt,
+    required this.batterId,
+    required this.bowlerId,
+    required this.nonStrikerId,
     this.comment,
   });
 }
@@ -51,12 +63,6 @@ sealed class InningsPost {
 /// A bowler delivers the ball to a batter who then attempts to get bat on ball
 /// and score runs.
 class Ball extends InningsPost {
-  /// The bowler who delivered this ball
-  final int bowlerId;
-
-  /// The batter who faced this ball
-  final int batterId;
-
   /// Runs off the bat/ran by the batter(s)
   final int batterRuns;
 
@@ -82,7 +88,7 @@ class Ball extends InningsPost {
   int get legByes => bowlingExtra is LegBye ? battingExtra!.runs : 0;
 
   /// TODO handle Penalties
-  bool get isExtra => isBowlingExtra || isBattingExtra;
+  // bool get isExtra => isBowlingExtra || isBattingExtra;
 
   /// Total runs conceded by the bowler
   int get bowlerRuns => batterRuns + bowlingExtraRuns;
@@ -99,8 +105,9 @@ class Ball extends InningsPost {
     required super.index,
     required super.scoreAt,
     super.comment,
-    required this.bowlerId,
-    required this.batterId,
+    required super.bowlerId,
+    required super.batterId,
+    required super.nonStrikerId,
     required this.batterRuns,
     required this.isBoundary,
     required this.wicket,
@@ -120,12 +127,6 @@ class Ball extends InningsPost {
 ///
 /// Note: Not to be posted when an over is completed.
 class BowlerRetire extends InningsPost {
-  /// The bowler who retires
-  final int bowlerId;
-
-  /// The bowler's retirement
-  // final RetiredBowler retired;
-
   BowlerRetire(
     super.id, {
     required super.matchId,
@@ -135,8 +136,9 @@ class BowlerRetire extends InningsPost {
     required super.index,
     required super.scoreAt,
     super.comment,
-    required this.bowlerId,
-    // required this.retired,
+    required super.bowlerId,
+    required super.batterId,
+    required super.nonStrikerId,
   });
 
   @override
@@ -146,13 +148,8 @@ class BowlerRetire extends InningsPost {
 /// Posted whenever a Bowler starts a new over or completes an over that was
 /// started by another bowler.
 class NextBowler extends InningsPost {
-  /// The bowler who bowled the previous delivery
-  final int? previousId;
-
-  /// The bowler who will bowl the next delivery
+  /// The next bowler of the match
   final int nextId;
-
-  // final bool isMidOverChange;
 
   NextBowler(
     super.id, {
@@ -162,8 +159,10 @@ class NextBowler extends InningsPost {
     required super.timestamp,
     required super.index,
     required super.scoreAt,
+    required super.bowlerId,
+    required super.batterId,
+    required super.nonStrikerId,
     super.comment,
-    required this.previousId,
     required this.nextId,
     // required this.isMidOverChange
   });
@@ -181,9 +180,6 @@ class BatterRetire extends InningsPost {
   /// The batter's retirement
   final Retired retired;
 
-  /// The batter who has retired
-  int get batterId => retired.batterId;
-
   BatterRetire(
     super.id, {
     required super.matchId,
@@ -192,8 +188,10 @@ class BatterRetire extends InningsPost {
     required super.timestamp,
     required super.index,
     required super.scoreAt,
+    required super.bowlerId,
+    required super.batterId,
+    required super.nonStrikerId,
     super.comment,
-    // required this.batter,
     required this.retired,
   });
 
@@ -217,6 +215,9 @@ class NextBatter extends InningsPost {
     required super.timestamp,
     required super.index,
     required super.scoreAt,
+    required super.bowlerId,
+    required super.batterId,
+    required super.nonStrikerId,
     super.comment,
     required this.previousId,
     required this.nextId,
@@ -233,9 +234,7 @@ class NextBatter extends InningsPost {
 /// bowled, as sensationalized by Ravichandran Ashwin
 class WicketBeforeDelivery extends InningsPost {
   /// The run out that took place before the ball was bowled
-  final RunOut wicket;
-
-  int get batterId => wicket.batterId;
+  final Wicket wicket;
 
   WicketBeforeDelivery(
     super.id, {
@@ -247,6 +246,9 @@ class WicketBeforeDelivery extends InningsPost {
     required super.scoreAt,
     super.comment,
     required this.wicket,
+    required super.bowlerId,
+    required super.batterId,
+    required super.nonStrikerId,
   });
 
   @override
@@ -267,6 +269,9 @@ class Penalty extends InningsPost {
     required super.scoreAt,
     super.comment,
     required this.penalties,
+    required super.bowlerId,
+    required super.batterId,
+    required super.nonStrikerId,
   });
 
   @override
@@ -277,14 +282,19 @@ class Penalty extends InningsPost {
 class Break extends InningsPost {
   final int breakType;
 
-  Break(super.id,
-      {required super.matchId,
-      required super.inningsId,
-      required super.inningsNumber,
-      required super.timestamp,
-      required super.index,
-      required super.scoreAt,
-      required this.breakType});
+  Break(
+    super.id, {
+    required super.matchId,
+    required super.inningsId,
+    required super.inningsNumber,
+    required super.timestamp,
+    required super.index,
+    required super.scoreAt,
+    required this.breakType,
+    required super.bowlerId,
+    required super.batterId,
+    required super.nonStrikerId,
+  });
 
   @override
   String get code => "break";
@@ -297,6 +307,10 @@ class PostIndex {
   final int ball;
 
   const PostIndex(this.over, this.ball);
+
+  const PostIndex.of(int ballsBowled, int ballsPerOver)
+      : over = ballsBowled ~/ ballsPerOver,
+        ball = ballsBowled % ballsPerOver;
 
   const PostIndex.zero()
       : over = 0,

@@ -16,6 +16,11 @@ class Tables {
 
   static const battingScores = "batting_scores";
   static const bowlingScores = "bowling_scores";
+
+  // Lookup
+  static const lookupWicket = "lookup_wicket";
+  static const lookupPost = "lookup_post";
+  static const lookupInningsState = "lookup_innings_state";
 }
 
 class Views {

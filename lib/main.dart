@@ -4,23 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
+import 'package:scorecard/modules/cache/player_cache.dart';
 import 'package:scorecard/provider/settings_provider.dart';
+import 'package:scorecard/repositories/lookup_config.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 import 'package:scorecard/repositories/quick_match_repository.dart';
-import 'package:scorecard/repositories/sql/db/batting_scores_table.dart';
-import 'package:scorecard/repositories/sql/db/bowling_scores_table.dart';
-import 'package:scorecard/repositories/sql/db/structured_queries.dart';
-import 'package:scorecard/repositories/sql/db/players_table.dart';
-import 'package:scorecard/repositories/sql/db/posts_table.dart';
-import 'package:scorecard/repositories/sql/db/quick_innings_table.dart';
-import 'package:scorecard/repositories/sql/db/quick_matches_table.dart';
 import 'package:scorecard/handlers/sql_db_handler.dart';
-import 'package:scorecard/repositories/statistics_repository.dart';
 import 'package:scorecard/screens/home_screen.dart';
 import 'package:scorecard/services/player_service.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/services/settings_service.dart';
-import 'package:scorecard/services/statistics_service.dart';
 
 /// Welcome to [Scorecard]! You must be new here. The architecture and structure
 /// of this application might be a little overwhelming. To help you out,
@@ -144,14 +137,12 @@ class _ScorecardAppState extends State<ScorecardApp> {
 }
 
 class _ScorecardAppController {
-  late final PlayerRepository playerRepository;
-  late final QuickMatchRepository quickMatchRepository;
-  late final StatisticsRepository statisticsRepository;
+  late final IPlayerRepository playerRepository;
+  late final IQuickMatchRepository quickMatchRepository;
 
   late final PlayerService playerService;
   late final QuickMatchService quickMatchService;
   late final SettingsService settingsService;
-  // late final StatisticsService statisticsService;
 
   late final SettingsProvider settingsProvider;
 
@@ -161,7 +152,6 @@ class _ScorecardAppController {
           settingsService: settingsService,
           playerService: playerService,
           quickMatchService: quickMatchService,
-          // statisticsService: statisticsService,
           theme: settingsProvider.theme,
         ),
       );
@@ -174,36 +164,25 @@ class _ScorecardAppController {
     // Services
     await _initializeServices();
 
+    final players = await playerService.getAllPlayers();
+    for (final p in players) {
+      PlayerCache.add(p);
+    }
+
     _dispatchState();
   }
 
   Future<void> _initializeRepositories() async {
     // Initialize the DB
-    await SQLDBHandler.instance.initialize();
+    final sqlDbHandler = SQLDBHandler();
+    await sqlDbHandler.initialize();
 
-    // Instantiate all tables and views
-    final playersTable = PlayersTable();
-    final quickMatchesTable = QuickMatchesTable();
-    final quickInningsTable = QuickInningsTable();
-    final postsTable = PostsTable();
-    final battingScoresTable = BattingScoresTable();
-    final bowlingScoresTable = BowlingScoresTable();
-
-    final wicketsView = WicketsView();
-
-    // final playerStatisticsQueries = StructuredQueries();
+    final config = LookupConfig();
+    await config.initialize(sqlDbHandler);
 
     // Instantiate all repositories
-    playerRepository = PlayerRepository(playersTable);
-    quickMatchRepository = QuickMatchRepository(
-      quickMatchesTable,
-      quickInningsTable,
-      postsTable,
-      battingScoresTable,
-      bowlingScoresTable,
-      wicketsView,
-    );
-    // statisticsRepository = StatisticsRepository(playerStatisticsQueries);
+    playerRepository = SQLPlayerRepository(sqlDbHandler);
+    quickMatchRepository = SQLQuickMatchRepository(sqlDbHandler, config);
   }
 
   Future<void> _initializeServices() async {
@@ -218,11 +197,8 @@ class _ScorecardAppController {
     // await playerService.initialize();
 
     // Quick Match Service
-    quickMatchService = QuickMatchService(quickMatchRepository, playerService);
+    quickMatchService = QuickMatchService(quickMatchRepository);
     // await quickMatchService.initialize();
-
-    //Statistics Service
-    // statisticsService = StatisticsService(statisticsRepository);
   }
 }
 

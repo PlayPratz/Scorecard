@@ -52,23 +52,6 @@ class CreateQuickMatchScreen extends StatelessWidget {
                       value: rules.ballsPerOver,
                       min: 1,
                       onChange: (x) => controller.ballsPerOver = x),
-                  const SizedBox(height: 32),
-                  // No Ball Penalty
-                  const Center(child: Text("No Ball Penalty")),
-                  const SizedBox(height: 4),
-                  _NumberChooser(
-                      value: rules.noBallPenalty,
-                      min: 1,
-                      onChange: (x) => controller.noBallPenalty = x),
-                  const SizedBox(height: 32),
-                  // Wide Penalty
-                  const Center(child: Text("Wide Penalty")),
-                  const SizedBox(height: 4),
-                  _NumberChooser(
-                      value: rules.widePenalty,
-                      min: 1,
-                      onChange: (x) => controller.widePenalty = x),
-
                   const SizedBox(height: 64),
                 ],
               );
@@ -76,20 +59,23 @@ class CreateQuickMatchScreen extends StatelessWidget {
           )),
       bottomNavigationBar: BottomAppBar(
           child: FilledButton.icon(
-        onPressed: () =>
-            scheduleMatch(context, rules: controller._deduceState()),
+        onPressed: () => startMatch(context, rules: controller._deduceState()),
         label: const Text("Start"),
         icon: const Icon(Icons.sports_cricket),
       )),
     );
   }
 
-  void scheduleMatch(BuildContext context,
+  void startMatch(BuildContext context,
       {required QuickMatchRules rules}) async {
-    final match = await _service(context).createQuickMatch(rules);
+    final service = _service(context);
+    final match = await service.createQuickMatch(rules);
+    final first = await service.createFirstInnings(match);
     if (context.mounted) {
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => PlayQuickMatchScreen(match)));
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => PlayQuickInningsScreen(first.id!)));
     }
   }
 
@@ -157,14 +143,10 @@ class _NumberChooser extends StatelessWidget {
 class QuickMatchRulesController with ChangeNotifier {
   int _ballsPerOver = 6;
   int _oversPerInnings = 5;
-  int _noBallPenalty = 1;
-  int _widePenalty = 1;
 
   QuickMatchRules _deduceState() => QuickMatchRules(
         oversPerInnings: _oversPerInnings,
         ballsPerOver: _ballsPerOver,
-        noBallPenalty: _noBallPenalty,
-        widePenalty: _widePenalty,
       );
 
   void _dispatchState() {
@@ -178,16 +160,6 @@ class QuickMatchRulesController with ChangeNotifier {
 
   set ballsPerOver(int x) {
     _ballsPerOver = x;
-    _dispatchState();
-  }
-
-  set noBallPenalty(int x) {
-    _noBallPenalty = x;
-    _dispatchState();
-  }
-
-  set widePenalty(int x) {
-    _widePenalty = x;
     _dispatchState();
   }
 }

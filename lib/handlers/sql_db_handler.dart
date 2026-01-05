@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -5,24 +7,17 @@ import 'package:sqflite/sqflite.dart';
 class SQLDBHandler {
   late final Database _db;
 
-  SQLDBHandler._();
-  static final instance = SQLDBHandler._();
-
   Future<void> initialize() async {
+    final source = await rootBundle.load("assets/sql/cricket.db");
+    await File(join(await getDatabasesPath(), "cricket.db"))
+        .writeAsBytes(source.buffer.asUint8List());
+
     _db = await openDatabase(
       join(await getDatabasesPath(), "cricket.db"),
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
-      onCreate: (db, version) async {
-        final completeSql =
-            await rootBundle.loadString("assets/sql/cricket-create.sql");
-        final sqlList = completeSql.split(";");
-        for (final query in sqlList) {
-          final sql = query.trim();
-          if (sql.isNotEmpty) await db.execute('$sql;');
-        }
-      },
+      onCreate: (db, version) async {},
       singleInstance: true,
       version: 1,
     );
@@ -36,7 +31,7 @@ class SQLDBHandler {
     return id;
   }
 
-  Future<Iterable<dynamic>> query({
+  Future<List<Map<String, Object?>>> query({
     required String table,
     List<String> columns = const [],
     String? where,
@@ -44,6 +39,7 @@ class SQLDBHandler {
     String? groupBy,
     String? orderBy,
     int? limit,
+    int? offset,
   }) async {
     final result = await _db.query(
       table,
@@ -53,6 +49,7 @@ class SQLDBHandler {
       groupBy: groupBy,
       orderBy: orderBy,
       limit: limit,
+      offset: offset,
     );
     return result;
   }
@@ -78,8 +75,11 @@ class SQLDBHandler {
       {required String table,
       required String where,
       required List<Object?> whereArgs}) async {
-    final rowsAffected =
-        await _db.delete(table, where: where, whereArgs: whereArgs);
+    final rowsAffected = await _db.delete(
+      table,
+      where: where,
+      whereArgs: whereArgs,
+    );
     return rowsAffected;
   }
 }

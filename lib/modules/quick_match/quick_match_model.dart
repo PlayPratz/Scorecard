@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
@@ -6,7 +7,7 @@ import 'package:scorecard/util/number_utils.dart';
 
 class QuickMatch {
   /// The ID of this Match as in the database
-  final int id;
+  final int? id;
 
   /// The globally unique key of a player
   /// ex: #01KC1WJYQSY11J51V7DGGDJKPF ('#' is not a part of the handle)
@@ -18,8 +19,8 @@ class QuickMatch {
   /// The date and time at which the Match starts
   final DateTime startsAt;
 
-  /// Whether the match is completed
-  bool isCompleted;
+  /// The current stage of the match
+  int stage;
 
   // QuickMatchResult? result;
 
@@ -28,7 +29,7 @@ class QuickMatch {
     required this.handle,
     required this.rules,
     required this.startsAt,
-    this.isCompleted = false,
+    required this.stage,
   });
 }
 
@@ -36,20 +37,15 @@ class QuickMatchRules {
   final int oversPerInnings;
   final int ballsPerOver;
 
-  final int noBallPenalty;
-  final int widePenalty;
-
   QuickMatchRules({
     required this.oversPerInnings,
     required this.ballsPerOver,
-    required this.noBallPenalty,
-    required this.widePenalty,
   });
 }
 
 class QuickInnings {
   /// The ID of the Innings as in the database
-  final int id;
+  final int? id;
 
   /// The ID of the Match as in the database
   final int matchId;
@@ -60,22 +56,19 @@ class QuickInnings {
   /// The type of innings, such as super over
   final int type;
 
-  /// The state of the innings: not-started, in-progress, completed, forfeited, declared, etc.
-  final InningsState state;
+  /// The status of the innings: not-started, in-progress, completed, forfeited, declared, etc.
+  int status;
 
   /// The target runs of this Innings, if any
   /// This is not 'final' so that we can change targets in the future (DLS)
   int? target;
 
-  // QuickInnings(this.matchId, this.inningsNumber,
-  //     {required this.rules, this.target});
-
-  QuickInnings.load(
-    this.id, {
+  QuickInnings({
+    required this.id,
     required this.matchId,
     required this.inningsNumber,
     required this.type,
-    required this.state,
+    required this.status,
     required this.overLimit,
     required this.ballsPerOver,
     required this.target,
@@ -85,26 +78,47 @@ class QuickInnings {
     required this.extras,
     required this.batter1Id,
     required this.batter2Id,
-    required this.strikerId,
+    required this.striker,
     required this.bowlerId,
   });
 
-  QuickInnings.of(QuickMatch match, this.inningsNumber)
-      : matchId = match.id,
-        type = -1, // TODO
-        state = -1, // TODO
+  QuickInnings.first(QuickMatch match)
+      : id = null,
+        matchId = match.id!,
+        inningsNumber = 1,
+        type = 1,
+        status = -1,
         runs = 0,
         wickets = 0,
         balls = 0,
+        ballsPerOver = match.rules.ballsPerOver,
+        overLimit = match.rules.oversPerInnings,
         extras = Extras.zero();
 
-  QuickInnings.superOverOf(QuickMatch match, this.inningsNumber)
-      : matchId = match.id,
-        type = -1, // TODO
-        state = -1, // TODO
+  QuickInnings.next(QuickInnings previous)
+      : id = null,
+        matchId = previous.matchId,
+        inningsNumber = previous.inningsNumber + 1,
+        type = 1,
+        status = -1,
         runs = 0,
         wickets = 0,
         balls = 0,
+        ballsPerOver = previous.ballsPerOver,
+        overLimit = previous.overLimit,
+        extras = Extras.zero();
+
+  QuickInnings.nextSuperOver(QuickInnings previous)
+      : id = null,
+        matchId = previous.matchId,
+        inningsNumber = previous.inningsNumber + 1,
+        type = 2,
+        status = -1,
+        runs = 0,
+        wickets = 0,
+        balls = 0,
+        ballsPerOver = previous.ballsPerOver,
+        overLimit = 1,
         extras = Extras.zero();
 
   /// The runs scored by the batters
@@ -115,7 +129,7 @@ class QuickInnings {
 
   Score get score => Score(runs, wickets);
 
-  /// The number of balls bowled
+  /// The number of legal balls bowled
   final int balls;
 
   /// The number of legal balls in an over
@@ -134,21 +148,23 @@ class QuickInnings {
   double get currentRunRate =>
       handleDivideByZero(runs.toDouble() * ballsPerOver, balls.toDouble());
 
-  /// Penalty for a no-ball
-  int get noBallPenalty => _rules.noBallPenalty;
-
-  /// Penalty for a wide
-  int get widePenalty => _rules.widePenalty;
-
   // On Crease
   int? batter1Id;
   int? batter2Id;
-  int? strikerId;
-  int? get nonStrikerId => batter2Id == strikerId
+  int striker = 1;
+
+  int? get strikerId => striker == 1
       ? batter1Id
-      : batter1Id == strikerId
+      : striker == 2
           ? batter2Id
           : null;
+
+  int? get nonStrikerId => striker == 1
+      ? batter2Id
+      : striker == 2
+          ? batter1Id
+          : null;
+
   int? bowlerId;
 
   // Target
@@ -161,18 +177,18 @@ class QuickInnings {
   final Extras extras;
 
   bool get isEnded => [
-        InningsState.calledOff,
-        InningsState.allOut,
-        InningsState.batterUnavailable,
-        InningsState.declared,
-        InningsState.forfeited,
-        InningsState.mutualAgreement,
-        InningsState.outOfOvers,
-        InningsState.outOfTime,
-      ].contains(state);
+        InningsStatus.calledOff,
+        InningsStatus.allOut,
+        InningsStatus.batterUnavailable,
+        InningsStatus.declared,
+        InningsStatus.forfeited,
+        InningsStatus.mutualAgreement,
+        InningsStatus.outOfOvers,
+        InningsStatus.outOfTime,
+      ].contains(status);
 }
 
-enum InningsState {
+enum InningsStatus {
   scheduled("scheduled"),
   inProgress("in progress"),
   inningsBreak("innings break"),
@@ -192,7 +208,7 @@ enum InningsState {
   targetAchieved("target achieved");
 
   final String code;
-  const InningsState(this.code);
+  const InningsStatus(this.code);
 }
 
 class Extras {
@@ -244,6 +260,9 @@ class Score {
   Score.zero()
       : runs = 0,
         wickets = 0;
+
+  Score plus(Score score) => Score(runs + score.runs, wickets + score.wickets);
+  Score minus(Score score) => Score(runs - score.runs, wickets - score.wickets);
 }
 
 /// Represents the score of a bowler within an innings
@@ -321,6 +340,7 @@ class BattingScore {
 
   /// Whether the batter is not out (*)
   final bool isNotOut;
+  bool get isOut => !isNotOut;
 
   /// The wicket of this batter if any
   final Wicket? wicket;
@@ -394,7 +414,71 @@ class Partnership {
 
 class Over {
   final int overNumber;
-  final Score scoreIn;
 
-  Over({required this.overNumber, required this.scoreIn});
+  List<InningsPost> posts = [];
+
+  Score get scoreIn {
+    final first = posts.first;
+    final last = posts.last;
+
+    return last.scoreAt.minus(first.scoreAt);
+  }
+
+  Over(this.overNumber);
+}
+
+class BattingStats {
+  final int matchesPlayed;
+  final int inningsPlayed;
+
+  final int runsScored;
+  final int ballsFaced;
+
+  final int notOuts;
+  final int outs;
+
+  final int highScore;
+
+  final double strikeRate;
+  final double average;
+
+  BattingStats({
+    required this.matchesPlayed,
+    required this.inningsPlayed,
+    required this.runsScored,
+    required this.ballsFaced,
+    required this.notOuts,
+    required this.outs,
+    required this.highScore,
+    required this.strikeRate,
+    required this.average,
+  });
+}
+
+class BowlingStats {
+  final int matchesPlayed;
+  final int inningsPlayed;
+
+  final int ballsBowled;
+  final int oversBowled;
+  final int oversBallsBowled;
+
+  final int runsConceded;
+  final int wicketsTaken;
+
+  final double economy;
+  final double average;
+  final double strikeRate;
+
+  BowlingStats(
+      {required this.matchesPlayed,
+      required this.inningsPlayed,
+      required this.ballsBowled,
+      required this.oversBowled,
+      required this.oversBallsBowled,
+      required this.runsConceded,
+      required this.wicketsTaken,
+      required this.economy,
+      required this.average,
+      required this.strikeRate});
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/modules/quick_match/quick_match_model.dart';
+import 'package:scorecard/screens/quick_match/scorecard_screen.dart';
 import 'package:scorecard/services/quick_match_service.dart';
 import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
@@ -13,41 +14,51 @@ class InningsTimelineScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final overs = context.read<QuickMatchService>().getOvers(innings);
+    final oversFuture = context.read<QuickMatchService>().getOvers(innings);
     return Scaffold(
       appBar: AppBar(
         title: Text(Stringify.quickInningsHeading(innings.inningsNumber)),
       ),
-      body: ListView.builder(
-        itemCount: overs.length,
-        reverse: true,
-        itemBuilder: (context, index) {
-          final overIndex = overs.length - index;
-          final over = overs[overIndex]!;
-          return Card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (!innings.isSuperOver)
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Over $overIndex",
-                            style: Theme.of(context).textTheme.titleSmall),
-                        Text(Stringify.score(over.scoreIn),
-                            style: Theme.of(context).textTheme.titleSmall),
-                      ],
-                    ),
+      body: FutureBuilder(
+          future: oversFuture,
+          builder: (context, asyncSnapshot) {
+            if (!asyncSnapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final overs = asyncSnapshot.data!;
+            return ListView.builder(
+              itemCount: overs.length,
+              reverse: true,
+              itemBuilder: (context, index) {
+                final overIndex = overs.length - index;
+                final over = overs[overIndex]!;
+                return Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!innings.isSuperOver)
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Over $overIndex",
+                                  style:
+                                      Theme.of(context).textTheme.titleSmall),
+                              Text(Stringify.score(over.scoreIn),
+                                  style:
+                                      Theme.of(context).textTheme.titleSmall),
+                            ],
+                          ),
+                        ),
+                      _OverView(over),
+                      const SizedBox(height: 8),
+                    ],
                   ),
-                _OverView(over),
-                const SizedBox(height: 8),
-              ],
-            ),
-          );
-        },
-      ),
+                );
+              },
+            );
+          }),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -135,10 +146,6 @@ class _InningsPostWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // This allows for easier typecasting
     final post = this.post;
-    final playerCache = PlayerCache();
-
-    getPlayerName(int id) => playerCache.get(id).name.toUpperCase();
-    getPlayerNameLowercase(int id) => playerCache.get(id).name;
 
     const contentPadding = EdgeInsets.symmetric(horizontal: 8.0);
     final titleTextStyle = Theme.of(context).textTheme.bodyMedium;
@@ -148,15 +155,15 @@ class _InningsPostWidget extends StatelessWidget {
     return switch (post) {
       Ball() => ListTile(
           title: Text(
-              "${getPlayerName(post.bowlerId)} to ${getPlayerName(post.batterId)}"),
+              "${getPlayerName(post.bowlerId!)} to ${getPlayerName(post.batterId!)}"),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                  "${post.batterRuns} runs to ${getPlayerNameLowercase(post.batterId)}"),
+                  "${post.batterRuns} runs to ${getPlayerName(post.batterId!)}"),
               if (post.isWicket)
                 Text(
-                    "${getPlayerNameLowercase(post.wicket!.batterId)} (${Stringify.wicket(post.wicket, getPlayerName: getPlayerNameLowercase)})")
+                    "${getPlayerName(post.wicket!.batterId)} (${Stringify.wicket(post.wicket, getPlayerName: getPlayerName)})")
             ],
           ),
           leading: wIndex(context, null),
@@ -168,7 +175,7 @@ class _InningsPostWidget extends StatelessWidget {
           minTileHeight: minTileHeight,
         ),
       BowlerRetire() => ListTile(
-          title: Text(getPlayerName(post.bowlerId)),
+          title: Text(getPlayerName(post.bowlerId!)),
           subtitle: const Text("Bowler has retired"),
           leading: wIndex(context, BallColors.wicket),
           titleTextStyle: titleTextStyle,
@@ -186,7 +193,7 @@ class _InningsPostWidget extends StatelessWidget {
           minTileHeight: minTileHeight,
         ),
       BatterRetire() => ListTile(
-          title: Text(getPlayerName(post.batterId)),
+          title: Text(getPlayerName(post.retired.batterId)),
           subtitle: const Text("Batter has retired"),
           leading: wIndex(context, BallColors.wicket),
           titleTextStyle: titleTextStyle,
@@ -204,7 +211,7 @@ class _InningsPostWidget extends StatelessWidget {
           minTileHeight: minTileHeight,
         ),
       WicketBeforeDelivery() => ListTile(
-          title: Text(getPlayerName(post.batterId)),
+          title: Text(getPlayerName(post.batterId!)),
           subtitle: const Text("Run out before Delivery"),
           leading: wIndex(context, BallColors.wicket),
           titleTextStyle: titleTextStyle,
@@ -220,7 +227,8 @@ class _InningsPostWidget extends StatelessWidget {
           subtitleTextStyle: subtitleTextStyle,
           contentPadding: contentPadding,
           minTileHeight: minTileHeight,
-        )
+        ),
+      Break() => throw UnimplementedError(),
     };
   }
 

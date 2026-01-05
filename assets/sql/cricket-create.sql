@@ -20,16 +20,14 @@ CREATE TABLE quick_matches (id INTEGER PRIMARY KEY,
                     starts_at DATETIME NOT NULL,
                     venue_id REFERENCES venues(id),
                     overs_per_innings INTEGER NOT NULL,
-                    balls_per_over INTEGER NOT NULL,
-                    no_ball_penalty INTEGER NOT NULL,
-                    wide_penalty INTEGER NOT NULL);
+                    balls_per_over INTEGER NOT NULL);
 
 DROP TABLE IF EXISTS quick_innings;
 CREATE TABLE quick_innings (id INTEGER PRIMARY KEY,
                     match_id INTEGER NOT NULL REFERENCES quick_matches(id),
                     innings_number INTEGER NOT NULL,
                     type INTEGER NOT NULL,
-                    state INTEGER,
+                    status INTEGER,
                     overs_limit INTEGER NOT NULL,
                     balls_per_over INTEGER NOT NULL,
                     runs INTEGER DEFAULT 0,
@@ -50,7 +48,7 @@ CREATE TABLE quick_innings (id INTEGER PRIMARY KEY,
                     required_run_rate REAL AS (1.0*runs_required*balls_per_over/balls) STORED,
                     batter1_id INTEGER REFERENCES players(id),
                     batter2_id INTEGER REFERENCES players(id),
-                    striker_id INTEGER REFERENCES players(id),
+                    striker INTEGER,
                     bowler_id INTEGER REFERENCES players(id),
                     UNIQUE(match_id, innings_number));
 
@@ -71,7 +69,7 @@ CREATE TABLE posts (id INTEGER PRIMARY KEY,
                     bowler_id INTEGER REFERENCES players (id),
                     batter_id INTEGER REFERENCES players (id),
                     non_striker_id INTEGER REFERENCES players(id),
-                    previous_player_id INTEGER REFERENCES players (id),
+                    next_player_id INTEGER REFERENCES players (id),
                     total_runs INTEGER,
                     bowler_runs INTEGER,
                     batter_runs INTEGER,
@@ -152,6 +150,27 @@ CREATE VIEW batting_stats AS
                     COALESCE(1.0*runs_scored/outs, 1.0*runs_scored) AS average
                     FROM batting_stats ORDER BY runs_scored DESC, balls_faced ASC, outs ASC;
 
+DROP TABLE IF EXISTS partnerships;
+CREATE TABLE partnerships (id INTEGER PRIMARY KEY,
+                    match_id INTEGER NOT NULL REFERENCES quick_matches(id),
+                    innings_id INTEGER NOT NULL REFERENCES quick_innings(id),
+                    innings_type INTEGER NOT NULL,
+                    innings_number INTEGER NOT NULL,
+                    runs_scored INTEGER DEFAULT 0,
+                    balls_faced INTEGER DEFAULT 0,
+                    batter1_id INTEGER NOT NULL REFERENCES players(id),
+                    batter1_runs_scored INTEGER DEFAULT 0,
+                    batter1_balls_faced INTEGER DEFAULT 0,
+                    batter2_id INTEGER REFERENCES players(id),
+                    batter2_runs_scored INTEGER DEFAULT 0,
+                    batter2_balls_faced INTEGER DEFAULT 0,
+                    extras_no_balls INTEGER DEFAULT 0,
+                    extras_wides INTEGER DEFAULT 0,
+                    extras_byes INTEGER DEFAULT 0,
+                    extras_leg_byes INTEGER DEFAULT 0,
+                    extras_penalties INTEGER DEFAULT 0,
+                    extras_total INTEGER AS (extras_no_balls+extras_wides+extras_byes+extras_leg_byes+extras_penalties) STORED);
+
 DROP TABLE IF EXISTS bowling_scores;
 CREATE TABLE bowling_scores (id INTEGER PRIMARY KEY,
                     match_id INTEGER NOT NULL REFERENCES quick_matches(id),
@@ -209,7 +228,7 @@ INSERT INTO lookup_wicket(type, code) VALUES
                     (171, 'stumped'),
                     (191, 'run out'),
                     (201, 'obstructing the field'),
-                    (202, 'hit the ball twice'),
+                    (211, 'hit the ball twice'),
                     (301, 'timed out'),
                     (401, 'retired - out'),
                     (501, 'retired - not out');
@@ -262,7 +281,7 @@ END;
 
 DROP TRIGGER IF EXISTS delete_batting_score;
 CREATE TRIGGER delete_batting_score
-AFTER INSERT ON posts
+AFTER DELETE ON posts
 WHEN old.type = 4
 BEGIN
     DELETE FROM batting_scores WHERE id =

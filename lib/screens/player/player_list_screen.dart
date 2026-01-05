@@ -7,8 +7,8 @@ import 'package:scorecard/services/settings_service.dart';
 
 typedef PlayerCallbackFn = void Function(Player player);
 
-typedef CreatePlayerCallbackFn = void Function(
-    {required String? id, required String name, required String? fullName});
+// typedef CreatePlayerCallbackFn = void Function(
+//     {required String? id, required String name, required String? fullName});
 
 class AllPlayersScreen extends StatelessWidget {
   const AllPlayersScreen({super.key});
@@ -103,22 +103,13 @@ class _AllPlayersInnerState extends State<_AllPlayersInner> {
       MaterialPageRoute(
           builder: (context) => PlayerFormScreen(
                 player: player,
-                onSavePlayer: (n, {id}) => _onSavePlayer(n, id: id),
+                onSavePlayer: _onSavePlayer,
               )),
     );
   }
 
-  Future<void> _onSavePlayer(String name, {String? id}) async {
-    setState(() {
-      _state = _LoadingState();
-    });
-    if (id == null) {
-      await _playerService.createPlayer(name);
-    } else {
-      await _playerService.savePlayer(Player(id, name: name));
-    }
-
-    await _loadAllPlayers();
+  Future<void> _onSavePlayer(Player p) async {
+    _loadAllPlayers();
   }
 
   Future<void> _loadAllPlayers() async {
@@ -208,7 +199,7 @@ class _PlayerListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    players.sort((a, b) => a.name.compareTo(b.name));
+    final sorted = [...players].sort((a, b) => a.name.compareTo(b.name));
     return ListView.builder(
       itemCount: players.length,
       itemBuilder: (context, index) =>
@@ -232,7 +223,7 @@ class _PlayerTile extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.sports_motorsports),
       title: Text(player.name),
-      subtitle: showIds ? Text(player.id) : null,
+      subtitle: showIds ? Text(player.id.toString()) : null,
       trailing: isSelectable ? const Icon(Icons.chevron_right) : null,
       onTap: onSelect != null ? () => onSelect!(player) : null,
     );

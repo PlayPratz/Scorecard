@@ -5,10 +5,10 @@ import 'package:scorecard/modules/quick_match/wicket_model.dart';
 class Stringify {
   static String score(Score score) => "${score.runs}/${score.wickets}";
 
-  static String battingScore(BattingScore battingScore) => batterScore(
-      battingScore.runsScored, battingScore.ballsFaced, battingScore.isNotOut);
+  static String battingScore(BattingScore battingScore) => _batterScore(
+      battingScore.runsScored, battingScore.ballsFaced, battingScore.isNotOut!);
 
-  static String batterScore(int runs, int numBalls, bool isNotOut) =>
+  static String _batterScore(int runs, int numBalls, bool isNotOut) =>
       "$runs ($numBalls)";
 
   static String wicket(Wicket? wicket,

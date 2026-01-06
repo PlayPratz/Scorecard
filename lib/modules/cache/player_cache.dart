@@ -3,7 +3,7 @@ import 'package:scorecard/modules/player/player_model.dart';
 class PlayerCache {
   static final Map<int, Player> _cache = {};
 
-  static void add(Player player) {
+  static void put(Player player) {
     _cache[player.id!] = player;
   }
 

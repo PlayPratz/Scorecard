@@ -99,6 +99,7 @@ class QuickInnings {
       : id = null,
         matchId = previous.matchId,
         inningsNumber = previous.inningsNumber + 1,
+        target = previous.runs + 1,
         type = 1,
         status = -1,
         runs = 0,
@@ -112,6 +113,7 @@ class QuickInnings {
       : id = null,
         matchId = previous.matchId,
         inningsNumber = previous.inningsNumber + 1,
+        target = previous.isSuperOver ? previous.runs + 1 : null,
         type = 2,
         status = -1,
         runs = 0,
@@ -268,7 +270,7 @@ class Score {
 /// Represents the score of a bowler within an innings
 class BowlingScore {
   /// The ID of this BowlingScore as in the DB
-  final int id;
+  final int? id;
 
   /// The ID of the match
   final int matchId;
@@ -278,6 +280,9 @@ class BowlingScore {
 
   /// The cardinal number of the Innings
   final int inningsNumber;
+
+  /// The type of the Innings
+  final int inningsType;
 
   /// The ID of the batter who scored the runs
   final int bowlerId;
@@ -304,6 +309,7 @@ class BowlingScore {
     required this.matchId,
     required this.inningsId,
     required this.inningsNumber,
+    required this.inningsType,
     required this.bowlerId,
     required this.ballsBowled,
     required this.runsConceded,
@@ -318,7 +324,7 @@ class BowlingScore {
 /// Represents the score of a batter within an innings
 class BattingScore {
   /// The ID of this BattingScore as in the DB
-  final int id;
+  final int? id;
 
   /// The ID of the match
   final int matchId;
@@ -329,8 +335,14 @@ class BattingScore {
   /// The cardinal number of the Innings
   final int inningsNumber;
 
+  /// The type of the Innings
+  final int inningsType;
+
   /// The ID of the batter who scored the runs
   final int batterId;
+
+  /// The batting number/position
+  final int battingAt;
 
   /// The runs scored by this batter
   final int runsScored;
@@ -339,8 +351,8 @@ class BattingScore {
   final int ballsFaced;
 
   /// Whether the batter is not out (*)
-  final bool isNotOut;
-  bool get isOut => !isNotOut;
+  final bool? isNotOut;
+  // bool get isOut => !isNotOut;
 
   /// The wicket of this batter if any
   final Wicket? wicket;
@@ -362,7 +374,9 @@ class BattingScore {
     required this.matchId,
     required this.inningsId,
     required this.inningsNumber,
+    required this.inningsType,
     required this.batterId,
+    required this.battingAt,
     required this.runsScored,
     required this.ballsFaced,
     required this.isNotOut,
@@ -383,32 +397,43 @@ class FallOfWicket {
 }
 
 class Partnership {
+  final int? id;
+
+  final int matchId;
+  final int inningsId;
+  final int inningsNumber;
+  final int inningsType;
+
   final int runs;
   final int balls;
-  final int wicketNumber;
+  final int battingAt;
 
   final int batter1Id;
-  final String batter1Name;
   final int batter1Runs;
   final int batter1Balls;
 
   final int batter2Id;
-  final String batter2Name;
   final int batter2Runs;
   final int batter2Balls;
 
+  final Extras extras;
+
   Partnership({
+    required this.id,
+    required this.matchId,
+    required this.inningsId,
+    required this.inningsNumber,
+    required this.inningsType,
     required this.runs,
     required this.balls,
-    required this.wicketNumber,
+    required this.battingAt,
     required this.batter1Id,
-    required this.batter1Name,
     required this.batter1Runs,
     required this.batter1Balls,
     required this.batter2Id,
-    required this.batter2Name,
     required this.batter2Runs,
     required this.batter2Balls,
+    required this.extras,
   });
 }
 
@@ -425,60 +450,4 @@ class Over {
   }
 
   Over(this.overNumber);
-}
-
-class BattingStats {
-  final int matchesPlayed;
-  final int inningsPlayed;
-
-  final int runsScored;
-  final int ballsFaced;
-
-  final int notOuts;
-  final int outs;
-
-  final int highScore;
-
-  final double strikeRate;
-  final double average;
-
-  BattingStats({
-    required this.matchesPlayed,
-    required this.inningsPlayed,
-    required this.runsScored,
-    required this.ballsFaced,
-    required this.notOuts,
-    required this.outs,
-    required this.highScore,
-    required this.strikeRate,
-    required this.average,
-  });
-}
-
-class BowlingStats {
-  final int matchesPlayed;
-  final int inningsPlayed;
-
-  final int ballsBowled;
-  final int oversBowled;
-  final int oversBallsBowled;
-
-  final int runsConceded;
-  final int wicketsTaken;
-
-  final double economy;
-  final double average;
-  final double strikeRate;
-
-  BowlingStats(
-      {required this.matchesPlayed,
-      required this.inningsPlayed,
-      required this.ballsBowled,
-      required this.oversBowled,
-      required this.oversBallsBowled,
-      required this.runsConceded,
-      required this.wicketsTaken,
-      required this.economy,
-      required this.average,
-      required this.strikeRate});
 }

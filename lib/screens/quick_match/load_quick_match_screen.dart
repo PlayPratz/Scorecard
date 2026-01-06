@@ -46,7 +46,7 @@ class LoadQuickMatchScreen extends StatelessWidget {
                   final match = matches[index];
                   return ListTile(
                     title: Text(dateFormat.format(match.startsAt)),
-                    subtitle: showHandles ? Text(match.handle) : null,
+                    subtitle: showHandles ? Text('#${match.handle}') : null,
                     leading: wMatchIndicator(match),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => loadMatch(context, match.id!),

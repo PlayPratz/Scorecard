@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:math';
 
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/modules/cache/player_cache.dart';
@@ -103,11 +101,7 @@ class ScorecardScreenController {
 
   Future<void> initialize(BuildContext context) async {
     service = context.read<QuickMatchService>();
-
     allInnings = await service.getAllInningsOf(matchId);
-
-    await Future.delayed(const Duration(milliseconds: 500));
-
     showScorecard();
   }
 
@@ -395,7 +389,7 @@ class _BattingScorecard extends StatelessWidget {
         leading: CircleAvatar(
           radius: 16,
           backgroundColor:
-              battingScore.isNotOut ? BallColors.notOut : BallColors.wicket,
+              battingScore.isNotOut! ? BallColors.notOut : BallColors.wicket,
           child: const Icon(Icons.sports_motorsports, size: 20),
         ),
         title: Text(getPlayerName(battingScore.batterId).toUpperCase()),

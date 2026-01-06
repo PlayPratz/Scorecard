@@ -3,6 +3,7 @@ import 'package:scorecard/screens/player/player_list_screen.dart';
 import 'package:scorecard/screens/quick_match/create_quick_match_screen.dart';
 import 'package:scorecard/screens/quick_match/load_quick_match_screen.dart';
 import 'package:scorecard/screens/settings_screen.dart';
+import 'package:scorecard/screens/statistics/statistics_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -37,6 +38,12 @@ class HomeScreen extends StatelessWidget {
             // "Manage the sportsmen on the field",
             icon: Icons.people,
             onTap: () => onPlayerList(context),
+          ),
+          wMenuItem(
+            "Statistics",
+            // "Manage the sportsmen on the field",
+            icon: Icons.auto_graph,
+            onTap: () => onStatistics(context),
           ),
           const SizedBox(height: 32),
           wMenuItem(
@@ -81,6 +88,13 @@ class HomeScreen extends StatelessWidget {
   void onPlayerList(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => const AllPlayersScreen()));
+  }
+
+  void onStatistics(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const AllPlayerStatisticsScreen()));
   }
 
   void onSettings(BuildContext context) {

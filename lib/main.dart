@@ -166,7 +166,7 @@ class _ScorecardAppController {
 
     final players = await playerService.getAllPlayers();
     for (final p in players) {
-      PlayerCache.add(p);
+      PlayerCache.put(p);
     }
 
     _dispatchState();

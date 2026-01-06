@@ -240,10 +240,11 @@ class _PlayQuickMatchScreenController {
   _PlayQuickMatchScreenController(this.inningsId, this._matchService);
 
   late QuickInnings innings;
-  late BattingScore? batter1;
-  late BattingScore? batter2;
-  late BowlingScore? bowler;
-  bool canUndo = false;
+  BattingScore? batter1;
+  BattingScore? batter2;
+  BowlingScore? bowler;
+  InningsPost? lastPost;
+  bool get canUndo => lastPost != null;
   late UnmodifiableListView<Ball> recentBalls;
 
   final _stateStreamController = StreamController<_PlayQuickMatchState>();
@@ -284,7 +285,7 @@ class _PlayQuickMatchScreenController {
         ? await _matchService.getBowlingScoreOf(innings, innings.bowlerId!)
         : null;
 
-    canUndo = await _matchService.canUndo(innings);
+    lastPost = await _matchService.getLastPostOf(innings);
 
     if (innings.status == 9) {
       return _InningsHasEndedState(
@@ -299,39 +300,46 @@ class _PlayQuickMatchScreenController {
     }
 
     if (innings.batter1Id == null) {
+      // A batter must be picked
       return _PickBatterState(
           innings, recentBalls, batter1, batter2, bowler, canUndo,
           toReplaceId: null);
     }
 
-    if (innings.bowlerId == null) {
+    if (innings.bowlerId == null ||
+        recentBalls.isNotEmpty &&
+            recentBalls.first.index.ball == innings.ballsPerOver &&
+            recentBalls.first.bowlerId == innings.bowlerId) {
+      // A bowler must be picked
+      // OR the current bowler bowled the last legal ball of the current over
       return _PickBowlerState(
           innings, recentBalls, batter1, batter2, bowler, canUndo);
     }
 
-    if (recentBalls.isEmpty) {
+    if (lastPost == null) {
+      // Just a safety trap in case there are no posts
+      // Ideally in this case, it should still be innings.batter1Id == null
       return _PickBowlerState(
           innings, recentBalls, batter1, batter2, bowler, canUndo);
     }
 
-    final lastPost = recentBalls.last; // Cannot be empty
-
-    switch (lastPost) {
+    final post = lastPost!; //Easier for typecasting
+    switch (post) {
       case BowlerRetire():
         return _PickBowlerState(
             innings, recentBalls, batter1, batter2, bowler, canUndo);
       case BatterRetire():
         return _PickBatterState(
             innings, recentBalls, batter1, batter2, bowler, canUndo,
-            toReplaceId: lastPost.batterId);
+            toReplaceId: post.batterId);
       case WicketBeforeDelivery():
         return _PickBatterState(
             innings, recentBalls, batter1, batter2, bowler, canUndo,
-            toReplaceId: lastPost.batterId);
+            toReplaceId: post.batterId);
       case NextBowler():
         break;
       case NextBatter():
-        if (lastPost.index.ball == innings.ballsPerOver) {
+        if (post.index.ball == innings.ballsPerOver) {
           return _PickBowlerState(
               innings, recentBalls, batter1, batter2, bowler, canUndo);
         }
@@ -343,7 +351,7 @@ class _PlayQuickMatchScreenController {
           return _InningsHasEndedState(
               innings, recentBalls, batter1, batter2, bowler, canUndo,
               next: _matchService.getNextState(innings));
-        } else if (lastPost.isWicket) {
+        } else if (post.isWicket) {
           return _PickBatterState(
             innings,
             recentBalls,
@@ -351,9 +359,9 @@ class _PlayQuickMatchScreenController {
             batter2,
             bowler,
             canUndo,
-            toReplaceId: lastPost.wicket!.batterId,
+            toReplaceId: post.wicket!.batterId,
           );
-        } else if (lastPost.index.ball == innings.ballsPerOver) {
+        } else if (post.index.ball == innings.ballsPerOver) {
           return _PickBowlerState(
               innings, recentBalls, batter1, batter2, bowler, canUndo);
         }
@@ -420,7 +428,7 @@ class _PlayQuickMatchScreenController {
         MaterialPageRoute(
           builder: (context) => _WicketPickerScreen(
             strikerId: innings.strikerId!,
-            nonStrikerId: innings.nonStrikerId!,
+            nonStrikerId: innings.nonStrikerId,
             bowlerId: innings.bowlerId!,
             players: PlayerCache.all,
             onPickPlayer: (context) => _pickPlayer(context, "Pick a Fielder"),
@@ -471,7 +479,10 @@ class _PlayQuickMatchScreenController {
 
   Future<void> undo() async {
     _dispatchLoading();
-    await _matchService.undoPostFromInnings(innings);
+    if (lastPost == null) {
+      return;
+    }
+    await _matchService.undoPostFromInnings(innings, lastPost!);
     _dispatchState();
   }
 
@@ -684,7 +695,7 @@ class _ScoreBar extends StatelessWidget {
                     "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(maxBalls, ballsPerOver)}ov"),
               ],
             ),
-            leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyMedium,
+            leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 8),
           Row(
@@ -855,13 +866,13 @@ class _OnCreasePlayers extends StatelessWidget {
         onTap: !allowInput ? null : () => onSetStrike(battingScore.batterId),
         onLongPress:
             !allowInput ? null : () => onRetireBatter(battingScore.batterId),
-        selected: battingScore.isOut ? false : isOnStrike,
+        selected: battingScore.isNotOut! ? isOnStrike : false,
         selectedTileColor: Colors.greenAccent.withOpacity(0.3),
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         tileColor:
-            battingScore.isOut ? Colors.redAccent.withOpacity(0.2) : null,
+            !battingScore.isNotOut! ? Colors.redAccent.withOpacity(0.2) : null,
       );
     }
   }
@@ -882,7 +893,7 @@ class _OnCreasePlayers extends StatelessWidget {
         title: Text(getPlayerName(bowler!.bowlerId).toUpperCase()),
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
         subtitle: Text(
-            "${Stringify.ballCount(bowler!.ballsBowled, ballsPerOver)}ov, ${bowler!.economy.toStringAsFixed(2)}rpo"),
+            "${Stringify.ballCount(bowler!.ballsBowled, ballsPerOver)}ov, ${bowler!.economy.toStringAsFixed(2)} rpo"),
         subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
         trailing: Text("${bowler!.wicketsTaken}-${bowler!.runsConceded}"),
         onLongPress:
@@ -1220,8 +1231,7 @@ class _RecentBallsSection extends StatelessWidget {
 
   final void Function()? onOpenTimeline;
 
-  _RecentBallsSection(List<Ball> balls, {required this.onOpenTimeline})
-      : reversedBalls = balls.reversed.toList();
+  const _RecentBallsSection(this.reversedBalls, {required this.onOpenTimeline});
 
   @override
   Widget build(BuildContext context) {
@@ -1276,7 +1286,7 @@ class _RecentBallsSection extends StatelessWidget {
 
 class _WicketPickerScreen extends StatefulWidget {
   final int strikerId;
-  final int nonStrikerId;
+  final int? nonStrikerId;
   final int bowlerId;
 
   final Iterable<Player> players;
@@ -1350,11 +1360,12 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
           const Divider(height: 32),
           wSectionHeader("Pick Batter"),
           for (final batter in [widget.strikerId, widget.nonStrikerId])
-            wSelectableOption(
-              getPlayerName(batter),
-              isSelected: batter == _wicketBatterId,
-              onSelect: () => setBatter(batter),
-            )
+            if (batter != null)
+              wSelectableOption(
+                getPlayerName(batter),
+                isSelected: batter == _wicketBatterId,
+                onSelect: () => setBatter(batter),
+              )
         ],
       );
 
@@ -1505,10 +1516,13 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
         HitWicket(batterId: widget.strikerId, bowlerId: widget.bowlerId),
       Dismissal.lbw =>
         Lbw(batterId: widget.strikerId, bowlerId: widget.bowlerId),
-      Dismissal.caught => Caught(
-          batterId: widget.strikerId,
-          bowlerId: widget.bowlerId,
-          fielderId: _wicketFielderId!),
+      Dismissal.caught => widget.bowlerId == _wicketFielderId
+          ? CaughtAndBowled(
+              batterId: widget.strikerId, bowlerId: widget.bowlerId)
+          : Caught(
+              batterId: widget.strikerId,
+              bowlerId: widget.bowlerId,
+              fielderId: _wicketFielderId!),
       Dismissal.caughtAndBowled =>
         CaughtAndBowled(batterId: widget.strikerId, bowlerId: widget.bowlerId),
       Dismissal.stumped => Stumped(

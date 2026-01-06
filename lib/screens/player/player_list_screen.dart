@@ -199,7 +199,6 @@ class _PlayerListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sorted = [...players].sort((a, b) => a.name.compareTo(b.name));
     return ListView.builder(
       itemCount: players.length,
       itemBuilder: (context, index) =>
@@ -223,7 +222,7 @@ class _PlayerTile extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.sports_motorsports),
       title: Text(player.name),
-      subtitle: showIds ? Text(player.id.toString()) : null,
+      subtitle: showIds ? Text('#${player.handle}') : null,
       trailing: isSelectable ? const Icon(Icons.chevron_right) : null,
       onTap: onSelect != null ? () => onSelect!(player) : null,
     );

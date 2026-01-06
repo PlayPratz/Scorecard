@@ -63,8 +63,8 @@ CREATE TABLE posts (id INTEGER PRIMARY KEY,
                     day_number INTEGER,
                     session_number INTEGER,
                		timestamp DATETIME NOT NULL,
-                    over_index INTEGER DEFAULT -1,
-                    ball_index INTEGER DEFAULT -1,
+                    over_index INTEGER NOT NULL,
+                    ball_index INTEGER NOT NULL,
                     type INTEGER NOT NULL,
                     bowler_id INTEGER REFERENCES players (id),
                     batter_id INTEGER REFERENCES players (id),
@@ -120,7 +120,7 @@ CREATE TABLE batting_scores (id INTEGER PRIMARY KEY,
                     innings_type INTEGER NOT NULL,
                     innings_number INTEGER NOT NULL,
                     player_id INTEGER NOT NULL REFERENCES players(id),
-                    batting_at INTEGER NOT NULL,
+                    batting_at INTEGER DEFAULT -1,
                     runs_scored INTEGER DEFAULT 0,
                     balls_faced INTEGER DEFAULT 0,
                     not_out INTEGER AS (IIF(wicket_type IS NULL, 1, 0)) STORED,
@@ -158,6 +158,7 @@ CREATE TABLE partnerships (id INTEGER PRIMARY KEY,
                     innings_number INTEGER NOT NULL,
                     runs_scored INTEGER DEFAULT 0,
                     balls_faced INTEGER DEFAULT 0,
+                    wicket_number INTEGER DEFAULT -1,
                     batter1_id INTEGER NOT NULL REFERENCES players(id),
                     batter1_runs_scored INTEGER DEFAULT 0,
                     batter1_balls_faced INTEGER DEFAULT 0,
@@ -270,46 +271,6 @@ INSERT INTO lookup_innings_state (type, code) VALUES
                     (608, 'out of time'),
                     (609, 'target achieved');
 
-DROP TRIGGER IF EXISTS create_batting_score;
-CREATE TRIGGER create_batting_score
-AFTER INSERT ON posts
-WHEN new.type = 4
-BEGIN
-    INSERT OR IGNORE INTO batting_scores (match_id, innings_id, innings_type, innings_number, player_id, batting_at)
-    VALUES (new.match_id, new.innings_id, new.innings_type, new.innings_number, new.batter_id);
-END;
-
-DROP TRIGGER IF EXISTS delete_batting_score;
-CREATE TRIGGER delete_batting_score
-AFTER DELETE ON posts
-WHEN old.type = 4
-BEGIN
-    DELETE FROM batting_scores WHERE id =
-    (SELECT id FROM batting_scores
-    WHERE innings_id=old.innings_id AND player_id=old.batter_id
-    ORDER BY id DESC LIMIT 1);
-
-    DELETE FROM partnerships
-    WHERE innings_id=old.innings_id AND partnership_number=old.partnership_number;
-END;
-
-DROP TRIGGER IF EXISTS create_bowling_score;
-CREATE TRIGGER create_bowling_score
-AFTER INSERT ON posts
-WHEN new.type = 2
-BEGIN
-    INSERT OR IGNORE INTO bowling_scores (match_id, innings_id, innings_type, innings_number, player_id)
-    VALUES (new.match_id, new.innings_id, new.innings_type, new.innings_number, new.bowler_id);
-END;
-
-DROP TRIGGER IF EXISTS delete_bowling_score;
-CREATE TRIGGER delete_bowling_score
-AFTER INSERT ON posts
-WHEN old.type = 2
-BEGIN
-    DELETE FROM bowling_scores WHERE innings_id=old.innings_id AND player_id=old.bowler_id;
-END;
-
 DROP TRIGGER IF EXISTS update_innings_wicket;
 CREATE TRIGGER update_innings_wicket
 AFTER INSERT ON posts
@@ -323,7 +284,7 @@ CREATE TRIGGER revert_innings_wicket
 AFTER DELETE ON posts
 WHEN old.wicket_type != 501
 BEGIN
-    UPDATE quick_innings SET wickets = wickets -1 WHERE id = old.innings_id;
+    UPDATE quick_innings SET wickets = wickets - 1 WHERE id = old.innings_id;
 END;
 
 DROP TRIGGER IF EXISTS update_bowling_wicket;
@@ -359,7 +320,7 @@ END;
 DROP TRIGGER IF EXISTS revert_batting_wicket;
 CREATE TRIGGER revert_batting_wicket
 AFTER DELETE ON posts
-WHEN new.wicket_type IS NOT NULL
+WHEN old.wicket_type IS NOT NULL
 BEGIN
     UPDATE batting_scores SET
     wicket_type = null,
@@ -374,7 +335,7 @@ AFTER INSERT ON posts
 WHEN new.type IN (0, 6)
 BEGIN
     UPDATE quick_innings SET
-    runs =  runs + new.total_runs,
+    runs = runs + new.total_runs,
     balls = balls + new.is_counted_for_bowler,
     extras_no_balls = extras_no_balls +  new.extras_no_balls,
     extras_wides = extras_wides + new.extras_wides,
@@ -404,7 +365,7 @@ AFTER DELETE ON posts
 WHEN old.type IN (0, 6)
 BEGIN
     UPDATE quick_innings SET
-    runs =  runs - old.total_runs,
+    runs = runs - old.total_runs,
     balls = balls - old.is_counted_for_bowler,
     extras_no_balls = extras_no_balls - old.extras_no_balls,
     extras_wides = extras_wides - old.extras_wides,
@@ -426,4 +387,13 @@ BEGIN
     runs_conceded = runs_conceded - old.bowler_runs,
     balls_bowled = balls_bowled - old.is_counted_for_bowler
     WHERE innings_id = old.innings_id AND player_id = old.bowler_id;
+END;
+
+DROP TRIGGER IF EXISTS batting_number;
+CREATE TRIGGER batting_number
+AFTER INSERT ON batting_scores
+BEGIN
+    UPDATE batting_scores SET
+    batting_at = (SELECT COUNT(id) FROM batting_scores GROUP BY innings_id)
+    WHERE id = new.id;
 END;

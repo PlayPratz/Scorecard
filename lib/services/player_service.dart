@@ -1,5 +1,9 @@
+import 'dart:collection';
+
 import 'package:scorecard/handlers/ulid_handler.dart';
+import 'package:scorecard/modules/cache/player_cache.dart';
 import 'package:scorecard/modules/player/player_model.dart';
+import 'package:scorecard/modules/player/player_statistics.dart';
 import 'package:scorecard/repositories/player_repository.dart';
 
 class PlayerService {
@@ -24,12 +28,14 @@ class PlayerService {
     );
 
     final newPlayer = await _playerRepository.save(player);
+    PlayerCache.put(newPlayer);
     return newPlayer;
   }
 
   /// Fetches a player of the given [id]
   Future<Player?> getPlayerById(int id) async {
     final player = await _playerRepository.load(id);
+    PlayerCache.put(player);
     return player;
   }
 
@@ -42,7 +48,18 @@ class PlayerService {
   /// Fetches all players
   Future<List<Player>> getAllPlayers() async {
     final players = await _playerRepository.loadAll();
+    for (final p in players) {
+      PlayerCache.put(p);
+    }
     return players;
+  }
+
+  Future<UnmodifiableListView<BattingStats>> getAllBattingStats() async {
+    return _playerRepository.loadAllBattingStats();
+  }
+
+  Future<UnmodifiableListView<BowlingStats>> getAllBowlingStats() async {
+    return _playerRepository.loadAllBowlingStats();
   }
 
   // Future<List<Player>> loadPlayersForMatch(QuickMatch match) async {

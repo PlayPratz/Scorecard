@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:ffi';
 
 import 'package:scorecard/handlers/sql_db_handler.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
@@ -36,6 +35,8 @@ abstract class IQuickMatchRepository {
 
   Future<UnmodifiableListView<InningsPost>> loadAllPostsOf(
       QuickInnings innings);
+
+  Future<UnmodifiableListView<Ball>> loadAllBallsOf(QuickInnings innings);
 
   Future<UnmodifiableListView<Ball>> loadRecentBallsOf(
       QuickInnings innings, int count);
@@ -205,6 +206,17 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
   }
 
   @override
+  Future<UnmodifiableListView<Ball>> loadAllBallsOf(
+      QuickInnings innings) async {
+    final entities = await _sql.query(
+        table: Tables.posts,
+        where: "innings_id = ? AND type = 0",
+        whereArgs: [innings.id]);
+    final balls = entities.map(_unpackInningsPost).cast<Ball>();
+    return UnmodifiableListView(balls);
+  }
+
+  @override
   Future<UnmodifiableListView<Ball>> loadRecentBallsOf(
       QuickInnings innings, int count) async {
     final entities = await _sql.query(
@@ -238,6 +250,7 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
       table: Tables.battingScores,
       where: "innings_id = ?",
       whereArgs: [innings.id],
+      orderBy: "id ASC",
     );
 
     final battingScores = entities.map(_unpackBattingScore);
@@ -245,7 +258,7 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
   }
 
   @override
-  Future<BattingScore> loadLastBattingScoreOf(
+  Future<BattingScore?> loadLastBattingScoreOf(
       QuickInnings innings, int batterId) async {
     final entity = await _sql.query(
       table: Tables.battingScores,
@@ -254,6 +267,10 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
       orderBy: "id DESC",
       limit: 1,
     );
+
+    if (entity.isEmpty) {
+      return null;
+    }
 
     final battingScore = _unpackBattingScore(entity.single);
     return battingScore;
@@ -280,6 +297,7 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
       table: Tables.bowlingScores,
       where: "innings_id = ?",
       whereArgs: [innings.id],
+      orderBy: "id ASC",
     );
     final bowlingScores = entities.map(_unpackBowlingScore);
     return UnmodifiableListView(bowlingScores);

@@ -23,7 +23,7 @@ class BallColors {
   static const Color noBall = Colors.yellowAccent;
   static const Color wide = Colors.white;
 
-  static final Color post = Colors.blueGrey.shade100;
+  static const Color post = Colors.blueGrey;
 
   static const Color bye = Colors.lightGreen;
   static const Color legBye = Colors.lime;

@@ -59,8 +59,11 @@ class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
               trailing: Text(state.bowlingStats[index].wicketsTaken.toString()),
               leadingAndTrailingTextStyle:
                   Theme.of(context).textTheme.titleLarge,
-              subtitle: Text("${state.bowlingStats[index].ballsBowled} balls, "
-                  "${state.bowlingStats[index].runsConceded} runs, "),
+              subtitle: Text(
+                "${state.bowlingStats[index].ballsBowled} balls, "
+                "${state.bowlingStats[index].runsConceded} runs, "
+                "${state.bowlingStats[index].economy} rpo ",
+              ),
             ),
           ),
       },

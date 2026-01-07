@@ -8,12 +8,16 @@ class SQLDBHandler {
   late final Database _db;
 
   Future<void> initialize() async {
-    // final source = await rootBundle.load("assets/sql/cricket.db");
-    // await File(join(await getDatabasesPath(), "cricket.db"))
-    //     .writeAsBytes(source.buffer.asUint8List());
+    final dbpath = join(await getDatabasesPath(), "cricket.db");
+
+    final cricketDb = File(dbpath);
+    if (!await cricketDb.exists()) {
+      final source = await rootBundle.load("assets/sql/cricket.db");
+      await cricketDb.writeAsBytes(source.buffer.asUint8List());
+    }
 
     _db = await openDatabase(
-      join(await getDatabasesPath(), "cricket.db"),
+      dbpath,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },

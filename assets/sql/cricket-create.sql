@@ -130,8 +130,7 @@ CREATE TABLE batting_scores (id INTEGER PRIMARY KEY,
                     fours_scored INTEGER DEFAULT 0,
                     sixes_scored INTEGER DEFAULT 0,
                     boundaries_scored INTEGER AS (fours_scored+sixes_scored) STORED,
-                    strike_rate REAL AS (100.0*runs_scored/balls_faced) STORED,
-                    UNIQUE (innings_id, batting_at));
+                    strike_rate REAL AS (100.0*runs_scored/balls_faced) STORED);
 
 CREATE INDEX batting_scores_index ON batting_scores (innings_id, player_id, batting_at);
 
@@ -355,7 +354,9 @@ BEGIN
 
     UPDATE bowling_scores SET
     runs_conceded = runs_conceded + new.bowler_runs,
-    balls_bowled = balls_bowled + new.is_counted_for_bowler
+    balls_bowled = balls_bowled + new.is_counted_for_bowler,
+    extras_no_balls = extras_no_balls +  new.extras_no_balls,
+    extras_wides = extras_wides + new.extras_wides
     WHERE innings_id = new.innings_id AND player_id = new.bowler_id;
 END;
 
@@ -385,7 +386,9 @@ BEGIN
 
     UPDATE bowling_scores SET
     runs_conceded = runs_conceded - old.bowler_runs,
-    balls_bowled = balls_bowled - old.is_counted_for_bowler
+    balls_bowled = balls_bowled - old.is_counted_for_bowler,
+    extras_no_balls = extras_no_balls - old.extras_no_balls,
+    extras_wides = extras_wides - old.extras_wides
     WHERE innings_id = old.innings_id AND player_id = old.bowler_id;
 END;
 
@@ -396,4 +399,44 @@ BEGIN
     UPDATE batting_scores SET
     batting_at = (SELECT COUNT(id) FROM batting_scores GROUP BY innings_id)
     WHERE id = new.id;
+END;
+
+DROP TRIGGER IF EXISTS update_boundaries_four;
+CREATE TRIGGER update_boundaries_four
+AFTER INSERT ON POSTS
+WHEN new.type = 0 AND new.is_boundary = 1 AND new.batter_runs = 4
+BEGIN
+    UPDATE batting_scores SET
+    fours_scored = fours_scored + 1
+    WHERE innings_id = new.innings_id AND player_id = new.batter_id;
+END;
+
+DROP TRIGGER IF EXISTS revert_boundaries_four;
+CREATE TRIGGER revert_boundaries_four
+AFTER DELETE ON POSTS
+WHEN old.type = 0 AND old.is_boundary = 1 AND old.batter_runs = 4
+BEGIN
+    UPDATE batting_scores SET
+    fours_scored = fours_scored - 1
+    WHERE innings_id = old.innings_id AND player_id = old.batter_id;
+END;
+
+DROP TRIGGER IF EXISTS update_boundaries_six;
+CREATE TRIGGER update_boundaries_six
+AFTER INSERT ON POSTS
+WHEN new.type = 0 AND new.is_boundary = 1 AND new.batter_runs = 6
+BEGIN
+    UPDATE batting_scores SET
+    sixes_scored = sixes_scored + 1
+    WHERE innings_id = new.innings_id AND player_id = new.batter_id;
+END;
+
+DROP TRIGGER IF EXISTS revert_boundaries_six;
+CREATE TRIGGER revert_boundaries_six
+AFTER DELETE ON POSTS
+WHEN old.type = 0 AND old.is_boundary = 1 AND old.batter_runs = 6
+BEGIN
+    UPDATE batting_scores SET
+    sixes_scored = sixes_scored - 1
+    WHERE innings_id = old.innings_id AND player_id = old.batter_id;
 END;

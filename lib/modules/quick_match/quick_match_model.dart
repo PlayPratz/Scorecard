@@ -143,7 +143,7 @@ class QuickInnings {
 
   bool get isSuperOver => false; //TODO
 
-  /// The balls left to win the match
+  /// Number of balls left to bowl in this innings
   int get ballsLeft => ballLimit - balls;
 
   /// The average runs scored per over in this innings
@@ -178,16 +178,18 @@ class QuickInnings {
 
   final Extras extras;
 
-  bool get isEnded => [
-        InningsStatus.calledOff,
-        InningsStatus.allOut,
-        InningsStatus.batterUnavailable,
-        InningsStatus.declared,
-        InningsStatus.forfeited,
-        InningsStatus.mutualAgreement,
-        InningsStatus.outOfOvers,
-        InningsStatus.outOfTime,
-      ].contains(status);
+  // bool get isEnded => [
+  //       InningsStatus.calledOff,
+  //       InningsStatus.allOut,
+  //       InningsStatus.batterUnavailable,
+  //       InningsStatus.declared,
+  //       InningsStatus.forfeited,
+  //       InningsStatus.mutualAgreement,
+  //       InningsStatus.outOfOvers,
+  //       InningsStatus.outOfTime,
+  //     ].contains(status);
+
+  bool get isEnded => target != null && runs >= target! || ballsLeft <= 0;
 }
 
 enum InningsStatus {
@@ -351,8 +353,8 @@ class BattingScore {
   final int ballsFaced;
 
   /// Whether the batter is not out (*)
-  final bool? isNotOut;
-  // bool get isOut => !isNotOut;
+  final bool isNotOut;
+  bool get isOut => !isNotOut;
 
   /// The wicket of this batter if any
   final Wicket? wicket;

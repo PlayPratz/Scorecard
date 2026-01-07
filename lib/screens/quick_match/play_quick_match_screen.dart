@@ -287,7 +287,7 @@ class _PlayQuickMatchScreenController {
 
     lastPost = await _matchService.getLastPostOf(innings);
 
-    if (innings.status == 9) {
+    if (innings.status == 9 || innings.isEnded) {
       return _InningsHasEndedState(
         innings,
         recentBalls,
@@ -304,6 +304,20 @@ class _PlayQuickMatchScreenController {
       return _PickBatterState(
           innings, recentBalls, batter1, batter2, bowler, canUndo,
           toReplaceId: null);
+    }
+
+    if (batter1 != null && batter1!.isOut) {
+      // Need to replace this batter
+      return _PickBatterState(
+          innings, recentBalls, batter1, batter2, bowler, canUndo,
+          toReplaceId: batter1!.batterId);
+    }
+
+    if (batter2 != null && batter2!.isOut) {
+      // Need to replace this batter
+      return _PickBatterState(
+          innings, recentBalls, batter1, batter2, bowler, canUndo,
+          toReplaceId: batter2!.batterId);
     }
 
     if (innings.bowlerId == null ||
@@ -762,7 +776,7 @@ class _OnCreasePlayers extends StatelessWidget {
 
   final bool isOutBowler;
 
-  final void Function(int batterId) onSetStrike;
+  final void Function(int strikerSlot) onSetStrike;
   final void Function(int batterId) onRetireBatter;
   final void Function(int bowlerId) onRetireBowler;
 
@@ -806,8 +820,8 @@ class _OnCreasePlayers extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
               ),
-              _wBatterDisplay(context, batter1, strikerSlot == 1),
-              _wBatterDisplay(context, batter2, strikerSlot == 2),
+              _wBatterDisplay(context, 1, batter1, strikerSlot),
+              _wBatterDisplay(context, 2, batter2, strikerSlot),
             ],
           ),
         ),
@@ -843,8 +857,9 @@ class _OnCreasePlayers extends StatelessWidget {
     );
   }
 
-  Widget _wBatterDisplay(
-      BuildContext context, BattingScore? battingScore, bool isOnStrike) {
+  Widget _wBatterDisplay(BuildContext context, int batterNum,
+      BattingScore? battingScore, int strikerSlot) {
+    final isOnStrike = batterNum == strikerSlot;
     if (battingScore == null) {
       return ListTile(
         title: const Text("Pick a Batter"),
@@ -863,9 +878,9 @@ class _OnCreasePlayers extends StatelessWidget {
         subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
         trailing:
             Text("${battingScore.runsScored} (${battingScore.ballsFaced})"),
-        onTap: !allowInput ? null : () => onSetStrike(battingScore.batterId),
-        onLongPress:
-            !allowInput ? null : () => onRetireBatter(battingScore.batterId),
+        onTap: !allowInput ? null : () => onSetStrike(batterNum),
+        // onLongPress:
+        //     !allowInput ? null : () => onRetireBatter(battingScore.batterId),
         selected: battingScore.isNotOut! ? isOnStrike : false,
         selectedTileColor: Colors.greenAccent.withOpacity(0.3),
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,

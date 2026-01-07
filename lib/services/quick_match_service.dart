@@ -55,6 +55,11 @@ class QuickMatchService {
     return post;
   }
 
+  Future<UnmodifiableListView<Ball>> getAllBallsOf(QuickInnings innings) async {
+    final posts = await _matchRepository.loadAllBallsOf(innings);
+    return posts;
+  }
+
   Future<UnmodifiableListView<Ball>> getRecentBallsOf(
       QuickInnings innings) async {
     final posts = await _matchRepository.loadRecentBallsOf(innings, 10);
@@ -75,7 +80,7 @@ class QuickMatchService {
   }
 
   Future<NextStage> declareInnings(QuickInnings innings) async {
-    innings.status = 9;
+    innings.status = 9; // TODO
 
     await _matchRepository.updateInnings(innings);
 
@@ -630,8 +635,10 @@ class QuickMatchService {
 
   PostIndex _currentIndex(QuickInnings innings) =>
       PostIndex.of(innings.balls, innings.ballsPerOver);
-  PostIndex _nextIndex(QuickInnings innings) =>
-      PostIndex.of(innings.balls + 1, innings.ballsPerOver);
+  PostIndex _nextIndex(QuickInnings innings) {
+    final current = _currentIndex(innings);
+    return PostIndex(current.over, current.ball + 1);
+  }
 }
 
 /// Types of Bowling Extras

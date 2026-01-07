@@ -276,6 +276,7 @@ AFTER INSERT ON posts
 WHEN new.wicket_type != 501
 BEGIN
     UPDATE quick_innings SET wickets = wickets + 1 WHERE id = new.innings_id;
+    UPDATE posts SET wickets_at = wickets_at + 1 WHERE id = new.id;
 END;
 
 DROP TRIGGER IF EXISTS revert_innings_wicket;
@@ -374,10 +375,6 @@ BEGIN
     extras_leg_byes = extras_leg_byes - old.extras_leg_byes,
     extras_penalties = extras_penalties - old.extras_penalties
     WHERE id = old.innings_id;
-
-    UPDATE posts SET (runs_at, wickets_at)
-    = (SELECT runs, wickets FROM quick_innings as qi WHERE qi.id = old.innings_id)
-    WHERE id = old.id;
 
     UPDATE batting_scores SET
     runs_scored = runs_scored - old.batter_runs,

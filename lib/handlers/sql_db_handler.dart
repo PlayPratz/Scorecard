@@ -22,8 +22,20 @@ class SQLDBHandler {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onCreate: (db, version) async {},
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute("DROP TRIGGER IF EXISTS update_innings_wicket;");
+          await db.execute(
+              "CREATE TRIGGER update_innings_wicket AFTER INSERT ON posts WHEN new.wicket_type != 501 "
+              "BEGIN UPDATE quick_innings SET wickets = wickets + 1 WHERE id = new.innings_id; "
+              "UPDATE posts SET wickets_at = wickets_at + 1 WHERE id = new.id; "
+              "END;");
+          await db.execute(
+              "UPDATE posts SET wickets_at=wickets_at+1 WHERE wicket_type != 501;");
+        }
+      },
       singleInstance: true,
-      version: 1,
+      version: 2,
     );
   }
 

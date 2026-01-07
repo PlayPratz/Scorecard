@@ -1226,6 +1226,8 @@ class PostsEntity {
         "wicket_type": wicket_type,
         "wicket_batter_id": wicket_batter_id,
         "wicket_fielder_id": wicket_fielder_id,
+        // "runs_at": runs_at,
+        // "wickets_at": wickets_at,
         "comment": comment,
       };
 }

@@ -87,9 +87,6 @@ class Ball extends InningsPost {
   int get byes => bowlingExtra is Bye ? battingExtra!.runs : 0;
   int get legByes => bowlingExtra is LegBye ? battingExtra!.runs : 0;
 
-  /// TODO handle Penalties
-  // bool get isExtra => isBowlingExtra || isBattingExtra;
-
   /// Total runs conceded by the bowler
   int get bowlerRuns => batterRuns + bowlingExtraRuns;
 

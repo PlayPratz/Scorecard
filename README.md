@@ -13,11 +13,8 @@ Scorecard is a mobile application that helps you record matches on a ball-by-bal
 - [Building the App](#build-app)
 - [Core Concepts](#core-concepts)
 - [Using the App](#how-to-use)
-- [Colour Lookup](#colour-lookup)
 - [Future Scope](#future-scope)
 - [Authors](#authors)
-
----
 
 ## 🔧 Building the App <a name = "build-app"/>
 
@@ -44,7 +41,7 @@ A Cricket Match is represented by the following constructs or concepts:
 
 1. [Quick Match](#cricket-match)
 2. [Quick Innings](#innings)
-3. [Post (Ball)](#ball)
+3. [Ball (Post)](#ball)
 4. [Player](#player)
 5. [Statistics](#statistics)
 
@@ -116,14 +113,14 @@ A ball is the most atomic unit for scoring a cricket match. It consists of the f
 Once this data is obtained for every ball of the match, the score can be derived.
 
 On a more technical level, this app uses a concept named *POST*. There are 8 types of Posts:
-1. Ball
-2. BatterRetire - Whenever a batter retires.
-3. NextBatter
-4. BowlerRetire - Whenever a bowler retires mid-over.
-5. NextBowler - Whenever a bowler 
-6. WicketBeforeDelivery - For example run-out at the non-striker's end, or obstructing the field.
-7. Penalty
-8. Break
+1. Ball -- A ball bowled in an innings
+2. Batter Retire -- A batter retires
+3. Next Batter -- A new batter walks out to bat
+4. Bowler Retire -- A bowler retires mid-over
+5. Next Bowler -- A bowler is selected to bowl
+6. Wicket Before Delivery - For example, run-out at the non-striker's end, or obstructing the field.
+7. Penalty -- Awarded by the umpires in certain scenarios
+8. Break -- Unused for now, but will signify Drinks Break, Interruption due to rain, etc.
 
 Since this app is developed and designed with focus on a scorer who will operate the app, storing each input interaction as a Post allows an _Undo_ functionality. Whenever the scorer taps Undo, the last Post of the innings is deleted. This allows the innings to reach the same state as it was before that Post was added.
 
@@ -144,7 +141,7 @@ As of now you can see:
 
 ---
 
-## 📱 Using the app <a name = "how-to-use"/>
+## 📱 How to use the app <a name = "how-to-use"/>
 
 ### Home Screen
 
@@ -152,9 +149,9 @@ The Home Screen consists of the following options:
 
 1. [New Quick Match](#ongoing-and-completed-matches)
 2. [Load Quick Match](#ongoing-and-completed-matches)
-3. [Players](#players-page)
-4. [Statistics](#statistics-page)
-5. [Settings](#settings-page)
+3. [Players](#player)
+4. [Statistics](#statistics)
+5. [Settings](#settings-screen)
 
 A new match can be created using the ⨁ button located at the center of the Bottom Navigation Bar.
 
@@ -170,42 +167,42 @@ In the Load Quick match section, you will see a list of previously created match
 1. [Play Match Screen](#play-match-screen) if the match is incomplete
 2. [Scorecard Screen](#scorecard-screen) if the match is complete
 
-#### Play Match Screen <a name="play-match-screen"/>
+### Play Match Screen <a name="play-match-screen"/>
 
 This is where the magic happens. Below is a breakdown of the screen from top to bottom.
 
-##### Match Bar
+#### Match Bar
 
 Here, from left to right, you'll see:
 1. An exit button -- takes you back to the main screen
 2. Innings heading -- describes the innings you are playing (First Innings, Second Innings, Super Over 1A, etc.)
 3. Declare button -- allows you to end the innings before the compeltion of overs
 
-##### Score Pane
+#### Score Pane
 
 1. On the left is the score of the batting team in the format `runs/wickets`
 2. On the right is the number of overs bowled in the format `overs bowled/total overs`
 
-##### Run Rate Pane
+#### Run Rate Pane
 
 1. For the first innings shows the _Current Run Rate (CRR)_ and the _Projected Score_
 2. For the second innings shows the _Current Run Rate (CRR)_, _Required Run Rate (RRR)_, _Runs Required_ and _Balls Left_.
 
-##### Recent Balls
+#### Recent Balls
 
-Next in line is the **Recent Balls** list, where the latest balls bowled are displayed for convenience. The number of balls visible depends on the screen size of the device. Clicking on this list will take you to the [Innings Timeline](#innings-timeline-screen). The Recent Balls list follows the same scheme as the Innings Timeline, so read that for more information.
+Here, the latest balls bowled are displayed for convenience. The number of balls visible depends on the screen size of the device. Clicking on this list will take you to the [Innings Timeline](#innings-timeline-screen). The Recent Balls list follows the same scheme as the Innings Timeline, so read that for more information.
 
 To demarcate the beginning of an over, its first ball has its index in another colour.
 
-##### Players in Action
+#### On Crease Players
 
-Next, we have the **Players In Action** pane, which represents the two batters on the pitch and the bowler who is currently bowling.
+Here you can see the two batters on the pitch and the bowler who is currently bowling.
 
 The Batter Tiles serve an important purpose — selecting the player who is on strike. Usually, this is handled automatically — strike is rotated for odd number of runs and at the end of an over. However, there are possibilities of rules being altered and a '1D' or 3D' being added, in which case the strike will have to be changed manually. The score of each batter is displayed on the tile. For more details on the score, you can always open the [Scorecard](#scorecard-screen).
 
 Long pressing a Bowler Tile will allow you to replace the bowler mid-over. Please note that replacing a bowler will NOT skip or restart the over. Just like international matches, the over will continue to be bowled by a different bowler. If you want to restart the over with another bowler, use the *Undo* button found in the [Submit Input](#submit-input) pane.
 
-##### Record Ball Pane
+#### Record Ball Pane
 
 1. Wicket Selector -- On tapping this button, you will be taken to a pretty self-explanatory screen where you choose the kind of dismissal (bowled, LBW, run out, etc.) and the players involved in said dismissal. To clear a wicket that has been selected, tap this tile before adding the ball.
 2. Extra Selector -- On the left we have **Batting Extras**: _Bye_ and _Leg Bye_. For the uninitiated, a Bye is a run scored by the batting team without a batter getting their bat on ball. But if they manage to get their body on ball before scoring the runs, it's called a Leg Bye. Note that in either case, even though the runs scored are awarded to the batting team, they aren't awarded to the batter. On the right we have **Bowling Extras**, the infamous _No Balls_ and _Wides_. Do note that while entering this data you are NOT supposed to select the runs awarded to the batting team due to a Bowling Extra. If no runs are scored by the batting team on a No Ball or a Wide, choose 0 runs on the _Run Selector_.
@@ -217,17 +214,20 @@ Long pressing a Bowler Tile will allow you to replace the bowler mid-over. Pleas
     3. When a wicket falls, it is a _Select Batter_ button. On clicking, you will be taken to the batting squad to choose the next batter.
     4. When the quota of overs is completed, or when the _target_ for the second innings is achieved, it is a _Finishs_ button which will end the innings.
 
---- 
+---
 
-### Match Scorecard <a name="scorecard-screen/>
+### Scorecard Screen <a name="scorecard-screen"/>
 
 The Scorecard screen starts with a simple view of the overall scores of both the teams across all innings played all the way at the top.
 
-##### Innings Heading
+For each innings, you will see the following:
+
+#### Innings Heading
 The descriptor of the innings doubles as a button that takes you to the [Innings Timeline Screen](#innings-timeline-screen)
 
-##### Batting Scores
-For each team's innings, a list of [batting scores](#batting-score) is displayed. For each Batting Score, the following information is displayed from left to right:
+#### Batting Scores
+
+A list of [batting scores](#batting-score) is displayed. For each Batting Score, the following information is displayed from left to right:
 1. The batter's photo, if any
 2. The batter's name
 3. Right below the batter's name, their wicket status
@@ -239,13 +239,13 @@ Next, we have a summary of the _Extras_ in this innings.
 
 Finally, we have the total score of this innings.
 
-##### Fall of Wickets
+#### Fall of Wickets
 
 Every row of this table marks the index at which a wicket fell, the score at when that wicket fail, the batter who lost their wicket and their wicket's details.
 
-##### Bowling Scores
+#### Bowling Scores
 
-Next, the list of [bowling scores](#bowling-scores) is displayed. For each Bowling Score, the following information is displayed from left to right:
+Next, the list of [bowling scores](#bowling-score) is displayed. For each Bowling Score, the following information is displayed from left to right:
 1. The bowler's photo, if any
 2. The bowler's name
 3. The number of overs bowled
@@ -255,34 +255,21 @@ Next, the list of [bowling scores](#bowling-scores) is displayed. For each Bowli
 
 ---
 
-#### Innings Timeline Screen <a name = "innings-timeline-screen"/>
+### Innings Timeline Screen <a name = "innings-timeline-screen"/>
 
 This screen displays a vertical, chronological timeline of balls bowled in the innings, with the last ball at the bottom and the first ball at the top. The timeline is segmented into overs.
 
-The rightmost circle's background colour and border colour give a quick look at what transpired using the same colours as seen in [Colour Lookup](#-colour-lookup).
+The rightmost circle's background colour and border colour give a quick look at what transpired using the same colours as seen in [Colour Lookup](#colour-lookup).
 
----
+#### 🎨 Colour Lookup <a name = "colour-lookup"/>
 
-### 🎨 Colour Lookup <a name = "colour-lookup"/>
-
-With respect to a [Ball](#-ball):
+With respect to a [Ball](#ball):
 
 - ![indigo](https://placehold.co/15x15/536DFE/536DFE) Indigo for a Four
 - ![ruby](https://placehold.co/15x15/E91E63/E91E63) Ruby for a Six
 - ![red](https://placehold.co/15x15/F44336/F44336) Red for a Wicket
 - ![yellow](https://placehold.co/15x15/FFFF00/FFFF00) Yellow for a No Ball
 - ![white](https://placehold.co/15x15/FFFFFF/FFFFFF) White for a Wide
-
-The colours available for assigning to a Team:
-
-- ![blue](https://placehold.co/15x15/2196F3/2196F3) Blue
-- ![orange](https://placehold.co/15x15/FF5722/FF5722) Orange
-- ![grey](https://placehold.co/15x15/616161/616161) Grey
-- ![green](https://placehold.co/15x15/4CAF50/4CAF50) Green
-- ![cyan](https://placehold.co/15x15/00BCD4/00BCD4) Cyan
-- ![brown](https://placehold.co/15x15/795548/795548) Brown
-- ![yellow](https://placehold.co/15x15/CDDC39/CDDC39) Yellow
-- ![violet](https://placehold.co/15x15/673AB7/673AB7) Violet
 
 ---
 

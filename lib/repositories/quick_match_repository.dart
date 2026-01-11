@@ -10,6 +10,7 @@ import 'package:sqflite/sqflite.dart';
 
 abstract class IQuickMatchRepository {
   Future<QuickMatch> createMatch(QuickMatch match);
+  Future<void> deleteMatch(QuickMatch match);
 
   Future<UnmodifiableListView<QuickMatch>> loadAllMatches();
 
@@ -105,6 +106,12 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
         whereArgs: [match.id]);
 
     return await loadMatch(match.id!);
+  }
+
+  @override
+  Future<void> deleteMatch(QuickMatch match) async {
+    await _sql.delete(
+        table: Tables.quickMatches, where: "id = ?", whereArgs: [match.id]);
   }
 
   @override

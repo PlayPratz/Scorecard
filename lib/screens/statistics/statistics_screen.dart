@@ -3,8 +3,9 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/modules/player/player_statistics.dart';
+import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/services/player_service.dart';
-import 'package:scorecard/ui/ball_colors.dart';
+import 'package:scorecard/ui/stringify.dart';
 
 class AllPlayerStatisticsScreen extends StatefulWidget {
   const AllPlayerStatisticsScreen({super.key});
@@ -35,37 +36,13 @@ class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
         _LoadingState() => const Center(child: CircularProgressIndicator()),
         _BattingStatsState() => ListView.builder(
             itemCount: state.battingStats.length,
-            itemBuilder: (context, index) => ListTile(
-              leading: const CircleAvatar(
-                child: Icon(Icons.sports_motorsports),
-              ),
-              title: Text(state.battingStats[index].playerName),
-              trailing: Text(state.battingStats[index].runsScored.toString()),
-              leadingAndTrailingTextStyle:
-                  Theme.of(context).textTheme.titleLarge,
-              subtitle: Text("${state.battingStats[index].ballsFaced} balls, "
-                  "${state.battingStats[index].outs} outs, "
-                  "SR ${state.battingStats[index].strikeRate.toStringAsFixed(2)}"),
-            ),
-          ),
+            itemBuilder: (context, index) =>
+                wBattingStatCard(state.battingStats[index])),
         _BowlingStatsState() => ListView.builder(
             itemCount: state.bowlingStats.length,
-            itemBuilder: (context, index) => ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: BallColors.newOver,
-                child: Icon(Icons.sports_baseball),
-              ),
-              title: Text(state.bowlingStats[index].playerName),
-              trailing: Text(state.bowlingStats[index].wicketsTaken.toString()),
-              leadingAndTrailingTextStyle:
-                  Theme.of(context).textTheme.titleLarge,
-              subtitle: Text(
-                "${state.bowlingStats[index].ballsBowled} balls, "
-                "${state.bowlingStats[index].runsConceded} runs, "
-                "${state.bowlingStats[index].economy} rpo ",
-              ),
-            ),
-          ),
+            itemBuilder: (context, index) =>
+                wBowlingStatCard(state.bowlingStats[index]),
+          )
       },
       bottomNavigationBar: NavigationBar(
         selectedIndex: state.index,
@@ -82,6 +59,103 @@ class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
       ),
     );
   }
+
+  Widget wBattingStatCard(BattingStats battingStats) => wStatsCard(
+      playerName: battingStats.playerName,
+      matches: battingStats.matchesPlayed,
+      innings: battingStats.inningsPlayed,
+      small: {
+        "strike rate": battingStats.strikeRate.toStringAsFixed(2),
+        "average": battingStats.average.toStringAsFixed(2),
+        "outs": battingStats.outs.toString(),
+        "not outs": battingStats.notOuts.toString(),
+        "high score": battingStats.highScore.toString(),
+      },
+      big: battingStats.runsScored,
+      subBig: "(${battingStats.ballsFaced})",
+      avatar: const Icon(Icons.sports_motorsports));
+
+  Widget wBowlingStatCard(BowlingStats bowlingStats) => wStatsCard(
+        playerName: bowlingStats.playerName,
+        matches: bowlingStats.matchesPlayed,
+        innings: bowlingStats.inningsPlayed,
+        small: {
+          "economy": bowlingStats.economy.toStringAsFixed(2),
+          "average": bowlingStats.average.toStringAsFixed(2),
+          "strike rate": bowlingStats.strikeRate.toStringAsFixed(2),
+        },
+        big: bowlingStats.wicketsTaken,
+        subBig: Stringify.postIndex(
+            PostIndex(bowlingStats.oversBowled, bowlingStats.oversBallsBowled)),
+        avatar: const Icon(Icons.sports_baseball),
+      );
+
+  Widget wStatsCard({
+    required String playerName,
+    required int matches,
+    required int innings,
+    required Map<String, String> small,
+    required int big,
+    required String subBig,
+    required Widget avatar,
+  }) =>
+      Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 250,
+                    child: ListTile(
+                      title: Text(playerName.toUpperCase()),
+                      titleTextStyle: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                      subtitle: Text("$matches MATCHES, $innings INNINGS"),
+                      leading: CircleAvatar(child: avatar),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: 225,
+                    child: Table(
+                        textBaseline: TextBaseline.alphabetic,
+                        defaultVerticalAlignment:
+                            TableCellVerticalAlignment.baseline,
+                        children: [
+                          for (final d in small.keys)
+                            TableRow(children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(d.toUpperCase()),
+                                ),
+                              ),
+                              Text(small[d]!,
+                                  style: Theme.of(context).textTheme.bodyLarge)
+                            ]),
+                        ]),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(big.toString(),
+                      style: Theme.of(context).textTheme.headlineLarge),
+                  Text(subBig, style: Theme.of(context).textTheme.bodyLarge),
+                ],
+              ),
+              const SizedBox(),
+            ],
+          ),
+        ),
+      );
 
   void showRunsScoredByAllPlayers() async {
     setLoading(0);

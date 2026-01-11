@@ -144,7 +144,7 @@ CREATE VIEW batting_stats AS
                     COUNT(bs.wicket_type) AS outs,
                     MAX(bs.runs_scored) AS high_score
                     FROM batting_scores AS bs, players AS p
-                    WHERE p.id = bs.player_id  GROUP BY player_id)
+                    WHERE p.id = bs.player_id AND bs.innings_type != 6 GROUP BY player_id)
                     SELECT *, 100.0*runs_scored/balls_faced AS strike_rate,
                     COALESCE(1.0*runs_scored/outs, 1.0*runs_scored) AS average
                     FROM batting_stats ORDER BY runs_scored DESC, balls_faced ASC, outs ASC;
@@ -199,7 +199,7 @@ CREATE VIEW bowling_stats AS
                     SUM(bs.balls_bowled) AS balls_bowled, SUM(bs.runs_conceded) AS runs_conceded,
                     SUM(bs.wickets_taken) AS wickets_taken
                     FROM bowling_scores AS bs, players AS p
-                    WHERE p.id = bs.player_id  GROUP BY player_id)
+                    WHERE p.id = bs.player_id AND bs.innings_type != 6 GROUP BY player_id)
                     SELECT *, balls_bowled/6 AS overs_bowled, balls_bowled%6 AS overs_balls_bowled,
                     6.0*runs_conceded/balls_bowled AS economy,
                     1.0*runs_conceded/wickets_taken AS average,
@@ -436,4 +436,16 @@ BEGIN
     UPDATE batting_scores SET
     sixes_scored = sixes_scored - 1
     WHERE innings_id = old.innings_id AND player_id = old.batter_id;
+END;
+
+DROP TRIGGER IF EXISTS delete_quick_match;
+CREATE TRIGGER delete_quick_match
+AFTER DELETE ON quick_matches
+BEGIN
+    DELETE FROM batting_scores WHERE match_id = old.id;
+    DELETE FROM bowling_scores WHERE match_id = old.id;
+    DELETE FROM partnerships WHERE match_id = old.id;
+    DELETE FROM posts WHERE match_id = old.id;
+    DELETE FROM quick_innings WHERE match_id = old.id;
+    DELETE FROM players_in_match WHERE match_id = old.id;
 END;

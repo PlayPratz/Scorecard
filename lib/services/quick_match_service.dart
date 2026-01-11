@@ -24,6 +24,10 @@ class QuickMatchService {
     return newMatch;
   }
 
+  Future<void> deleteQuickMatch(QuickMatch match) async {
+    await _matchRepository.deleteMatch(match);
+  }
+
   Future<List<QuickMatch>> getAllQuickMatches() async {
     final matches = await _matchRepository.loadAllMatches();
     return matches;
@@ -73,6 +77,9 @@ class QuickMatchService {
   }
 
   Future<QuickInnings> createNextInnings(QuickInnings previous) async {
+    if (previous.type == 6) {
+      return createSuperOver(previous);
+    }
     await _matchRepository.updateInnings(previous);
     final innings =
         await _matchRepository.createInnings(QuickInnings.next(previous));
@@ -81,9 +88,7 @@ class QuickMatchService {
 
   Future<NextStage> declareInnings(QuickInnings innings) async {
     innings.status = 9; // TODO
-
     await _matchRepository.updateInnings(innings);
-
     return getNextState(innings);
   }
 

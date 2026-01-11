@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
@@ -114,7 +113,7 @@ class QuickInnings {
         matchId = previous.matchId,
         inningsNumber = previous.inningsNumber + 1,
         target = previous.isSuperOver ? previous.runs + 1 : null,
-        type = 2,
+        type = 6,
         status = -1,
         runs = 0,
         wickets = 0,

@@ -267,7 +267,7 @@ With respect to a [Ball](#ball):
 
 - ![indigo](https://placehold.co/15x15/536DFE/536DFE) Indigo for a Four
 - ![ruby](https://placehold.co/15x15/E91E63/E91E63) Ruby for a Six
-- ![red](https://placehold.co/15x15/F44336/F44336) Red for a Wicket
+- ![coral](https://placehold.co/15x15/D67876/D67876) Coral for a Wicket
 - ![yellow](https://placehold.co/15x15/FFFF00/FFFF00) Yellow for a No Ball
 - ![white](https://placehold.co/15x15/FFFFFF/FFFFFF) White for a Wide
 

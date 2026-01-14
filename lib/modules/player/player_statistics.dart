@@ -11,6 +11,9 @@ class BattingStats {
   final int notOuts;
   final int outs;
 
+  final int foursScored;
+  final int sixesScored;
+
   final int highScore;
 
   final double strikeRate;
@@ -25,6 +28,8 @@ class BattingStats {
     required this.ballsFaced,
     required this.notOuts,
     required this.outs,
+    required this.foursScored,
+    required this.sixesScored,
     required this.highScore,
     required this.strikeRate,
     required this.average,
@@ -45,6 +50,9 @@ class BowlingStats {
   final int runsConceded;
   final int wicketsTaken;
 
+  final int noBallsBowled;
+  final int widesBowled;
+
   final double economy;
   final double average;
   final double strikeRate;
@@ -59,6 +67,8 @@ class BowlingStats {
     required this.oversBallsBowled,
     required this.runsConceded,
     required this.wicketsTaken,
+    required this.noBallsBowled,
+    required this.widesBowled,
     required this.economy,
     required this.average,
     required this.strikeRate,

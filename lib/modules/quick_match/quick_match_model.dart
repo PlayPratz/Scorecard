@@ -407,13 +407,13 @@ class Partnership {
 
   final int runs;
   final int balls;
-  final int battingAt;
+  final int partnershipNumber;
 
   final int batter1Id;
   final int batter1Runs;
   final int batter1Balls;
 
-  final int batter2Id;
+  final int? batter2Id;
   final int batter2Runs;
   final int batter2Balls;
 
@@ -427,7 +427,7 @@ class Partnership {
     required this.inningsType,
     required this.runs,
     required this.balls,
-    required this.battingAt,
+    required this.partnershipNumber,
     required this.batter1Id,
     required this.batter1Runs,
     required this.batter1Balls,

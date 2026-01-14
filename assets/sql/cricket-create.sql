@@ -141,8 +141,8 @@ CREATE VIEW batting_stats AS
                     COUNT(DISTINCT bs.match_id) AS matches, COUNT(bs.player_id) AS innings,
                     SUM(bs.runs_scored) AS runs_scored, SUM(bs.balls_faced) AS balls_faced,
                     COUNT(CASE WHEN bs.not_out = 0 THEN NULL ELSE 1 END) AS not_outs,
-                    COUNT(bs.wicket_type) AS outs,
-                    MAX(bs.runs_scored) AS high_score
+                    COUNT(bs.wicket_type) AS outs,  MAX(bs.runs_scored) AS high_score,
+                    SUM(fours_scored) AS fours_scored, SUM(sixes_scored) AS sixes_scored
                     FROM batting_scores AS bs, players AS p
                     WHERE p.id = bs.player_id AND bs.innings_type != 6 GROUP BY player_id)
                     SELECT *, 100.0*runs_scored/balls_faced AS strike_rate,
@@ -197,7 +197,8 @@ CREATE VIEW bowling_stats AS
                     (SELECT bs.player_id AS id, p.name,
                     COUNT(DISTINCT bs.match_id) AS matches, COUNT(bs.player_id) AS innings,
                     SUM(bs.balls_bowled) AS balls_bowled, SUM(bs.runs_conceded) AS runs_conceded,
-                    SUM(bs.wickets_taken) AS wickets_taken
+                    SUM(bs.wickets_taken) AS wickets_taken,
+                    SUM(bs.extras_no_balls) AS extras_no_balls, SUM(bs.extras_wides) AS extras_wides
                     FROM bowling_scores AS bs, players AS p
                     WHERE p.id = bs.player_id AND bs.innings_type != 6 GROUP BY player_id)
                     SELECT *, balls_bowled/6 AS overs_bowled, balls_bowled%6 AS overs_balls_bowled,

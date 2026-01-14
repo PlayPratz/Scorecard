@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/modules/player/player_statistics.dart';
 import 'package:scorecard/modules/quick_match/post_ball_and_extras_model.dart';
 import 'package:scorecard/services/player_service.dart';
+import 'package:scorecard/ui/ball_colors.dart';
 import 'package:scorecard/ui/stringify.dart';
 
 class AllPlayerStatisticsScreen extends StatefulWidget {
@@ -73,22 +74,29 @@ class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
       },
       big: battingStats.runsScored,
       subBig: "(${battingStats.ballsFaced})",
-      avatar: const Icon(Icons.sports_motorsports));
+      avatar: const Icon(Icons.sports_motorsports),
+      circles: {
+        BallColors.four: battingStats.foursScored,
+        BallColors.six: battingStats.sixesScored,
+      });
 
   Widget wBowlingStatCard(BowlingStats bowlingStats) => wStatsCard(
-        playerName: bowlingStats.playerName,
-        matches: bowlingStats.matchesPlayed,
-        innings: bowlingStats.inningsPlayed,
-        small: {
-          "economy": bowlingStats.economy.toStringAsFixed(2),
-          "average": bowlingStats.average.toStringAsFixed(2),
-          "strike rate": bowlingStats.strikeRate.toStringAsFixed(2),
-        },
-        big: bowlingStats.wicketsTaken,
-        subBig: Stringify.postIndex(
-            PostIndex(bowlingStats.oversBowled, bowlingStats.oversBallsBowled)),
-        avatar: const Icon(Icons.sports_baseball),
-      );
+      playerName: bowlingStats.playerName,
+      matches: bowlingStats.matchesPlayed,
+      innings: bowlingStats.inningsPlayed,
+      small: {
+        "economy": Stringify.decimal(bowlingStats.economy),
+        "average": Stringify.decimal(bowlingStats.average),
+        "strike rate": Stringify.decimal(bowlingStats.strikeRate),
+      },
+      big: bowlingStats.wicketsTaken,
+      subBig:
+          "${Stringify.postIndex(PostIndex(bowlingStats.oversBowled, bowlingStats.oversBallsBowled))}ov",
+      avatar: const Icon(Icons.sports_baseball),
+      circles: {
+        BallColors.noBall: bowlingStats.noBallsBowled,
+        BallColors.wide: bowlingStats.widesBowled,
+      });
 
   Widget wStatsCard({
     required String playerName,
@@ -98,6 +106,7 @@ class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
     required int big,
     required String subBig,
     required Widget avatar,
+    required Map<Color, int> circles,
   }) =>
       Card(
         child: Padding(
@@ -149,6 +158,21 @@ class _AllPlayerStatisticsScreenState extends State<AllPlayerStatisticsScreen> {
                   Text(big.toString(),
                       style: Theme.of(context).textTheme.headlineLarge),
                   Text(subBig, style: Theme.of(context).textTheme.bodyLarge),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      for (final c in circles.entries)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                          child: CircleAvatar(
+                            backgroundColor: c.key,
+                            radius: 12,
+                            child: Text(c.value.toString(),
+                                style: Theme.of(context).textTheme.bodySmall),
+                          ),
+                        )
+                    ],
+                  )
                 ],
               ),
               const SizedBox(),

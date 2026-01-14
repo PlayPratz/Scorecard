@@ -175,10 +175,16 @@ class QuickMatchService {
   /// Creates a map of overs in the innings
   /// Note: The first over is index 1
   Future<Map<int, Over>> getOvers(QuickInnings innings) async {
-    final overs = <int, Over>{};
+    // final overs = await _matchRepository.loadOversOf(innings);
+    // final map = <int, Over>{for (final o in overs) o.overNumber: o};
+    // return map;
 
     final posts = await _matchRepository.loadAllPostsOf(innings);
+    return getOversFromPosts(posts);
+  }
 
+  Map<int, Over> getOversFromPosts(Iterable<InningsPost> posts) {
+    final overs = <int, Over>{};
     for (final post in posts) {
       final key = post.index.over + 1;
       if (!overs.containsKey(key)) {
@@ -197,6 +203,68 @@ class QuickMatchService {
   }
 
   /// Lists all partnerships in the innings
+  Future<UnmodifiableListView<Partnership>> getPartnerships(
+      QuickInnings innings) async {
+    return UnmodifiableListView(
+        await _generatePartnerships(innings)); // TODO temporary
+  }
+
+  Future<List<Partnership>> _generatePartnerships(QuickInnings innings) async {
+    final balls = await _matchRepository.loadAllBallsOf(innings);
+
+    final partnerships = <Partnership>[];
+    final current = <Ball>[];
+
+    for (final b in balls) {
+      current.add(b);
+
+      if (b.isWicket || b.id == balls.last.id) {
+        final batter1 = current.first.batterId!;
+        final batter2 = current.first.nonStrikerId;
+
+        final batter1Balls = current.where((b) => b.batterId == batter1);
+        final batter2Balls = batter2 == null
+            ? null
+            : current.where((b) => b.batterId == batter2);
+
+        partnerships.add(
+          Partnership(
+            id: null,
+            matchId: innings.matchId,
+            inningsId: innings.id!,
+            inningsNumber: innings.inningsNumber,
+            inningsType: innings.type,
+            runs: current.fold(0, (sum, b) => sum + b.totalRuns),
+            balls: current.where((b) => !b.isBowlingExtra).length,
+            partnershipNumber: partnerships.length + 1,
+            batter1Id: current.first.batterId!,
+            batter1Runs: batter1Balls.fold(0, (sum, b) => sum + b.batterRuns),
+            batter1Balls:
+                batter1Balls.where((b) => BowlingExtra is! Wide).length,
+            batter2Id: batter2,
+            batter2Runs: batter2 == null
+                ? 0
+                : batter2Balls!.fold(0, (sum, b) => sum + b.batterRuns),
+            batter2Balls: batter2 == null
+                ? 0
+                : batter2Balls!.where((b) => BowlingExtra is! Wide).length,
+            extras: Extras(
+                noBalls: current.where((b) => b.bowlingExtra is NoBall).length,
+                wides: current.where((b) => b.bowlingExtra is Wide).length,
+                byes: current.where((b) => b.battingExtra is Bye).length,
+                legByes: current.where((b) => b.battingExtra is LegBye).length,
+                penalties: 0 // TODO
+                ),
+          ),
+        );
+
+        current.clear();
+      }
+    }
+
+    return partnerships;
+  }
+
   // List<Partnership> getPartnerships(QuickInnings innings) {
   //   final posts = innings.posts;
   //

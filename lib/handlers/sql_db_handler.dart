@@ -22,9 +22,19 @@ class SQLDBHandler {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onCreate: (db, version) async {},
-      onUpgrade: (db, oldVersion, newVersion) {},
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute("DROP VIEW IF EXISTS batting_stats;");
+          await db.execute(
+              "CREATE VIEW batting_stats AS WITH batting_stats AS (SELECT bs.player_id AS id, p.name, COUNT(DISTINCT bs.match_id) AS matches, COUNT(bs.player_id) AS innings, SUM(bs.runs_scored) AS runs_scored, SUM(bs.balls_faced) AS balls_faced, COUNT(CASE WHEN bs.not_out = 0 THEN NULL ELSE 1 END) AS not_outs, COUNT(bs.wicket_type) AS outs, MAX(bs.runs_scored) AS high_score, SUM(fours_scored) AS fours_scored, SUM(sixes_scored) AS sixes_scored FROM batting_scores AS bs, players AS p WHERE p.id = bs.player_id AND bs.innings_type != 6 GROUP BY player_id) SELECT *, 100.0*runs_scored/balls_faced AS strike_rate, COALESCE(1.0*runs_scored/outs, 1.0*runs_scored) AS average FROM batting_stats ORDER BY runs_scored DESC, balls_faced ASC, outs ASC;");
+
+          await db.execute("DROP VIEW IF EXISTS bowling_stats;");
+          await db.execute(
+              "CREATE VIEW bowling_stats AS WITH bowling_stats AS (SELECT bs.player_id AS id, p.name, COUNT(DISTINCT bs.match_id) AS matches, COUNT(bs.player_id) AS innings, SUM(bs.balls_bowled) AS balls_bowled, SUM(bs.runs_conceded) AS runs_conceded, SUM(bs.wickets_taken) AS wickets_taken, SUM(bs.extras_no_balls) AS extras_no_balls, SUM(bs.extras_wides) AS extras_wides FROM bowling_scores AS bs, players AS p WHERE p.id = bs.player_id AND bs.innings_type != 6 GROUP BY player_id) SELECT *, balls_bowled/6 AS overs_bowled, balls_bowled%6 AS overs_balls_bowled, 6.0*runs_conceded/balls_bowled AS economy, 1.0*runs_conceded/wickets_taken AS average, 1.0*balls_bowled/wickets_taken AS strike_rate FROM bowling_stats ORDER BY wickets_taken DESC, runs_conceded ASC, balls_bowled DESC;");
+        }
+      },
       singleInstance: true,
-      version: 1,
+      version: 2,
     );
   }
 

@@ -49,13 +49,13 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
                     ),
                     itemCount: state.allInnings.length,
                   ),
-                // _ShowPartnershipsState() => ListView.builder(
-                //     itemBuilder: (context, index) => _PartnershipList(
-                //         index + 1, state.partnerships[index + 1]!),
-                //     itemCount: state.partnerships.length,
-                //   ),
-                _ShowGraphsState() =>
-                  _GraphListSection(state.firstBalls, state.secondBalls),
+                _ShowPartnershipsState() => ListView.builder(
+                    itemBuilder: (context, index) => _PartnershipList(
+                        index + 1, state.allPartnerships[index]),
+                    itemCount: state.allPartnerships.length,
+                  ),
+                _ShowGraphsState() => _GraphListSection(state.firstBalls,
+                    state.secondBalls, state.firstOvers, state.secondOvers),
               },
               bottomNavigationBar: switch (state) {
                 _ScorecardLoadingState() => const BottomAppBar(),
@@ -65,9 +65,9 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
                       if (index == 0) {
                         return controller.showScorecard();
                       }
-                      // if (index == 1) {
-                      //   return controller.showPartnerships();
-                      // }
+                      if (index == 1) {
+                        return controller.showPartnerships();
+                      }
                       if (index == 2) {
                         return controller.showGraphs();
                       }
@@ -113,23 +113,35 @@ class ScorecardScreenController {
     _stateStreamController.add(_ShowScorecardState(allInnings));
   }
 
-  // void showPartnerships() {
-  //   _stateStreamController.add(_ShowPartnershipsState({
-  //     for (final i in allInnings) i.inningsNumber: service.getPartnerships(i),
-  //   }));
-  // }
-  //
+  Future<void> showPartnerships() async {
+    showLoading(1);
+
+    final partnerships1 = await service.getPartnerships(allInnings[0]);
+    final partnerships2 = allInnings.length > 1
+        ? await service.getPartnerships(allInnings[1])
+        : null;
+
+    _stateStreamController.add(_ShowPartnershipsState(
+        [partnerships1, if (partnerships2 != null) partnerships2]));
+  }
 
   Future<void> showGraphs() async {
     showLoading(2);
 
     final firstBalls = await service.getAllBallsOf(allInnings[0]);
+    final firstOvers = service.getOversFromPosts(firstBalls);
 
     final secondBalls = allInnings.length > 1
         ? await service.getAllBallsOf(allInnings[1])
         : const Iterable.empty().cast<Ball>();
 
-    _stateStreamController.add(_ShowGraphsState(firstBalls, secondBalls));
+    final secondOvers = service.getOversFromPosts(secondBalls);
+
+    _stateStreamController.add(_ShowGraphsState(
+        firstBalls: firstBalls,
+        secondBalls: secondBalls,
+        firstOvers: firstOvers,
+        secondOvers: secondOvers));
   }
 
   void showLoading(int index) {
@@ -159,20 +171,28 @@ class _ShowScorecardState extends _ScorecardState {
   int get index => 0;
 }
 
-// class _ShowPartnershipsState extends _ScorecardLoadedState {
-//   final Map<int, List<Partnership>> partnerships;
-//
-//   _ShowPartnershipsState(this.partnerships);
-//
-//   @override
-//   int get index => 1;
-// }
+class _ShowPartnershipsState extends _ScorecardState {
+  final List<Iterable<Partnership>> allPartnerships;
+
+  _ShowPartnershipsState(this.allPartnerships);
+
+  @override
+  int get index => 1;
+}
 
 class _ShowGraphsState extends _ScorecardState {
   final Iterable<Ball> firstBalls;
   final Iterable<Ball> secondBalls;
 
-  _ShowGraphsState(this.firstBalls, this.secondBalls);
+  final Map<int, Over> firstOvers;
+  final Map<int, Over> secondOvers;
+
+  _ShowGraphsState({
+    required this.firstBalls,
+    required this.secondBalls,
+    required this.firstOvers,
+    required this.secondOvers,
+  });
 
   @override
   int get index => 2;
@@ -186,7 +206,6 @@ class _InningsScorecard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final service = context.read<QuickMatchService>();
     final future = _loadBattersAndBowlers(context);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
@@ -538,7 +557,7 @@ class _BowlingScorecard extends StatelessWidget {
                         bowlingScore.ballsBowled, ballsPerOver))),
                 Center(child: Text(bowlingScore.wicketsTaken.toString())),
                 Center(child: Text(bowlingScore.runsConceded.toString())),
-                Center(child: Text(Stringify.economy(bowlingScore.economy)))
+                Center(child: Text(Stringify.decimal(bowlingScore.economy)))
               ])
           ],
         ),
@@ -555,97 +574,112 @@ class _BowlingScorecard extends StatelessWidget {
   // }
 }
 
-// class _PartnershipList extends StatelessWidget {
-//   final List<Partnership> partnerships;
-//   final int inningsNumber;
-//
-//   const _PartnershipList(this.inningsNumber, this.partnerships);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       child: Padding(
-//         padding: const EdgeInsets.all(8.0),
-//         child: Column(
-//           children: [
-//             Text(
-//               Stringify.quickInningsHeading(inningsNumber),
-//               style: Theme.of(context).textTheme.titleMedium,
-//             ),
-//             const SizedBox(height: 16),
-//             for (final partnership in partnerships)
-//               Padding(
-//                 padding:
-//                     const EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
-//                 child: Column(
-//                   children: [
-//                     Row(
-//                       children: [
-//                         Text(getPlayerName(partnership.batter1Id)),
-//                         const Spacer(),
-//                         Text(getPlayerName(partnership.batter2Id)),
-//                       ],
-//                     ),
-//                     ClipRRect(
-//                       borderRadius: BorderRadius.circular(8),
-//                       child: Row(
-//                         children: [
-//                           Expanded(
-//                             flex: partnership.batter1Innings.runs,
-//                             child: const Divider(
-//                               color: Colors.teal,
-//                               thickness: 10,
-//                             ),
-//                           ),
-//                           Expanded(
-//                             flex: partnership.batter2Innings.runs,
-//                             child: Divider(
-//                               color: BallColors.notOut,
-//                               thickness: 10,
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                     Row(
-//                       children: [
-//                         Expanded(
-//                           child: Align(
-//                             alignment: Alignment.centerLeft,
-//                             child: Text(Stringify.battingScore(
-//                                 partnership.batter1Innings)),
-//                           ),
-//                         ),
-//                         Expanded(
-//                           child: Center(
-//                             child: Text(Stringify.batterScore(
-//                                 partnership.runs, partnership.numBalls)),
-//                           ),
-//                         ),
-//                         Expanded(
-//                           child: Align(
-//                             alignment: Alignment.centerRight,
-//                             child: Text(Stringify.batterInningsScore(
-//                                 partnership.batter2Innings)),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+class _PartnershipList extends StatelessWidget {
+  final Iterable<Partnership> partnerships;
+  final int inningsNumber;
+
+  const _PartnershipList(this.inningsNumber, this.partnerships);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Text(
+              Stringify.quickInningsHeading(inningsNumber),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            for (final partnership in partnerships)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                            getPlayerName(partnership.batter1Id).toUpperCase()),
+                        const Spacer(),
+                        if (partnership.batter2Id != null)
+                          Text(getPlayerName(partnership.batter2Id!)
+                              .toUpperCase()),
+                      ],
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: partnership.batter1Runs,
+                            child: const Divider(
+                              color: Colors.teal,
+                              thickness: 10,
+                            ),
+                          ),
+                          Expanded(
+                            flex: partnership.batter2Runs,
+                            child: Divider(
+                              color: BallColors.notOut,
+                              thickness: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(Stringify.batterScore(
+                                partnership.batter1Runs,
+                                partnership.batter1Balls,
+                                false)),
+                          ),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Text(Stringify.batterScore(
+                                partnership.runs, partnership.balls, false)),
+                          ),
+                        ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(Stringify.batterScore(
+                                partnership.batter2Runs,
+                                partnership.batter2Balls,
+                                false)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _GraphListSection extends StatelessWidget {
   final Iterable<Ball> firstBalls;
   final Iterable<Ball> secondBalls;
 
-  const _GraphListSection(this.firstBalls, this.secondBalls);
+  final Map<int, Over> firstOvers;
+  final Map<int, Over> secondOvers;
+
+  const _GraphListSection(
+    this.firstBalls,
+    this.secondBalls,
+    this.firstOvers,
+    this.secondOvers,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -663,6 +697,7 @@ class _GraphListSection extends StatelessWidget {
                   radius: radius,
                   backgroundColor: firstColor,
                 ),
+                minLeadingWidth: 0,
                 title: Text(Stringify.quickInningsHeading(1)),
               ),
             ),
@@ -673,6 +708,7 @@ class _GraphListSection extends StatelessWidget {
                     radius: radius,
                     backgroundColor: secondColor,
                   ),
+                  minLeadingWidth: 0,
                   title: Text(Stringify.quickInningsHeading(2)),
                 ),
               ),
@@ -694,12 +730,12 @@ class _GraphListSection extends StatelessWidget {
             child: Text("Manhattan",
                 style: Theme.of(context).textTheme.titleMedium)),
         const SizedBox(height: 16),
-        // _ManhattanGraph(
-        //   firstOvers: firstInnings,
-        //   secondOvers: secondInnings,
-        //   firstColor: firstColor,
-        //   secondColor: secondColor,
-        // ),
+        _ManhattanGraph(
+          firstOvers: firstOvers,
+          secondOvers: secondOvers,
+          firstColor: firstColor,
+          secondColor: secondColor,
+        ),
       ],
     );
   }
@@ -760,8 +796,8 @@ class _WormGraph extends StatelessWidget {
 }
 
 class _ManhattanGraph extends StatelessWidget {
-  final Iterable<Over> firstOvers;
-  final Iterable<Over> secondOvers;
+  final Map<int, Over> firstOvers;
+  final Map<int, Over> secondOvers;
 
   final Color firstColor;
   final Color secondColor;
@@ -774,13 +810,7 @@ class _ManhattanGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final overs1 = <int, Over>{
-      for (final o in firstOvers) o.overNumber: o,
-    };
-    final overs2 = <int, Over>{
-      for (final o in secondOvers) o.overNumber: o,
-    };
-    final count = max(overs1.length, overs2.length);
+    final count = max(firstOvers.length, secondOvers.length);
 
     return SizedBox(
       height: 250,
@@ -791,14 +821,14 @@ class _ManhattanGraph extends StatelessWidget {
               BarChartGroupData(
                 x: i,
                 barRods: [
-                  if (overs1.containsKey(i))
+                  if (firstOvers.containsKey(i))
                     BarChartRodData(
-                      toY: overs1[i]!.scoreIn.runs.toDouble(),
+                      toY: firstOvers[i]!.scoreIn.runs.toDouble(),
                       color: firstColor,
                     ),
-                  if (overs2.containsKey(i))
+                  if (secondOvers.containsKey(i))
                     BarChartRodData(
-                      toY: overs2[i]!.scoreIn.runs.toDouble(),
+                      toY: secondOvers[i]!.scoreIn.runs.toDouble(),
                       color: secondColor,
                     ),
                 ],

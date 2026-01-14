@@ -874,7 +874,7 @@ class _OnCreasePlayers extends StatelessWidget {
       return ListTile(
         title: Text(getPlayerName(battingScore.batterId).toUpperCase()),
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
-        subtitle: Text("SR ${battingScore.strikeRate.toStringAsFixed(2)}"),
+        subtitle: Text("SR ${Stringify.decimal(battingScore.strikeRate)}"),
         subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
         trailing:
             Text("${battingScore.runsScored} (${battingScore.ballsFaced})"),
@@ -908,7 +908,7 @@ class _OnCreasePlayers extends StatelessWidget {
         title: Text(getPlayerName(bowler!.bowlerId).toUpperCase()),
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
         subtitle: Text(
-            "${Stringify.ballCount(bowler!.ballsBowled, ballsPerOver)}ov, ${bowler!.economy.toStringAsFixed(2)} rpo"),
+            "${Stringify.ballCount(bowler!.ballsBowled, ballsPerOver)}ov, ${Stringify.decimal(bowler!.economy)} rpo"),
         subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
         trailing: Text("${bowler!.wicketsTaken}-${bowler!.runsConceded}"),
         onLongPress:

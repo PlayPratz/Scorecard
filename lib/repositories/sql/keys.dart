@@ -15,6 +15,7 @@ class Tables {
   static const posts = "posts";
 
   static const battingScores = "batting_scores";
+  static const partnerships = "partnerships";
   static const bowlingScores = "bowling_scores";
 
   // Lookup

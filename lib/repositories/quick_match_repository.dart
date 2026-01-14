@@ -13,52 +13,40 @@ abstract class IQuickMatchRepository {
   Future<void> deleteMatch(QuickMatch match);
 
   Future<UnmodifiableListView<QuickMatch>> loadAllMatches();
-
   Future<QuickMatch> loadMatch(int id);
-
   Future<QuickMatch> updateMatch(QuickMatch match);
 
   Future<QuickInnings> createInnings(QuickInnings innings);
-
   Future<void> updateInnings(QuickInnings innings);
-
   Future<QuickInnings> loadInnings(int id);
-
   Future<UnmodifiableListView<QuickInnings>> loadAllInningsOf(int matchId);
 
   Future<InningsPost> createPost(InningsPost post);
-
   Future<void> deletePost(InningsPost post);
-
   Future<InningsPost?> loadLastPostOf(QuickInnings innings);
-
   Future<int> loadPostCount(QuickInnings innings);
-
   Future<UnmodifiableListView<InningsPost>> loadAllPostsOf(
       QuickInnings innings);
-
   Future<UnmodifiableListView<Ball>> loadAllBallsOf(QuickInnings innings);
-
   Future<UnmodifiableListView<Ball>> loadRecentBallsOf(
       QuickInnings innings, int count);
 
+  // Future<Iterable<Over>> loadOversOf(QuickInnings innings);
+
   Future<UnmodifiableListView<BattingScore>> loadBattersOf(
       QuickInnings innings);
-
   Future<void> createBattingScore(BattingScore battingScore);
-
   Future<void> deleteBattingScore(int battingScoreId);
-
   Future<BattingScore?> loadLastBattingScoreOf(
       QuickInnings innings, int batterId);
 
+  Future<Iterable<Partnership>> loadPartnershipsOf(QuickInnings innings);
+  Future<Partnership> createPartnership(Partnership partnership);
+
   Future<UnmodifiableListView<BowlingScore>> loadBowlersOf(
       QuickInnings innings);
-
   Future<void> createBowlingScore(BowlingScore bowlingScore);
-
   Future<void> deleteBowlingScore(int bowlingScoreId);
-
   Future<BowlingScore?> loadBowlingScoreOf(QuickInnings innings, int bowlerId);
 
   Future<UnmodifiableListView<FallOfWicket>> loadWicketsOf(
@@ -236,6 +224,27 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
     return UnmodifiableListView(posts);
   }
 
+  // @override
+  // Future<Iterable<Over>> loadOversOf(QuickInnings innings) async {
+  //   final entities = await _sql.query(
+  //     table: Tables.posts,
+  //     groupBy: "innings_id, over_index",
+  //     columns: [
+  //       "over_index",
+  //       "SUM(total_runs) AS total_runs",
+  //       "COUNT(CASE WHEN wicket_type IS NOT NULL THEN 1 ELSE NULL END) AS wickets"
+  //     ],
+  //     where: "innings_id = ?",
+  //     whereArgs: [innings.id],
+  //   );
+  //
+  //   final overs = entities.map((e) => Over(
+  //       overNumber: e["over_index"] as int,
+  //       scoreIn: Score(e["total_runs"] as int, e["wickets"] as int)));
+  //
+  //   return overs;
+  // }
+
   @override
   Future<void> createBattingScore(BattingScore battingScore) async {
     await _sql.insert(
@@ -259,7 +268,6 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
       whereArgs: [innings.id],
       orderBy: "id ASC",
     );
-
     final battingScores = entities.map(_unpackBattingScore);
     return UnmodifiableListView(battingScores);
   }
@@ -274,13 +282,34 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
       orderBy: "id DESC",
       limit: 1,
     );
-
     if (entity.isEmpty) {
       return null;
     }
-
     final battingScore = _unpackBattingScore(entity.single);
     return battingScore;
+  }
+
+  @override
+  Future<Partnership> createPartnership(Partnership partnership) async {
+    final id = await _sql.insert(
+        table: Tables.partnerships, values: _repackPartnership(partnership));
+
+    final entity = await _sql
+        .query(table: Tables.partnerships, where: "id = ?", whereArgs: [id]);
+    final newPartnership = _unpackPartnership(entity.single);
+    return newPartnership;
+  }
+
+  @override
+  Future<Iterable<Partnership>> loadPartnershipsOf(QuickInnings innings) async {
+    final entities = await _sql.query(
+      table: Tables.partnerships,
+      where: "innings_id = ?",
+      whereArgs: [innings.id],
+    );
+
+    final partnerships = entities.map(_unpackPartnership);
+    return partnerships;
   }
 
   @override
@@ -317,11 +346,9 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
         table: Tables.bowlingScores,
         where: "innings_id = ? AND player_id = ?",
         whereArgs: [innings.id, bowlerId]);
-
     if (entity.isEmpty) {
       return null;
     }
-
     final bowlingScore = _unpackBowlingScore(entity.single);
     return bowlingScore;
   }
@@ -493,6 +520,19 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
         "innings_type": partnership.inningsType,
         "batter1_id": partnership.batter1Id,
         "batter2_id": partnership.batter2Id,
+        // If not generated:
+        "runs_scored": partnership.runs,
+        "balls_faced": partnership.balls,
+        "wicket_number": partnership.partnershipNumber,
+        "batter1_runs_scored": partnership.batter1Runs,
+        "batter1_balls_faced": partnership.batter1Balls,
+        "batter2_runs_scored": partnership.batter2Runs,
+        "batter2_balls_faced": partnership.batter2Balls,
+        "extras_no_balls": partnership.extras.noBalls,
+        "extras_wides": partnership.extras.wides,
+        "extras_byes": partnership.extras.byes,
+        "extras_leg_byes": partnership.extras.legByes,
+        "extras_penalties": partnership.extras.penalties,
       };
 
   Partnership _unpackPartnership(Map<String, Object?> map) => Partnership(
@@ -503,7 +543,7 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
         inningsType: map["innings_type"] as int,
         runs: map["runs_scored"] as int,
         balls: map["balls_faced"] as int,
-        battingAt: map["wicket_number"] as int,
+        partnershipNumber: map["wicket_number"] as int,
         batter1Id: map["batter1_id"] as int,
         batter1Runs: map["batter1_runs_scored"] as int,
         batter1Balls: map["batter1_balls_faced"] as int,

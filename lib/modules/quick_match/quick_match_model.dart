@@ -238,7 +238,18 @@ class Extras {
         penalties = 0;
 }
 
-sealed class QuickMatchResult {}
+sealed class QuickMatchSummary {}
+
+class SettingTargetSummary extends QuickMatchSummary {}
+
+class ChasingTargetSummary extends QuickMatchSummary {
+  final int runsRequired;
+  final int ballsLeft;
+
+  ChasingTargetSummary({required this.runsRequired, required this.ballsLeft});
+}
+
+sealed class QuickMatchResult extends QuickMatchSummary {}
 
 class QuickMatchDefendedResult extends QuickMatchResult {
   final int runs;

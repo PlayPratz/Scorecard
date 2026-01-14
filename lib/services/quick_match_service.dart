@@ -60,8 +60,8 @@ class QuickMatchService {
   }
 
   Future<UnmodifiableListView<Ball>> getAllBallsOf(QuickInnings innings) async {
-    final posts = await _matchRepository.loadAllBallsOf(innings);
-    return posts;
+    final balls = await _matchRepository.loadAllBallsOf(innings);
+    return balls;
   }
 
   Future<UnmodifiableListView<Ball>> getRecentBallsOf(
@@ -118,18 +118,18 @@ class QuickMatchService {
     await _matchRepository.updateMatch(match);
   }
 
-  QuickMatchResult generateResult(QuickMatch match,
-      {required QuickInnings last}) {
-    // if (match.isCompleted == false) {
-    //   throw StateError(
-    //       "Attempted to generate result for an incomplete match (matchId: ${match.id} inningsId: ${last.id})");
-    // }
-
+  QuickMatchSummary generateSummary(QuickInnings last) {
     if (last.target == null) {
-      throw StateError(
-          "Last Innings does not have target (matchId: ${match.id} inningsId: ${last.id})");
+      return SettingTargetSummary();
     }
 
+    // last has target
+    if (!last.isEnded) {
+      return ChasingTargetSummary(
+          runsRequired: last.runsRequired!, ballsLeft: last.ballsLeft);
+    }
+
+    // last has ended
     final firstRuns = last.target! - 1;
 
     if (firstRuns > last.runs) {

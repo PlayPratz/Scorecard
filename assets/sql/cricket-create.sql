@@ -96,14 +96,14 @@ CREATE INDEX post_bowler_index ON posts(bowler_id);
 
 DROP VIEW IF EXISTS balls;
 CREATE VIEW balls AS SELECT id, match_id, innings_id, innings_type, innings_number, day_number, session_number,
-                            timestamp, over_index, ball_index,
+                            timestamp, type, over_index, ball_index,
                             bowler_id, batter_id, non_striker_id,
                             total_runs, bowler_runs, batter_runs, is_boundary,
                             extras_no_balls, extras_wides, extras_byes, extras_leg_byes, extras_penalties, extras_total,
                             wicket_type, wicket_batter_id, wicket_fielder_id,
                             runs_at, wickets_at,
                             is_counted_for_bowler, is_counted_for_batter
-                            FROM posts WHERE type = 0;
+                            FROM posts WHERE type=0;
 
 DROP VIEW IF EXISTS wickets;
 CREATE VIEW wickets AS SELECT id, match_id, innings_id, innings_type, innings_number, day_number, session_number,

@@ -24,33 +24,33 @@ class HomeScreen extends StatelessWidget {
             "New Quick Match",
             // "Start a quick match right away!",
             icon: Icons.sports_cricket,
-            onTap: () => onNewQuickMatch(context),
+            onTap: () => goNewQuickMatch(context),
           ),
           wMenuItem(
             "Load Quick Match",
             // "Resume or view a previously created match",
             icon: Icons.storage,
-            onTap: () => onLoadQuickMatch(context),
+            onTap: () => goLoadQuickMatch(context),
           ),
           const SizedBox(height: 32),
           wMenuItem(
             "Players",
             // "Manage the sportsmen on the field",
             icon: Icons.people,
-            onTap: () => onPlayerList(context),
+            onTap: () => goPlayerList(context),
           ),
           wMenuItem(
             "Statistics",
             // "Manage the sportsmen on the field",
             icon: Icons.auto_graph,
-            onTap: () => onStatistics(context),
+            onTap: () => goStatistics(context),
           ),
           const SizedBox(height: 32),
           wMenuItem(
             "Settings",
             // "Manage the sportsmen on the field",
             icon: Icons.settings,
-            onTap: () => onSettings(context),
+            onTap: () => goSettings(context),
           ),
         ],
       ),
@@ -72,12 +72,12 @@ class HomeScreen extends StatelessWidget {
         onTap: onTap,
       );
 
-  void onNewQuickMatch(BuildContext context) {
+  void goNewQuickMatch(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => CreateQuickMatchScreen()));
   }
 
-  void onLoadQuickMatch(BuildContext context) {
+  void goLoadQuickMatch(BuildContext context) {
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -85,19 +85,19 @@ class HomeScreen extends StatelessWidget {
         ));
   }
 
-  void onPlayerList(BuildContext context) {
+  void goPlayerList(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => const AllPlayersScreen()));
   }
 
-  void onStatistics(BuildContext context) {
+  void goStatistics(BuildContext context) {
     Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => const AllPlayerStatisticsScreen()));
   }
 
-  void onSettings(BuildContext context) {
+  void goSettings(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => const SettingsScreen()));
   }

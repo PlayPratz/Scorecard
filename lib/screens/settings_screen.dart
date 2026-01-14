@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:scorecard/services/settings_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-const version = "0.99.0beta";
-const buildDate = "2026-01-13";
+const version = "0.99.4beta";
+const buildDate = "2026-01-15";
 const repository = "https://github.com/PlayPratz/Scorecard.git";
 
 class SettingsScreen extends StatefulWidget {
@@ -26,10 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Settings"),
-        toolbarHeight: 256,
-      ),
+      appBar: AppBar(title: const Text("Settings"), toolbarHeight: 256),
       body: ListView(
         children: [
           ListTile(
@@ -37,8 +34,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // subtitle: const Text("Easier on the eyes"),
             leading: const Icon(Icons.dark_mode),
             trailing: Switch(
-                value: settingsService.getTheme() == ScorecardTheme.dark,
-                onChanged: (_) => toggleTheme()),
+              value: settingsService.getTheme() == ScorecardTheme.dark,
+              onChanged: (_) => toggleTheme(),
+            ),
             onTap: () => toggleTheme(),
           ),
           ListTile(
@@ -46,8 +44,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: const Text("Useful for debugging"),
             leading: const Icon(Icons.bug_report),
             trailing: Switch(
-                value: settingsService.getShowHandles(),
-                onChanged: (_) => toggleShowIds()),
+              value: settingsService.getShowHandles(),
+              onChanged: (_) => toggleShowIds(),
+            ),
             onTap: () => toggleShowIds(),
           ),
           ListTile(

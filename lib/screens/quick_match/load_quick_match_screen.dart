@@ -15,55 +15,71 @@ class LoadQuickMatchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quickMatchFuture = controller.loadAllMatches(context);
-
     final showHandles = context.read<SettingsService>().getShowHandles();
-
-    final dateFormat =
-        DateFormat.yMMMd(Localizations.localeOf(context).languageCode).add_jm();
+    final dateFormat = DateFormat.yMMMd("en_IN").add_jm();
+    // DateFormat.yMMMd(Localizations.localeOf(context).languageCode).add_jm();
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Load a quick match"),
-        ),
-        body: FutureBuilder(
-          future: quickMatchFuture,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return const Text("Error!");
-            } else if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            } else {
-              final matches = snapshot.data!;
-              if (matches.isEmpty) {
-                return const Center(
-                    child: Padding(
+      appBar: AppBar(title: const Text("Load a quick match")),
+      body: FutureBuilder(
+        future: quickMatchFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Text("Error!");
+          } else if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            final matches = snapshot.data!;
+            if (matches.isEmpty) {
+              return const Center(
+                child: Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                      "You don't have any matches! Head back to the main menu to start a new match."),
-                ));
-              }
-              return ListView.builder(
-                itemBuilder: (context, index) {
-                  final match = matches[index];
-                  return ListTile(
-                    title: Text(dateFormat.format(match.startsAt)),
-                    subtitle: showHandles ? Text('#${match.handle}') : null,
-                    leading: wMatchIndicator(match),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => loadMatch(context, match.id!),
-                  );
-                },
-                itemCount: matches.length,
+                    "You don't have any matches! Head back to the main menu to start a new match.",
+                  ),
+                ),
               );
             }
-          },
-        ));
+            return ListView.builder(
+              itemBuilder: (context, index) {
+                final match = matches[index];
+                return Card(
+                  child: InkWell(
+                    onTap: () => loadMatch(context, match.id!),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            title: Text(dateFormat.format(match.startsAt)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("${match.rules.ballsPerOver} overs"),
+                                if (showHandles) Text("#${match.handle}"),
+                              ],
+                            ),
+                            isThreeLine: true,
+                            leading: wMatchIndicator(match),
+                            trailing: const Icon(Icons.chevron_right),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+              itemCount: matches.length,
+            );
+          }
+        },
+      ),
+    );
   }
 
   Widget wMatchIndicator(QuickMatch match) {
     if (match.stage == 9) {
-      return const CircleAvatar(
-        child: Icon(Icons.check),
-      );
+      return const CircleAvatar(child: Icon(Icons.check));
     } else {
       return const CircleAvatar(
         backgroundColor: Colors.orangeAccent,
@@ -90,15 +106,21 @@ Future<void> loadMatch(BuildContext context, int matchId) async {
     return;
   }
   if (match.stage == 9) {
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) => ScorecardScreen(match.id!)));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ScorecardScreen(match.id!, exitToHome: true),
+      ),
+    );
   } else {
     final innings = await service.getAllInningsOf(match.id!);
     if (context.mounted) {
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => PlayQuickInningsScreen(innings.last.id!)));
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlayQuickInningsScreen(innings.last.id!),
+        ),
+      );
     }
   }
 }

@@ -204,9 +204,7 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
   Future<UnmodifiableListView<Ball>> loadAllBallsOf(
       QuickInnings innings) async {
     final entities = await _sql.query(
-        table: Tables.posts,
-        where: "innings_id = ? AND type = 0",
-        whereArgs: [innings.id]);
+        table: Views.balls, where: "innings_id = ?", whereArgs: [innings.id]);
     final balls = entities.map(_unpackInningsPost).cast<Ball>();
     return UnmodifiableListView(balls);
   }
@@ -215,8 +213,8 @@ class SQLQuickMatchRepository implements IQuickMatchRepository {
   Future<UnmodifiableListView<Ball>> loadRecentBallsOf(
       QuickInnings innings, int count) async {
     final entities = await _sql.query(
-        table: Tables.posts,
-        where: "innings_id = ? AND type = 0",
+        table: Views.balls,
+        where: "innings_id = ?",
         whereArgs: [innings.id],
         limit: count,
         orderBy: "id DESC");

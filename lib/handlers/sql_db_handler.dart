@@ -32,9 +32,15 @@ class SQLDBHandler {
           await db.execute(
               "CREATE VIEW bowling_stats AS WITH bowling_stats AS (SELECT bs.player_id AS id, p.name, COUNT(DISTINCT bs.match_id) AS matches, COUNT(bs.player_id) AS innings, SUM(bs.balls_bowled) AS balls_bowled, SUM(bs.runs_conceded) AS runs_conceded, SUM(bs.wickets_taken) AS wickets_taken, SUM(bs.extras_no_balls) AS extras_no_balls, SUM(bs.extras_wides) AS extras_wides FROM bowling_scores AS bs, players AS p WHERE p.id = bs.player_id AND bs.innings_type != 6 GROUP BY player_id) SELECT *, balls_bowled/6 AS overs_bowled, balls_bowled%6 AS overs_balls_bowled, 6.0*runs_conceded/balls_bowled AS economy, 1.0*runs_conceded/wickets_taken AS average, 1.0*balls_bowled/wickets_taken AS strike_rate FROM bowling_stats ORDER BY wickets_taken DESC, runs_conceded ASC, balls_bowled DESC;");
         }
+
+        if (oldVersion < 3) {
+          await db.execute("DROP VIEW IF EXISTS balls;");
+          await db.execute(
+              "CREATE VIEW balls AS SELECT id, match_id, innings_id, innings_type, innings_number, day_number, session_number, timestamp, type, over_index, ball_index, bowler_id, batter_id, non_striker_id, total_runs, bowler_runs, batter_runs, is_boundary, extras_no_balls, extras_wides, extras_byes, extras_leg_byes, extras_penalties, extras_total, wicket_type, wicket_batter_id, wicket_fielder_id, runs_at, wickets_at, is_counted_for_bowler, is_counted_for_batter FROM posts WHERE type=0;");
+        }
       },
       singleInstance: true,
-      version: 2,
+      version: 3,
     );
   }
 

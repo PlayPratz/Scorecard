@@ -14,8 +14,9 @@ import 'package:scorecard/ui/stringify.dart';
 
 class ScorecardScreen extends StatefulWidget {
   final int matchId;
+  final bool exitToHome;
 
-  const ScorecardScreen(this.matchId, {super.key});
+  const ScorecardScreen(this.matchId, {super.key, this.exitToHome = false});
 
   @override
   State<ScorecardScreen> createState() => _ScorecardScreenState();
@@ -34,62 +35,76 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        stream: controller._stateStreamController.stream,
-        initialData: _ScorecardLoadingState(0),
-        builder: (context, snapshot) {
-          final state = snapshot.data!;
-          return Scaffold(
-              appBar: AppBar(title: const Text("Scorecard")),
-              body: switch (state) {
-                _ScorecardLoadingState() =>
-                  const Center(child: CircularProgressIndicator()),
-                _ShowScorecardState() => ListView.builder(
-                    itemBuilder: (context, index) => _InningsScorecard(
-                      state.allInnings[index],
-                    ),
-                    itemCount: state.allInnings.length,
-                  ),
-                _ShowPartnershipsState() => ListView.builder(
-                    itemBuilder: (context, index) => _PartnershipList(
-                        index + 1, state.allPartnerships[index]),
-                    itemCount: state.allPartnerships.length,
-                  ),
-                _ShowGraphsState() => _GraphListSection(state.firstBalls,
-                    state.secondBalls, state.firstOvers, state.secondOvers),
+      stream: controller._stateStreamController.stream,
+      initialData: _ScorecardLoadingState(0),
+      builder: (context, snapshot) {
+        final state = snapshot.data!;
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("Scorecard"),
+            leading: widget.exitToHome
+                ? IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.exit_to_app),
+                  )
+                : null,
+          ),
+          body: switch (state) {
+            _ScorecardLoadingState() => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            _ShowScorecardState() => ListView.builder(
+              itemBuilder: (context, index) =>
+                  _InningsScorecard(state.allInnings[index]),
+              itemCount: state.allInnings.length,
+            ),
+            _ShowPartnershipsState() => ListView.builder(
+              itemBuilder: (context, index) =>
+                  _PartnershipList(index + 1, state.allPartnerships[index]),
+              itemCount: state.allPartnerships.length,
+            ),
+            _ShowGraphsState() => _GraphListSection(
+              state.firstBalls,
+              state.secondBalls,
+              state.firstOvers,
+              state.secondOvers,
+            ),
+          },
+          bottomNavigationBar: switch (state) {
+            _ScorecardLoadingState() => const BottomAppBar(),
+            _ => NavigationBar(
+              // labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+              onDestinationSelected: (index) async {
+                if (index == 0) {
+                  return controller.showScorecard();
+                }
+                if (index == 1) {
+                  return controller.showPartnerships();
+                }
+                if (index == 2) {
+                  return controller.showGraphs();
+                }
               },
-              bottomNavigationBar: switch (state) {
-                _ScorecardLoadingState() => const BottomAppBar(),
-                _ => NavigationBar(
-                    // labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-                    onDestinationSelected: (index) async {
-                      if (index == 0) {
-                        return controller.showScorecard();
-                      }
-                      if (index == 1) {
-                        return controller.showPartnerships();
-                      }
-                      if (index == 2) {
-                        return controller.showGraphs();
-                      }
-                    },
-                    selectedIndex: state.index,
-                    destinations: const [
-                      NavigationDestination(
-                        icon: Icon(Icons.list_alt),
-                        label: "Scorecard",
-                      ),
-                      NavigationDestination(
-                        icon: Icon(Icons.people),
-                        label: "Partnerships",
-                      ),
-                      NavigationDestination(
-                        icon: Icon(Icons.bar_chart),
-                        label: "Graphs",
-                      ),
-                    ],
-                  ),
-              });
-        });
+              selectedIndex: state.index,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.list_alt),
+                  label: "Scorecard",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.people),
+                  label: "Partnerships",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.bar_chart),
+                  label: "Graphs",
+                ),
+              ],
+            ),
+          },
+        );
+      },
+    );
   }
 }
 
@@ -121,8 +136,12 @@ class ScorecardScreenController {
         ? await service.getPartnerships(allInnings[1])
         : null;
 
-    _stateStreamController.add(_ShowPartnershipsState(
-        [partnerships1, if (partnerships2 != null) partnerships2]));
+    _stateStreamController.add(
+      _ShowPartnershipsState([
+        partnerships1,
+        if (partnerships2 != null) partnerships2,
+      ]),
+    );
   }
 
   Future<void> showGraphs() async {
@@ -137,11 +156,14 @@ class ScorecardScreenController {
 
     final secondOvers = service.getOversFromPosts(secondBalls);
 
-    _stateStreamController.add(_ShowGraphsState(
+    _stateStreamController.add(
+      _ShowGraphsState(
         firstBalls: firstBalls,
         secondBalls: secondBalls,
         firstOvers: firstOvers,
-        secondOvers: secondOvers));
+        secondOvers: secondOvers,
+      ),
+    );
   }
 
   void showLoading(int index) {
@@ -212,46 +234,49 @@ class _InningsScorecard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: FutureBuilder(
-            future: future,
-            builder: (context, asyncSnapshot) {
-              if (asyncSnapshot.connectionState == ConnectionState.done) {
-                final data = asyncSnapshot.data!;
-                return Column(
-                  // crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FilledButton.icon(
-                      icon: const Icon(Icons.timeline),
-                      label: Text(
-                          Stringify.quickInningsHeading(innings.inningsNumber)),
-                      onPressed: () => goInningsTimeline(context),
+          future: future,
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.connectionState == ConnectionState.done) {
+              final data = asyncSnapshot.data!;
+              return Column(
+                // crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FilledButton.icon(
+                    icon: const Icon(Icons.timeline),
+                    label: Text(
+                      Stringify.quickInningsHeading(innings.inningsNumber),
                     ),
-                    _BattingScorecard(
-                      data.batters,
-                      score: innings.score,
-                      target: innings.target,
-                      extras: innings.extras,
-                      overLimit: innings.ballLimit,
-                      ballsPerOver: innings.ballsPerOver,
-                      ballsBowled: innings.balls,
-                      fallOfWickets: data.fallOfWickets,
-                    ),
-                    const SizedBox(height: 24),
-                    _BowlingScorecard(
-                      data.bowlers,
-                      ballsPerOver: innings.ballsPerOver,
-                    )
-                  ],
-                );
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            }),
+                    onPressed: () => goInningsTimeline(context),
+                  ),
+                  _BattingScorecard(
+                    data.batters,
+                    score: innings.score,
+                    target: innings.target,
+                    extras: innings.extras,
+                    overLimit: innings.ballLimit,
+                    ballsPerOver: innings.ballsPerOver,
+                    ballsBowled: innings.balls,
+                    fallOfWickets: data.fallOfWickets,
+                  ),
+                  const SizedBox(height: 24),
+                  _BowlingScorecard(
+                    data.bowlers,
+                    ballsPerOver: innings.ballsPerOver,
+                  ),
+                ],
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
       ),
     );
   }
 
   Future<_InningsScorecardData> _loadBattersAndBowlers(
-      BuildContext context) async {
+    BuildContext context,
+  ) async {
     final service = context.read<QuickMatchService>();
 
     final batters = await service.getBatters(innings);
@@ -263,9 +288,9 @@ class _InningsScorecard extends StatelessWidget {
 
   void goInningsTimeline(BuildContext context) {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => InningsTimelineScreen(innings)));
+      context,
+      MaterialPageRoute(builder: (context) => InningsTimelineScreen(innings)),
+    );
   }
 }
 
@@ -315,23 +340,25 @@ class _BattingScorecard extends StatelessWidget {
           defaultVerticalAlignment: TableCellVerticalAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           defaultColumnWidth: const FixedColumnWidth(42),
-          columnWidths: const {
-            0: FlexColumnWidth(),
-          },
+          columnWidths: const {0: FlexColumnWidth()},
           children: [
-            TableRow(children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 4.0, bottom: 4.0),
-                child: Text("Batting",
-                    style: Theme.of(context).textTheme.titleMedium),
-              ),
-              const Text("R", textAlign: TextAlign.center),
-              const Text("B", textAlign: TextAlign.center),
-              const Text("SR", textAlign: TextAlign.center),
-              const SizedBox(),
-            ]),
+            TableRow(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 4.0, bottom: 4.0),
+                  child: Text(
+                    "Batting",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                const Text("R", textAlign: TextAlign.center),
+                const Text("B", textAlign: TextAlign.center),
+                const Text("SR", textAlign: TextAlign.center),
+                const SizedBox(),
+              ],
+            ),
             for (final battingScore in allBattingScores)
-              wBatterTile(battingScore, context)
+              wBatterTile(battingScore, context),
           ],
         ),
         const SizedBox(height: 12),
@@ -354,8 +381,10 @@ class _BattingScorecard extends StatelessWidget {
                 const SizedBox(height: 32),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Text("Extras",
-                      style: Theme.of(context).textTheme.bodySmall),
+                  child: Text(
+                    "Extras",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
@@ -369,33 +398,43 @@ class _BattingScorecard extends StatelessWidget {
                 ),
                 // Extras
                 Text(
-                    "(${extras.noBalls}nb ${extras.wides}wd ${extras.byes}b ${extras.legByes}lb ${extras.penalties}p)",
-                    style: Theme.of(context).textTheme.bodySmall),
+                  "(${extras.noBalls}nb ${extras.wides}wd ${extras.byes}b ${extras.legByes}lb ${extras.penalties}p)",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ],
             ),
-            TableRow(children: [
-              const SizedBox(height: 32),
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: Text("TOTAL",
-                    style: Theme.of(context).textTheme.bodyMedium),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Text(Stringify.score(score),
+            TableRow(
+              children: [
+                const SizedBox(height: 32),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Text(
+                    "TOTAL",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Text(
+                    Stringify.score(score),
                     style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.right),
-              ),
-              Text(
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                Text(
                   "(${Stringify.ballCount(ballsBowled, ballsPerOver)}${targetString(target)})",
-                  style: Theme.of(context).textTheme.bodySmall),
-            ]),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 24),
         if (fallOfWickets.isNotEmpty)
-          Text("Fall of Wickets",
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            "Fall of Wickets",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
         if (fallOfWickets.isNotEmpty)
           Table(
             columnWidths: const {
@@ -405,82 +444,87 @@ class _BattingScorecard extends StatelessWidget {
             },
             defaultVerticalAlignment: TableCellVerticalAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
-            border: const TableBorder(
-              horizontalInside: BorderSide(width: 0),
-            ),
+            border: const TableBorder(horizontalInside: BorderSide(width: 0)),
             children: [
               for (final fow in fallOfWickets)
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Text(Stringify.score(fow.scoreAt)),
-                  ),
-                  Text(Stringify.postIndex(fow.postIndex)),
-                  Text("${getPlayerName(fow.wicket.batterId)} "
-                      "(${Stringify.wicket(fow.wicket, getPlayerName: getPlayerName)})"),
-                ]),
+                TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Text(Stringify.score(fow.scoreAt)),
+                    ),
+                    Text(Stringify.postIndex(fow.postIndex)),
+                    Text(
+                      "${getPlayerName(fow.wicket.batterId)} "
+                      "(${Stringify.wicket(fow.wicket, getPlayerName: getPlayerName)})",
+                    ),
+                  ],
+                ),
             ],
-          )
+          ),
       ],
     );
   }
 
   TableRow wBatterTile(BattingScore battingScore, BuildContext context) {
-    return TableRow(children: [
-      ListTile(
-        leading: CircleAvatar(
-          radius: 16,
-          backgroundColor:
-              battingScore.isNotOut! ? BallColors.notOut : BallColors.wicket,
-          child: const Icon(Icons.sports_motorsports, size: 20),
-        ),
-        title: Text(getPlayerName(battingScore.batterId).toUpperCase()),
+    return TableRow(
+      children: [
+        ListTile(
+          leading: CircleAvatar(
+            radius: 16,
+            backgroundColor: battingScore.isNotOut!
+                ? BallColors.notOut
+                : BallColors.wicket,
+            child: const Icon(Icons.sports_motorsports, size: 20),
+          ),
+          title: Text(getPlayerName(battingScore.batterId).toUpperCase()),
 
-        subtitle: Text(
-          Stringify.wicket(battingScore.wicket, getPlayerName: getPlayerName),
+          subtitle: Text(
+            Stringify.wicket(battingScore.wicket, getPlayerName: getPlayerName),
+          ),
+          titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+          subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
+          // isThreeLine: true,
+          //
+          // onTap: () =>
+          //     _goBattingInningsTimeline(context, batterInnings),
+          contentPadding: EdgeInsets.zero,
+          horizontalTitleGap: 10,
+          minTileHeight: 0,
         ),
-        titleTextStyle: Theme.of(context).textTheme.bodyMedium,
-        subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
-        // isThreeLine: true,
-        //
-        // onTap: () =>
-        //     _goBattingInningsTimeline(context, batterInnings),
-        contentPadding: EdgeInsets.zero,
-        horizontalTitleGap: 10,
-        minTileHeight: 0,
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6.0),
-        child: Text(
-          battingScore.runsScored.toString(),
-          style: Theme.of(context).textTheme.bodyLarge,
-          textAlign: TextAlign.center,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6.0),
+          child: Text(
+            battingScore.runsScored.toString(),
+            style: Theme.of(context).textTheme.bodyLarge,
+            textAlign: TextAlign.center,
+          ),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6.0),
-        child: Text(
-          battingScore.ballsFaced.toString(),
-          style: Theme.of(context).textTheme.bodyLarge,
-          textAlign: TextAlign.center,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6.0),
+          child: Text(
+            battingScore.ballsFaced.toString(),
+            style: Theme.of(context).textTheme.bodyLarge,
+            textAlign: TextAlign.center,
+          ),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6.0),
-        child: Text(
-          battingScore.strikeRate.toStringAsFixed(1),
-          style: Theme.of(context).textTheme.bodySmall,
-          textAlign: TextAlign.center,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6.0),
+          child: Text(
+            battingScore.strikeRate.toStringAsFixed(1),
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
+          ),
         ),
-      ),
-      Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          _wBoundaryCount(context, battingScore.fours, BallColors.four),
-          _wBoundaryCount(context, battingScore.sixes, BallColors.six),
-        ],
-      ),
-    ]);
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            _wBoundaryCount(context, battingScore.fours, BallColors.four),
+            _wBoundaryCount(context, battingScore.sixes, BallColors.six),
+          ],
+        ),
+      ],
+    );
   }
 
   String targetString(int? target) => target == null ? "" : ", Target: $target";
@@ -503,10 +547,7 @@ class _BowlingScorecard extends StatelessWidget {
   final Iterable<BowlingScore> allBowlingScores;
   final int ballsPerOver;
 
-  const _BowlingScorecard(
-    this.allBowlingScores, {
-    required this.ballsPerOver,
-  });
+  const _BowlingScorecard(this.allBowlingScores, {required this.ballsPerOver});
 
   @override
   Widget build(BuildContext context) {
@@ -523,42 +564,54 @@ class _BowlingScorecard extends StatelessWidget {
             horizontalInside: BorderSide(width: 0.1),
           ),
           children: [
-            TableRow(children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 4.0, bottom: 4.0),
-                child: Text("Bowling",
-                    style: Theme.of(context).textTheme.titleMedium),
-              ),
-              const Center(child: Text('O')),
-              const Center(child: Text('W')),
-              const Center(child: Text('R')),
-              const Center(child: Text('Econ')),
-            ]),
-            for (final bowlingScore in allBowlingScores)
-              TableRow(children: [
-                ListTile(
-                  leading: CircleAvatar(
-                    radius: 16,
-                    backgroundColor: BallColors.newOver.withOpacity(0.4),
-                    child: const Icon(Icons.sports_baseball, size: 20),
+            TableRow(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 4.0, bottom: 4.0),
+                  child: Text(
+                    "Bowling",
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  title:
-                      Text(getPlayerName(bowlingScore.bowlerId).toUpperCase()),
-
-                  titleTextStyle: Theme.of(context).textTheme.bodyMedium,
-                  // trailing: const Icon(Icons.chevron_right, size: 18),
-                  // onTap: () => goBowlingTimeline(context, bowlerInnings),
-                  contentPadding: EdgeInsets.zero,
-                  horizontalTitleGap: 10,
-                  minTileHeight: 50,
                 ),
-                Center(
-                    child: Text(Stringify.ballCount(
-                        bowlingScore.ballsBowled, ballsPerOver))),
-                Center(child: Text(bowlingScore.wicketsTaken.toString())),
-                Center(child: Text(bowlingScore.runsConceded.toString())),
-                Center(child: Text(Stringify.decimal(bowlingScore.economy)))
-              ])
+                const Center(child: Text('O')),
+                const Center(child: Text('W')),
+                const Center(child: Text('R')),
+                const Center(child: Text('Econ')),
+              ],
+            ),
+            for (final bowlingScore in allBowlingScores)
+              TableRow(
+                children: [
+                  ListTile(
+                    leading: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: BallColors.newOver.withOpacity(0.4),
+                      child: const Icon(Icons.sports_baseball, size: 20),
+                    ),
+                    title: Text(
+                      getPlayerName(bowlingScore.bowlerId).toUpperCase(),
+                    ),
+
+                    titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+                    // trailing: const Icon(Icons.chevron_right, size: 18),
+                    // onTap: () => goBowlingTimeline(context, bowlerInnings),
+                    contentPadding: EdgeInsets.zero,
+                    horizontalTitleGap: 10,
+                    minTileHeight: 50,
+                  ),
+                  Center(
+                    child: Text(
+                      Stringify.ballCount(
+                        bowlingScore.ballsBowled,
+                        ballsPerOver,
+                      ),
+                    ),
+                  ),
+                  Center(child: Text(bowlingScore.wicketsTaken.toString())),
+                  Center(child: Text(bowlingScore.runsConceded.toString())),
+                  Center(child: Text(Stringify.decimal(bowlingScore.economy))),
+                ],
+              ),
           ],
         ),
       ],
@@ -594,18 +647,22 @@ class _PartnershipList extends StatelessWidget {
             const SizedBox(height: 16),
             for (final partnership in partnerships)
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16.0,
+                  horizontal: 4.0,
+                ),
                 child: Column(
                   children: [
                     Row(
                       children: [
                         Text(
-                            getPlayerName(partnership.batter1Id).toUpperCase()),
+                          getPlayerName(partnership.batter1Id).toUpperCase(),
+                        ),
                         const Spacer(),
                         if (partnership.batter2Id != null)
-                          Text(getPlayerName(partnership.batter2Id!)
-                              .toUpperCase()),
+                          Text(
+                            getPlayerName(partnership.batter2Id!).toUpperCase(),
+                          ),
                       ],
                     ),
                     ClipRRect(
@@ -634,25 +691,36 @@ class _PartnershipList extends StatelessWidget {
                         Expanded(
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text(Stringify.batterScore(
+                            child: Text(
+                              Stringify.batterScore(
                                 partnership.batter1Runs,
                                 partnership.batter1Balls,
-                                false)),
+                                false,
+                              ),
+                            ),
                           ),
                         ),
                         Expanded(
                           child: Center(
-                            child: Text(Stringify.batterScore(
-                                partnership.runs, partnership.balls, false)),
+                            child: Text(
+                              Stringify.batterScore(
+                                partnership.runs,
+                                partnership.balls,
+                                false,
+                              ),
+                            ),
                           ),
                         ),
                         Expanded(
                           child: Align(
                             alignment: Alignment.centerRight,
-                            child: Text(Stringify.batterScore(
+                            child: Text(
+                              Stringify.batterScore(
                                 partnership.batter2Runs,
                                 partnership.batter2Balls,
-                                false)),
+                                false,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -716,8 +784,8 @@ class _GraphListSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Center(
-            child:
-                Text("Worm", style: Theme.of(context).textTheme.titleMedium)),
+          child: Text("Worm", style: Theme.of(context).textTheme.titleMedium),
+        ),
         const SizedBox(height: 16),
         _WormGraph(
           firstBalls: firstBalls,
@@ -727,8 +795,11 @@ class _GraphListSection extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         Center(
-            child: Text("Manhattan",
-                style: Theme.of(context).textTheme.titleMedium)),
+          child: Text(
+            "Manhattan",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
         const SizedBox(height: 16),
         _ManhattanGraph(
           firstOvers: firstOvers,
@@ -748,11 +819,12 @@ class _WormGraph extends StatelessWidget {
   final Color firstColor;
   final Color secondColor;
 
-  const _WormGraph(
-      {required this.firstBalls,
-      required this.secondBalls,
-      required this.firstColor,
-      required this.secondColor});
+  const _WormGraph({
+    required this.firstBalls,
+    required this.secondBalls,
+    required this.firstColor,
+    required this.secondColor,
+  });
   @override
   Widget build(BuildContext context) {
     double i = 0;
@@ -761,22 +833,20 @@ class _WormGraph extends StatelessWidget {
       height: 256,
       child: LineChart(
         LineChartData(
-          titlesData: const FlTitlesData(
-            topTitles: AxisTitles(),
-          ),
+          titlesData: const FlTitlesData(topTitles: AxisTitles()),
           lineBarsData: [
             LineChartBarData(
               color: firstColor,
-              spots: runsForInnings(firstBalls)
-                  .map((r) => FlSpot(i++, r))
-                  .toList(),
+              spots: runsForInnings(
+                firstBalls,
+              ).map((r) => FlSpot(i++, r)).toList(),
             ),
             if (secondBalls.isNotEmpty)
               LineChartBarData(
                 color: secondColor,
-                spots: runsForInnings(secondBalls)
-                    .map((r) => FlSpot(j++, r))
-                    .toList(),
+                spots: runsForInnings(
+                  secondBalls,
+                ).map((r) => FlSpot(j++, r)).toList(),
               ),
           ],
         ),
@@ -802,11 +872,12 @@ class _ManhattanGraph extends StatelessWidget {
   final Color firstColor;
   final Color secondColor;
 
-  const _ManhattanGraph(
-      {required this.firstOvers,
-      required this.secondOvers,
-      required this.firstColor,
-      required this.secondColor});
+  const _ManhattanGraph({
+    required this.firstOvers,
+    required this.secondOvers,
+    required this.firstColor,
+    required this.secondColor,
+  });
 
   @override
   Widget build(BuildContext context) {

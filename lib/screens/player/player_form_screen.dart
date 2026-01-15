@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scorecard/modules/player/player_model.dart';
 import 'package:scorecard/screens/player/player_list_screen.dart';
@@ -17,11 +18,16 @@ class PlayerFormScreen extends StatefulWidget {
 
 class _PlayerFormScreenState extends State<PlayerFormScreen> {
   final _nameController = TextEditingController();
-  // final _fullNameController = TextEditingController();
+  final _fullNameController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
+  DateTime? _dateOfBirth;
+  final _dobController = TextEditingController();
+
   bool _isLoading = false;
+
+  final dateFormat = DateFormat.yMMMd("en_IN");
 
   @override
   void initState() {
@@ -29,14 +35,17 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
 
     if (widget.player != null) {
       _nameController.text = widget.player!.name;
-      // _fullNameController.text = widget.player!.fullName ?? "";
+      _fullNameController.text = widget.player!.fullName ?? "";
+      _dateOfBirth = widget.player!.dateOfBirth;
+      if (_dateOfBirth != null) {
+        _dobController.text = dateFormat.format(_dateOfBirth!);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final showIds = context.read<SettingsService>().getShowHandles();
-
     return Scaffold(
       appBar: AppBar(
         title: widget.player == null
@@ -50,11 +59,10 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
           children: [
             if (widget.player != null && showIds)
               Text(
-                "#${widget.player!.id}",
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall
-                    ?.copyWith(color: Colors.black54),
+                "#${widget.player!.handle}",
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: Colors.black54),
                 textAlign: TextAlign.right,
               ),
             ListTile(
@@ -71,15 +79,52 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
                 },
               ),
             ),
-            // ListTile(
-            //   title: TextFormField(
-            //     controller: _fullNameController,
-            //     maxLength: 32,
-            //     decoration:
-            //         const InputDecoration(hintText: "Full Name (optional)"),
-            //     validator: (_) => null,
-            //   ),
-            // ),
+            ListTile(
+              title: TextFormField(
+                controller: _fullNameController,
+                maxLength: 32,
+                decoration: const InputDecoration(
+                  hintText: "Full Name (optional)",
+                ),
+                textCapitalization: TextCapitalization.words,
+                validator: (_) => null,
+              ),
+            ),
+            ListTile(
+              title: TextFormField(
+                onTap: () async {
+                  // Prevent keyboard from opening
+                  FocusScope.of(context).requestFocus(FocusNode());
+                  final date = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                    currentDate: _dateOfBirth,
+                    // initialEntryMode: DatePickerEntryMode.calendarOnly,
+                  );
+                  setState(() {
+                    _dateOfBirth = date;
+                    if (_dateOfBirth != null) {
+                      _dobController.text = dateFormat.format(_dateOfBirth!);
+                    }
+                  });
+                },
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.calendar_month),
+                  hint: const Text("Date of Birth (optional)"),
+                  suffix: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      _dateOfBirth = null;
+                      _dobController.clear();
+                    },
+                    padding: const EdgeInsets.all(0),
+                  ),
+                ),
+                controller: _dobController,
+                validator: (_) => null,
+              ),
+            ),
           ],
         ),
       ),
@@ -106,10 +151,12 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
     });
 
     final player = await context.read<PlayerService>().savePlayer(
-          id: widget.player?.id,
-          handle: widget.player?.handle,
-          name: _nameController.text,
-        );
+      id: widget.player?.id,
+      handle: widget.player?.handle,
+      name: _nameController.text,
+      fullName: _fullNameController.text,
+      dob: _dateOfBirth,
+    );
 
     widget.onSavePlayer(player);
 

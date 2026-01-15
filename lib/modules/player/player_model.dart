@@ -18,10 +18,11 @@ class Player {
   /// The Date of Birth of the player
   final DateTime? dateOfBirth;
 
-  Player(
-      {required this.id,
-      required this.handle,
-      required this.name,
-      required this.fullName,
-      required this.dateOfBirth});
+  Player({
+    required this.id,
+    required this.handle,
+    required this.name,
+    required this.fullName,
+    required this.dateOfBirth,
+  });
 }

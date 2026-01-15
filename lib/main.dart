@@ -90,49 +90,52 @@ class _ScorecardAppState extends State<ScorecardApp> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        stream: controller._stateStreamController.stream,
-        initialData: _AppStartupLoadingState(),
-        builder: (context, snapshot) {
-          final state = snapshot.data!;
+      stream: controller._stateStreamController.stream,
+      initialData: _AppStartupLoadingState(),
+      builder: (context, snapshot) {
+        final state = snapshot.data!;
 
-          final brightness = state is _StartupSuccessfulState &&
-                  state.theme == ScorecardTheme.dark
-              ? Brightness.dark
-              : Brightness.light;
-          final baseTheme = ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: Colors.teal,
-            brightness: brightness,
-          );
-          final textTheme = GoogleFonts.ubuntuTextTheme(baseTheme.textTheme);
-          final theme = baseTheme.copyWith(textTheme: textTheme);
+        final brightness =
+            state is _StartupSuccessfulState &&
+                state.theme == ScorecardTheme.dark
+            ? Brightness.dark
+            : Brightness.light;
+        final baseTheme = ThemeData(
+          useMaterial3: true,
+          colorSchemeSeed: Colors.teal,
+          brightness: brightness,
+        );
+        final textTheme = GoogleFonts.ubuntuTextTheme(baseTheme.textTheme);
+        final theme = baseTheme.copyWith(textTheme: textTheme);
 
-          return MaterialApp(
-            title: "Scorecard",
-            theme: theme,
-            home: const HomeScreen(),
-            builder: (context, child) {
-              return switch (state) {
-                _AppStartupLoadingState() => const Scaffold(
-                    body: Center(child: CircularProgressIndicator())),
-                _StartupFailState() => const Scaffold(
-                    body: Center(
-                      child: Text("Error starting app! Try restarting."),
-                    ),
-                  ),
-                _StartupSuccessfulState() => MultiProvider(
-                    providers: [
-                      Provider(create: (context) => state.settingsService),
-                      Provider(create: (context) => state.playerService),
-                      Provider(create: (context) => state.quickMatchService),
-                      // Provider(create: (context) => state.statisticsService),
-                    ],
-                    child: child,
-                  ),
-              };
-            },
-          );
-        });
+        return MaterialApp(
+          title: "Scorecard",
+          theme: theme,
+          home: const HomeScreen(),
+          builder: (context, child) {
+            return switch (state) {
+              _AppStartupLoadingState() => const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              ),
+              _StartupFailState() => const Scaffold(
+                body: Center(
+                  child: Text("Error starting app! Try restarting."),
+                ),
+              ),
+              _StartupSuccessfulState() => MultiProvider(
+                providers: [
+                  Provider(create: (context) => state.settingsService),
+                  Provider(create: (context) => state.playerService),
+                  Provider(create: (context) => state.quickMatchService),
+                  // Provider(create: (context) => state.statisticsService),
+                ],
+                child: child,
+              ),
+            };
+          },
+        );
+      },
+    );
   }
 }
 
@@ -148,13 +151,13 @@ class _ScorecardAppController {
 
   final _stateStreamController = StreamController<_ScorecardState>();
   void _dispatchState() => _stateStreamController.add(
-        _StartupSuccessfulState(
-          settingsService: settingsService,
-          playerService: playerService,
-          quickMatchService: quickMatchService,
-          theme: settingsProvider.theme,
-        ),
-      );
+    _StartupSuccessfulState(
+      settingsService: settingsService,
+      playerService: playerService,
+      quickMatchService: quickMatchService,
+      theme: settingsProvider.theme,
+    ),
+  );
 
   Future<void> startup() async {
     // To display dates and times in local format

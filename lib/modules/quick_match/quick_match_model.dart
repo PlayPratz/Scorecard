@@ -20,6 +20,7 @@ class QuickMatch {
 
   /// The current stage of the match
   int stage;
+  bool get isEnded => stage == 9;
 
   // QuickMatchResult? result;
 
@@ -36,10 +37,7 @@ class QuickMatchRules {
   final int oversPerInnings;
   final int ballsPerOver;
 
-  QuickMatchRules({
-    required this.oversPerInnings,
-    required this.ballsPerOver,
-  });
+  QuickMatchRules({required this.oversPerInnings, required this.ballsPerOver});
 }
 
 class QuickInnings {
@@ -82,45 +80,45 @@ class QuickInnings {
   });
 
   QuickInnings.first(QuickMatch match)
-      : id = null,
-        matchId = match.id!,
-        inningsNumber = 1,
-        type = 1,
-        status = -1,
-        runs = 0,
-        wickets = 0,
-        balls = 0,
-        ballsPerOver = match.rules.ballsPerOver,
-        overLimit = match.rules.oversPerInnings,
-        extras = Extras.zero();
+    : id = null,
+      matchId = match.id!,
+      inningsNumber = 1,
+      type = 1,
+      status = -1,
+      runs = 0,
+      wickets = 0,
+      balls = 0,
+      ballsPerOver = match.rules.ballsPerOver,
+      overLimit = match.rules.oversPerInnings,
+      extras = Extras.zero();
 
   QuickInnings.next(QuickInnings previous)
-      : id = null,
-        matchId = previous.matchId,
-        inningsNumber = previous.inningsNumber + 1,
-        target = previous.runs + 1,
-        type = 1,
-        status = -1,
-        runs = 0,
-        wickets = 0,
-        balls = 0,
-        ballsPerOver = previous.ballsPerOver,
-        overLimit = previous.overLimit,
-        extras = Extras.zero();
+    : id = null,
+      matchId = previous.matchId,
+      inningsNumber = previous.inningsNumber + 1,
+      target = previous.runs + 1,
+      type = 1,
+      status = -1,
+      runs = 0,
+      wickets = 0,
+      balls = 0,
+      ballsPerOver = previous.ballsPerOver,
+      overLimit = previous.overLimit,
+      extras = Extras.zero();
 
   QuickInnings.nextSuperOver(QuickInnings previous)
-      : id = null,
-        matchId = previous.matchId,
-        inningsNumber = previous.inningsNumber + 1,
-        target = previous.isSuperOver ? previous.runs + 1 : null,
-        type = 6,
-        status = -1,
-        runs = 0,
-        wickets = 0,
-        balls = 0,
-        ballsPerOver = previous.ballsPerOver,
-        overLimit = 1,
-        extras = Extras.zero();
+    : id = null,
+      matchId = previous.matchId,
+      inningsNumber = previous.inningsNumber + 1,
+      target = previous.isSuperOver ? previous.runs + 1 : null,
+      type = 6,
+      status = -1,
+      runs = 0,
+      wickets = 0,
+      balls = 0,
+      ballsPerOver = previous.ballsPerOver,
+      overLimit = 1,
+      extras = Extras.zero();
 
   /// The runs scored by the batters
   final int runs;
@@ -157,14 +155,14 @@ class QuickInnings {
   int? get strikerId => striker == 1
       ? batter1Id
       : striker == 2
-          ? batter2Id
-          : null;
+      ? batter2Id
+      : null;
 
   int? get nonStrikerId => striker == 1
       ? batter2Id
       : striker == 2
-          ? batter1Id
-          : null;
+      ? batter1Id
+      : null;
 
   int? bowlerId;
 
@@ -173,7 +171,9 @@ class QuickInnings {
   double? get requiredRunRate => runsRequired == null
       ? null
       : handleDivideByZero(
-          runsRequired!.toDouble() * ballsPerOver, ballsLeft.toDouble());
+          runsRequired!.toDouble() * ballsPerOver,
+          ballsLeft.toDouble(),
+        );
 
   final Extras extras;
 
@@ -223,19 +223,15 @@ class Extras {
 
   int get total => noBalls + wides + byes + legByes + penalties;
 
-  Extras(
-      {required this.noBalls,
-      required this.wides,
-      required this.byes,
-      required this.legByes,
-      required this.penalties});
+  Extras({
+    required this.noBalls,
+    required this.wides,
+    required this.byes,
+    required this.legByes,
+    required this.penalties,
+  });
 
-  Extras.zero()
-      : noBalls = 0,
-        wides = 0,
-        byes = 0,
-        legByes = 0,
-        penalties = 0;
+  Extras.zero() : noBalls = 0, wides = 0, byes = 0, legByes = 0, penalties = 0;
 }
 
 sealed class QuickMatchSummary {}
@@ -271,9 +267,7 @@ class Score {
 
   Score(this.runs, this.wickets);
 
-  Score.zero()
-      : runs = 0,
-        wickets = 0;
+  Score.zero() : runs = 0, wickets = 0;
 
   Score plus(Score score) => Score(runs + score.runs, wickets + score.wickets);
   Score minus(Score score) => Score(runs - score.runs, wickets - score.wickets);

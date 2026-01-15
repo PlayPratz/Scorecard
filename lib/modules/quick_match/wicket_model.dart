@@ -44,10 +44,11 @@ class Caught extends Wicket with BowlerWicket, FielderWicket {
   @override
   final int fielderId;
 
-  Caught(
-      {required super.batterId,
-      required this.bowlerId,
-      required this.fielderId});
+  Caught({
+    required super.batterId,
+    required this.bowlerId,
+    required this.fielderId,
+  });
 
   @override
   Dismissal get dismissal => Dismissal.caught;
@@ -76,10 +77,11 @@ class Stumped extends Wicket with BowlerWicket, FielderWicket {
   @override
   int get fielderId => wicketkeeperId;
 
-  Stumped(
-      {required super.batterId,
-      required this.bowlerId,
-      required this.wicketkeeperId});
+  Stumped({
+    required super.batterId,
+    required this.bowlerId,
+    required this.wicketkeeperId,
+  });
 
   @override
   Dismissal get dismissal => Dismissal.stumped;

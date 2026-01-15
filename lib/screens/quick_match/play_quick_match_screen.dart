@@ -40,188 +40,183 @@ class _PlayQuickInningsScreenState extends State<PlayQuickInningsScreen> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        stream: controller._stateStream,
-        initialData: _InitializingState(),
-        builder: (context, snapshot) {
-          final state = snapshot.data;
-          if (state == null || state is _InitializingState) {
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text("Loading..."),
+      stream: controller._stateStream,
+      initialData: _InitializingState(),
+      builder: (context, snapshot) {
+        final state = snapshot.data;
+        if (state == null || state is _InitializingState) {
+          return Scaffold(
+            appBar: AppBar(title: const Text("Loading...")),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        } else {
+          final innings = (state as _QuickMatchLoadedState).innings;
+          final canDeclare = state is! _InningsHasEndedState;
+          return Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                onPressed: () => _quitMatch(context),
+                icon: const Icon(Icons.exit_to_app),
               ),
-              body: const Center(
-                child: CircularProgressIndicator(),
+              title: Text(Stringify.quickInningsHeading(innings.inningsNumber)),
+              actions: [
+                FilledButton.tonalIcon(
+                  onPressed: canDeclare
+                      ? () => showEndInningsWarning(context)
+                      : null,
+                  onLongPress: canDeclare
+                      ? () => controller.declareInnings(context)
+                      : null,
+                  label: const Text("Declare"),
+                  icon: const Icon(Icons.cancel, color: Colors.redAccent),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.redAccent,
+                    backgroundColor: Colors.redAccent.withOpacity(0.2),
+                  ),
+                ),
+              ],
+            ),
+            body: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 4.0,
+                vertical: 4.0,
               ),
-            );
-          } else {
-            final innings = (state as _QuickMatchLoadedState).innings;
-            final canDeclare = state is! _InningsHasEndedState;
-            return Scaffold(
-              appBar: AppBar(
-                leading: IconButton(
-                    onPressed: () => _quitMatch(context),
-                    icon: const Icon(Icons.exit_to_app)),
-                title:
-                    Text(Stringify.quickInningsHeading(innings.inningsNumber)),
-                actions: [
-                  FilledButton.tonalIcon(
-                    onPressed: canDeclare
-                        ? () => showEndInningsWarning(context)
-                        : null,
-                    onLongPress: canDeclare
-                        ? () => controller.declareInnings(context)
-                        : null,
-                    label: const Text("Declare"),
-                    icon: const Icon(
-                      Icons.cancel,
-                      color: Colors.redAccent,
-                    ),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.redAccent,
-                      backgroundColor: Colors.redAccent.withOpacity(0.2),
-                    ),
-                  )
+              child: Column(
+                children: [
+                  _ScoreBar(
+                    score: innings.score,
+                    currentRunRate: innings.currentRunRate,
+                    ballsBowled: innings.balls,
+                    maxBalls: innings.ballLimit,
+                    ballsPerOver: innings.ballsPerOver,
+                    target: innings.target,
+                    requiredRunRate: innings.requiredRunRate,
+                    runsRequired: innings.runsRequired,
+                    ballsLeft: innings.ballsLeft,
+                    isLoading: state is _ActionLoadingState,
+                  ),
+                  _RecentBallsSection(
+                    state.recentBalls.whereType<Ball>().toList(),
+                    onOpenTimeline: () => controller.goTimeline(context),
+                  ),
+                  const Spacer(),
+                  // Row(
+                  //   children: [
+                  //     Expanded(
+                  //       child: ListTile(
+                  //         title: const Text("Rotate Strike"),
+                  //         titleTextStyle:
+                  //             Theme.of(context).textTheme.bodySmall,
+                  //         trailing: Switch(
+                  //             value: controller.autoRotateStrike,
+                  //             onChanged: (_) =>
+                  //                 controller.toggleAutoRotateStrike()),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  _OnCreasePlayers(
+                    batter1: state.batter1,
+                    batter2: state.batter2,
+                    bowler: state.bowler,
+                    ballsPerOver: innings.ballsPerOver,
+                    strikerSlot: innings.striker,
+                    isOutBowler: state is _PickBowlerState,
+                    onPickBatter: () => controller.pickBatter(context, null),
+                    onPickBowler: () => controller.pickBowler(context),
+                    onRetireBatter: (batterId) =>
+                        controller.retireBatter(batterId),
+                    onRetireBowler: (bowlerId) => controller.retireBowler(),
+                    onSetStrike: (batterId) => controller.setStrike(batterId),
+                    allowInput: state is _PlayBallState,
+                    goScorecard: controller.goScorecard,
+                  ),
+                  const SizedBox(height: 4),
                 ],
               ),
-              body: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
-                child: Column(
-                  children: [
-                    _ScoreBar(
-                      score: innings.score,
-                      currentRunRate: innings.currentRunRate,
-                      ballsBowled: innings.balls,
-                      maxBalls: innings.ballLimit,
-                      ballsPerOver: innings.ballsPerOver,
-                      target: innings.target,
-                      requiredRunRate: innings.requiredRunRate,
-                      runsRequired: innings.runsRequired,
-                      ballsLeft: innings.ballsLeft,
-                      isLoading: state is _ActionLoadingState,
-                    ),
-                    _RecentBallsSection(
-                      state.recentBalls.whereType<Ball>().toList(),
-                      onOpenTimeline: () => controller.goTimeline(context),
-                    ),
-                    const Spacer(),
-                    // Row(
-                    //   children: [
-                    //     Expanded(
-                    //       child: ListTile(
-                    //         title: const Text("Rotate Strike"),
-                    //         titleTextStyle:
-                    //             Theme.of(context).textTheme.bodySmall,
-                    //         trailing: Switch(
-                    //             value: controller.autoRotateStrike,
-                    //             onChanged: (_) =>
-                    //                 controller.toggleAutoRotateStrike()),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                    _OnCreasePlayers(
-                      batter1: state.batter1,
-                      batter2: state.batter2,
-                      bowler: state.bowler,
-                      ballsPerOver: innings.ballsPerOver,
-                      strikerSlot: innings.striker,
-                      isOutBowler: state is _PickBowlerState,
-                      onPickBatter: () => controller.pickBatter(context, null),
-                      onPickBowler: () => controller.pickBowler(context),
-                      onRetireBatter: (batterId) =>
-                          controller.retireBatter(batterId),
-                      onRetireBowler: (bowlerId) => controller.retireBowler(),
-                      onSetStrike: (batterId) => controller.setStrike(batterId),
-                      allowInput: state is _PlayBallState,
-                      goScorecard: controller.goScorecard,
-                    ),
-                    const SizedBox(height: 4),
-                  ],
-                ),
-              ),
-              bottomNavigationBar: BottomAppBar(
-                height: 230,
-                child: Column(
-                  children: [
-                    _NextBallSelectorSection(
-                      controller.ballController,
-                      onSelectWicket: () => controller.pickWicket(context),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          _wUndoButton(controller, state.canUndo),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: SizedBox.expand(
-                              child:
-                                  _wConfirmButton(context, controller, state),
-                            ),
+            ),
+            bottomNavigationBar: BottomAppBar(
+              height: 230,
+              child: Column(
+                children: [
+                  _NextBallSelectorSection(
+                    controller.ballController,
+                    onSelectWicket: () => controller.pickWicket(context),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        _wUndoButton(controller, state.canUndo),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: SizedBox.expand(
+                            child: _wConfirmButton(context, controller, state),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            );
-          }
-        });
+            ),
+          );
+        }
+      },
+    );
   }
 
   Widget _wConfirmButton(
-          BuildContext context,
-          _PlayQuickMatchScreenController controller,
-          _QuickMatchLoadedState state) =>
-      switch (state) {
-        _PickBowlerState() => FilledButton.icon(
-            onPressed: () => controller.pickBowler(context),
-            label: const Text("Pick Bowler"),
-            icon: const Icon(Icons.person),
-          ),
-        _PickBatterState() => FilledButton.icon(
-            onPressed: () => controller.pickBatter(
-              context,
-              state.toReplaceId,
-            ),
-            label: const Text("Pick Batter"),
-            icon: const Icon(Icons.person),
-          ),
-        _InningsHasEndedState() => FilledButton.icon(
-            onPressed: () => showEndInningsWarning(context),
-            onLongPress: () => controller.finishInnings(context, state.next),
-            label: const Text("Finish"),
-            icon: const Icon(Icons.check_circle),
-          ),
-        _PlayBallState() => FilledButton.icon(
-            onPressed: () => controller.playBall(),
-            label: const Text("Play Ball"),
-            icon: const Icon(Icons.sports_baseball),
-          ),
-        _ActionLoadingState() => FilledButton.icon(
-            onPressed: null,
-            label: const Text("Loading..."),
-            icon: const SizedBox.square(
-              dimension: 18,
-              child: LinearProgressIndicator(),
-            ),
-          ),
-      };
+    BuildContext context,
+    _PlayQuickMatchScreenController controller,
+    _QuickMatchLoadedState state,
+  ) => switch (state) {
+    _PickBowlerState() => FilledButton.icon(
+      onPressed: () => controller.pickBowler(context),
+      label: const Text("Pick Bowler"),
+      icon: const Icon(Icons.person),
+    ),
+    _PickBatterState() => FilledButton.icon(
+      onPressed: () => controller.pickBatter(context, state.toReplaceId),
+      label: const Text("Pick Batter"),
+      icon: const Icon(Icons.person),
+    ),
+    _InningsHasEndedState() => FilledButton.icon(
+      onPressed: () => showEndInningsWarning(context),
+      onLongPress: () => controller.finishInnings(context, state.next),
+      label: const Text("Finish"),
+      icon: const Icon(Icons.check_circle),
+    ),
+    _PlayBallState() => FilledButton.icon(
+      onPressed: () => controller.playBall(),
+      label: const Text("Play Ball"),
+      icon: const Icon(Icons.sports_baseball),
+    ),
+    _ActionLoadingState() => FilledButton.icon(
+      onPressed: null,
+      label: const Text("Loading..."),
+      icon: const SizedBox.square(
+        dimension: 18,
+        child: LinearProgressIndicator(),
+      ),
+    ),
+  };
 
   Widget _wUndoButton(
-          _PlayQuickMatchScreenController controller, bool canUndo) =>
-      OutlinedButton.icon(
-        onPressed: canUndo ? () => controller.undo() : null,
-        label: const Text("Undo"),
-        icon: const Icon(Icons.undo),
-      );
+    _PlayQuickMatchScreenController controller,
+    bool canUndo,
+  ) => OutlinedButton.icon(
+    onPressed: canUndo ? () => controller.undo() : null,
+    label: const Text("Undo"),
+    icon: const Icon(Icons.undo),
+  );
 
   void showEndInningsWarning(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content:
-            Text("Long press to end this innings (This can't be undone!)")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Long press to end this innings (This can't be undone!)"),
+      ),
+    );
   }
 
   Future<void> _quitMatch(BuildContext context) async {
@@ -256,14 +251,16 @@ class _PlayQuickMatchScreenController {
     _dispatchState();
   }
 
-  void _dispatchLoading() => _stateStreamController.add(_ActionLoadingState(
-        innings,
-        recentBalls,
-        batter1,
-        batter2,
-        bowler,
-        canUndo,
-      ));
+  void _dispatchLoading() => _stateStreamController.add(
+    _ActionLoadingState(
+      innings,
+      recentBalls,
+      batter1,
+      batter2,
+      bowler,
+      canUndo,
+    ),
+  );
 
   Future<void> _dispatchState() async =>
       _stateStreamController.add(await _deduceState());
@@ -299,25 +296,43 @@ class _PlayQuickMatchScreenController {
       );
     }
 
-    if (innings.batter1Id == null) {
+    if (innings.batter1Id == null && innings.batter2Id == null) {
       // A batter must be picked
       return _PickBatterState(
-          innings, recentBalls, batter1, batter2, bowler, canUndo,
-          toReplaceId: null);
+        innings,
+        recentBalls,
+        batter1,
+        batter2,
+        bowler,
+        canUndo,
+        toReplaceId: null,
+      );
     }
 
     if (batter1 != null && batter1!.isOut) {
       // Need to replace this batter
       return _PickBatterState(
-          innings, recentBalls, batter1, batter2, bowler, canUndo,
-          toReplaceId: batter1!.batterId);
+        innings,
+        recentBalls,
+        batter1,
+        batter2,
+        bowler,
+        canUndo,
+        toReplaceId: batter1!.batterId,
+      );
     }
 
     if (batter2 != null && batter2!.isOut) {
       // Need to replace this batter
       return _PickBatterState(
-          innings, recentBalls, batter1, batter2, bowler, canUndo,
-          toReplaceId: batter2!.batterId);
+        innings,
+        recentBalls,
+        batter1,
+        batter2,
+        bowler,
+        canUndo,
+        toReplaceId: batter2!.batterId,
+      );
     }
 
     if (innings.bowlerId == null ||
@@ -327,35 +342,71 @@ class _PlayQuickMatchScreenController {
       // A bowler must be picked
       // OR the current bowler bowled the last legal ball of the current over
       return _PickBowlerState(
-          innings, recentBalls, batter1, batter2, bowler, canUndo);
+        innings,
+        recentBalls,
+        batter1,
+        batter2,
+        bowler,
+        canUndo,
+      );
     }
 
     if (lastPost == null) {
       // Just a safety trap in case there are no posts
       // Ideally in this case, it should still be innings.batter1Id == null
       return _PickBowlerState(
-          innings, recentBalls, batter1, batter2, bowler, canUndo);
+        innings,
+        recentBalls,
+        batter1,
+        batter2,
+        bowler,
+        canUndo,
+      );
     }
 
-    final post = lastPost!; //Easier for typecasting
+    final post = lastPost!; // Easier for typecasting
     switch (post) {
       case BowlerRetire():
         return _PickBowlerState(
-            innings, recentBalls, batter1, batter2, bowler, canUndo);
+          innings,
+          recentBalls,
+          batter1,
+          batter2,
+          bowler,
+          canUndo,
+        );
       case BatterRetire():
         return _PickBatterState(
-            innings, recentBalls, batter1, batter2, bowler, canUndo,
-            toReplaceId: post.batterId);
+          innings,
+          recentBalls,
+          batter1,
+          batter2,
+          bowler,
+          canUndo,
+          toReplaceId: post.batterId,
+        );
       case WicketBeforeDelivery():
         return _PickBatterState(
-            innings, recentBalls, batter1, batter2, bowler, canUndo,
-            toReplaceId: post.batterId);
+          innings,
+          recentBalls,
+          batter1,
+          batter2,
+          bowler,
+          canUndo,
+          toReplaceId: post.batterId,
+        );
       case NextBowler():
         break;
       case NextBatter():
         if (post.index.ball == innings.ballsPerOver) {
           return _PickBowlerState(
-              innings, recentBalls, batter1, batter2, bowler, canUndo);
+            innings,
+            recentBalls,
+            batter1,
+            batter2,
+            bowler,
+            canUndo,
+          );
         }
         break;
       case Penalty():
@@ -363,8 +414,14 @@ class _PlayQuickMatchScreenController {
       case Ball():
         if (innings.isEnded) {
           return _InningsHasEndedState(
-              innings, recentBalls, batter1, batter2, bowler, canUndo,
-              next: _matchService.getNextState(innings));
+            innings,
+            recentBalls,
+            batter1,
+            batter2,
+            bowler,
+            canUndo,
+            next: _matchService.getNextState(innings),
+          );
         } else if (post.isWicket) {
           return _PickBatterState(
             innings,
@@ -377,7 +434,13 @@ class _PlayQuickMatchScreenController {
           );
         } else if (post.index.ball == innings.ballsPerOver) {
           return _PickBowlerState(
-              innings, recentBalls, batter1, batter2, bowler, canUndo);
+            innings,
+            recentBalls,
+            batter1,
+            batter2,
+            bowler,
+            canUndo,
+          );
         }
         break;
       case Break():
@@ -385,7 +448,13 @@ class _PlayQuickMatchScreenController {
     }
     ballController.reset();
     return _PlayBallState(
-        innings, recentBalls, batter1, batter2, bowler, canUndo);
+      innings,
+      recentBalls,
+      batter1,
+      batter2,
+      bowler,
+      canUndo,
+    );
   }
 
   Future<void> pickBowler(BuildContext context) async {
@@ -422,13 +491,14 @@ class _PlayQuickMatchScreenController {
 
   Future<Player?> _pickPlayer(BuildContext context, String title) async {
     final player = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PickFromAllPlayersScreen(
-            title: title,
-            onPickPlayer: (p) => Navigator.pop(context, p),
-          ),
-        ));
+      context,
+      MaterialPageRoute(
+        builder: (context) => PickFromAllPlayersScreen(
+          title: title,
+          onPickPlayer: (p) => Navigator.pop(context, p),
+        ),
+      ),
+    );
     if (player is Player) {
       return player;
     } else {
@@ -438,16 +508,17 @@ class _PlayQuickMatchScreenController {
 
   Future<void> pickWicket(BuildContext context) async {
     final wicket = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => _WicketPickerScreen(
-            strikerId: innings.strikerId!,
-            nonStrikerId: innings.nonStrikerId,
-            bowlerId: innings.bowlerId!,
-            players: PlayerCache.all,
-            onPickPlayer: (context) => _pickPlayer(context, "Pick a Fielder"),
-          ),
-        ));
+      context,
+      MaterialPageRoute(
+        builder: (context) => _WicketPickerScreen(
+          strikerId: innings.strikerId!,
+          nonStrikerId: innings.nonStrikerId,
+          bowlerId: innings.bowlerId!,
+          players: PlayerCache.all,
+          onPickPlayer: (context) => _pickPlayer(context, "Pick a Fielder"),
+        ),
+      ),
+    );
 
     if (wicket is Wicket) {
       ballController.nextWicket = wicket;
@@ -524,20 +595,23 @@ class _PlayQuickMatchScreenController {
             child: Column(
               children: [
                 const SizedBox(height: 32),
-                Text("This match has ended in a tie",
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  "This match has ended in a tie",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 32),
                 SizedBox(
-                    width: 192,
-                    height: 42,
-                    child: FilledButton.icon(
-                      icon: const Icon(Icons.sports),
-                      label: const Text("Start Super Over"),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _startSuperOver(context);
-                      },
-                    )),
+                  width: 192,
+                  height: 42,
+                  child: FilledButton.icon(
+                    icon: const Icon(Icons.sports),
+                    label: const Text("Start Super Over"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _startSuperOver(context);
+                    },
+                  ),
+                ),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: 192,
@@ -585,16 +659,16 @@ class _PlayQuickMatchScreenController {
 
   void goScorecard(BuildContext context) {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => ScorecardScreen(innings.matchId)));
+      context,
+      MaterialPageRoute(builder: (context) => ScorecardScreen(innings.matchId)),
+    );
   }
 
   void goTimeline(BuildContext context) {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => InningsTimelineScreen(innings)));
+      context,
+      MaterialPageRoute(builder: (context) => InningsTimelineScreen(innings)),
+    );
   }
 }
 
@@ -621,28 +695,52 @@ sealed class _QuickMatchLoadedState extends _PlayQuickMatchState {
 }
 
 class _ActionLoadingState extends _QuickMatchLoadedState {
-  _ActionLoadingState(super.innings, super.recentBalls, super.batter1,
-      super.batter2, super.bowler, super.canUndo);
+  _ActionLoadingState(
+    super.innings,
+    super.recentBalls,
+    super.batter1,
+    super.batter2,
+    super.bowler,
+    super.canUndo,
+  );
 }
 
 class _PickBowlerState extends _QuickMatchLoadedState {
-  _PickBowlerState(super.innings, super.recentBalls, super.batter1,
-      super.batter2, super.bowler, super.canUndo);
+  _PickBowlerState(
+    super.innings,
+    super.recentBalls,
+    super.batter1,
+    super.batter2,
+    super.bowler,
+    super.canUndo,
+  );
 }
 
 class _PickBatterState extends _QuickMatchLoadedState {
   final int? toReplaceId;
 
-  _PickBatterState(super.innings, super.recentBalls, super.batter1,
-      super.batter2, super.bowler, super.canUndo,
-      {required this.toReplaceId});
+  _PickBatterState(
+    super.innings,
+    super.recentBalls,
+    super.batter1,
+    super.batter2,
+    super.bowler,
+    super.canUndo, {
+    required this.toReplaceId,
+  });
 }
 
 class _InningsHasEndedState extends _QuickMatchLoadedState {
   final NextStage next;
-  _InningsHasEndedState(super.innings, super.recentBalls, super.batter1,
-      super.batter2, super.bowler, super.canUndo,
-      {required this.next});
+  _InningsHasEndedState(
+    super.innings,
+    super.recentBalls,
+    super.batter1,
+    super.batter2,
+    super.bowler,
+    super.canUndo, {
+    required this.next,
+  });
 }
 
 class _PlayBallState extends _QuickMatchLoadedState {
@@ -706,7 +804,8 @@ class _ScoreBar extends StatelessWidget {
               children: [
                 Text(target == null ? "" : "Target: $target"),
                 Text(
-                    "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(maxBalls, ballsPerOver)}ov"),
+                  "${Stringify.ballCount(ballsBowled, ballsPerOver)}/${Stringify.ballCount(maxBalls, ballsPerOver)}ov",
+                ),
               ],
             ),
             leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
@@ -723,18 +822,29 @@ class _ScoreBar extends StatelessWidget {
 
               if (runsRequired == null)
                 wNumberBox(
-                    context,
-                    "Projected",
-                    currentRunRate * maxBalls / ballsPerOver,
-                    false,
-                    BallColors.notOut),
+                  context,
+                  "Projected",
+                  currentRunRate * maxBalls / ballsPerOver,
+                  false,
+                  BallColors.notOut,
+                ),
 
               if (runsRequired != null)
                 wNumberBox(
-                    context, "Runs", runsRequired!, false, BallColors.notOut),
+                  context,
+                  "Runs",
+                  runsRequired!,
+                  false,
+                  BallColors.notOut,
+                ),
 
               wNumberBox(
-                  context, "Balls Left", ballsLeft, false, BallColors.newOver),
+                context,
+                "Balls Left",
+                ballsLeft,
+                false,
+                BallColors.newOver,
+              ),
             ],
           ),
         ],
@@ -742,10 +852,16 @@ class _ScoreBar extends StatelessWidget {
     );
   }
 
-  Widget wNumberBox(BuildContext context, String heading, num value,
-      bool showDecimal, Color? color) {
-    final valueString =
-        showDecimal ? value.toStringAsFixed(2) : value.floor().toString();
+  Widget wNumberBox(
+    BuildContext context,
+    String heading,
+    num value,
+    bool showDecimal,
+    Color? color,
+  ) {
+    final valueString = showDecimal
+        ? value.toStringAsFixed(2)
+        : value.floor().toString();
     return Expanded(
       child: Card(
         color: color?.withAlpha(100),
@@ -755,10 +871,7 @@ class _ScoreBar extends StatelessWidget {
             children: [
               Text(heading),
               const SizedBox(height: 4),
-              Text(
-                valueString,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              Text(valueString, style: Theme.of(context).textTheme.titleLarge),
             ],
           ),
         ),
@@ -812,8 +925,10 @@ class _OnCreasePlayers extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4.0,
+                ),
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Batters",
@@ -833,11 +948,15 @@ class _OnCreasePlayers extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4.0,
+                ),
                 alignment: Alignment.centerLeft,
-                child: Text("Bowler",
-                    style: Theme.of(context).textTheme.titleSmall),
+                child: Text(
+                  "Bowler",
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
               _wBowlerDisplay(context),
               const SizedBox(height: 12),
@@ -857,8 +976,12 @@ class _OnCreasePlayers extends StatelessWidget {
     );
   }
 
-  Widget _wBatterDisplay(BuildContext context, int batterNum,
-      BattingScore? battingScore, int strikerSlot) {
+  Widget _wBatterDisplay(
+    BuildContext context,
+    int batterNum,
+    BattingScore? battingScore,
+    int strikerSlot,
+  ) {
     final isOnStrike = batterNum == strikerSlot;
     if (battingScore == null) {
       return ListTile(
@@ -876,8 +999,9 @@ class _OnCreasePlayers extends StatelessWidget {
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
         subtitle: Text("SR ${Stringify.decimal(battingScore.strikeRate)}"),
         subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
-        trailing:
-            Text("${battingScore.runsScored} (${battingScore.ballsFaced})"),
+        trailing: Text(
+          "${battingScore.runsScored} (${battingScore.ballsFaced})",
+        ),
         onTap: !allowInput ? null : () => onSetStrike(batterNum),
         // onLongPress:
         //     !allowInput ? null : () => onRetireBatter(battingScore.batterId),
@@ -886,8 +1010,9 @@ class _OnCreasePlayers extends StatelessWidget {
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-        tileColor:
-            !battingScore.isNotOut! ? Colors.redAccent.withOpacity(0.2) : null,
+        tileColor: !battingScore.isNotOut!
+            ? Colors.redAccent.withOpacity(0.2)
+            : null,
       );
     }
   }
@@ -908,11 +1033,13 @@ class _OnCreasePlayers extends StatelessWidget {
         title: Text(getPlayerName(bowler!.bowlerId).toUpperCase()),
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
         subtitle: Text(
-            "${Stringify.ballCount(bowler!.ballsBowled, ballsPerOver)}ov, ${Stringify.decimal(bowler!.economy)} rpo"),
+          "${Stringify.ballCount(bowler!.ballsBowled, ballsPerOver)}ov, ${Stringify.decimal(bowler!.economy)} rpo",
+        ),
         subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
         trailing: Text("${bowler!.wicketsTaken}-${bowler!.runsConceded}"),
-        onLongPress:
-            !allowInput ? null : () => onRetireBowler(bowler!.bowlerId),
+        onLongPress: !allowInput
+            ? null
+            : () => onRetireBowler(bowler!.bowlerId),
         leadingAndTrailingTextStyle: Theme.of(context).textTheme.bodyLarge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
@@ -946,28 +1073,36 @@ class _NextBallSelectorSection extends StatelessWidget {
               children: [
                 if (state is _NextBallSelectorEnabledState &&
                     state.nextWicket == null)
-                  Text("Record Ball",
-                      style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    "Record Ball",
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                 const Spacer(),
-                _WicketChip(state,
-                    onSelectWicket: onSelectWicket,
-                    onClearWicket: () => controller.nextWicket = null),
+                _WicketChip(
+                  state,
+                  onSelectWicket: onSelectWicket,
+                  onClearWicket: () => controller.nextWicket = null,
+                ),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _BattingExtraSelectorSection(state,
-                    setExtra: (extra) => controller.nextBattingExtra = extra),
-                _BowlingExtraSelectorSection(state,
-                    setExtra: (extra) => controller.nextBowlingExtra = extra),
+                _BattingExtraSelectorSection(
+                  state,
+                  setExtra: (extra) => controller.nextBattingExtra = extra,
+                ),
+                _BowlingExtraSelectorSection(
+                  state,
+                  setExtra: (extra) => controller.nextBowlingExtra = extra,
+                ),
               ],
             ),
             const SizedBox(height: 8),
             _RunSelectorSection(
               state,
               setRuns: (runs) => controller.nextRuns = runs,
-            )
+            ),
           ],
         );
       },
@@ -979,42 +1114,39 @@ class _RunSelectorSection extends StatelessWidget {
   final _NextBallSelectorState state;
 
   final void Function(int runs) setRuns;
-  const _RunSelectorSection(
-    this.state, {
-    required this.setRuns,
-  });
+  const _RunSelectorSection(this.state, {required this.setRuns});
 
   @override
   Widget build(BuildContext context) {
     return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(
-          7,
-          (runs) => switch (state) {
-            _NextBallSelectorEnabledState() => ChoiceChip(
-                label: Text(runs.toString()),
-                selected:
-                    runs == (state as _NextBallSelectorEnabledState).nextRuns,
-                onSelected: (x) => _onSelect(x, runs),
-                selectedColor: _color(runs),
-                shape: const CircleBorder(),
-                showCheckmark: false,
-              ),
-            _NextBallSelectorDisabledState() => ChoiceChip(
-                label: Text(runs.toString()),
-                selected: false,
-                shape: const CircleBorder(),
-              ),
-          },
-          growable: false,
-        ));
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(
+        7,
+        (runs) => switch (state) {
+          _NextBallSelectorEnabledState() => ChoiceChip(
+            label: Text(runs.toString()),
+            selected: runs == (state as _NextBallSelectorEnabledState).nextRuns,
+            onSelected: (x) => _onSelect(x, runs),
+            selectedColor: _color(runs),
+            shape: const CircleBorder(),
+            showCheckmark: false,
+          ),
+          _NextBallSelectorDisabledState() => ChoiceChip(
+            label: Text(runs.toString()),
+            selected: false,
+            shape: const CircleBorder(),
+          ),
+        },
+        growable: false,
+      ),
+    );
   }
 
   Color? _color(int runs) => switch (runs) {
-        4 => BallColors.four,
-        6 => BallColors.six,
-        _ => null,
-      };
+    4 => BallColors.four,
+    6 => BallColors.six,
+    _ => null,
+  };
 
   void _onSelect(bool isSelected, int runs) {
     if (isSelected) setRuns(runs);
@@ -1026,10 +1158,7 @@ class _BattingExtraSelectorSection extends StatelessWidget {
 
   final void Function(BattingExtraType? extra) setExtra;
 
-  const _BattingExtraSelectorSection(
-    this.state, {
-    required this.setExtra,
-  });
+  const _BattingExtraSelectorSection(this.state, {required this.setExtra});
 
   @override
   Widget build(BuildContext context) {
@@ -1040,21 +1169,23 @@ class _BattingExtraSelectorSection extends StatelessWidget {
   }
 
   String stringify(BattingExtraType extra) => switch (extra) {
-        BattingExtraType.bye => "Bye",
-        BattingExtraType.legBye => "Leg Bye"
-      };
+    BattingExtraType.bye => "Bye",
+    BattingExtraType.legBye => "Leg Bye",
+  };
 
   ChoiceChip chip(BattingExtraType extra) {
     // This is not a mistake; it avoids adding a type cast
     final state = this.state;
 
-    final isDisabled = state is _NextBallSelectorDisabledState ||
+    final isDisabled =
+        state is _NextBallSelectorDisabledState ||
         state is _NextBallSelectorEnabledState &&
             state.nextBowlingExtra == BowlingExtraType.wide;
 
     return ChoiceChip(
       label: Text(stringify(extra)),
-      selected: !isDisabled &&
+      selected:
+          !isDisabled &&
           extra == (state as _NextBallSelectorEnabledState).nextBattingExtra,
       selectedColor: switch (extra) {
         BattingExtraType.bye => BallColors.bye,
@@ -1077,10 +1208,7 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
   final _NextBallSelectorState state;
 
   final void Function(BowlingExtraType? extra) setExtra;
-  const _BowlingExtraSelectorSection(
-    this.state, {
-    required this.setExtra,
-  });
+  const _BowlingExtraSelectorSection(this.state, {required this.setExtra});
 
   @override
   Widget build(BuildContext context) {
@@ -1091,39 +1219,41 @@ class _BowlingExtraSelectorSection extends StatelessWidget {
   }
 
   String stringify(BowlingExtraType extra) => switch (extra) {
-        BowlingExtraType.noBall => "No Ball",
-        BowlingExtraType.wide => "Wide"
-      };
+    BowlingExtraType.noBall => "No Ball",
+    BowlingExtraType.wide => "Wide",
+  };
 
   ChoiceChip chip(BowlingExtraType extra) {
     // This is not a mistake; it helps us avoid adding a type cast
     final state = this.state;
     return switch (state) {
       _NextBallSelectorEnabledState() => ChoiceChip(
-          label: Text(stringify(extra)),
-          selected: extra == state.nextBowlingExtra,
-          selectedColor: switch (extra) {
-            BowlingExtraType.noBall => BallColors.noBall,
-            BowlingExtraType.wide => BallColors.wide,
-          },
-          onSelected: (x) {
-            if (x) {
-              setExtra(extra);
-            } else {
-              setExtra(null);
-            }
-          }),
+        label: Text(stringify(extra)),
+        selected: extra == state.nextBowlingExtra,
+        selectedColor: switch (extra) {
+          BowlingExtraType.noBall => BallColors.noBall,
+          BowlingExtraType.wide => BallColors.wide,
+        },
+        onSelected: (x) {
+          if (x) {
+            setExtra(extra);
+          } else {
+            setExtra(null);
+          }
+        },
+      ),
       _NextBallSelectorDisabledState() => ChoiceChip(
-          label: Text(stringify(extra)),
-          selected: false,
-        )
+        label: Text(stringify(extra)),
+        selected: false,
+      ),
     };
   }
 }
 
 class _NextBallSelectorController {
-  final stateNotifier =
-      ValueNotifier<_NextBallSelectorState>(_NextBallSelectorDisabledState());
+  final stateNotifier = ValueNotifier<_NextBallSelectorState>(
+    _NextBallSelectorDisabledState(),
+  );
 
   void _dispatchState() => stateNotifier.value = _deduceState();
 
@@ -1140,12 +1270,12 @@ class _NextBallSelectorController {
   }
 
   _NextBallSelectorEnabledState _deduceState() => _NextBallSelectorEnabledState(
-        nextRuns: _nextRuns,
-        nextIsBoundary: _nextRuns == 4 || _nextRuns == 6,
-        nextBowlingExtra: _nextBowlingExtra,
-        nextBattingExtra: _nextBattingExtra,
-        nextWicket: _nextWicket,
-      );
+    nextRuns: _nextRuns,
+    nextIsBoundary: _nextRuns == 4 || _nextRuns == 6,
+    nextBowlingExtra: _nextBowlingExtra,
+    nextBattingExtra: _nextBattingExtra,
+    nextWicket: _nextWicket,
+  );
 
   // Selections
   int _nextRuns = 0;
@@ -1208,16 +1338,15 @@ class _WicketChip extends StatelessWidget {
           onPressed: state.nextWicket == null ? onSelectWicket : onClearWicket,
         );
       case _NextBallSelectorDisabledState():
-        return ActionChip(
-          label: _wicketSummary(null),
-        );
+        return ActionChip(label: _wicketSummary(null));
     }
   }
 
   Widget _wicketSummary(Wicket? wicket) {
     if (wicket == null) return const Text("Add Wicket");
     return Text(
-        "${getPlayerName(wicket.batterId)} (${Stringify.wicket(wicket, getPlayerName: getPlayerName)})");
+      "${getPlayerName(wicket.batterId)} (${Stringify.wicket(wicket, getPlayerName: getPlayerName)})",
+    );
   }
 }
 
@@ -1252,7 +1381,8 @@ class _RecentBallsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.horizontal(right: Radius.circular(32))),
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
+      ),
       child: InkWell(
         onTap: onOpenTimeline,
         child: Padding(
@@ -1356,7 +1486,7 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
               onPressed: canReturnWicket ? returnWicket : null,
               label: const Text("Add Wicket"),
               icon: const Icon(Icons.stacked_bar_chart),
-            )
+            ),
           ],
         ),
       ),
@@ -1364,126 +1494,130 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
   }
 
   Widget wDismissalTile(Dismissal dismissal) => wSelectableOption(
-        stringifyWicketName(dismissal),
-        onSelect: () => setDismissal(dismissal),
-        isSelected: _wicketDismissal == dismissal,
-      );
+    stringifyWicketName(dismissal),
+    onSelect: () => setDismissal(dismissal),
+    isSelected: _wicketDismissal == dismissal,
+  );
 
   Widget wPickBatter() => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Divider(height: 32),
-          wSectionHeader("Pick Batter"),
-          for (final batter in [widget.strikerId, widget.nonStrikerId])
-            if (batter != null)
-              wSelectableOption(
-                getPlayerName(batter),
-                isSelected: batter == _wicketBatterId,
-                onSelect: () => setBatter(batter),
-              )
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Divider(height: 32),
+      wSectionHeader("Pick Batter"),
+      for (final batter in [widget.strikerId, widget.nonStrikerId])
+        if (batter != null)
+          wSelectableOption(
+            getPlayerName(batter),
+            isSelected: batter == _wicketBatterId,
+            onSelect: () => setBatter(batter),
+          ),
+    ],
+  );
 
   Widget wPickFielder() => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Divider(height: 32),
-          wSectionHeader(_wicketDismissal == Dismissal.stumped
-              ? "Pick Wicket-Keeper"
-              : "Pick Fielder"),
-          for (final fielderId in playerIds)
-            wSelectableOption(
-              getPlayerName(fielderId),
-              isSelected: fielderId == _wicketFielderId,
-              onSelect: () => setFielder(fielderId),
-            ),
-          ListTile(
-            title: const Text("Pick Player"),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              final player = await widget.onPickPlayer(context);
-              if (player != null) {
-                playerIds.add(player.id!);
-                setFielder(player.id!);
-              }
-            },
-          ),
-        ],
-      );
-
-  Widget wSelectableOption(String name,
-          {void Function()? onSelect, bool isSelected = false}) =>
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Divider(height: 32),
+      wSectionHeader(
+        _wicketDismissal == Dismissal.stumped
+            ? "Pick Wicket-Keeper"
+            : "Pick Fielder",
+      ),
+      for (final fielderId in playerIds)
+        wSelectableOption(
+          getPlayerName(fielderId),
+          isSelected: fielderId == _wicketFielderId,
+          onSelect: () => setFielder(fielderId),
+        ),
       ListTile(
-        title: Text(name),
-        selected: isSelected,
-        // selectedTileColor: Colors.greenAccent,
-        trailing: isSelected
-            ? const Icon(Icons.check_circle, color: Colors.teal)
-            : null,
-        onTap: onSelect,
-      );
+        title: const Text("Pick Player"),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () async {
+          final player = await widget.onPickPlayer(context);
+          if (player != null) {
+            playerIds.add(player.id!);
+            setFielder(player.id!);
+          }
+        },
+      ),
+    ],
+  );
+
+  Widget wSelectableOption(
+    String name, {
+    void Function()? onSelect,
+    bool isSelected = false,
+  }) => ListTile(
+    title: Text(name),
+    selected: isSelected,
+    // selectedTileColor: Colors.greenAccent,
+    trailing: isSelected
+        ? const Icon(Icons.check_circle, color: Colors.teal)
+        : null,
+    onTap: onSelect,
+  );
 
   Widget wSectionHeader(String text) => Text(text);
 
   bool requiresBowler(Dismissal dismissal) => switch (dismissal) {
-        Dismissal.bowled => true,
-        Dismissal.hitWicket => true,
-        Dismissal.lbw => true,
-        Dismissal.caught => true,
-        Dismissal.caughtAndBowled => true,
-        Dismissal.stumped => true,
-        Dismissal.runOut => false,
-        Dismissal.timedOut => false,
-        Dismissal.retiredOut => false,
-        Dismissal.retiredNotOut => false,
-        Dismissal.obstructing => false,
-        Dismissal.hitTwice => false,
-      };
+    Dismissal.bowled => true,
+    Dismissal.hitWicket => true,
+    Dismissal.lbw => true,
+    Dismissal.caught => true,
+    Dismissal.caughtAndBowled => true,
+    Dismissal.stumped => true,
+    Dismissal.runOut => false,
+    Dismissal.timedOut => false,
+    Dismissal.retiredOut => false,
+    Dismissal.retiredNotOut => false,
+    Dismissal.obstructing => false,
+    Dismissal.hitTwice => false,
+  };
 
   bool requiresFielder(Dismissal dismissal) => switch (dismissal) {
-        Dismissal.bowled => false,
-        Dismissal.hitWicket => false,
-        Dismissal.lbw => false,
-        Dismissal.caught => true,
-        Dismissal.caughtAndBowled => false, // same as bowler
-        Dismissal.stumped => true,
-        Dismissal.runOut => true,
-        Dismissal.timedOut => false,
-        Dismissal.retiredOut => false,
-        Dismissal.retiredNotOut => false,
-        Dismissal.obstructing => false,
-        Dismissal.hitTwice => false,
-      };
+    Dismissal.bowled => false,
+    Dismissal.hitWicket => false,
+    Dismissal.lbw => false,
+    Dismissal.caught => true,
+    Dismissal.caughtAndBowled => false, // same as bowler
+    Dismissal.stumped => true,
+    Dismissal.runOut => true,
+    Dismissal.timedOut => false,
+    Dismissal.retiredOut => false,
+    Dismissal.retiredNotOut => false,
+    Dismissal.obstructing => false,
+    Dismissal.hitTwice => false,
+  };
 
   bool canBatterBeNonStriker(Dismissal dismissal) => switch (dismissal) {
-        Dismissal.bowled => false,
-        Dismissal.hitWicket => false,
-        Dismissal.lbw => false,
-        Dismissal.caught => false,
-        Dismissal.caughtAndBowled => false,
-        Dismissal.stumped => false,
-        Dismissal.runOut => true,
-        Dismissal.timedOut => true,
-        Dismissal.retiredOut => true,
-        Dismissal.retiredNotOut => true,
-        Dismissal.obstructing => true,
-        Dismissal.hitTwice => false,
-      };
+    Dismissal.bowled => false,
+    Dismissal.hitWicket => false,
+    Dismissal.lbw => false,
+    Dismissal.caught => false,
+    Dismissal.caughtAndBowled => false,
+    Dismissal.stumped => false,
+    Dismissal.runOut => true,
+    Dismissal.timedOut => true,
+    Dismissal.retiredOut => true,
+    Dismissal.retiredNotOut => true,
+    Dismissal.obstructing => true,
+    Dismissal.hitTwice => false,
+  };
 
   String stringifyWicketName(Dismissal dismissal) => switch (dismissal) {
-        Dismissal.bowled => "Bowled",
-        Dismissal.hitWicket => "Hit Wicket",
-        Dismissal.lbw => "LBW",
-        Dismissal.caught => "Caught",
-        Dismissal.caughtAndBowled => "Caught and Bowled",
-        Dismissal.stumped => "Stumped",
-        Dismissal.runOut => "Run out",
-        Dismissal.timedOut => "Timed out",
-        Dismissal.retiredOut => "Retired - Out",
-        Dismissal.retiredNotOut => "Retired - Not Out",
-        Dismissal.obstructing => "Obstructing the field",
-        Dismissal.hitTwice => "Hit the ball twice",
-      };
+    Dismissal.bowled => "Bowled",
+    Dismissal.hitWicket => "Hit Wicket",
+    Dismissal.lbw => "LBW",
+    Dismissal.caught => "Caught",
+    Dismissal.caughtAndBowled => "Caught and Bowled",
+    Dismissal.stumped => "Stumped",
+    Dismissal.runOut => "Run out",
+    Dismissal.timedOut => "Timed out",
+    Dismissal.retiredOut => "Retired - Out",
+    Dismissal.retiredNotOut => "Retired - Not Out",
+    Dismissal.obstructing => "Obstructing the field",
+    Dismissal.hitTwice => "Hit the ball twice",
+  };
 
   void setDismissal(Dismissal dismissal) {
     setState(() {
@@ -1525,27 +1659,42 @@ class _WicketPickerScreenState extends State<_WicketPickerScreen> {
     }
 
     final result = switch (_wicketDismissal!) {
-      Dismissal.bowled =>
-        Bowled(batterId: widget.strikerId, bowlerId: widget.bowlerId),
-      Dismissal.hitWicket =>
-        HitWicket(batterId: widget.strikerId, bowlerId: widget.bowlerId),
-      Dismissal.lbw =>
-        Lbw(batterId: widget.strikerId, bowlerId: widget.bowlerId),
-      Dismissal.caught => widget.bowlerId == _wicketFielderId
-          ? CaughtAndBowled(
-              batterId: widget.strikerId, bowlerId: widget.bowlerId)
-          : Caught(
-              batterId: widget.strikerId,
-              bowlerId: widget.bowlerId,
-              fielderId: _wicketFielderId!),
-      Dismissal.caughtAndBowled =>
-        CaughtAndBowled(batterId: widget.strikerId, bowlerId: widget.bowlerId),
+      Dismissal.bowled => Bowled(
+        batterId: widget.strikerId,
+        bowlerId: widget.bowlerId,
+      ),
+      Dismissal.hitWicket => HitWicket(
+        batterId: widget.strikerId,
+        bowlerId: widget.bowlerId,
+      ),
+      Dismissal.lbw => Lbw(
+        batterId: widget.strikerId,
+        bowlerId: widget.bowlerId,
+      ),
+      Dismissal.caught =>
+        widget.bowlerId == _wicketFielderId
+            ? CaughtAndBowled(
+                batterId: widget.strikerId,
+                bowlerId: widget.bowlerId,
+              )
+            : Caught(
+                batterId: widget.strikerId,
+                bowlerId: widget.bowlerId,
+                fielderId: _wicketFielderId!,
+              ),
+      Dismissal.caughtAndBowled => CaughtAndBowled(
+        batterId: widget.strikerId,
+        bowlerId: widget.bowlerId,
+      ),
       Dismissal.stumped => Stumped(
-          batterId: widget.strikerId,
-          bowlerId: widget.bowlerId,
-          wicketkeeperId: _wicketFielderId!),
-      Dismissal.runOut =>
-        RunOut(batterId: _wicketBatterId!, fielderId: _wicketFielderId!),
+        batterId: widget.strikerId,
+        bowlerId: widget.bowlerId,
+        wicketkeeperId: _wicketFielderId!,
+      ),
+      Dismissal.runOut => RunOut(
+        batterId: _wicketBatterId!,
+        fielderId: _wicketFielderId!,
+      ),
       Dismissal.timedOut => TimedOut(batterId: _wicketBatterId!),
       Dismissal.retiredOut => RetiredOut(batterId: _wicketBatterId!),
       Dismissal.retiredNotOut => RetiredNotOut(batterId: _wicketBatterId!),

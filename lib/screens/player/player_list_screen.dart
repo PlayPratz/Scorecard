@@ -15,10 +15,7 @@ class AllPlayersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _AllPlayersInner(
-      title: "Manage players",
-      onPickPlayer: null,
-    );
+    return const _AllPlayersInner(title: "Manage players", onPickPlayer: null);
   }
 }
 
@@ -35,10 +32,7 @@ class PickFromAllPlayersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _AllPlayersInner(
-      title: title,
-      onPickPlayer: onPickPlayer,
-    );
+    return _AllPlayersInner(title: title, onPickPlayer: onPickPlayer);
   }
 }
 
@@ -46,10 +40,7 @@ class _AllPlayersInner extends StatefulWidget {
   final String title;
   final PlayerCallbackFn? onPickPlayer;
 
-  const _AllPlayersInner({
-    required this.title,
-    required this.onPickPlayer,
-  });
+  const _AllPlayersInner({required this.title, required this.onPickPlayer});
 
   @override
   State<_AllPlayersInner> createState() => _AllPlayersInnerState();
@@ -70,15 +61,13 @@ class _AllPlayersInnerState extends State<_AllPlayersInner> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(title: Text(widget.title)),
       body: switch (_state) {
-        _LoadingState() => const Center(
-            child: CircularProgressIndicator(),
-          ),
-        _LoadedState() => _PlayerListBuilder((_state as _LoadedState).players,
-            onSelectPlayer: (p) => _onSelectPlayer(context, p)),
+        _LoadingState() => const Center(child: CircularProgressIndicator()),
+        _LoadedState() => _PlayerListBuilder(
+          (_state as _LoadedState).players,
+          onSelectPlayer: (p) => _onSelectPlayer(context, p),
+        ),
       },
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
@@ -101,10 +90,9 @@ class _AllPlayersInnerState extends State<_AllPlayersInner> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => PlayerFormScreen(
-                player: player,
-                onSavePlayer: _onSavePlayer,
-              )),
+        builder: (context) =>
+            PlayerFormScreen(player: player, onSavePlayer: _onSavePlayer),
+      ),
     );
   }
 
@@ -138,20 +126,13 @@ class PickPlayerScreen extends StatelessWidget {
   final List<Player> players;
   final void Function(Player player)? onPickPlayer;
 
-  const PickPlayerScreen(
-    this.players, {
-    super.key,
-    this.onPickPlayer,
-  });
+  const PickPlayerScreen(this.players, {super.key, this.onPickPlayer});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Pick a Player")),
-      body: _PlayerListBuilder(
-        players,
-        onSelectPlayer: onPickPlayer,
-      ),
+      body: _PlayerListBuilder(players, onSelectPlayer: onPickPlayer),
       bottomNavigationBar: const BottomAppBar(),
     );
   }

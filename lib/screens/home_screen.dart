@@ -58,47 +58,52 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget wMenuItem(
-    String title,
+    String title, {
     // String description,
-    {
     required IconData icon,
     required VoidCallback onTap,
-  }) =>
-      ListTile(
-        title: Text(title),
-        // subtitle: Text(description),
-        leading: Icon(icon),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      );
+  }) => ListTile(
+    title: Text(title),
+    // subtitle: Text(description),
+    leading: Icon(icon),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: onTap,
+  );
 
   void goNewQuickMatch(BuildContext context) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => CreateQuickMatchScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateQuickMatchScreen()),
+    );
   }
 
   void goLoadQuickMatch(BuildContext context) {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LoadQuickMatchScreen(),
-        ));
+      context,
+      MaterialPageRoute(builder: (context) => LoadQuickMatchScreen()),
+    );
   }
 
   void goPlayerList(BuildContext context) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => const AllPlayersScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AllPlayersScreen()),
+    );
   }
 
   void goStatistics(BuildContext context) {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const AllPlayerStatisticsScreen()));
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AllPlayerStatisticsScreen(),
+      ),
+    );
   }
 
   void goSettings(BuildContext context) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => const SettingsScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+    );
   }
 }

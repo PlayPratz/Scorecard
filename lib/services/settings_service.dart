@@ -51,7 +51,4 @@ class SettingsService {
   }
 }
 
-enum ScorecardTheme {
-  light,
-  dark,
-}
+enum ScorecardTheme { light, dark }

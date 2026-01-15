@@ -12,70 +12,80 @@ class CreateQuickMatchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Let's create a quick match!"),
-      ),
+      appBar: AppBar(title: const Text("Let's create a quick match!")),
       body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: ListenableBuilder(
-            listenable: controller,
-            builder: (context, child) {
-              final rules = controller._deduceState();
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Game Rules",
-                      style: Theme.of(context).textTheme.titleSmall),
-                  Text(
-                    "These can't be edited once the match is created. Make sure everything is right!",
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: ListenableBuilder(
+          listenable: controller,
+          builder: (context, child) {
+            final rules = controller._deduceState();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Game Rules",
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                Text(
+                  "These can't be edited once the match is created. Make sure everything is right!",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
 
-                  const SizedBox(height: 16),
-                  // Overs
-                  const Center(child: Text("Overs")),
-                  const SizedBox(height: 4),
-                  _NumberChooser(
-                      value: controller._oversPerInnings,
-                      min: 1,
-                      onChange: (x) => controller.oversPerInnings = x),
-                  Center(
-                      child: Text(
+                const SizedBox(height: 16),
+                // Overs
+                const Center(child: Text("Overs")),
+                const SizedBox(height: 4),
+                _NumberChooser(
+                  value: controller._oversPerInnings,
+                  min: 1,
+                  onChange: (x) => controller.oversPerInnings = x,
+                ),
+                Center(
+                  child: Text(
                     "${controller._oversPerInnings} overs",
                     style: Theme.of(context).textTheme.bodySmall,
-                  )),
-                  const SizedBox(height: 32),
-                  // Balls Per Over
-                  const Center(child: Text("Balls Per Over")),
-                  const SizedBox(height: 4),
-                  _NumberChooser(
-                      value: rules.ballsPerOver,
-                      min: 1,
-                      onChange: (x) => controller.ballsPerOver = x),
-                  const SizedBox(height: 64),
-                ],
-              );
-            },
-          )),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // Balls Per Over
+                const Center(child: Text("Balls Per Over")),
+                const SizedBox(height: 4),
+                _NumberChooser(
+                  value: rules.ballsPerOver,
+                  min: 1,
+                  onChange: (x) => controller.ballsPerOver = x,
+                ),
+                const SizedBox(height: 64),
+              ],
+            );
+          },
+        ),
+      ),
       bottomNavigationBar: BottomAppBar(
-          child: FilledButton.icon(
-        onPressed: () => startMatch(context, rules: controller._deduceState()),
-        label: const Text("Start"),
-        icon: const Icon(Icons.sports_cricket),
-      )),
+        child: FilledButton.icon(
+          onPressed: () =>
+              startMatch(context, rules: controller._deduceState()),
+          label: const Text("Start"),
+          icon: const Icon(Icons.sports_cricket),
+        ),
+      ),
     );
   }
 
-  void startMatch(BuildContext context,
-      {required QuickMatchRules rules}) async {
+  void startMatch(
+    BuildContext context, {
+    required QuickMatchRules rules,
+  }) async {
     final service = _service(context);
     final match = await service.createQuickMatch(rules);
     final first = await service.createFirstInnings(match);
     if (context.mounted) {
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => PlayQuickInningsScreen(first.id!)));
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlayQuickInningsScreen(first.id!),
+        ),
+      );
     }
   }
 
@@ -145,9 +155,9 @@ class QuickMatchRulesController with ChangeNotifier {
   int _oversPerInnings = 5;
 
   QuickMatchRules _deduceState() => QuickMatchRules(
-        oversPerInnings: _oversPerInnings,
-        ballsPerOver: _ballsPerOver,
-      );
+    oversPerInnings: _oversPerInnings,
+    ballsPerOver: _ballsPerOver,
+  );
 
   void _dispatchState() {
     notifyListeners();

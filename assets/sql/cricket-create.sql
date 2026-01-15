@@ -441,7 +441,7 @@ END;
 
 DROP TRIGGER IF EXISTS delete_quick_match;
 CREATE TRIGGER delete_quick_match
-AFTER DELETE ON quick_matches
+BEFORE DELETE ON quick_matches
 BEGIN
     DELETE FROM batting_scores WHERE match_id = old.id;
     DELETE FROM bowling_scores WHERE match_id = old.id;

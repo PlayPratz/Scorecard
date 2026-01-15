@@ -306,12 +306,10 @@ class PostIndex {
   const PostIndex(this.over, this.ball);
 
   const PostIndex.of(int ballsBowled, int ballsPerOver)
-      : over = ballsBowled ~/ ballsPerOver,
-        ball = ballsBowled % ballsPerOver;
+    : over = ballsBowled ~/ ballsPerOver,
+      ball = ballsBowled % ballsPerOver;
 
-  const PostIndex.zero()
-      : over = 0,
-        ball = 0;
+  const PostIndex.zero() : over = 0, ball = 0;
 
   @override
   String toString() => "$over.$ball";

@@ -472,7 +472,7 @@ class _BattingScorecard extends StatelessWidget {
         ListTile(
           leading: CircleAvatar(
             radius: 16,
-            backgroundColor: battingScore.isNotOut!
+            backgroundColor: battingScore.isNotOut
                 ? BallColors.notOut
                 : BallColors.wicket,
             child: const Icon(Icons.sports_motorsports, size: 20),

@@ -6,31 +6,35 @@ class Stringify {
   static String score(Score score) => "${score.runs}/${score.wickets}";
 
   static String battingScore(BattingScore battingScore) => batterScore(
-      battingScore.runsScored, battingScore.ballsFaced, battingScore.isNotOut);
+    battingScore.runsScored,
+    battingScore.ballsFaced,
+    battingScore.isNotOut,
+  );
 
   static String batterScore(int runs, int numBalls, bool isNotOut) =>
       "$runs ($numBalls)";
 
-  static String wicket(Wicket? wicket,
-          {String ifNone = "not out",
-          required String Function(int) getPlayerName}) =>
-      switch (wicket) {
-        Bowled() => "b ${getPlayerName(wicket.bowlerId)}",
-        HitWicket() => "hit wicket b ${getPlayerName(wicket.bowlerId)}",
-        Lbw() => "lbw b ${getPlayerName(wicket.bowlerId)}",
-        Caught() =>
-          "c ${getPlayerName(wicket.fielderId)} b ${getPlayerName(wicket.bowlerId)}",
-        CaughtAndBowled() => "c&b ${getPlayerName(wicket.bowlerId)}",
-        Stumped() =>
-          "st ${getPlayerName(wicket.wicketkeeperId)} b ${getPlayerName(wicket.bowlerId)}",
-        RunOut() => "run out (${getPlayerName(wicket.fielderId)})",
-        TimedOut() => "timed out",
-        RetiredOut() => "retired - out",
-        RetiredNotOut() => "retired - not out",
-        ObstructingTheField() => "obstructing the field",
-        HitTheBallTwice() => "hit the ball twice",
-        null => ifNone,
-      };
+  static String wicket(
+    Wicket? wicket, {
+    String ifNone = "not out",
+    required String Function(int) getPlayerName,
+  }) => switch (wicket) {
+    Bowled() => "b ${getPlayerName(wicket.bowlerId)}",
+    HitWicket() => "hit wicket b ${getPlayerName(wicket.bowlerId)}",
+    Lbw() => "lbw b ${getPlayerName(wicket.bowlerId)}",
+    Caught() =>
+      "c ${getPlayerName(wicket.fielderId)} b ${getPlayerName(wicket.bowlerId)}",
+    CaughtAndBowled() => "c&b ${getPlayerName(wicket.bowlerId)}",
+    Stumped() =>
+      "st ${getPlayerName(wicket.wicketkeeperId)} b ${getPlayerName(wicket.bowlerId)}",
+    RunOut() => "run out (${getPlayerName(wicket.fielderId)})",
+    TimedOut() => "timed out",
+    RetiredOut() => "retired - out",
+    RetiredNotOut() => "retired - not out",
+    ObstructingTheField() => "obstructing the field",
+    HitTheBallTwice() => "hit the ball twice",
+    null => ifNone,
+  };
 
   static String ballCount(int ballCount, int ballsPerOver) =>
       "${ballCount ~/ ballsPerOver}.${ballCount % ballsPerOver}";
@@ -44,7 +48,7 @@ class Stringify {
       switch (inningsNumber) {
         1 => "First Innings",
         2 => "Second Innings",
-        _ => "Super Over ${_getSuperOverString(inningsNumber)}"
+        _ => "Super Over ${_getSuperOverString(inningsNumber)}",
       };
 
   static String _getSuperOverString(int inningsNumber) {
@@ -53,9 +57,9 @@ class Stringify {
   }
 
   static String quickMatchResult(QuickMatchResult result) => switch (result) {
-        QuickMatchDefendedResult() => "Won by ${result.runs} runs",
-        QuickMatchChasedResult() =>
-          "Won with ${result.ballsToSpare} balls to spare",
-        QuickMatchTieResult() => "Match tied",
-      };
+    QuickMatchDefendedResult() => "Won by ${result.runs} runs",
+    QuickMatchChasedResult() =>
+      "Won with ${result.ballsToSpare} balls to spare",
+    QuickMatchTieResult() => "Match tied",
+  };
 }
